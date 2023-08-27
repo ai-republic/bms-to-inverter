@@ -12,12 +12,15 @@ Currently implemented inverters:
 
 These lists can be easily be extended by implementing an own [`PortProcessor`](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-to-inverter-core/src/main/java/com/airepublic/bmstoinverter/PortProcessor.java) which handles the protocol messages.
 
-### Supported protocols:
+----------
+
+## Supported protocols:
 * UART / RS485
 * CAN
 
+----------
 
-### Supported architectures
+## Supported architectures
 
 The following architectures are supported:
 * x86_32 
@@ -32,9 +35,9 @@ The following architectures are supported:
 
 **NOTE:** There are restrictions using CAN on Windows as SocketCAN library is *NOT* available on Windows OS.
 
+----------
 
-
-### How to use
+## How to use
 If you want to communicate with Daly BMS to a Sunny Island you can use the [`bms-to-inverter-main`](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-to-inverter-main) project and build it. Please make sure you have the right ports/devices configured in [`config.properties`](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-to-inverter-main/src/main/resources/config.properties).
 
 Otherwise you'll have to do the following steps:
@@ -44,6 +47,9 @@ Otherwise you'll have to do the following steps:
 3. Then rebuild it with `mvn clean package` to produce the fat jar found under the `target` directory.
 4. Start the jar with `java -jar bms-to-inverter-main-0.0.1-SNAPSHOT-jar-with-dependencies.jar`.
 
+----------
+
+## Notes
 I will be doing a lot of updates to the documentation and current code and structure but if you have questions or need support feel free to contact me or raise an issue.
 
 
