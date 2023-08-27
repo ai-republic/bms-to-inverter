@@ -39,10 +39,10 @@ If you want to communicate with Daly BMS to a Sunny Island you can use the [`bms
 
 Otherwise you'll have to do the following steps:
 
-1. Create your own mapping of BMS and inverter by editing the POM file of the [`bms-to-inverter-main`](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-to-inverter-main)` and choose the corresponding BMS and inverter module. 
-2. If you're using CAN choose the right [`libjavacan-core.so`](https://github.com/ai-republic//bms-to-inverter-can-javacan/src/main/resources/native) for your target architecture
-3. Then rebuild it with `maven clean package` to produce the fat jar.
-4. Start the jar with `java -jar <jar-file>`.
+1. Create your own mapping of BMS and inverter by editing the POM file of the [`bms-to-inverter-main`](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-to-inverter-main) and choose the corresponding BMS and inverter module. 
+2. If you're using CAN choose the right [`libjavacan-core.so`](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-to-inverter-can-javacan/src/main/resources/native) for your target architecture
+3. Then rebuild it with `mvn clean package` to produce the fat jar found under the `target` directory.
+4. Start the jar with `java -jar bms-to-inverter-main-0.0.1-SNAPSHOT-jar-with-dependencies.jar`.
 
 I will be doing a lot of updates to the documentation and current code and structure but if you have questions or need support feel free to contact me or raise an issue.
 
