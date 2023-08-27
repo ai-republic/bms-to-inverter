@@ -10,7 +10,7 @@ Currently implemented BMS:
 Currently implemented inverters:
 * SMA Sunny Island (CAN)
 
-These lists can be easily be extended by implementing an own [PortProcessor](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-to-inverter-core/src/main/java/com/airepublic/bmstoinverter/PortProcessor.java) which handles the protocol messages.
+These lists can be easily be extended by implementing an own [`PortProcessor`](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-to-inverter-core/src/main/java/com/airepublic/bmstoinverter/PortProcessor.java) which handles the protocol messages.
 
 #### Supported protocols:
 * UART / RS485
