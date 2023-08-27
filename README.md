@@ -8,16 +8,16 @@ Currently implemented BMS:
 * Daly BMS (RS485 or CAN)
 
 Currently implemented inverters:
-* SMA Sunny Island
+* SMA Sunny Island (CAN)
 
 These lists can be easily be extended by implementing an own [PortProcessor](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-to-inverter-core/src/main/java/com/airepublic/bmstoinverter/PortProcessor.java) which handles the protocol messages.
 
-## Supported protocols:
+#### Supported protocols:
 * UART / RS485
 * CAN
 
 
-### Supported architectures
+#### Supported architectures
 
 The following architectures are supported:
 * x86_32 
@@ -33,6 +33,15 @@ The following architectures are supported:
 There are restrictions using CAN on Windows as SocketCAN library is *NOT* available on Windows OS.
 
 
+
 ### How to use
+If you want to communicate with Daly BMS to a Sunny Island you can use the `[bms-to-inverter-main](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-to-inverter-main)` project and build it. Please make sure you have the right ports/devices configured in  [config.properties](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-to-inverter-main/src/main/resources/config.properties).
+
+Otherwise you'll have to do the following steps:
+
+1. Create your own mapping of BMS and inverter by editing the POM file of the `[bms-to-inverter-main](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-to-inverter-main)` and choose the corresponding BMS and inverter module. 
+2. If you're using CAN choose the right `[libjavacan-core.so](https://github.com/ai-republic//bms-to-inverter-can-javacan/src/main/resources/native)` for your target architecture
+3. Then rebuild it with `maven clean package` to produce the fat jar.
+4. Start the jar with `java -jar <jar-file>`.
 
 *I do not take any responsiblity for any damages that might occur by using this software!*

@@ -94,7 +94,7 @@ public class BmsToInverter {
     private static void updateSystemProperties() {
         final Properties props = new Properties();
         try {
-            props.load(BmsToInverter.class.getClassLoader().getResourceAsStream("pi.properties"));
+            props.load(BmsToInverter.class.getClassLoader().getResourceAsStream("config.properties"));
 
             for (final Object name : props.keySet()) {
                 final String key = name.toString();
@@ -104,7 +104,7 @@ public class BmsToInverter {
 
             }
         } catch (final IOException e) {
-            LOG.warn("No properties file \"pi.properties\" found - should then all be set via command line -D parameters");
+            LOG.warn("No properties file \"config.properties\" found - should then all be set via command line -D parameters");
         }
     }
 
