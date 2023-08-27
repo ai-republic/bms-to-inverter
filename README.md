@@ -12,12 +12,12 @@ Currently implemented inverters:
 
 These lists can be easily be extended by implementing an own [`PortProcessor`](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-to-inverter-core/src/main/java/com/airepublic/bmstoinverter/PortProcessor.java) which handles the protocol messages.
 
-#### Supported protocols:
+### Supported protocols:
 * UART / RS485
 * CAN
 
 
-#### Supported architectures
+### Supported architectures
 
 The following architectures are supported:
 * x86_32 
