@@ -1,0 +1,90 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<artifactId>bms-to-inverter-main</artifactId>
+
+
+	<parent>
+		<groupId>com.ai-republic</groupId>
+		<artifactId>bms-to-inverter-parent</artifactId>
+		<version>0.0.1-SNAPSHOT</version>
+	</parent>
+
+
+	<build>
+		<plugins>
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<version>3.1.1</version>
+				<configuration>
+					<descriptorRefs>
+						<descriptorRef>jar-with-dependencies</descriptorRef>
+					</descriptorRefs>
+					<archive>
+						<manifest>
+							<mainClass>com.airepublic.bmstoinverter.BmsToInverter</mainClass>
+						</manifest>
+					</archive>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id> <!-- this is used for inheritance
+					merges -->
+						<phase>package</phase> <!-- bind to the packaging phase -->
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>com.ai-republic</groupId>
+			<artifactId>bms-to-inverter-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!--		choose BMS 		-->
+		<dependency>
+			<groupId>com.ai-republic</groupId>
+			<artifactId>bms-to-inverter-daly-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!--	choose BMS protocol implementation		-->
+<!--		<dependency>-->
+<!--			<groupId>com.ai-republic</groupId>-->
+<!--			<artifactId>bms-to-inverter-rs485-jssc</artifactId>-->
+<!--			<version>${project.version}</version>-->
+<!--		</dependency>-->
+		<dependency>
+			<groupId>com.ai-republic</groupId>
+			<artifactId>bms-to-inverter-rs485-jserialcomm</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+
+		<!--		choose inverter			-->
+		<dependency>
+			<groupId>com.ai-republic</groupId>
+			<artifactId>bms-to-inverter-sma</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+
+		<!--	choose inverter protocol implementation		-->
+		<dependency>
+			<groupId>com.ai-republic</groupId>
+			<artifactId>bms-to-inverter-can-javacan</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+
+	</dependencies>
+</project>
