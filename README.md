@@ -30,7 +30,7 @@ The following architectures are supported:
 * riscv32
 * riscv64
 
-There are restrictions using CAN on Windows as SocketCAN library is *NOT* available on Windows OS.
+**NOTE:** There are restrictions using CAN on Windows as SocketCAN library is *NOT* available on Windows OS.
 
 
 
