@@ -44,4 +44,7 @@ Otherwise you'll have to do the following steps:
 3. Then rebuild it with `maven clean package` to produce the fat jar.
 4. Start the jar with `java -jar <jar-file>`.
 
+I will be doing a lot of updates to the documentation and current code and structure but if you have questions or need support feel free to contact me or raise an issue.
+
+
 *I do not take any responsiblity for any damages that might occur by using this software!*
