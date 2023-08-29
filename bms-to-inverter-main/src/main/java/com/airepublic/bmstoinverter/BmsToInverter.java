@@ -9,7 +9,10 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.airepublic.bmstoinverter.bms.data.BatteryPack;
+import com.airepublic.bmstoinverter.core.Bms;
+import com.airepublic.bmstoinverter.core.Inverter;
+import com.airepublic.bmstoinverter.core.PortProcessor;
+import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 
 import jakarta.enterprise.inject.se.SeContainer;
 import jakarta.enterprise.inject.se.SeContainerInitializer;
@@ -58,12 +61,12 @@ public class BmsToInverter {
                 }
 
                 // send data to inverter
-                try {
-                    result = executorService.submit(() -> inverter.process());
-                    result.get();
-                } catch (final Exception e) {
-                    LOG.error("Error sending inverter data!", e);
-                }
+                // try {
+                // result = executorService.submit(() -> inverter.process());
+                // result.get();
+                // } catch (final Exception e) {
+                // LOG.error("Error sending inverter data!", e);
+                // }
             }
         } catch (final Throwable e) {
             LOG.error("Failed to perform initial reading of BMS values!", e);
