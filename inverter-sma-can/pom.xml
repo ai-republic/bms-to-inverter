@@ -9,13 +9,20 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>bms-to-inverter-sma</artifactId>
+	<artifactId>inverter-sma-can</artifactId>
 
 	<dependencies>
 		<dependency>
 			<groupId>com.ai-republic</groupId>
-			<artifactId>bms-to-inverter-core</artifactId>
+			<artifactId>core-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
+		<dependency>
+			<groupId>com.ai-republic</groupId>
+			<artifactId>protocol-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 	</dependencies>
 </project>

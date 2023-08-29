@@ -6,12 +6,12 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
   
-  <artifactId>bms-to-inverter-daly</artifactId>
+  <artifactId>bms-daly-common</artifactId>
   
     <dependencies>
 	  <dependency>
 		  <groupId>com.ai-republic</groupId>
-		  <artifactId>bms-to-inverter-core</artifactId>
+		  <artifactId>core-api</artifactId>
 		  <version>${project.version}</version>
 	  </dependency>
   </dependencies>

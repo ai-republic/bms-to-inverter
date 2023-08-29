@@ -61,12 +61,12 @@ public class BmsToInverter {
                 }
 
                 // send data to inverter
-                // try {
-                // result = executorService.submit(() -> inverter.process());
-                // result.get();
-                // } catch (final Exception e) {
-                // LOG.error("Error sending inverter data!", e);
-                // }
+                try {
+                    result = executorService.submit(() -> inverter.process());
+                    result.get();
+                } catch (final Exception e) {
+                    LOG.error("Error sending inverter data!", e);
+                }
             }
         } catch (final Throwable e) {
             LOG.error("Failed to perform initial reading of BMS values!", e);

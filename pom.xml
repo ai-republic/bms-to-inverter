@@ -15,14 +15,14 @@
 	
 	<modules>
 		<module>core-api</module>
-		<module>protocol-rs485-jssc</module>
-		<module>protocol-rs485-jserialcomm</module>
-		<module>protocol-can-javacan</module>
+		<module>protocol-rs485</module>
+		<module>protocol-can</module>
 		<module>bms-daly-common</module>
 		<module>bms-daly-rs485</module>
 		<module>bms-daly-can</module>
 		<module>inverter-sma-can</module>
 		<module>bms-to-inverter-main</module>
+		<module>service-mqtt</module>
 	</modules>
 
 	<build>
