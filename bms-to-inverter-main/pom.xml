@@ -46,45 +46,23 @@
 
 		<dependency>
 			<groupId>com.ai-republic</groupId>
-			<artifactId>bms-to-inverter-core</artifactId>
+			<artifactId>core-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<!--		choose BMS 		-->
 		<dependency>
 			<groupId>com.ai-republic</groupId>
-			<artifactId>bms-to-inverter-daly-can</artifactId>
+			<artifactId>bms-daly-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
-		<!--	choose BMS protocol implementation		-->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic</groupId>-->
-<!--			<artifactId>bms-to-inverter-rs485-jssc</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
-		<dependency>
-			<groupId>com.ai-republic</groupId>
-			<artifactId>bms-to-inverter-rs485-jserialcomm</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
 
 		<!--		choose inverter			-->
 		<dependency>
 			<groupId>com.ai-republic</groupId>
-			<artifactId>bms-to-inverter-sma</artifactId>
+			<artifactId>inverter-sma-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
-
-		<!--	choose inverter protocol implementation		-->
-		<dependency>
-			<groupId>com.ai-republic</groupId>
-			<artifactId>bms-to-inverter-can-javacan</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
 
 	</dependencies>
 </project>
