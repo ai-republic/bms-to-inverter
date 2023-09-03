@@ -14,8 +14,7 @@ import com.airepublic.bmstoinverter.core.Bms;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.PortProcessor;
 import com.airepublic.bmstoinverter.core.Portname;
-import com.airepublic.bmstoinverter.core.bms.data.Alarm;
-import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
+import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.protocol.can.CAN;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 import com.airepublic.bmstoinverter.core.service.IMQTTProducerService;
@@ -31,9 +30,7 @@ public class DalyBmsCANProcessor extends PortProcessor {
     @Portname("daly.can.portname")
     private CANPort port;
     @Inject
-    private BatteryPack[] batteryPack;
-    @Inject
-    private Alarm[] alarms;
+    private EnergyStorage energyStorage;
     private DalyMessageHandler messageHandler;
     private final Predicate<byte[]> frameValidator = bytes -> true;
     private final ByteBuffer sendFrame = ByteBuffer.allocateDirect(16);
@@ -69,8 +66,8 @@ public class DalyBmsCANProcessor extends PortProcessor {
         if (!port.isOpen()) {
             // open CAN port on Daly BMSes/interfaceboards(WNT)
             try {
-                messageHandler = new DalyMessageHandler(batteryPack, alarms);
-                LOG.info("Opening " + port.getPortname() + ", number of battery packs = " + batteryPack.length + " ...");
+                messageHandler = new DalyMessageHandler(energyStorage);
+                LOG.info("Opening " + port.getPortname() + ", number of battery packs = " + energyStorage.getBatteryPackCount() + " ...");
                 port.open();
                 LOG.info("Opening CAN port SUCCESSFUL");
 
@@ -85,7 +82,7 @@ public class DalyBmsCANProcessor extends PortProcessor {
                 // port.sendExtendedFrame(prepareFrameBuffer(1, 0x90));
                 // LOG.info("RECEIVED: {}", Port.printBuffer(port.receiveFrame(frameValidator)));
 
-                for (int bmsAddress = 1; bmsAddress <= batteryPack.length; bmsAddress++) {
+                for (int bmsAddress = 1; bmsAddress <= energyStorage.getBatteryPackCount(); bmsAddress++) {
                     sendMessage(bmsAddress, DalyCommand.VOUT_IOUT_SOC); // 0x90
                     sendMessage(bmsAddress, DalyCommand.MIN_MAX_CELL_VOLTAGE); // 0x91
                     sendMessage(bmsAddress, DalyCommand.MIN_MAX_TEMPERATURE); // 0x92
@@ -98,10 +95,8 @@ public class DalyBmsCANProcessor extends PortProcessor {
                 }
 
                 if (mqttProducer != null) {
-                    // TODO send proper data
-                    final ByteBuffer mqttMessage = ByteBuffer.allocate(50);
-                    mqttMessage.asCharBuffer().put("Sending bms data to mqtt");
-                    mqttProducer.sendMessage(mqttMessage);
+                    // send energystorage data to MQTT broker
+                    mqttProducer.sendMessage(ByteBuffer.wrap(energyStorage.toJson().getBytes()));
                 }
             } catch (final Throwable e) {
                 LOG.error("Error requesting data!", e);
@@ -144,7 +139,7 @@ public class DalyBmsCANProcessor extends PortProcessor {
 
     int getResponseFrameCount(final int cmdId) {
         if (cmdId == 0x95) {
-            return Math.round(batteryPack[0].numberOfCells / 3f + 0.5f);
+            return Math.round(energyStorage.getBatteryPack(0).numberOfCells / 3f + 0.5f);
         }
 
         return 1;

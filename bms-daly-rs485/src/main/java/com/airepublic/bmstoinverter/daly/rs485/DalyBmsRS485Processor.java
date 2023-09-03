@@ -12,8 +12,7 @@ import com.airepublic.bmstoinverter.core.Bms;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.PortProcessor;
 import com.airepublic.bmstoinverter.core.Portname;
-import com.airepublic.bmstoinverter.core.bms.data.Alarm;
-import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
+import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.protocol.rs485.RS485;
 import com.airepublic.bmstoinverter.core.protocol.rs485.RS485Port;
 import com.airepublic.bmstoinverter.daly.can.DalyCommand;
@@ -30,9 +29,7 @@ public class DalyBmsRS485Processor extends PortProcessor {
     @Portname("daly.rs485.portname")
     private RS485Port port;
     @Inject
-    private BatteryPack[] batteryPack;
-    @Inject
-    private Alarm[] alarms;
+    private EnergyStorage energyStorage;
     private DalyMessageHandler messageHandler;
     private final Predicate<byte[]> checksumValidator = bytes -> {
         int checksum = 0;
@@ -48,8 +45,8 @@ public class DalyBmsRS485Processor extends PortProcessor {
         if (!port.isOpen()) {
             // open RS485 port on Daly BMSes/interfaceboards(WNT)
             try {
-                LOG.info("Opening " + port.getPortname() + ", number of battery packs = " + batteryPack.length + " ...");
-                messageHandler = new DalyMessageHandler(batteryPack, alarms);
+                LOG.info("Opening " + port.getPortname() + ", number of battery packs = " + energyStorage.getBatteryPackCount() + " ...");
+                messageHandler = new DalyMessageHandler(energyStorage);
                 port.open();
                 LOG.info("Opening RS485 port SUCCESSFUL");
 
@@ -60,7 +57,7 @@ public class DalyBmsRS485Processor extends PortProcessor {
 
         if (port.isOpen()) {
             try {
-                for (int i = 0; i < batteryPack.length; i++) {
+                for (int i = 0; i < energyStorage.getBatteryPackCount(); i++) {
                     sendMessage(0x40 + i, DalyCommand.VOUT_IOUT_SOC); // 0x90
                     sendMessage(0x40 + i, DalyCommand.MIN_MAX_CELL_VOLTAGE); // 0x91
                     sendMessage(0x40 + i, DalyCommand.MIN_MAX_TEMPERATURE); // 0x92
@@ -115,7 +112,7 @@ public class DalyBmsRS485Processor extends PortProcessor {
 
     int getResponseFrameCount(final int cmdId) {
         if (cmdId == 0x95) {
-            return Math.round((batteryPack[0].numberOfCells + 0.5f) % 3f);
+            return Math.round((energyStorage.getBatteryPack(0).numberOfCells + 0.5f) % 3f);
         }
 
         return 1;

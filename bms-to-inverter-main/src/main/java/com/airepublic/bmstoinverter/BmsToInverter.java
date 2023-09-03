@@ -15,6 +15,7 @@ import com.airepublic.bmstoinverter.core.Bms;
 import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.PortProcessor;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
+import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.service.IMQTTBrokerService;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -26,7 +27,7 @@ import jakarta.inject.Inject;
 public class BmsToInverter implements AutoCloseable {
     private final static Logger LOG = LoggerFactory.getLogger(BmsToInverter.class);
     @Inject
-    private BatteryPack[] batteryPacks;
+    private EnergyStorage energyStorage;
     @Inject
     @Bms
     private PortProcessor bms;
@@ -110,7 +111,7 @@ public class BmsToInverter implements AutoCloseable {
         // header
         log.append("\nBMS\tSOC\t  V  \t  A  \t CellMinV \t CellMaxV\tCellDiff\n");
 
-        for (final BatteryPack b : batteryPacks) {
+        for (final BatteryPack b : energyStorage.getBatteryPacks()) {
             log.append(b.packNumber + 1
                     + "\t " + b.packSOC / 10f
                     + "\t" + b.packVoltage / 10f
