@@ -104,10 +104,15 @@
 
 		<dependency>
 			<groupId>com.ai-republic</groupId>
-			<artifactId>service-mqtt</artifactId>
+			<artifactId>service-mqtt-broker</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.ai-republic</groupId>
+			<artifactId>service-mqtt-client</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 	</dependencies>
 </project>

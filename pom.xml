@@ -22,7 +22,8 @@
 		<module>bms-daly-can</module>
 		<module>inverter-sma-can</module>
 		<module>bms-to-inverter-main</module>
-		<module>service-mqtt</module>
+		<module>service-mqtt-broker</module>
+		<module>service-mqtt-client</module>
 	</modules>
 
 	<build>

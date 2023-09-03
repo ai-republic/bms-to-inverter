@@ -3,6 +3,8 @@ package com.airepublic.bmstoinverter.daly.can;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HexFormat;
+import java.util.Optional;
+import java.util.ServiceLoader;
 import java.util.function.Predicate;
 
 import org.slf4j.Logger;
@@ -16,7 +18,9 @@ import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.protocol.can.CAN;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
+import com.airepublic.bmstoinverter.core.service.IMQTTProducerService;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 
 @Bms
@@ -33,6 +37,32 @@ public class DalyBmsCANProcessor extends PortProcessor {
     private DalyMessageHandler messageHandler;
     private final Predicate<byte[]> frameValidator = bytes -> true;
     private final ByteBuffer sendFrame = ByteBuffer.allocateDirect(16);
+    private IMQTTProducerService mqttProducer;
+
+    @Override
+    @PostConstruct
+    public void init() {
+        super.init();
+
+        if (mqttProducer == null) {
+            final ServiceLoader<IMQTTProducerService> serviceLoader = ServiceLoader.load(IMQTTProducerService.class);
+            final Optional<IMQTTProducerService> optional = serviceLoader.findFirst();
+
+            if (optional.isPresent()) {
+                mqttProducer = optional.get();
+                final String locator = System.getProperty("mqtt.locator");
+                final String topic = System.getProperty("mqtt.topic");
+
+                try {
+                    mqttProducer.connect(locator, topic);
+                } catch (final Exception e) {
+                    LOG.error("Could not connect MQTT producer client at {} on topic {}", locator, topic, e);
+                }
+            }
+
+        }
+    }
+
 
     @Override
     public void process() {
@@ -65,6 +95,13 @@ public class DalyBmsCANProcessor extends PortProcessor {
                     sendMessage(bmsAddress, DalyCommand.CELL_TEMPERATURE); // 0x96
                     sendMessage(bmsAddress, DalyCommand.CELL_BALANCE_STATE); // 0x97
                     sendMessage(bmsAddress, DalyCommand.FAILURE_CODES); // 0x98
+                }
+
+                if (mqttProducer != null) {
+                    // TODO send proper data
+                    final ByteBuffer mqttMessage = ByteBuffer.allocate(50);
+                    mqttMessage.asCharBuffer().put("Sending bms data to mqtt");
+                    mqttProducer.sendMessage(mqttMessage);
                 }
             } catch (final Throwable e) {
                 LOG.error("Error requesting data!", e);

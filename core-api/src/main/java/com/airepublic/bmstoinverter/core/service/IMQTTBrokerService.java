@@ -1,7 +1,7 @@
 package com.airepublic.bmstoinverter.core.service;
 
-public interface IMQTTService extends AutoCloseable {
-    void start(String topic, int port);
+public interface IMQTTBrokerService extends AutoCloseable {
+    void start(String locator);
 
 
     boolean isRunning();
