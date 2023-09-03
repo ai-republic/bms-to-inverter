@@ -14,8 +14,8 @@ import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.PortProcessor;
 import com.airepublic.bmstoinverter.core.Portname;
-import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
+import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.protocol.can.CAN;
 
 import jakarta.inject.Inject;
@@ -28,9 +28,7 @@ public class SmaCANProcessor extends PortProcessor {
     @Portname("sma.can.portname")
     private Port canPort;
     @Inject
-    private BatteryPack[] batteryPack;
-    @Inject
-    private Alarm[] alarms;
+    private EnergyStorage energyStorage;
     private final Map<Integer, ByteBuffer> canData = new HashMap<>();
 
     public SmaCANProcessor() {
@@ -72,7 +70,7 @@ public class SmaCANProcessor extends PortProcessor {
         data.dcDischargeCurrentLimit = 1000; // 100A
         data.dischargeVoltageLimit = 480; // 48V
 
-        Optional<BatteryPack> opt = Stream.of(batteryPack).filter(b -> b.packSOC != 0).min((o1, o2) -> ((Integer) o1.packSOC).compareTo(o2.packSOC));
+        Optional<BatteryPack> opt = Stream.of(energyStorage.getBatteryPacks()).filter(b -> b.packSOC != 0).min((o1, o2) -> ((Integer) o1.packSOC).compareTo(o2.packSOC));
         if (opt.isPresent()) {
             data.soc = (char) (opt.get().packSOC / 10); // 100%
         } else {
@@ -81,7 +79,7 @@ public class SmaCANProcessor extends PortProcessor {
 
         data.soh = 100; // 100%
 
-        opt = Stream.of(batteryPack).filter(b -> b.packVoltage != 0).min((o1, o2) -> ((Integer) o1.packVoltage).compareTo(o2.packVoltage));
+        opt = Stream.of(energyStorage.getBatteryPacks()).filter(b -> b.packVoltage != 0).min((o1, o2) -> ((Integer) o1.packVoltage).compareTo(o2.packVoltage));
 
         if (opt.isPresent()) {
             data.batteryVoltage = (short) (opt.get().packVoltage * 10);
@@ -89,7 +87,7 @@ public class SmaCANProcessor extends PortProcessor {
             data.batteryVoltage = 5200;
         }
 
-        data.batteryCurrent = (short) Stream.of(batteryPack).mapToInt(b -> b.packCurrent).sum();
+        data.batteryCurrent = (short) Stream.of(energyStorage.getBatteryPacks()).mapToInt(b -> b.packCurrent).sum();
         data.batteryTemperature = 350; // 35degC
 
         LOG.info("Sending SMA frame: Batt(V)={}, Batt(A)={}, SOC={}", data.batteryVoltage / 100f, data.batteryCurrent / 10f, (int) data.soc);

@@ -76,10 +76,16 @@ public class BatteryPack {
     /** boolean is cell balance active */
     public boolean cellBalanceActive;
 
-    /** debug data string */
+    // data from 0x98
+    /** alarm states */
+    public Alarm alarms = new Alarm();
+    /**
+     * /** debug data string
+     */
     public String aDebug;
 
     public BatteryPack(final int packNumber) {
         this.packNumber = packNumber;
     }
+
 }
