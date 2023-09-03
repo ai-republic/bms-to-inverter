@@ -15,26 +15,24 @@ import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.airepublic.bmstoinverter.core.service.IMQTTService;
+import com.airepublic.bmstoinverter.core.service.IMQTTBrokerService;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.se.SeContainer;
-import jakarta.enterprise.inject.se.SeContainerInitializer;
 
 @ApplicationScoped
-public class MQTTService implements IMQTTService {
-    private final static Logger LOG = LoggerFactory.getLogger(MQTTService.class);
+public class MQTTBrokerService implements IMQTTBrokerService {
+    private final static Logger LOG = LoggerFactory.getLogger(MQTTBrokerService.class);
     private EmbeddedActiveMQ embedded = null;
     private boolean running = false;
 
     @Override
-    public void start(final String topic, final int port) {
+    public void start(final String locator) {
         try {
             final Configuration config = new ConfigurationImpl();
             config.setSecurityEnabled(false);
             config.setPersistenceEnabled(false);
 
-            config.addAcceptorConfiguration("tcp", "tcp://127.0.0.1:" + port);
+            config.addAcceptorConfiguration("tcp", locator);
 
             embedded = new EmbeddedActiveMQ();
             embedded.setConfiguration(config);
@@ -42,7 +40,7 @@ public class MQTTService implements IMQTTService {
 
             running = true;
         } catch (final Exception e) {
-            LOG.error("Error starting MQTT service!", e);
+            LOG.error("Error starting MQTT service on {}!", locator, e);
             try {
                 close();
             } catch (final Exception e1) {
@@ -77,14 +75,11 @@ public class MQTTService implements IMQTTService {
 
 
     public static void main(final String[] args) {
-        final SeContainerInitializer initializer = SeContainerInitializer.newInstance();
-        final SeContainer container = initializer.initialize();
-        final MQTTService mqtt = container.select(MQTTService.class).get();
 
-        // final MQTTService mqtt = new MQTTService();
+        final MQTTBrokerService mqtt = new MQTTBrokerService();
         try {
 
-            mqtt.start("example", 61616);
+            mqtt.start("tcp://127.0.0.1:61616");
 
             final ServerLocator serverLocator = ActiveMQClient.createServerLocator("tcp://127.0.0.1:61616");
             final ClientSessionFactory factory = serverLocator.createSessionFactory();
