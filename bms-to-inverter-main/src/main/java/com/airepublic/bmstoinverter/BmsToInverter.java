@@ -1,7 +1,9 @@
 package com.airepublic.bmstoinverter;
 
 import java.io.IOException;
+import java.util.Optional;
 import java.util.Properties;
+import java.util.ServiceLoader;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -13,12 +15,15 @@ import com.airepublic.bmstoinverter.core.Bms;
 import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.PortProcessor;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
+import com.airepublic.bmstoinverter.core.service.IMQTTService;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.se.SeContainer;
 import jakarta.enterprise.inject.se.SeContainerInitializer;
 import jakarta.inject.Inject;
 
-public class BmsToInverter {
+@ApplicationScoped
+public class BmsToInverter implements AutoCloseable {
     private final static Logger LOG = LoggerFactory.getLogger(BmsToInverter.class);
     @Inject
     private BatteryPack[] batteryPacks;
@@ -28,6 +33,7 @@ public class BmsToInverter {
     @Inject
     @Inverter
     private PortProcessor inverter;
+    private IMQTTService mqttBroker;
 
     public static void main(final String[] args) throws IOException {
         // update all non-specified system parameters from "pi.properties"
@@ -41,8 +47,19 @@ public class BmsToInverter {
 
 
     public void start() {
+
+        // check for MQTT broker service module
+        final ServiceLoader<IMQTTService> serviceLoader = ServiceLoader.load(IMQTTService.class);
+        final Optional<IMQTTService> optional = serviceLoader.findFirst();
+
+        if (optional.isPresent()) {
+            final IMQTTService mqttBroker = optional.get();
+            mqttBroker.start("daly-bms-data", 1111);
+        }
+
         final ExecutorService executorService = Executors.newFixedThreadPool(2);
         try {
+
             Future<?> result = executorService.submit(() -> bms.process());
             result.get();
 
@@ -61,16 +78,24 @@ public class BmsToInverter {
                 }
 
                 // send data to inverter
-                try {
-                    result = executorService.submit(() -> inverter.process());
-                    result.get();
-                } catch (final Exception e) {
-                    LOG.error("Error sending inverter data!", e);
-                }
+                // try {
+                // result = executorService.submit(() -> inverter.process());
+                // result.get();
+                // } catch (final Exception e) {
+                // LOG.error("Error sending inverter data!", e);
+                // }
             }
         } catch (final Throwable e) {
             LOG.error("Failed to perform initial reading of BMS values!", e);
             executorService.shutdownNow();
+        }
+    }
+
+
+    @Override
+    public void close() throws Exception {
+        if (mqttBroker != null) {
+            mqttBroker.close();
         }
     }
 

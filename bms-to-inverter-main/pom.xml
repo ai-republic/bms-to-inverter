@@ -16,33 +16,70 @@
 	<build>
 		<plugins>
 			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
-				<version>3.1.1</version>
+				<artifactId>maven-jar-plugin</artifactId>
 				<configuration>
-					<descriptorRefs>
-						<descriptorRef>jar-with-dependencies</descriptorRef>
-					</descriptorRefs>
 					<archive>
 						<manifest>
-							<mainClass>com.airepublic.bmstoinverter.BmsToInverter</mainClass>
+							<addClasspath>true</addClasspath>
+							<classpathPrefix>lib/</classpathPrefix>
+							<mainClass>
+								com.airepublic.bmstoinverter.BmsToInverter</mainClass>
 						</manifest>
 					</archive>
 				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<version>3.6.0</version>
 				<executions>
 					<execution>
-						<id>make-assembly</id> <!-- this is used for inheritance
-					merges -->
-						<phase>package</phase> <!-- bind to the packaging phase -->
+						<id>copy-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.directory}/lib</outputDirectory>
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>false</overWriteSnapshots>
+							<overWriteIfNewer>true</overWriteIfNewer>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>create-distribution</id>
+						<phase>package</phase>
 						<goals>
 							<goal>single</goal>
 						</goals>
+						<configuration>
+							<descriptors>
+								<descriptor>assembly/zip.xml</descriptor>
+							</descriptors>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
 		</plugins>
 	</build>
 
+
 	<dependencies>
+		<dependency>
+			<groupId>org.jboss.weld.se</groupId>
+			<artifactId>weld-se-shaded</artifactId>
+			<version>5.1.1.Final</version>
+		</dependency>
+
 
 		<dependency>
 			<groupId>com.ai-republic</groupId>
@@ -63,6 +100,14 @@
 			<artifactId>inverter-sma-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
+
+		<dependency>
+			<groupId>com.ai-republic</groupId>
+			<artifactId>service-mqtt</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 
 	</dependencies>
 </project>
