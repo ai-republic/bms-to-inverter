@@ -15,7 +15,7 @@ import com.airepublic.bmstoinverter.core.Bms;
 import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.PortProcessor;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
-import com.airepublic.bmstoinverter.core.service.IMQTTService;
+import com.airepublic.bmstoinverter.core.service.IMQTTBrokerService;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.se.SeContainer;
@@ -33,7 +33,7 @@ public class BmsToInverter implements AutoCloseable {
     @Inject
     @Inverter
     private PortProcessor inverter;
-    private IMQTTService mqttBroker;
+    private IMQTTBrokerService mqttBroker;
 
     public static void main(final String[] args) throws IOException {
         // update all non-specified system parameters from "pi.properties"
@@ -46,18 +46,23 @@ public class BmsToInverter implements AutoCloseable {
     }
 
 
-    public void start() {
-
+    public BmsToInverter() {
         // check for MQTT broker service module
-        final ServiceLoader<IMQTTService> serviceLoader = ServiceLoader.load(IMQTTService.class);
-        final Optional<IMQTTService> optional = serviceLoader.findFirst();
+        final ServiceLoader<IMQTTBrokerService> serviceLoader = ServiceLoader.load(IMQTTBrokerService.class);
+        final Optional<IMQTTBrokerService> optional = serviceLoader.findFirst();
 
         if (optional.isPresent()) {
-            final IMQTTService mqttBroker = optional.get();
-            mqttBroker.start("daly-bms-data", 1111);
-        }
+            final String locator = System.getProperty("mqtt.locator");
 
+            final IMQTTBrokerService mqttBroker = optional.get();
+            mqttBroker.start(locator);
+        }
+    }
+
+
+    public void start() {
         final ExecutorService executorService = Executors.newFixedThreadPool(2);
+
         try {
 
             Future<?> result = executorService.submit(() -> bms.process());
