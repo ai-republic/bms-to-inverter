@@ -96,7 +96,7 @@ public class DalyBmsCANProcessor extends PortProcessor {
 
                 if (mqttProducer != null) {
                     // send energystorage data to MQTT broker
-                    mqttProducer.sendMessage(ByteBuffer.wrap(energyStorage.toJson().getBytes()));
+                    mqttProducer.sendMessage(energyStorage.toJson());
                 }
             } catch (final Throwable e) {
                 LOG.error("Error requesting data!", e);

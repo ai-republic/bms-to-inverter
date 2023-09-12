@@ -1,7 +1,6 @@
 package com.airepublic.bmstoinverter.core.service;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
 public interface IMQTTConsumerService extends AutoCloseable {
     IMQTTConsumerService create(String locator, String topic) throws Exception;
@@ -10,7 +9,7 @@ public interface IMQTTConsumerService extends AutoCloseable {
     boolean isRunning();
 
 
-    ByteBuffer consume() throws IOException;
+    String consume(long timeoutMs) throws IOException;
 
 
     void stop();

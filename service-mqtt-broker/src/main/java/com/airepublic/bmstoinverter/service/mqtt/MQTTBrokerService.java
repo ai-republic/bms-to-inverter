@@ -3,7 +3,6 @@ package com.airepublic.bmstoinverter.service.mqtt;
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.QueueConfiguration;
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
-import org.apache.activemq.artemis.api.core.client.ClientConsumer;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.ClientProducer;
 import org.apache.activemq.artemis.api.core.client.ClientSession;
@@ -24,10 +23,17 @@ public class MQTTBrokerService implements IMQTTBrokerService {
     private final static Logger LOG = LoggerFactory.getLogger(MQTTBrokerService.class);
     private EmbeddedActiveMQ embedded = null;
     private boolean running = false;
+    private String locator;
 
     @Override
     public void start(final String locator) {
+        if (isRunning()) {
+            return;
+        }
+
         try {
+            this.locator = locator;
+
             final Configuration config = new ConfigurationImpl();
             config.setSecurityEnabled(false);
             config.setPersistenceEnabled(false);
@@ -45,6 +51,20 @@ public class MQTTBrokerService implements IMQTTBrokerService {
                 close();
             } catch (final Exception e1) {
             }
+        }
+    }
+
+
+    @Override
+    public void createTopic(final String topic, final long ringSize) {
+        try (final ServerLocator serverLocator = ActiveMQClient.createServerLocator(locator)) {
+            final ClientSessionFactory factory = serverLocator.createSessionFactory();
+            final ClientSession session = factory.createSession();
+
+            session.createQueue(new QueueConfiguration(topic).setRingSize(ringSize));
+            session.close();
+        } catch (final Exception e) {
+            LOG.error("Error creating topic {}", topic);
         }
     }
 
@@ -75,35 +95,37 @@ public class MQTTBrokerService implements IMQTTBrokerService {
 
 
     public static void main(final String[] args) {
-
+        final String locator = "tcp://127.0.0.1:61616";
+        final String topic = "energystorage";
         final MQTTBrokerService mqtt = new MQTTBrokerService();
+
         try {
 
-            mqtt.start("tcp://127.0.0.1:61616");
+            mqtt.start(locator);
 
-            final ServerLocator serverLocator = ActiveMQClient.createServerLocator("tcp://127.0.0.1:61616");
+            final ServerLocator serverLocator = ActiveMQClient.createServerLocator(locator);
             final ClientSessionFactory factory = serverLocator.createSessionFactory();
             final ClientSession session = factory.createSession();
 
-            session.createQueue(new QueueConfiguration("example"));
+            session.createQueue(new QueueConfiguration(topic).setRingSize(1L));
 
-            final ClientProducer producer = session.createProducer("example");
+            final ClientProducer producer = session.createProducer(topic);
             final ClientMessage message = session.createMessage(true);
             message.getBodyBuffer().writeString("Hello");
             producer.send(message);
 
             session.start();
-            final ClientConsumer consumer = session.createConsumer("example");
-            final ClientMessage msgReceived = consumer.receive();
-            System.out.println("message = " + msgReceived.getBodyBuffer().readString());
-            session.close();
+            // final ClientConsumer consumer = session.createConsumer("example");
+            // final ClientMessage msgReceived = consumer.receive();
+            // System.out.println("message = " + msgReceived.getBodyBuffer().readString());
+            // session.close();
         } catch (final ActiveMQException e) {
             e.printStackTrace();
         } catch (final Exception e) {
             e.printStackTrace();
         } finally {
             try {
-                mqtt.close();
+                // mqtt.close();
             } catch (final Exception e) {
             }
         }

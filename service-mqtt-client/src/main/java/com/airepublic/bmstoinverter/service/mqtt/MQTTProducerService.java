@@ -1,9 +1,8 @@
 package com.airepublic.bmstoinverter.service.mqtt;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 
-import org.apache.activemq.artemis.api.core.QueueConfiguration;
+import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.ClientProducer;
@@ -31,8 +30,6 @@ public class MQTTProducerService implements IMQTTProducerService {
             final ServerLocator serverLocator = ActiveMQClient.createServerLocator(locator);
             final ClientSessionFactory factory = serverLocator.createSessionFactory();
             session = factory.createSession();
-            session.createQueue(new QueueConfiguration(topic));
-
             producer = session.createProducer(topic);
             session.start();
 
@@ -57,11 +54,10 @@ public class MQTTProducerService implements IMQTTProducerService {
 
 
     @Override
-    public void sendMessage(final ByteBuffer content) throws IOException {
+    public void sendMessage(final String content) throws IOException {
         try {
-            content.rewind();
             final ClientMessage message = session.createMessage(true);
-            message.getBodyBuffer().writeBytes(content);
+            message.getBodyBuffer().writeString(content);
             producer.send(message);
         } catch (final Exception e) {
             throw new IOException("Could not send MQTT message on topic " + topic, e);
@@ -83,6 +79,38 @@ public class MQTTProducerService implements IMQTTProducerService {
     @Override
     public void close() throws Exception {
         stop();
+    }
+
+
+    public static void main(final String[] args) {
+
+        try {
+
+            final ServerLocator serverLocator = ActiveMQClient.createServerLocator("tcp://127.0.0.1:61616");
+            final ClientSessionFactory factory = serverLocator.createSessionFactory();
+            final ClientSession session = factory.createSession();
+
+            final ClientProducer producer = session.createProducer("energystorage");
+            final ClientMessage message = session.createMessage(true);
+            message.getBodyBuffer().writeString("Hello from producer");
+            producer.send(message);
+
+            session.start();
+            // final ClientConsumer consumer = session.createConsumer("example");
+            // final ClientMessage msgReceived = consumer.receive();
+            // System.out.println("message = " + msgReceived.getBodyBuffer().readString());
+            // session.close();
+        } catch (final ActiveMQException e) {
+            e.printStackTrace();
+        } catch (final Exception e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                // mqtt.close();
+            } catch (final Exception e) {
+            }
+        }
+
     }
 
 }

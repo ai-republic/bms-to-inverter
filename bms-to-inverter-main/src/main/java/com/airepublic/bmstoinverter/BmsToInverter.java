@@ -54,9 +54,11 @@ public class BmsToInverter implements AutoCloseable {
 
         if (optional.isPresent()) {
             final String locator = System.getProperty("mqtt.locator");
+            final String topic = System.getProperty("mqtt.topic");
 
             final IMQTTBrokerService mqttBroker = optional.get();
             mqttBroker.start(locator);
+            mqttBroker.createTopic(topic, 1L);
         }
     }
 
@@ -79,9 +81,7 @@ public class BmsToInverter implements AutoCloseable {
                     LOG.error("Error receiving BMS data!", e);
                 }
 
-                synchronized (System.out) {
-                    LOG.info(createBatteryOverview());
-                }
+                LOG.info(createBatteryOverview());
 
                 // send data to inverter
                 // try {
