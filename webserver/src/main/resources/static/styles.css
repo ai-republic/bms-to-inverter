@@ -1,0 +1,94 @@
+
+body {
+  	margin: 15px;
+	display: flex;
+}
+
+#mainPanel {
+	margin:auto;
+	height: 800px;
+}
+
+#menuPanel {
+	float: left;
+	width: 200px;
+	height: 100%;
+	border-radius: 10px;
+	padding: 5px;
+	background-color: rgb(192, 192, 192);
+}
+
+.bmsMenu{
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 14pt;
+	margin: 5px;
+	padding: 5px;
+	border-radius: 10px;
+	text-align: center;
+	background-color: rgb(148, 148, 148);
+	cursor: pointer;
+}
+
+#viewPanel {
+	float: left;
+	height: 100%;
+	width: auto;
+	padding: 5px;
+	margin-left: 10px;
+	border-radius: 10px;
+	background-color: rgb(170, 170, 170);
+}
+
+.table {
+	padding-top: 20px;	
+}
+
+.tableHeader {
+	border-top: 20px;
+	background-color: rgb(192, 192, 192);
+}
+
+.tableHeaderCell {
+	padding: 5px;	
+	text-align: center;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 14pt;
+	font-weight: bold;
+}
+
+.bmsDataFieldName {
+	width: 150px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12pt;
+	margin: 5px;
+	padding: 5px;
+	border-radius: 10px;
+	text-align: left;
+}
+
+.bmsDataFieldValue {
+	width: 120px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 14pt;
+	border-spacing: 20px;
+	border-radius: 10px;
+	text-align: right;
+	background-color: rgb(210, 210, 210);
+}
+
+#cellPanel {
+	float: left;
+}
+
+#alarmPanel {
+	display: flex;
+}
+
+.alarmField {
+	padding-left: 20px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 14pt;
+	font-weight: bold;
+	border-radius: 10px;
+	background-color: rgb(255, 119, 119);
+}

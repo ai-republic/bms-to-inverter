@@ -3,7 +3,7 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>com.ai-republic</groupId>
+	<groupId>com.ai-republic.bms-to-inverter</groupId>
 	<artifactId>bms-to-inverter-parent</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
@@ -24,6 +24,7 @@
 		<module>bms-to-inverter-main</module>
 		<module>service-mqtt-broker</module>
 		<module>service-mqtt-client</module>
+		<module>webserver</module>
 	</modules>
 
 	<build>
