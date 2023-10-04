@@ -1,28 +1,3 @@
-<!-- <%@page import="java.util.Properties"%> -->
-
-<!-- <% -->
-    
-<!--         try { -->
-<!--             Properties bundle = new Properties(); -->
-<!--             bundle.load(Thread.currentThread().getContextClassLoader().getResourceAsStream("/config.properties")); -->
-
-<!--             for (final Object name : bundle.keySet()) { -->
-<!--                 final String key = name.toString(); -->
-<!--                 if (System.getProperty(key) == null) { -->
-<!--                     System.setProperty(key, bundle.getProperty(key)); -->
-<!--                 } -->
-
-<!--             } -->
-<!--         } catch (final Exception e) { -->
-<!--             e.printStackTrace(); -->
-<!--         } -->
-    
-<!-- 	    String url = System.getProperty("mqtt.locator"); -->
-<!-- 	    String broker = url.substring(0, url.lastIndexOf(':')); -->
-<!-- 	    int port = Integer.parseInt(url.substring(url.lastIndexOf(':') + 1)); -->
-<!-- 	    String topic = System.getProperty("mqtt.topic"); -->
-	    
-<!-- %> -->
 <!DOCTYPE html>
 <html>
 <head>
@@ -41,17 +16,20 @@
 	var selectedBMS = null;
 	var selectedBMSNo = 0;
 	var bmsData = JSON.parse('{"batteryPacks":[{"packNumber":0,"packVoltage":532,"packCurrent":0,"packSOC":992,"maxCellmV":3343,"maxCellVNum":4,"minCellmV":3323,"minCellVNum":10,"cellDiff":20,"tempMax":35,"tempMin":35,"tempAverage":35,"chargeDischargeStatus":"Stationary","chargeMOSState":true,"disChargeMOSState":true,"bmsHeartBeat":114,"remainingCapacitymAh":89280,"numberOfCells":16,"numOfTempSensors":2,"chargeState":false,"loadState":false,"dIO":[false,false,false,false,false,false,false,false],"bmsCycles":33,"cellVmV":[3323,3331,3330,3341,3336,3331,3332,3329,3335,3322,3332,3333,3332,3326,3330,3328,3326,3330,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"cellTemperature":[35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"cellBalanceState":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"cellBalanceActive":false,"alarms":{"levelOneCellVoltageTooHigh":false,"levelTwoCellVoltageTooHigh":false,"levelOneCellVoltageTooLow":false,"levelTwoCellVoltageTooLow":false,"levelOnePackVoltageTooHigh":false,"levelTwoPackVoltageTooHigh":false,"levelOnePackVoltageTooLow":false,"levelTwoPackVoltageTooLow":false,"levelOneChargeTempTooHigh":false,"levelTwoChargeTempTooHigh":false,"levelOneChargeTempTooLow":false,"levelTwoChargeTempTooLow":false,"levelOneDischargeTempTooHigh":false,"levelTwoDischargeTempTooHigh":false,"levelOneDischargeTempTooLow":false,"levelTwoDischargeTempTooLow":false,"levelOneChargeCurrentTooHigh":false,"levelTwoChargeCurrentTooHigh":false,"levelOneDischargeCurrentTooHigh":false,"levelTwoDischargeCurrentTooHigh":false,"levelOneStateOfChargeTooHigh":false,"levelTwoStateOfChargeTooHigh":false,"levelOneStateOfChargeTooLow":false,"levelTwoStateOfChargeTooLow":false,"levelOneCellVoltageDifferenceTooHigh":false,"levelTwoCellVoltageDifferenceTooHigh":false,"levelOneTempSensorDifferenceTooHigh":false,"levelTwoTempSensorDifferenceTooHigh":false,"chargeFETTemperatureTooHigh":false,"dischargeFETTemperatureTooHigh":false,"failureOfChargeFETTemperatureSensor":false,"failureOfDischargeFETTemperatureSensor":false,"failureOfChargeFETAdhesion":false,"failureOfDischargeFETAdhesion":false,"failureOfChargeFETTBreaker":false,"failureOfDischargeFETBreaker":false,"failureOfAFEAcquisitionModule":false,"failureOfVoltageSensorModule":false,"failureOfTemperatureSensorModule":false,"failureOfEEPROMStorageModule":false,"failureOfRealtimeClockModule":false,"failureOfPrechargeModule":false,"failureOfVehicleCommunicationModule":false,"failureOfIntranetCommunicationModule":false,"failureOfCurrentSensorModule":false,"failureOfMainVoltageSensorModule":false,"failureOfShortCircuitProtection":false,"failureOfLowVoltageNoCharging":false}},{"packNumber":1,"packVoltage":531,"packCurrent":0,"packSOC":993,"maxCellmV":3334,"maxCellVNum":14,"minCellmV":3190,"minCellVNum":1,"cellDiff":144,"tempMax":35,"tempMin":35,"tempAverage":35,"chargeDischargeStatus":"Stationary","chargeMOSState":true,"disChargeMOSState":true,"bmsHeartBeat":3,"remainingCapacitymAh":89370,"numberOfCells":16,"numOfTempSensors":2,"chargeState":false,"loadState":false,"dIO":[false,false,false,false,false,false,false,false],"bmsCycles":35,"cellVmV":[3188,3334,3331,3332,3334,3331,3335,3333,3332,3334,3331,3334,3334,3333,3330,3332,3333,3330,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"cellTemperature":[35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"cellBalanceState":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"cellBalanceActive":false,"alarms":{"levelOneCellVoltageTooHigh":false,"levelTwoCellVoltageTooHigh":false,"levelOneCellVoltageTooLow":false,"levelTwoCellVoltageTooLow":false,"levelOnePackVoltageTooHigh":false,"levelTwoPackVoltageTooHigh":false,"levelOnePackVoltageTooLow":false,"levelTwoPackVoltageTooLow":false,"levelOneChargeTempTooHigh":false,"levelTwoChargeTempTooHigh":false,"levelOneChargeTempTooLow":false,"levelTwoChargeTempTooLow":false,"levelOneDischargeTempTooHigh":false,"levelTwoDischargeTempTooHigh":false,"levelOneDischargeTempTooLow":false,"levelTwoDischargeTempTooLow":false,"levelOneChargeCurrentTooHigh":false,"levelTwoChargeCurrentTooHigh":false,"levelOneDischargeCurrentTooHigh":false,"levelTwoDischargeCurrentTooHigh":false,"levelOneStateOfChargeTooHigh":false,"levelTwoStateOfChargeTooHigh":false,"levelOneStateOfChargeTooLow":false,"levelTwoStateOfChargeTooLow":false,"levelOneCellVoltageDifferenceTooHigh":false,"levelTwoCellVoltageDifferenceTooHigh":false,"levelOneTempSensorDifferenceTooHigh":false,"levelTwoTempSensorDifferenceTooHigh":false,"chargeFETTemperatureTooHigh":false,"dischargeFETTemperatureTooHigh":false,"failureOfChargeFETTemperatureSensor":false,"failureOfDischargeFETTemperatureSensor":false,"failureOfChargeFETAdhesion":false,"failureOfDischargeFETAdhesion":false,"failureOfChargeFETTBreaker":false,"failureOfDischargeFETBreaker":false,"failureOfAFEAcquisitionModule":false,"failureOfVoltageSensorModule":false,"failureOfTemperatureSensorModule":false,"failureOfEEPROMStorageModule":false,"failureOfRealtimeClockModule":false,"failureOfPrechargeModule":false,"failureOfVehicleCommunicationModule":false,"failureOfIntranetCommunicationModule":false,"failureOfCurrentSensorModule":false,"failureOfMainVoltageSensorModule":false,"failureOfShortCircuitProtection":false,"failureOfLowVoltageNoCharging":false}},{"packNumber":2,"packVoltage":532,"packCurrent":0,"packSOC":993,"maxCellmV":3336,"maxCellVNum":8,"minCellmV":3312,"minCellVNum":11,"cellDiff":24,"tempMax":37,"tempMin":35,"tempAverage":36,"chargeDischargeStatus":"Stationary","chargeMOSState":true,"disChargeMOSState":true,"bmsHeartBeat":119,"remainingCapacitymAh":89370,"numberOfCells":16,"numOfTempSensors":2,"chargeState":false,"loadState":false,"dIO":[false,false,false,false,false,false,false,false],"bmsCycles":32,"cellVmV":[3334,3334,3322,3331,3336,3331,3332,3335,3334,3334,3312,3333,3333,3334,3332,3322,3334,3332,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"cellTemperature":[37,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"cellBalanceState":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"cellBalanceActive":false,"alarms":{"levelOneCellVoltageTooHigh":false,"levelTwoCellVoltageTooHigh":false,"levelOneCellVoltageTooLow":false,"levelTwoCellVoltageTooLow":false,"levelOnePackVoltageTooHigh":false,"levelTwoPackVoltageTooHigh":false,"levelOnePackVoltageTooLow":false,"levelTwoPackVoltageTooLow":false,"levelOneChargeTempTooHigh":false,"levelTwoChargeTempTooHigh":false,"levelOneChargeTempTooLow":false,"levelTwoChargeTempTooLow":false,"levelOneDischargeTempTooHigh":false,"levelTwoDischargeTempTooHigh":false,"levelOneDischargeTempTooLow":false,"levelTwoDischargeTempTooLow":false,"levelOneChargeCurrentTooHigh":false,"levelTwoChargeCurrentTooHigh":false,"levelOneDischargeCurrentTooHigh":false,"levelTwoDischargeCurrentTooHigh":false,"levelOneStateOfChargeTooHigh":false,"levelTwoStateOfChargeTooHigh":false,"levelOneStateOfChargeTooLow":false,"levelTwoStateOfChargeTooLow":false,"levelOneCellVoltageDifferenceTooHigh":false,"levelTwoCellVoltageDifferenceTooHigh":false,"levelOneTempSensorDifferenceTooHigh":false,"levelTwoTempSensorDifferenceTooHigh":false,"chargeFETTemperatureTooHigh":false,"dischargeFETTemperatureTooHigh":false,"failureOfChargeFETTemperatureSensor":false,"failureOfDischargeFETTemperatureSensor":false,"failureOfChargeFETAdhesion":false,"failureOfDischargeFETAdhesion":false,"failureOfChargeFETTBreaker":false,"failureOfDischargeFETBreaker":false,"failureOfAFEAcquisitionModule":false,"failureOfVoltageSensorModule":false,"failureOfTemperatureSensorModule":false,"failureOfEEPROMStorageModule":false,"failureOfRealtimeClockModule":false,"failureOfPrechargeModule":false,"failureOfVehicleCommunicationModule":false,"failureOfIntranetCommunicationModule":false,"failureOfCurrentSensorModule":false,"failureOfMainVoltageSensorModule":false,"failureOfShortCircuitProtection":false,"failureOfLowVoltageNoCharging":false}},{"packNumber":3,"packVoltage":532,"packCurrent":0,"packSOC":993,"maxCellmV":3336,"maxCellVNum":13,"minCellmV":3303,"minCellVNum":14,"cellDiff":33,"tempMax":33,"tempMin":33,"tempAverage":33,"chargeDischargeStatus":"Stationary","chargeMOSState":true,"disChargeMOSState":true,"bmsHeartBeat":4,"remainingCapacitymAh":89370,"numberOfCells":16,"numOfTempSensors":2,"chargeState":false,"loadState":false,"dIO":[false,false,false,false,false,false,false,false],"bmsCycles":32,"cellVmV":[3333,3332,3335,3333,3318,3336,3333,3336,3332,3335,3334,3335,3336,3303,3335,3332,3303,3335,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"cellTemperature":[33,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"cellBalanceState":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"cellBalanceActive":false,"alarms":{"levelOneCellVoltageTooHigh":false,"levelTwoCellVoltageTooHigh":false,"levelOneCellVoltageTooLow":false,"levelTwoCellVoltageTooLow":false,"levelOnePackVoltageTooHigh":false,"levelTwoPackVoltageTooHigh":false,"levelOnePackVoltageTooLow":false,"levelTwoPackVoltageTooLow":false,"levelOneChargeTempTooHigh":false,"levelTwoChargeTempTooHigh":false,"levelOneChargeTempTooLow":false,"levelTwoChargeTempTooLow":false,"levelOneDischargeTempTooHigh":false,"levelTwoDischargeTempTooHigh":false,"levelOneDischargeTempTooLow":false,"levelTwoDischargeTempTooLow":false,"levelOneChargeCurrentTooHigh":false,"levelTwoChargeCurrentTooHigh":false,"levelOneDischargeCurrentTooHigh":false,"levelTwoDischargeCurrentTooHigh":false,"levelOneStateOfChargeTooHigh":false,"levelTwoStateOfChargeTooHigh":false,"levelOneStateOfChargeTooLow":false,"levelTwoStateOfChargeTooLow":false,"levelOneCellVoltageDifferenceTooHigh":false,"levelTwoCellVoltageDifferenceTooHigh":false,"levelOneTempSensorDifferenceTooHigh":false,"levelTwoTempSensorDifferenceTooHigh":false,"chargeFETTemperatureTooHigh":false,"dischargeFETTemperatureTooHigh":false,"failureOfChargeFETTemperatureSensor":false,"failureOfDischargeFETTemperatureSensor":false,"failureOfChargeFETAdhesion":false,"failureOfDischargeFETAdhesion":false,"failureOfChargeFETTBreaker":false,"failureOfDischargeFETBreaker":false,"failureOfAFEAcquisitionModule":false,"failureOfVoltageSensorModule":false,"failureOfTemperatureSensorModule":false,"failureOfEEPROMStorageModule":false,"failureOfRealtimeClockModule":false,"failureOfPrechargeModule":false,"failureOfVehicleCommunicationModule":false,"failureOfIntranetCommunicationModule":false,"failureOfCurrentSensorModule":false,"failureOfMainVoltageSensorModule":false,"failureOfShortCircuitProtection":false,"failureOfLowVoltageNoCharging":false}},{"packNumber":4,"packVoltage":533,"packCurrent":0,"packSOC":986,"maxCellmV":3344,"maxCellVNum":5,"minCellmV":3317,"minCellVNum":10,"cellDiff":27,"tempMax":35,"tempMin":35,"tempAverage":35,"chargeDischargeStatus":"Stationary","chargeMOSState":true,"disChargeMOSState":true,"bmsHeartBeat":113,"remainingCapacitymAh":32219,"numberOfCells":16,"numOfTempSensors":2,"chargeState":false,"loadState":false,"dIO":[false,false,false,false,false,false,false,false],"bmsCycles":94,"cellVmV":[3329,3334,3342,3344,3345,3332,3334,3332,3330,3318,3330,3334,3318,3333,3333,3325,3333,3333,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"cellTemperature":[35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"cellBalanceState":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"cellBalanceActive":false,"alarms":{"levelOneCellVoltageTooHigh":false,"levelTwoCellVoltageTooHigh":false,"levelOneCellVoltageTooLow":false,"levelTwoCellVoltageTooLow":false,"levelOnePackVoltageTooHigh":false,"levelTwoPackVoltageTooHigh":false,"levelOnePackVoltageTooLow":false,"levelTwoPackVoltageTooLow":false,"levelOneChargeTempTooHigh":false,"levelTwoChargeTempTooHigh":false,"levelOneChargeTempTooLow":false,"levelTwoChargeTempTooLow":false,"levelOneDischargeTempTooHigh":false,"levelTwoDischargeTempTooHigh":false,"levelOneDischargeTempTooLow":false,"levelTwoDischargeTempTooLow":false,"levelOneChargeCurrentTooHigh":false,"levelTwoChargeCurrentTooHigh":false,"levelOneDischargeCurrentTooHigh":false,"levelTwoDischargeCurrentTooHigh":false,"levelOneStateOfChargeTooHigh":false,"levelTwoStateOfChargeTooHigh":false,"levelOneStateOfChargeTooLow":false,"levelTwoStateOfChargeTooLow":false,"levelOneCellVoltageDifferenceTooHigh":false,"levelTwoCellVoltageDifferenceTooHigh":false,"levelOneTempSensorDifferenceTooHigh":false,"levelTwoTempSensorDifferenceTooHigh":false,"chargeFETTemperatureTooHigh":false,"dischargeFETTemperatureTooHigh":false,"failureOfChargeFETTemperatureSensor":false,"failureOfDischargeFETTemperatureSensor":false,"failureOfChargeFETAdhesion":false,"failureOfDischargeFETAdhesion":false,"failureOfChargeFETTBreaker":false,"failureOfDischargeFETBreaker":false,"failureOfAFEAcquisitionModule":false,"failureOfVoltageSensorModule":false,"failureOfTemperatureSensorModule":false,"failureOfEEPROMStorageModule":false,"failureOfRealtimeClockModule":false,"failureOfPrechargeModule":false,"failureOfVehicleCommunicationModule":false,"failureOfIntranetCommunicationModule":false,"failureOfCurrentSensorModule":false,"failureOfMainVoltageSensorModule":false,"failureOfShortCircuitProtection":false,"failureOfLowVoltageNoCharging":false}},{"packNumber":5,"packVoltage":532,"packCurrent":0,"packSOC":995,"maxCellmV":3336,"maxCellVNum":1,"minCellmV":3305,"minCellVNum":7,"cellDiff":31,"tempMax":35,"tempMin":35,"tempAverage":35,"chargeDischargeStatus":"Stationary","chargeMOSState":true,"disChargeMOSState":true,"bmsHeartBeat":243,"remainingCapacitymAh":89550,"numberOfCells":16,"numOfTempSensors":2,"chargeState":false,"loadState":false,"dIO":[false,false,false,false,false,false,false,false],"bmsCycles":23,"cellVmV":[3336,3335,3335,3335,3333,3333,3305,3334,3329,3335,3329,3332,3333,3333,3330,3319,3333,3330,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"cellTemperature":[35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"cellBalanceState":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"cellBalanceActive":false,"alarms":{"levelOneCellVoltageTooHigh":false,"levelTwoCellVoltageTooHigh":false,"levelOneCellVoltageTooLow":false,"levelTwoCellVoltageTooLow":false,"levelOnePackVoltageTooHigh":false,"levelTwoPackVoltageTooHigh":false,"levelOnePackVoltageTooLow":false,"levelTwoPackVoltageTooLow":false,"levelOneChargeTempTooHigh":false,"levelTwoChargeTempTooHigh":false,"levelOneChargeTempTooLow":false,"levelTwoChargeTempTooLow":false,"levelOneDischargeTempTooHigh":false,"levelTwoDischargeTempTooHigh":false,"levelOneDischargeTempTooLow":false,"levelTwoDischargeTempTooLow":false,"levelOneChargeCurrentTooHigh":false,"levelTwoChargeCurrentTooHigh":false,"levelOneDischargeCurrentTooHigh":false,"levelTwoDischargeCurrentTooHigh":false,"levelOneStateOfChargeTooHigh":false,"levelTwoStateOfChargeTooHigh":false,"levelOneStateOfChargeTooLow":false,"levelTwoStateOfChargeTooLow":false,"levelOneCellVoltageDifferenceTooHigh":false,"levelTwoCellVoltageDifferenceTooHigh":false,"levelOneTempSensorDifferenceTooHigh":false,"levelTwoTempSensorDifferenceTooHigh":false,"chargeFETTemperatureTooHigh":false,"dischargeFETTemperatureTooHigh":false,"failureOfChargeFETTemperatureSensor":false,"failureOfDischargeFETTemperatureSensor":false,"failureOfChargeFETAdhesion":false,"failureOfDischargeFETAdhesion":false,"failureOfChargeFETTBreaker":false,"failureOfDischargeFETBreaker":false,"failureOfAFEAcquisitionModule":false,"failureOfVoltageSensorModule":false,"failureOfTemperatureSensorModule":false,"failureOfEEPROMStorageModule":false,"failureOfRealtimeClockModule":false,"failureOfPrechargeModule":false,"failureOfVehicleCommunicationModule":false,"failureOfIntranetCommunicationModule":false,"failureOfCurrentSensorModule":false,"failureOfMainVoltageSensorModule":false,"failureOfShortCircuitProtection":false,"failureOfLowVoltageNoCharging":false}},{"packNumber":6,"packVoltage":533,"packCurrent":0,"packSOC":997,"maxCellmV":3352,"maxCellVNum":5,"minCellmV":3309,"minCellVNum":16,"cellDiff":43,"tempMax":35,"tempMin":35,"tempAverage":35,"chargeDischargeStatus":"Stationary","chargeMOSState":true,"disChargeMOSState":true,"bmsHeartBeat":114,"remainingCapacitymAh":89730,"numberOfCells":16,"numOfTempSensors":2,"chargeState":false,"loadState":false,"dIO":[false,false,false,false,false,false,false,false],"bmsCycles":25,"cellVmV":[3352,3347,3320,3316,3351,3345,3318,3324,3346,3344,3317,3324,3345,3352,3326,3309,3352,3326,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"cellTemperature":[35,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"cellBalanceState":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"cellBalanceActive":false,"alarms":{"levelOneCellVoltageTooHigh":false,"levelTwoCellVoltageTooHigh":false,"levelOneCellVoltageTooLow":false,"levelTwoCellVoltageTooLow":false,"levelOnePackVoltageTooHigh":false,"levelTwoPackVoltageTooHigh":false,"levelOnePackVoltageTooLow":false,"levelTwoPackVoltageTooLow":false,"levelOneChargeTempTooHigh":false,"levelTwoChargeTempTooHigh":false,"levelOneChargeTempTooLow":false,"levelTwoChargeTempTooLow":false,"levelOneDischargeTempTooHigh":false,"levelTwoDischargeTempTooHigh":false,"levelOneDischargeTempTooLow":false,"levelTwoDischargeTempTooLow":false,"levelOneChargeCurrentTooHigh":false,"levelTwoChargeCurrentTooHigh":false,"levelOneDischargeCurrentTooHigh":false,"levelTwoDischargeCurrentTooHigh":false,"levelOneStateOfChargeTooHigh":false,"levelTwoStateOfChargeTooHigh":false,"levelOneStateOfChargeTooLow":false,"levelTwoStateOfChargeTooLow":false,"levelOneCellVoltageDifferenceTooHigh":false,"levelTwoCellVoltageDifferenceTooHigh":false,"levelOneTempSensorDifferenceTooHigh":false,"levelTwoTempSensorDifferenceTooHigh":false,"chargeFETTemperatureTooHigh":false,"dischargeFETTemperatureTooHigh":false,"failureOfChargeFETTemperatureSensor":false,"failureOfDischargeFETTemperatureSensor":false,"failureOfChargeFETAdhesion":false,"failureOfDischargeFETAdhesion":false,"failureOfChargeFETTBreaker":false,"failureOfDischargeFETBreaker":false,"failureOfAFEAcquisitionModule":false,"failureOfVoltageSensorModule":false,"failureOfTemperatureSensorModule":false,"failureOfEEPROMStorageModule":false,"failureOfRealtimeClockModule":false,"failureOfPrechargeModule":false,"failureOfVehicleCommunicationModule":false,"failureOfIntranetCommunicationModule":false,"failureOfCurrentSensorModule":false,"failureOfMainVoltageSensorModule":false,"failureOfShortCircuitProtection":false,"failureOfLowVoltageNoCharging":false}},{"packNumber":7,"packVoltage":533,"packCurrent":0,"packSOC":998,"maxCellmV":3346,"maxCellVNum":6,"minCellmV":3313,"minCellVNum":14,"cellDiff":33,"tempMax":37,"tempMin":37,"tempAverage":37,"chargeDischargeStatus":"Stationary","chargeMOSState":true,"disChargeMOSState":true,"bmsHeartBeat":114,"remainingCapacitymAh":89820,"numberOfCells":16,"numOfTempSensors":2,"chargeState":false,"loadState":false,"dIO":[false,false,false,false,false,false,false,false],"bmsCycles":21,"cellVmV":[3317,3321,3342,3344,3344,3346,3345,3344,3325,3345,3345,3323,3320,3313,3321,3317,3313,3321,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"cellTemperature":[37,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],"cellBalanceState":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],"cellBalanceActive":false,"alarms":{"levelOneCellVoltageTooHigh":false,"levelTwoCellVoltageTooHigh":false,"levelOneCellVoltageTooLow":false,"levelTwoCellVoltageTooLow":false,"levelOnePackVoltageTooHigh":false,"levelTwoPackVoltageTooHigh":false,"levelOnePackVoltageTooLow":false,"levelTwoPackVoltageTooLow":false,"levelOneChargeTempTooHigh":false,"levelTwoChargeTempTooHigh":false,"levelOneChargeTempTooLow":false,"levelTwoChargeTempTooLow":false,"levelOneDischargeTempTooHigh":false,"levelTwoDischargeTempTooHigh":false,"levelOneDischargeTempTooLow":false,"levelTwoDischargeTempTooLow":false,"levelOneChargeCurrentTooHigh":false,"levelTwoChargeCurrentTooHigh":false,"levelOneDischargeCurrentTooHigh":false,"levelTwoDischargeCurrentTooHigh":false,"levelOneStateOfChargeTooHigh":false,"levelTwoStateOfChargeTooHigh":false,"levelOneStateOfChargeTooLow":false,"levelTwoStateOfChargeTooLow":false,"levelOneCellVoltageDifferenceTooHigh":false,"levelTwoCellVoltageDifferenceTooHigh":false,"levelOneTempSensorDifferenceTooHigh":false,"levelTwoTempSensorDifferenceTooHigh":false,"chargeFETTemperatureTooHigh":false,"dischargeFETTemperatureTooHigh":false,"failureOfChargeFETTemperatureSensor":false,"failureOfDischargeFETTemperatureSensor":false,"failureOfChargeFETAdhesion":false,"failureOfDischargeFETAdhesion":false,"failureOfChargeFETTBreaker":false,"failureOfDischargeFETBreaker":false,"failureOfAFEAcquisitionModule":false,"failureOfVoltageSensorModule":false,"failureOfTemperatureSensorModule":false,"failureOfEEPROMStorageModule":false,"failureOfRealtimeClockModule":false,"failureOfPrechargeModule":false,"failureOfVehicleCommunicationModule":false,"failureOfIntranetCommunicationModule":false,"failureOfCurrentSensorModule":false,"failureOfMainVoltageSensorModule":true,"failureOfShortCircuitProtection":true,"failureOfLowVoltageNoCharging":true}}]}');
+	var alarmMessages;
 	
 	function init() {
 		var menu = document.getElementById('menuPanel');
 		
 		requestData();
 		
+		menu.innerHTML = '<div id="bms0" class="bmsMenu" onclick="selectBMS(this)">Overview</div>';
+		
 		for (var i = 0; i < bmsData.batteryPacks.length; i++) {
 			menu.innerHTML += '<div id="bms' + (i + 1) +'" class="bmsMenu" onclick="selectBMS(this)">BMS #' + (i + 1) + '</div>';
 		}
 		
-		selectBMS(document.getElementById('bms1'));
+		selectBMS(document.getElementById('bms0'));
 		window.setInterval(requestData, 500);
 	}
 	
@@ -62,17 +40,101 @@
 	}
 	
 	function requestData() {
-		
-	    const url = 'http://' + window.location.host + '/data';
+		// bms data
+	    var url = 'http://' + window.location.host + '/data';
 	    console.log('Connecting rest api: ' + url);
 	    
 		fetchAsync(url)
 		.then(data => {
 			bmsData = data;
-			updateView(selectedBMSNo);
+			refreshView();
 
 		})
     	.catch(reason => console.log(reason.message));
+		
+		// alarm messages
+	    url = 'http://' + window.location.host + '/alarmMessages';
+	    console.log('Connecting rest api: ' + url);
+	    
+		fetchAsync(url)
+		.then(data => {
+			alarmMessages = data;
+			refreshView();
+
+		})
+    	.catch(reason => console.log(reason.message));
+
+	}
+	
+	function updateOverview(element) {
+		
+		// extract overview data
+		var averageSOC = 0;
+		var totalCurrent = 0;
+		var chargeState = 'Charge';
+		
+		for (var i = 0; i < bmsData.batteryPacks.length; i++) {
+			var pack = bmsData.batteryPacks[i];
+			
+			totalCurrent += pack.packCurrent;
+			averageSOC += pack.packSOC;
+			
+			if (pack.chargeDischargeStatus === 'Discharge') {
+				chargeState = 'Discharge';
+			}
+		}
+		
+		averageSOC = averageSOC / bmsData.batteryPacks.length;
+		
+		
+		
+		
+		var alarms = new Array();
+		var content= '<table>' +
+		'<tr>' +
+		'<td class="overviewDataFieldName" style="text-align:right">Avg-SOC</td><td class="overviewDataFieldValue">' + (averageSOC / 10).toFixed(1) + ' %</td>' +
+		'<td class="overviewDataFieldName" style="text-align:right">Current</td><td class="overviewDataFieldValue">' + (totalCurrent / 10).toFixed(1) + ' A</td>' +
+		'<td class="overviewDataFieldName" style="text-align:right">Charge-State</td><td class="overviewDataFieldValue">' + chargeState + '</td>' +
+		'</tr>' +
+		'</table><br/>';
+		
+		content += '<table>' +
+				'<tr>' +
+					'<td class="overviewDataFieldName" style="text-align: center; width:50px">BMS</td>' +
+					'<td class="overviewDataFieldName" style="text-align: center">SOC</td>' +
+					'<td class="overviewDataFieldName" style="text-align: center">Voltage</td>' +
+					'<td class="overviewDataFieldName" style="text-align: center">Current</td>' +
+					'<td class="overviewDataFieldName" style="text-align: center">MinCellV</td>' +
+					'<td class="overviewDataFieldName" style="text-align: center">MaxCellV</td>' +
+					'<td class="overviewDataFieldName" style="text-align: center">CellDiff</td>' +
+				'</tr>';
+				
+			for (var i = 0; i < bmsData.batteryPacks.length; i++) {		
+				var pack = bmsData.batteryPacks[i];
+				content += '<tr>' +
+					'<td class="overviewDataFieldValue" style="text-align: center; width:50px">' + (i + 1) + '</td>' +
+					'<td class="overviewDataFieldValue">' + (pack.packSOC / 10).toFixed(1) + ' %</td>' +
+					'<td class="overviewDataFieldValue">' + (pack.packVoltage / 10).toFixed(1) + ' V</td>' +
+					'<td class="overviewDataFieldValue">' + (pack.packCurrent / 10).toFixed(1) + ' A</td>' +
+					'<td class="overviewDataFieldValue">' + (pack.minCellmV / 1000).toFixed(3) + ' V (#' + pack.minCellVNum + ')</td>' +
+					'<td class="overviewDataFieldValue">' + (pack.maxCellmV / 1000).toFixed(3) + ' V (#' + pack.maxCellVNum + ')</td>' +
+					'<td class="overviewDataFieldValue">' + ((pack.maxCellmV - pack.minCellmV) / 1000).toFixed(3) + ' V</td>' +
+				'</tr>';
+				
+				var packAlarms = getAlarmState(i);
+				
+				// add bms no to alarms
+				for (var x = 0; x < packAlarms.length; x++) {
+					packAlarms[x] = 'BMS #' + (i + 1) + ' - ' + packAlarms[x];
+					
+				}
+				
+				alarms = alarms.concat(packAlarms);
+			}
+		content += '</table>';
+		
+		document.getElementById("overviewPanel").innerHTML = content;
+		updateAlarms(alarms);
 	}
 	
 	function selectBMS(element) {
@@ -86,23 +148,44 @@
 			selectedBMS = element;
 		}
 		
-		selectedBMSNo = selectedBMS.id.substring(3) - 1; 
-		
-		updateView(selectedBMSNo);
+		selectedBMSNo = selectedBMS.id.substring(3) - 1;
 	}
 	
-	function updateView(bmsNo) {
+	function refreshView() {
+		document.getElementById("overviewPanel").innerHTML = '';
+		document.getElementById("bmsPanel").innerHTML = '';
+		document.getElementById("cellPanel").innerHTML = '';
+		document.getElementById("alarmPanel").innerHTML = '';
+
+		if (selectedBMSNo == -1) {
+			updateOverview();
+		} else {
+			updateBMS();
+		}
+	}
+	
+	function updateBMS() {
+		var bmsNo = selectedBMSNo;
 		console.log(bmsNo);
-		//overview
-		document.getElementById('packVoltageValue').innerHTML = (bmsData.batteryPacks[bmsNo].packVoltage / 10).toFixed(1) + ' V';
-		document.getElementById('packCurrentValue').innerHTML = (bmsData.batteryPacks[bmsNo].packCurrent / 10).toFixed(1) + ' A';
-		document.getElementById('packSOCValue').innerHTML = (bmsData.batteryPacks[bmsNo].packSOC / 10).toFixed(1) + ' %';
-		document.getElementById('minCellVoltageValue').innerHTML = (bmsData.batteryPacks[bmsNo].minCellmV / 1000).toFixed(3) + ' V (#' + bmsData.batteryPacks[bmsNo].minCellVNum + ')';
-		document.getElementById('maxCellVoltageValue').innerHTML = (bmsData.batteryPacks[bmsNo].maxCellmV / 1000).toFixed(3) + ' V (#' + bmsData.batteryPacks[bmsNo].maxCellVNum + ')';
-		document.getElementById('cellDiffValue').innerHTML = (bmsData.batteryPacks[bmsNo].cellDiff / 1000).toFixed(3) + ' V';
-		document.getElementById('chargeDischargeStatusValue').innerHTML = bmsData.batteryPacks[bmsNo].chargeDischargeStatus + '';
-		document.getElementById('chargeMOSStateValue').innerHTML = bmsData.batteryPacks[bmsNo].chargeMOSState ? 'ON' : 'OFF';
-		document.getElementById('disChargeMOSStateValue').innerHTML = bmsData.batteryPacks[bmsNo].disChargeMOSState ? 'ON' : 'OFF';
+		//bms panel
+		document.getElementById('bmsPanel').innerHTML = 
+		'<table>' +
+				'<tr>' +
+					'<td class="bmsDataFieldName">Pack-Voltage</td><td id="packVoltageValue" class="bmsDataFieldValue">' + (bmsData.batteryPacks[bmsNo].packVoltage / 10).toFixed(1) + ' V</td>' +
+					'<td class="bmsDataFieldName">Pack-Current</td><td id="packCurrentValue" class="bmsDataFieldValue">' + (bmsData.batteryPacks[bmsNo].packCurrent / 10).toFixed(1) + ' A</td>' +
+					'<td class="bmsDataFieldName">Pack-SOC</td><td id="packSOCValue" class="bmsDataFieldValue">' + (bmsData.batteryPacks[bmsNo].packSOC / 10).toFixed(1) + ' %</td>' +
+				'</tr>' +
+				'<tr>' +
+					'<td class="bmsDataFieldName">Min. Cell Voltage</td><td id="minCellVoltageValue" class="bmsDataFieldValue">' + (bmsData.batteryPacks[bmsNo].minCellmV / 1000).toFixed(3) + ' V (#' + bmsData.batteryPacks[bmsNo].minCellVNum + ')</td>' +
+					'<td class="bmsDataFieldName">Max. Cell Voltage</td><td id="maxCellVoltageValue" class="bmsDataFieldValue">' + (bmsData.batteryPacks[bmsNo].maxCellmV / 1000).toFixed(3) + ' V (#' + bmsData.batteryPacks[bmsNo].maxCellVNum + ')</td>' +
+					'<td class="bmsDataFieldName">Cell Diff.</td><td id="cellDiffValue" class="bmsDataFieldValue">' + (bmsData.batteryPacks[bmsNo].cellDiff / 1000).toFixed(3) + ' V</td>' +
+				'</tr>' +
+				'<tr>' +
+					'<td class="bmsDataFieldName">Dis-/Charge Status</td><td id="chargeDischargeStatusValue" class="bmsDataFieldValue">' + bmsData.batteryPacks[bmsNo].chargeDischargeStatus + '</td>' +
+					'<td class="bmsDataFieldName">Charge MOS</td><td id="chargeMOSStateValue" class="bmsDataFieldValue">' + (bmsData.batteryPacks[bmsNo].chargeMOSState ? 'ON' : 'OFF') + '</td>' +
+					'<td class="bmsDataFieldName">Discharge MOS</td><td id="disChargeMOSStateValue" class="bmsDataFieldValue">' + (bmsData.batteryPacks[bmsNo].disChargeMOSState ? 'ON' : 'OFF') + '</td>' +
+				'</tr>' +
+				'</table>';
 		
 		//the cell voltages and status
 		var cellPanel = document.getElementById('cellPanel');
@@ -117,9 +200,13 @@
 		cellTable += "</table>"
 		cellPanel.innerHTML = cellTable;
 		
+		var alarms = getAlarmState(bmsNo);
+		updateAlarms(alarms);
+	}
+	
+	function updateAlarms(alarms) {
 		//alarms
 		var alarmsPanel = document.getElementById('alarmPanel');
-		var alarms = getAlarmState(bmsNo);
 		var alarmsTable = '<table class="table" style="width:100%"><thead class="tableHeader"><td class="tableHeaderCell">Alarms</td></thead>';
 		
 		for (var i = 0; i < alarms.length; i++) {
@@ -135,206 +222,12 @@
 		var alarms = new Array();
 		var idx = 0;
 		
-		//Cell Voltage
-		if (bmsData.batteryPacks[bmsNo].alarms.levelOneCellVoltageTooHigh) {
-			alarms[idx++] = 'L1 Cell Voltage High';
-		}
-		
-		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoCellVoltageTooHigh) {
-			alarms[idx++] = 'L2 Cell Voltage High';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.levelOneCellVoltageTooLow) {
-			alarms[idx++] = 'L1 Cell Voltage Low';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoCellVoltageTooLow) {
-			alarms[idx++] = 'L2 Cell Voltage Low';
-		}
-
-		//Pack Voltage
-		if (bmsData.batteryPacks[bmsNo].alarms.levelOnePackVoltageTooHigh) {
-			alarms[idx++] = 'L1 Pack Voltage High';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoPackVoltageTooHigh) {
-			alarms[idx++] = 'L2 Pack Voltage High';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.levelOnePackVoltageTooLow) {
-			alarms[idx++] = 'L1 Pack Voltage Low';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoPackVoltageTooLow) {
-			alarms[idx++] = 'L2 Pack Voltage Low';
-		}
-
-		//Dis-/Charge Temperature
-		if (bmsData.batteryPacks[bmsNo].alarms.levelOneChargeTempTooHigh) {
-			alarms[idx++] = 'L1 Charge Temperature High';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoChargeTempTooHigh) {
-			alarms[idx++] = 'L2 Charge Temperature High';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.levelOneChargeTempTooLow) {
-			alarms[idx++] = 'L1 Charge Temperature Low';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoChargeTempTooLow) {
-			alarms[idx++] = 'L2 Charge Temperature Low';
-		}
-		
-		if (bmsData.batteryPacks[bmsNo].alarms.levelOneDischargeTempTooHigh) {
-			alarms[idx++] = 'L1 Discharge Temperature High';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoDischargeTempTooHigh) {
-			alarms[idx++] = 'L2 Discharge Temperature High';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.levelOneDischargeTempTooLow) {
-			alarms[idx++] = 'L1 Discharge Temperature Low';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoDischargeTempTooLow) {
-			alarms[idx++] = 'L2 Discharge Temperature Low';
-		}
-		
-		//Charge Current
-		if (bmsData.batteryPacks[bmsNo].alarms.levelOneChargeCurrentTooHigh) {
-			alarms[idx++] = 'L1 Charge Current High';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoChargeCurrentTooHigh) {
-			alarms[idx++] = 'L2 Charge Current High';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.levelOneChargeCurrentTooLow) {
-			alarms[idx++] = 'L1 Charge Current Low';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoChargeCurrentTooLow) {
-			alarms[idx++] = 'L2 Charge Current Low';
-		}
-
-		//SOC
-		if (bmsData.batteryPacks[bmsNo].alarms.levelOneStateOfChargeTooHigh) {
-			alarms[idx++] = 'L1 SOC High';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoStateOfChargeTooHigh) {
-			alarms[idx++] = 'L2 SOC High';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.levelOneStateOfChargeTooLow) {
-			alarms[idx++] = 'L1 SOC Low';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoStateOfChargeTooLow) {
-			alarms[idx++] = 'L2 SOC Low';
-		}
-		
-		//Cell Difference
-		if (bmsData.batteryPacks[bmsNo].alarms.levelOneCellVoltageDifferenceTooHigh) {
-			alarms[idx++] = 'L1 Cell V Diff High';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoCellVoltageDifferenceTooHigh) {
-			alarms[idx++] = 'L2 Cell V Diff High';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.levelOneTempSensorDifferenceTooHigh) {
-			alarms[idx++] = 'L1 Temperature Diff High';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoTempSensorDifferenceTooHigh) {
-			alarms[idx++] = 'L2 Temperature Diff High';
-		}
-
-		//Dis-/Charge FET
-		if (bmsData.batteryPacks[bmsNo].alarms.chargeFETTemperatureTooHigh) {
-			alarms[idx++] = 'Charge FET Temp High';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.dischargeFETTemperatureTooHigh) {
-			alarms[idx++] = 'Discharge FET Temp High';
-		}
-		
-		
-		//Dis-/Charge FET Failures
-		if (bmsData.batteryPacks[bmsNo].alarms.failureOfChargeFETTemperatureSensor) {
-			alarms[idx++] = 'Fail Charge FET Temp Sensor';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.failureOfDischargeFETTemperatureSensor) {
-			alarms[idx++] = 'Fail Discharge FET Temp Sensor';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.failureOfChargeFETAdhesion) {
-			alarms[idx++] = 'Fail Charge FET Adhesion';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.failureOfDischargeFETAdhesion) {
-			alarms[idx++] = 'Fail Discharge FET Adhesion';
-		}
-		
-		if (bmsData.batteryPacks[bmsNo].alarms.failureOfChargeFETTBreaker) {
-			alarms[idx++] = 'Fail Charge FET Breaker';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.failureOfDischargeFETBreaker) {
-			alarms[idx++] = 'Fail Discharge FET Breaker';
-		}
-		
-		//Diverse Module Failures
-		if (bmsData.batteryPacks[bmsNo].alarms.failureOfAFEAcquisitionModule) {
-			alarms[idx++] = 'Fail AEF Acquision Module';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.failureOfVoltageSensorModule) {
-			alarms[idx++] = 'Fail Voltage Sensor Module';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.failureOfTemperatureSensorModule) {
-			alarms[idx++] = 'Fail Temperature Sensor Module';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.failureOfEEPROMStorageModule) {
-			alarms[idx++] = 'Fail EEPROM Module';
-		}
-		
-		if (bmsData.batteryPacks[bmsNo].alarms.failureOfRealtimeClockModule) {
-			alarms[idx++] = 'Fail Clock Module';
-		}
-
-		if (bmsData.batteryPacks[bmsNo].alarms.failureOfPrechargeModule) {
-			alarms[idx++] = 'Fail Precharge Module';
-		}
-		
-		if (bmsData.batteryPacks[bmsNo].alarms.failureOfVehicleCommunicationModule) {
-			alarms[idx++] = 'Fail Vehicle Comm Module';
-		}
-		
-		if (bmsData.batteryPacks[bmsNo].alarms.failureOfIntranetCommunicationModule) {
-			alarms[idx++] = 'Fail Intranet Comm Module';
-		}
-		
-		if (bmsData.batteryPacks[bmsNo].alarms.failureOfCurrentSensorModule) {
-			alarms[idx++] = 'Fail Current Sensor Module';
-		}
-		
-		if (bmsData.batteryPacks[bmsNo].alarms.failureOfMainVoltageSensorModule) {
-			alarms[idx++] = 'Fail Main Voltage Sensor Module';
-		}
-		
-		if (bmsData.batteryPacks[bmsNo].alarms.failureOfShortCircuitProtection) {
-			alarms[idx++] = 'Fail Short Circuit Protection';
-		}
-		
-		if (bmsData.batteryPacks[bmsNo].alarms.failureOfLowVoltageNoCharging) {
-			alarms[idx++] = 'Fail Low Voltage No Charging';
+		for (const key of Object.keys(bmsData.batteryPacks[bmsNo].alarms)) {
+			const value = bmsData.batteryPacks[bmsNo].alarms[key];
+			
+		    if (value == true) {
+		    	alarms[idx++] = key;
+		    }
 		}
 		
 		return alarms;
@@ -347,25 +240,8 @@
 	<div id="mainPanel" class="mainPanel">
 		<div id="menuPanel" ></div>
 		<div id="viewPanel">
-			<div id="overviewPanel">
-				<table>
-				<tr>
-					<td class="bmsDataFieldName">Pack-Voltage</td><td id="packVoltageValue" class="bmsDataFieldValue"></td>
-					<td class="bmsDataFieldName">Pack-Current</td><td id="packCurrentValue" class="bmsDataFieldValue"></td>
-					<td class="bmsDataFieldName">Pack-SOC</td><td id="packSOCValue" class="bmsDataFieldValue"></td>
-				</tr>
-				<tr>
-					<td class="bmsDataFieldName">Min. Cell Voltage</td><td id="minCellVoltageValue" class="bmsDataFieldValue"></td>
-					<td class="bmsDataFieldName">Max. Cell Voltage</td><td id="maxCellVoltageValue" class="bmsDataFieldValue"></td>
-					<td class="bmsDataFieldName">Cell Diff.</td><td id="cellDiffValue" class="bmsDataFieldValue"></td>
-				</tr>
-				<tr>
-					<td class="bmsDataFieldName">Dis-/Charge Status</td><td id="chargeDischargeStatusValue" class="bmsDataFieldValue"></td>
-					<td class="bmsDataFieldName">Charge MOS</td><td id="chargeMOSStateValue" class="bmsDataFieldValue"></td>
-					<td class="bmsDataFieldName">Discharge MOS</td><td id="disChargeMOSStateValue" class="bmsDataFieldValue"></td>
-				</tr>
-				</table>
-			</div>
+			<div id="overviewPanel"></div>
+			<div id="bmsPanel"></div>
 			<div id="cellPanel"></div>
 			<div id="alarmPanel"></div>
 		</div>

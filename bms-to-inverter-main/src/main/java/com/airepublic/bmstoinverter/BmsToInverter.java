@@ -1,8 +1,8 @@
 package com.airepublic.bmstoinverter;
 
 import java.io.IOException;
-import java.util.Optional;
 import java.util.Properties;
+import java.util.ResourceBundle;
 import java.util.ServiceLoader;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -17,6 +17,8 @@ import com.airepublic.bmstoinverter.core.PortProcessor;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.service.IMQTTBrokerService;
+import com.airepublic.email.api.EmailAccount;
+import com.airepublic.email.api.IEmailService;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.se.SeContainer;
@@ -34,7 +36,9 @@ public class BmsToInverter implements AutoCloseable {
     @Inject
     @Inverter
     private PortProcessor inverter;
-    private IMQTTBrokerService mqttBroker;
+    private final IMQTTBrokerService mqttBroker = ServiceLoader.load(IMQTTBrokerService.class).findFirst().orElse(null);
+    private final IEmailService emailService = ServiceLoader.load(IEmailService.class).findFirst().orElse(null);
+    private final EmailAccount account = emailService != null ? new EmailAccount() : null;
 
     public static void main(final String[] args) throws IOException {
         // update all non-specified system parameters from "pi.properties"
@@ -49,21 +53,34 @@ public class BmsToInverter implements AutoCloseable {
 
     public BmsToInverter() {
         // check for MQTT broker service module
-        final ServiceLoader<IMQTTBrokerService> serviceLoader = ServiceLoader.load(IMQTTBrokerService.class);
-        final Optional<IMQTTBrokerService> optional = serviceLoader.findFirst();
-
-        if (optional.isPresent()) {
+        if (mqttBroker != null) {
             final String locator = System.getProperty("mqtt.locator");
             final String topic = System.getProperty("mqtt.topic");
 
-            final IMQTTBrokerService mqttBroker = optional.get();
             mqttBroker.start(locator);
             mqttBroker.createTopic(topic, 1L);
         }
     }
 
 
+    public void init() {
+        final ResourceBundle alarmMessages = ResourceBundle.getBundle("alarms");
+
+        // initialize alarm maps
+        if (alarmMessages != null) {
+            for (final BatteryPack battery : energyStorage.getBatteryPacks()) {
+                for (final String key : alarmMessages.keySet()) {
+                    battery.alarms.put(key, false);
+                }
+            }
+        }
+
+    }
+
+
     public void start() {
+        init();
+
         final ExecutorService executorService = Executors.newFixedThreadPool(2);
 
         try {
@@ -83,6 +100,8 @@ public class BmsToInverter implements AutoCloseable {
 
                 LOG.info(createBatteryOverview());
 
+                analyseBMSFaults();
+
                 // send data to inverter
                 // try {
                 // result = executorService.submit(() -> inverter.process());
@@ -94,6 +113,13 @@ public class BmsToInverter implements AutoCloseable {
         } catch (final Throwable e) {
             LOG.error("Failed to perform initial reading of BMS values!", e);
             executorService.shutdownNow();
+        }
+    }
+
+
+    private void analyseBMSFaults() {
+        for (final BatteryPack battery : energyStorage.getBatteryPacks()) {
+
         }
     }
 

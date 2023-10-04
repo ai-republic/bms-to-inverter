@@ -114,6 +114,12 @@
 			<artifactId>service-mqtt-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
+		
+		<!-- optionally add Email service -->
+		<dependency>
+			<groupId>com.ai-republic.email</groupId>
+			<artifactId>email-javamail</artifactId>
+			<version>1.0.0</version>
+		</dependency>
 	</dependencies>
 </project>

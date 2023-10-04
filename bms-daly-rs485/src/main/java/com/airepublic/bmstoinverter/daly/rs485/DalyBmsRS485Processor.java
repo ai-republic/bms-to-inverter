@@ -15,9 +15,9 @@ import com.airepublic.bmstoinverter.core.Portname;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.protocol.rs485.RS485;
 import com.airepublic.bmstoinverter.core.protocol.rs485.RS485Port;
-import com.airepublic.bmstoinverter.daly.can.DalyCommand;
-import com.airepublic.bmstoinverter.daly.can.DalyMessage;
-import com.airepublic.bmstoinverter.daly.can.DalyMessageHandler;
+import com.airepublic.bmstoinverter.daly.common.DalyCommand;
+import com.airepublic.bmstoinverter.daly.common.DalyMessage;
+import com.airepublic.bmstoinverter.daly.common.DalyMessageHandler;
 
 import jakarta.inject.Inject;
 

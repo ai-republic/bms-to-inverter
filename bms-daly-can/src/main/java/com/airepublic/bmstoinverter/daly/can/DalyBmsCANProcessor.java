@@ -3,7 +3,6 @@ package com.airepublic.bmstoinverter.daly.can;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.HexFormat;
-import java.util.Optional;
 import java.util.ServiceLoader;
 import java.util.function.Predicate;
 
@@ -18,6 +17,9 @@ import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.protocol.can.CAN;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 import com.airepublic.bmstoinverter.core.service.IMQTTProducerService;
+import com.airepublic.bmstoinverter.daly.common.DalyCommand;
+import com.airepublic.bmstoinverter.daly.common.DalyMessage;
+import com.airepublic.bmstoinverter.daly.common.DalyMessageHandler;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
@@ -34,30 +36,24 @@ public class DalyBmsCANProcessor extends PortProcessor {
     private DalyMessageHandler messageHandler;
     private final Predicate<byte[]> frameValidator = bytes -> true;
     private final ByteBuffer sendFrame = ByteBuffer.allocateDirect(16);
-    private IMQTTProducerService mqttProducer;
+    private final IMQTTProducerService mqttProducer = ServiceLoader.load(IMQTTProducerService.class).findFirst().orElse(null);;
 
     @Override
     @PostConstruct
     public void init() {
         super.init();
 
-        if (mqttProducer == null) {
-            final ServiceLoader<IMQTTProducerService> serviceLoader = ServiceLoader.load(IMQTTProducerService.class);
-            final Optional<IMQTTProducerService> optional = serviceLoader.findFirst();
+        if (mqttProducer != null) {
+            final String locator = System.getProperty("mqtt.locator");
+            final String topic = System.getProperty("mqtt.topic");
 
-            if (optional.isPresent()) {
-                mqttProducer = optional.get();
-                final String locator = System.getProperty("mqtt.locator");
-                final String topic = System.getProperty("mqtt.topic");
-
-                try {
-                    mqttProducer.connect(locator, topic);
-                } catch (final Exception e) {
-                    LOG.error("Could not connect MQTT producer client at {} on topic {}", locator, topic, e);
-                }
+            try {
+                mqttProducer.connect(locator, topic);
+            } catch (final Exception e) {
+                LOG.error("Could not connect MQTT producer client at {} on topic {}", locator, topic, e);
             }
-
         }
+
     }
 
 

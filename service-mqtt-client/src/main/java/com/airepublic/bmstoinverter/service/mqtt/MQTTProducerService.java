@@ -2,7 +2,6 @@ package com.airepublic.bmstoinverter.service.mqtt;
 
 import java.io.IOException;
 
-import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.ClientProducer;
@@ -100,8 +99,6 @@ public class MQTTProducerService implements IMQTTProducerService {
             // final ClientMessage msgReceived = consumer.receive();
             // System.out.println("message = " + msgReceived.getBodyBuffer().readString());
             // session.close();
-        } catch (final ActiveMQException e) {
-            e.printStackTrace();
         } catch (final Exception e) {
             e.printStackTrace();
         } finally {

@@ -1,4 +1,4 @@
-package com.airepublic.bmstoinverter.daly.can;
+package com.airepublic.bmstoinverter.daly.common;
 
 import java.nio.ByteBuffer;
 

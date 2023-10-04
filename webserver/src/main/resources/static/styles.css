@@ -55,6 +55,25 @@ body {
 	font-size: 14pt;
 	font-weight: bold;
 }
+.overviewDataFieldName {
+	width: 120px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 12pt;
+	margin: 5px;
+	padding: 5px;
+	border-radius: 10px;
+	text-align: left;
+}
+
+.overviewDataFieldValue {
+	width: 120px;
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 14pt;
+	border-spacing: 20px;
+	border-radius: 10px;
+	text-align: right;
+	background-color: rgb(210, 210, 210);
+}
 
 .bmsDataFieldName {
 	width: 150px;
