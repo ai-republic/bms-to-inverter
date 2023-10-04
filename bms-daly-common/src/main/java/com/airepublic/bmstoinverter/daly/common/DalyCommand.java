@@ -1,4 +1,4 @@
-package com.airepublic.bmstoinverter.daly.can;
+package com.airepublic.bmstoinverter.daly.common;
 
 public interface DalyCommand {
     int VOUT_IOUT_SOC = 0x90;
