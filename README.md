@@ -1,8 +1,11 @@
 # BMS to Solar Inverter communication
 
 Here's some nice way to read your BMS's data (e.g. Daly BMS as reference) via different protocols and read/write the battery data to the inverter.
-The (reference) project uses a Raspberry Pi 4 with a Waveshare RS485/CAN hat or USB-CAN-B module getting the data from _multiple_ battery packs, aggregating them and sending the data to the SMA Sunny Island inverter.
+The (reference) project uses a Raspberry Pi 4 with a Waveshare RS485/CAN hat or USB-CAN-A module getting the data from _multiple_ battery packs, aggregating them and sending the data to the SMA Sunny Island inverter.
 Any BMS or inverter can be supported in a very short time by just mapping the manufacturers protocol specification in an own implementation of the [`PortProcessor`](https://github.com/ai-republic/bms-to-inverter/blob/main/core-api/src/main/java/com/airepublic/bmstoinverter/core/PortProcessor.java).
+
+This way _you_ control what gets send to the inverter.
+You can monitor each of your battery packs cells and view alarm states on the included webserver or hook up via the MQTT broker on your smart home.
 
 Currently implemented BMS:
 * Daly BMS (RS485 or CAN)
