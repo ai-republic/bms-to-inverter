@@ -14,7 +14,6 @@ import com.airepublic.bmstoinverter.core.PortProcessor;
 import com.airepublic.bmstoinverter.core.Portname;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.protocol.rs485.RS485;
-import com.airepublic.bmstoinverter.core.protocol.rs485.RS485Port;
 import com.airepublic.bmstoinverter.daly.common.DalyCommand;
 import com.airepublic.bmstoinverter.daly.common.DalyMessage;
 import com.airepublic.bmstoinverter.daly.common.DalyMessageHandler;
@@ -26,8 +25,8 @@ public class DalyBmsRS485Processor extends PortProcessor {
     private final static Logger LOG = LoggerFactory.getLogger(DalyBmsRS485Processor.class);
     @Inject
     @RS485
-    @Portname("daly.rs485.portname")
-    private RS485Port port;
+    @Portname("bms.portname")
+    private Port port;
     @Inject
     private EnergyStorage energyStorage;
     private DalyMessageHandler messageHandler;
@@ -48,10 +47,10 @@ public class DalyBmsRS485Processor extends PortProcessor {
                 LOG.info("Opening " + port.getPortname() + ", number of battery packs = " + energyStorage.getBatteryPackCount() + " ...");
                 messageHandler = new DalyMessageHandler(energyStorage);
                 port.open();
-                LOG.info("Opening RS485 port SUCCESSFUL");
+                LOG.debug("Opening port {} SUCCESSFUL", port);
 
             } catch (final IOException e) {
-                LOG.error("Opening port FAILED!", e);
+                LOG.error("Opening port {} FAILED!", port, e);
             }
         }
 

@@ -25,8 +25,8 @@ public class SmaCANProcessor extends PortProcessor {
     private final static Logger LOG = LoggerFactory.getLogger(SmaCANProcessor.class);
     @Inject
     @CAN
-    @Portname("sma.can.portname")
-    private Port canPort;
+    @Portname("inverter.portname")
+    private Port port;
     @Inject
     private EnergyStorage energyStorage;
     private final Map<Integer, ByteBuffer> canData = new HashMap<>();
@@ -37,22 +37,22 @@ public class SmaCANProcessor extends PortProcessor {
 
     @Override
     public void process() {
-        if (!canPort.isOpen()) {
+        if (!port.isOpen()) {
             try {
-                canPort.open();
-                LOG.debug("Opening CAN port SUCCESSFUL");
+                port.open();
+                LOG.debug("Opening port {} SUCCESSFUL", port);
             } catch (final Throwable e) {
-                LOG.error("Opening CAN port FAILED!", e);
+                LOG.error("Opening port {} FAILED!", port, e);
             }
         }
 
-        if (canPort.isOpen()) {
+        if (port.isOpen()) {
             try {
                 updateCANMessages(getSMAData());
 
                 for (final ByteBuffer frame : canData.values()) {
                     LOG.debug("CAN send: {}", Port.printBuffer(frame));
-                    canPort.sendFrame(frame);
+                    port.sendFrame(frame);
                 }
 
             } catch (final Throwable e) {

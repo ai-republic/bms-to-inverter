@@ -16,7 +16,6 @@ public abstract class PortProcessor {
      */
     @PostConstruct
     public void init() {
-
         for (final Field field : getClass().getDeclaredFields()) {
             final Portname portname = field.getAnnotation(Portname.class);
 
