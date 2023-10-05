@@ -25,6 +25,7 @@
 		<module>service-mqtt-broker</module>
 		<module>service-mqtt-client</module>
 		<module>webserver</module>
+		<module>inverter-growatt-rs485</module>
 	</modules>
 
 	<build>

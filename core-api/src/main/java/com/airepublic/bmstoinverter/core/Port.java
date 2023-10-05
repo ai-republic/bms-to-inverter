@@ -74,4 +74,9 @@ public abstract class Port implements AutoCloseable {
         return hex.toString();// + dec.toString();
     }
 
+
+    @Override
+    public String toString() {
+        return getClass().getName() + "[portname=" + getPortname() + "]";
+    }
 }

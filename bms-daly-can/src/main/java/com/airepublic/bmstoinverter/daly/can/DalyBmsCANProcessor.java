@@ -29,7 +29,7 @@ public class DalyBmsCANProcessor extends PortProcessor {
     private final static Logger LOG = LoggerFactory.getLogger(DalyBmsCANProcessor.class);
     @Inject
     @CAN
-    @Portname("daly.can.portname")
+    @Portname("bms.portname")
     private CANPort port;
     @Inject
     private EnergyStorage energyStorage;

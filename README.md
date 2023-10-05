@@ -78,12 +78,12 @@ numBatteryPacks=8
 RS485.baudrate=9600
 RS485.startFlag=165
 RS485.frameLength=13
-#daly.rs485.portname=com3	# on Windows for testing
-daly.rs485.portname=/dev/ttyS0	# on Raspberry
 
 # CAN properties
-daly.can.portname=can0
-sma.can.portname=can1		# can1 for USB-to-CAN-B dual CAN USB module, otherwise can0 for e.g. Waveshare RS485/CAN hat
+#bms.portname=com3				# RS485 on Windows for testing
+#bms.portname=/dev/ttyS0		# RS485 on Raspberry
+bms.portname=can0
+inverter.portname=can1		# can1 for Waveshare 2CH-CAN-HAT-FD, otherwise can0 for e.g. Waveshare RS485/CAN hat
 
 
 #MQTT properties
