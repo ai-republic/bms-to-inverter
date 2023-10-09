@@ -6,10 +6,22 @@ import java.util.Map;
 /**
  * Holds all the data collected from the BMS.
  *
- * @apiNote Comments specify precision and units where applicable
+ * Comments specify precision and units.
  */
 public class BatteryPack {
     public int packNumber;
+
+    // data from 0x5A
+    /** Maximum total voltage (0.1V) */
+    public int maxPackVoltageLimit;
+    /** Minimum total voltage (0.1V) */
+    public int minPackVoltageLimit;
+
+    // data from 0x5B
+    /** Maximum total charge current (30000 - x 0.1A) */
+    public int maxPackChargeCurrent;
+    /** Maximum total discharge current (30000 - x 0.1A) */
+    public int maxPackDischargeCurrent;
 
     // data from 0x90
     /** Total pack voltage (0.1 V) */

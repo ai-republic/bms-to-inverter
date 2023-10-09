@@ -1,6 +1,8 @@
 package com.airepublic.bmstoinverter.daly.common;
 
 public interface DalyCommand {
+    int MIN_MAX_PACK_VOLTAGE = 0x5A;
+    int MAX_PACK_DISCHARGE_CHARGE_CURRENT = 0x5B;
     int VOUT_IOUT_SOC = 0x90;
     int MIN_MAX_CELL_VOLTAGE = 0x91;
     int MIN_MAX_TEMPERATURE = 0x92;
