@@ -5,7 +5,7 @@ import com.airepublic.bmstoinverter.core.Port;
 import jakarta.annotation.PostConstruct;
 
 /**
- * Expecting System properties "rs485.baudrate", "rs485.startFlag" and "rs485.frameLength" to be
+ * Expecting System properties "RS485.baudrate", "RS485.startFlag" and "RS485.frameLength" to be
  * set.
  */
 @RS485

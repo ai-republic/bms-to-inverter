@@ -79,6 +79,8 @@ public class DalyBmsCANProcessor extends PortProcessor {
                 // LOG.info("RECEIVED: {}", Port.printBuffer(port.receiveFrame(frameValidator)));
 
                 for (int bmsAddress = 1; bmsAddress <= energyStorage.getBatteryPackCount(); bmsAddress++) {
+                    sendMessage(bmsAddress, DalyCommand.MIN_MAX_PACK_VOLTAGE); // 0x5A
+                    sendMessage(bmsAddress, DalyCommand.MAX_PACK_DISCHARGE_CHARGE_CURRENT); // 0x5B
                     sendMessage(bmsAddress, DalyCommand.VOUT_IOUT_SOC); // 0x90
                     sendMessage(bmsAddress, DalyCommand.MIN_MAX_CELL_VOLTAGE); // 0x91
                     sendMessage(bmsAddress, DalyCommand.MIN_MAX_TEMPERATURE); // 0x92

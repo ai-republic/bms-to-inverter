@@ -12,7 +12,7 @@ import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.PortProcessor;
 import com.airepublic.bmstoinverter.core.Portname;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
-import com.airepublic.bmstoinverter.core.protocol.rs485.RS485;
+import com.airepublic.bmstoinverter.core.protocol.modbus.ModBus;
 
 import jakarta.inject.Inject;
 
@@ -20,7 +20,7 @@ import jakarta.inject.Inject;
 public class GrowattRS485Processor extends PortProcessor {
     private final static Logger LOG = LoggerFactory.getLogger(GrowattRS485Processor.class);
     @Inject
-    @RS485
+    @ModBus
     @Portname("inverter.portname")
     private Port port;
     @Inject
@@ -58,6 +58,7 @@ public class GrowattRS485Processor extends PortProcessor {
 
 
     private List<ByteBuffer> collectBMSData() {
+
         final List<ByteBuffer> frames = new ArrayList<>();
         final int slaveAddress = 11;
         final int function = 6;

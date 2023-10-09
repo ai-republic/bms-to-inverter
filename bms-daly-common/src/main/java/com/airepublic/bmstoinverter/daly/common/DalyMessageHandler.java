@@ -25,6 +25,10 @@ public class DalyMessageHandler {
     public void handleMessage(final DalyMessage msg) {
         try {
             switch (msg.dataId) {
+                case (byte) 0x5A:
+                    getPackVoltageLimits(msg);
+                case (byte) 0x5B:
+                    getPackDischargeChargeLimits(msg);
                 case (byte) 0x90:
                     getPackMeasurements(msg);
                 break;
@@ -59,6 +63,40 @@ public class DalyMessageHandler {
         } catch (final IOException e) {
             LOG.error("Error reading BMS data: ", e);
         }
+    }
+
+
+    protected void getPackDischargeChargeLimits(final DalyMessage msg) {
+        final int batteryNo = msg.address - 1;
+
+        if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
+            LOG.error("getPackMeasurements -> Found invalid battery identifier: #{}", msg.address);
+            return;
+        }
+
+        final BatteryPack battery = energyStorage.getBatteryPack(batteryNo);
+
+        battery.maxPackDischargeCurrent = msg.data.getShort();
+        // skip the next 2 bytes because only reading level 1
+        msg.data.getShort();
+        battery.maxPackChargeCurrent = msg.data.getShort();
+    }
+
+
+    protected void getPackVoltageLimits(final DalyMessage msg) {
+        final int batteryNo = msg.address - 1;
+
+        if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
+            LOG.error("getPackMeasurements -> Found invalid battery identifier: #{}", msg.address);
+            return;
+        }
+
+        final BatteryPack battery = energyStorage.getBatteryPack(batteryNo);
+
+        battery.maxPackVoltageLimit = msg.data.getShort();
+        // skip the next 2 bytes because only reading level 1
+        msg.data.getShort();
+        battery.minPackVoltageLimit = msg.data.getShort();
     }
 
 

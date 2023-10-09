@@ -1,4 +1,4 @@
-package com.airepublic.bmstoinverter.sma.can;
+package com.airepublic.bmstoinverter.growatt.can;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -21,8 +21,8 @@ import com.airepublic.bmstoinverter.core.protocol.can.CAN;
 import jakarta.inject.Inject;
 
 @Inverter
-public class SmaCANProcessor extends PortProcessor {
-    private final static Logger LOG = LoggerFactory.getLogger(SmaCANProcessor.class);
+public class GrowattCANProcessor extends PortProcessor {
+    private final static Logger LOG = LoggerFactory.getLogger(GrowattCANProcessor.class);
     @Inject
     @CAN
     @Portname("inverter.portname")
@@ -31,7 +31,7 @@ public class SmaCANProcessor extends PortProcessor {
     private EnergyStorage energyStorage;
     private final Map<Integer, ByteBuffer> canData = new HashMap<>();
 
-    public SmaCANProcessor() {
+    public GrowattCANProcessor() {
     }
 
 
@@ -48,7 +48,7 @@ public class SmaCANProcessor extends PortProcessor {
 
         if (port.isOpen()) {
             try {
-                updateCANMessages(getSMAData());
+                updateCANMessages(getGrowattData());
 
                 for (final ByteBuffer frame : canData.values()) {
                     LOG.debug("CAN send: {}", Port.printBuffer(frame));
@@ -62,8 +62,8 @@ public class SmaCANProcessor extends PortProcessor {
     }
 
 
-    private SMAData getSMAData() {
-        final SMAData data = new SMAData();
+    private GrowattData getGrowattData() {
+        final GrowattData data = new GrowattData();
 
         data.chargeVoltageSetpoint = (char) energyStorage.getBatteryPack(0).maxPackVoltageLimit; // 57.6V
         data.dcChargeCurrentLimit = (short) energyStorage.getBatteryPack(0).maxPackChargeCurrent; // 100A
@@ -95,7 +95,7 @@ public class SmaCANProcessor extends PortProcessor {
     }
 
 
-    private void updateCANMessages(final SMAData data) {
+    private void updateCANMessages(final GrowattData data) {
         final byte length = (byte) 8;
         // 0x0351 charge voltage, charge amp limit, discharge amp limit, discharge voltage limit
         ByteBuffer frame = getCANData(0x0351);
