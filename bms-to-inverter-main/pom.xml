@@ -91,7 +91,7 @@
 		<!--		choose BMS 		-->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>bms-daly-can</artifactId>
+			<artifactId>bms-daly-rs485</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

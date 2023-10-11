@@ -10,72 +10,32 @@ import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.Bms;
 import com.airepublic.bmstoinverter.core.Port;
-import com.airepublic.bmstoinverter.core.PortProcessor;
 import com.airepublic.bmstoinverter.core.Portname;
-import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.protocol.rs485.RS485;
-import com.airepublic.bmstoinverter.daly.common.DalyCommand;
+import com.airepublic.bmstoinverter.daly.common.AbstractDalyBmsProcessor;
 import com.airepublic.bmstoinverter.daly.common.DalyMessage;
-import com.airepublic.bmstoinverter.daly.common.DalyMessageHandler;
 
 import jakarta.inject.Inject;
 
 @Bms
-public class DalyBmsRS485Processor extends PortProcessor {
-    private final static Logger LOG = LoggerFactory.getLogger(DalyBmsRS485Processor.class);
+public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
+    private final static Logger LOG = LoggerFactory.getLogger(AbstractDalyBmsProcessor.class);
     @Inject
     @RS485
     @Portname("bms.portname")
     private Port port;
-    @Inject
-    private EnergyStorage energyStorage;
-    private DalyMessageHandler messageHandler;
-    private final Predicate<byte[]> checksumValidator = bytes -> {
-        int checksum = 0;
-        for (int i = 0; i < bytes.length - 1; i++) {
-            checksum += (byte) Byte.toUnsignedInt(bytes[i]);
-        }
-
-        return bytes[12] == (byte) checksum;
-    };
+    final ByteBuffer sendFrame = ByteBuffer.allocate(13);
 
     @Override
-    public void process() {
-        if (!port.isOpen()) {
-            // open RS485 port on Daly BMSes/interfaceboards(WNT)
-            try {
-                LOG.info("Opening " + port.getPortname() + ", number of battery packs = " + energyStorage.getBatteryPackCount() + " ...");
-                messageHandler = new DalyMessageHandler(energyStorage);
-                port.open();
-                LOG.debug("Opening port {} SUCCESSFUL", port);
-
-            } catch (final IOException e) {
-                LOG.error("Opening port {} FAILED!", port, e);
-            }
-        }
-
-        if (port.isOpen()) {
-            try {
-                for (int i = 0; i < energyStorage.getBatteryPackCount(); i++) {
-                    sendMessage(0x40 + i, DalyCommand.VOUT_IOUT_SOC); // 0x90
-                    sendMessage(0x40 + i, DalyCommand.MIN_MAX_CELL_VOLTAGE); // 0x91
-                    sendMessage(0x40 + i, DalyCommand.MIN_MAX_TEMPERATURE); // 0x92
-                    sendMessage(0x40 + i, DalyCommand.DISCHARGE_CHARGE_MOS_STATUS); // 0x93
-                    sendMessage(0x40 + i, DalyCommand.STATUS_INFO); // 0x94
-                    sendMessage(0x40 + i, DalyCommand.CELL_VOLTAGES); // 0x95
-                    sendMessage(0x40 + i, DalyCommand.CELL_TEMPERATURE); // 0x96
-                    sendMessage(0x40 + i, DalyCommand.CELL_BALANCE_STATE); // 0x97
-                    sendMessage(0x40 + i, DalyCommand.FAILURE_CODES); // 0x98
-                }
-            } catch (final IOException e) {
-                LOG.error("Error requesting data!", e);
-            }
-        }
+    public Port getPort() {
+        return port;
     }
 
 
-    void sendMessage(final int address, final int cmdId) throws IOException {
-        final ByteBuffer sendBuffer = prepareSendBuffer(address, cmdId);
+    @Override
+    protected void sendMessage(final int bmsNo, final int cmdId, final byte[] data) throws IOException {
+        final int address = bmsNo + 0x3F;
+        final ByteBuffer sendBuffer = prepareSendFrame(address, cmdId, data);
         int framesToBeReceived = getResponseFrameCount(cmdId);
         final int frameCount = framesToBeReceived;
 
@@ -89,7 +49,7 @@ public class DalyBmsRS485Processor extends PortProcessor {
 
                 // repeat receiving as long as receiving command frames
                 // do {
-                receiveBuffer = port.receiveFrame(checksumValidator);
+                receiveBuffer = port.receiveFrame(getValidator());
                 LOG.debug("\t-> {}", Port.printBuffer(receiveBuffer));
                 // } while (rxBuffer != null && rxBuffer.get(1) > 0x20);
 
@@ -97,7 +57,7 @@ public class DalyBmsRS485Processor extends PortProcessor {
                     framesToBeReceived--;
                 }
 
-                messageHandler.handleMessage(convertRS485ByteBufferToDalyMessage(receiveBuffer));
+                getMessageHandler().handleMessage(convertReceiveFrameToDalyMessage(receiveBuffer));
 
                 if (LOG.isDebugEnabled()) {
                     LOG.debug("RECEIVED: {}", Port.printBuffer(receiveBuffer));
@@ -109,47 +69,62 @@ public class DalyBmsRS485Processor extends PortProcessor {
     }
 
 
-    int getResponseFrameCount(final int cmdId) {
-        if (cmdId == 0x95) {
-            return Math.round((energyStorage.getBatteryPack(0).numberOfCells + 0.5f) % 3f);
-        }
+    @Override
+    protected ByteBuffer prepareSendFrame(final int address, final int cmdId, final byte[] data) {
+        sendFrame.rewind();
 
-        return 1;
-    }
-
-
-    ByteBuffer prepareSendBuffer(final int address, final int cmdId) {
-        final ByteBuffer sendBuffer = ByteBuffer.allocate(13);
         int checksum = 0;
-        sendBuffer.put((byte) 0xA5);
+        sendFrame.put((byte) 0xA5);
         checksum += 0xA5;
-        sendBuffer.put((byte) address);
+        sendFrame.put((byte) address);
         checksum += address;
-        sendBuffer.put((byte) cmdId);
+        sendFrame.put((byte) cmdId);
         checksum += cmdId;
-        sendBuffer.put((byte) 0x08);
+        sendFrame.put((byte) 0x08);
         checksum += 0x08;
 
-        for (int i = 0; i < 8; i++) {
-            sendBuffer.put((byte) 0);
+        for (final byte element : data) {
+            sendFrame.put(element);
+            checksum += element;
         }
-        sendBuffer.put((byte) checksum);
 
-        sendBuffer.rewind();
+        sendFrame.put((byte) checksum);
 
-        return sendBuffer;
+        sendFrame.rewind();
+
+        return sendFrame;
     }
 
 
-    public DalyMessage convertRS485ByteBufferToDalyMessage(final ByteBuffer buffer) throws IOException {
+    @Override
+    protected DalyMessage convertReceiveFrameToDalyMessage(final ByteBuffer buffer) {
         final DalyMessage msg = new DalyMessage();
         msg.address = buffer.get(1);
         msg.dataId = buffer.get(2);
         final byte[] dataBytes = new byte[8];
         buffer.get(4, dataBytes);
         msg.data = ByteBuffer.wrap(dataBytes);
+        msg.data.rewind();
 
         return msg;
     }
 
+
+    @Override
+    protected Predicate<byte[]> getValidator() {
+        return bytes -> {
+            int checksum = 0;
+            for (int i = 0; i < bytes.length - 1; i++) {
+                checksum += (byte) Byte.toUnsignedInt(bytes[i]);
+            }
+
+            return bytes[12] == (byte) checksum;
+        };
+    }
+
+
+    @Override
+    protected void send(final ByteBuffer frame) throws IOException {
+        port.sendFrame(frame);
+    }
 }

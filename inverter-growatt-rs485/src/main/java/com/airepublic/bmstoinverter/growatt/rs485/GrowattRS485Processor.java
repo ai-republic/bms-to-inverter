@@ -31,6 +31,12 @@ public class GrowattRS485Processor extends PortProcessor {
 
 
     @Override
+    public Port getPort() {
+        return port;
+    }
+
+
+    @Override
     public void process() {
         if (!port.isOpen()) {
             try {
