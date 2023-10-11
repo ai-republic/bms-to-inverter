@@ -114,8 +114,10 @@ public class JSerialCommPort extends RS485Port {
         while (!port.getRTS() && !port.setRTS()) {
             ;
         }
+
         port.getOutputStream().write(bytes);
         port.getOutputStream().flush();
+
         while (port.getRTS() && !port.clearRTS()) {
             ;
         }

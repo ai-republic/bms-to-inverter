@@ -36,5 +36,8 @@ public abstract class PortProcessor {
     }
 
 
+    public abstract Port getPort();
+
+
     public abstract void process();
 }
