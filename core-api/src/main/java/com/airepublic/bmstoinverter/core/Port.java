@@ -7,6 +7,15 @@ import java.util.function.Predicate;
 public abstract class Port implements AutoCloseable {
     private String portname;
 
+    public Port() {
+    }
+
+
+    public Port(final String portname) {
+        this.portname = portname;
+    }
+
+
     public String getPortname() {
         return portname;
     }

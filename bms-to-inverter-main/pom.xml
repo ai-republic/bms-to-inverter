@@ -82,18 +82,19 @@
 		</dependency>
 
 
-		<dependency>
-			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>core-api</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
 		<!--		choose BMS 		-->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>bms-daly-rs485</artifactId>
+			<artifactId>bms-daly-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		
+<!--		<dependency>-->
+<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
+<!--			<artifactId>bms-daly-rs485</artifactId>-->
+<!--			<version>${project.version}</version>-->
+<!--		</dependency>-->
+
 
 		<!--		choose inverter			-->
 		<dependency>
@@ -101,6 +102,13 @@
 			<artifactId>inverter-sma-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		
+<!--		<dependency>-->
+<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
+<!--			<artifactId>inverter-growatt-can</artifactId>-->
+<!--			<version>${project.version}</version>-->
+<!--		</dependency>-->
+
 
 		<!-- optionally add MQTT services -->
 		<dependency>
@@ -114,6 +122,7 @@
 			<artifactId>service-mqtt-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
 		
 		<!-- optionally add Email service -->
 		<dependency>

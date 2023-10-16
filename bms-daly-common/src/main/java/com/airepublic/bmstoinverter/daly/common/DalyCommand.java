@@ -13,7 +13,7 @@ public interface DalyCommand {
     int READ_CELL_BALANCE_STATE = 0x97;
     int READ_FAILURE_CODES = 0x98;
 
-    int WRITE_RTC_AND_SOC = 0xD8; // bytes: YY MM DD hh mm ss soc_hi soc_low (0.1%)
+    int WRITE_RTC_AND_SOC = 0x21; // bytes: YY MM DD hh mm ss soc_hi soc_low (0.1%)
     int WRITE_DISCHRG_FET = 0xD9;
     int WRITE_CHRG_FET = 0xDA;
     int WRITE_BMS_RESET = 0x00;

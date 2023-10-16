@@ -2,7 +2,6 @@ package com.airepublic.bmstoinverter.protocol.can.javacan;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -22,6 +21,11 @@ public class JavaCANPort extends CANPort {
     private ExecutorService executor;
 
     public JavaCANPort() {
+    }
+
+
+    public JavaCANPort(final String portname) {
+        super(portname);
     }
 
 
@@ -58,7 +62,7 @@ public class JavaCANPort extends CANPort {
         });
 
         try {
-            return result.get(200, TimeUnit.MILLISECONDS);
+            return result.get(500, TimeUnit.MILLISECONDS);
         } catch (final Exception e) {
             throw new IOException("Failed to read response!", e);
         }
@@ -67,8 +71,6 @@ public class JavaCANPort extends CANPort {
 
     @Override
     public void sendFrame(final ByteBuffer frame) throws IOException {
-        frame.order(ByteOrder.LITTLE_ENDIAN);
-        frame.rewind();
         final CanFrame sendFrame = CanFrame.create(frame);
         canChannel.write(sendFrame);
     }
@@ -76,10 +78,18 @@ public class JavaCANPort extends CANPort {
 
     @Override
     public void sendExtendedFrame(final ByteBuffer frame) throws IOException {
-        frame.rewind();
-        final byte[] data = new byte[frame.get(4)];
-        frame.get(7, data);
-        final CanFrame sendFrame = CanFrame.createExtended(frame.getInt(0), frame.get(5), data, 0, frame.get(4));
+        /**
+         * Frame bytes 0-3 frame-id as int, 4 data length, 5 flags for FD frames, 6 ?, 7 - 15 data
+         * bytes
+         */
+        final int frameId = frame.getInt(); // first 4 bytes frameid
+        final byte length = frame.get(); // 5th byte data length
+        final byte flags = frame.get(); // 6th byte flags
+        frame.getShort(); // skip 2 bytes
+        final byte[] data = new byte[length];
+        frame.get(data); // last 8 bytes data
+
+        final CanFrame sendFrame = CanFrame.createExtended(frameId, flags, data, 0, length);
         canChannel.write(sendFrame);
     }
 
