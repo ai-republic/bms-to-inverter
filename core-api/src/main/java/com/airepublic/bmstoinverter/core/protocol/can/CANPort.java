@@ -8,10 +8,20 @@ import com.airepublic.bmstoinverter.core.Port;
 import jakarta.annotation.PostConstruct;
 
 public abstract class CANPort extends Port {
+    public CANPort() {
+    }
+
+
+    public CANPort(final String portname) {
+        super(portname);
+    }
+
 
     @PostConstruct
     public void init() {
-        setPortname(System.getProperty("CAN.portname"));
+        if (System.getProperties().containsKey("CAN.portname")) {
+            setPortname(System.getProperty("CAN.portname"));
+        }
     }
 
 

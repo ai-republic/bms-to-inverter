@@ -2,7 +2,9 @@ package com.airepublic.bmstoinverter.daly.rs485;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.HexFormat;
+import java.util.List;
 import java.util.function.Predicate;
 
 import org.slf4j.Logger;
@@ -25,6 +27,14 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
     @Portname("bms.portname")
     private Port port;
     final ByteBuffer sendFrame = ByteBuffer.allocate(13);
+    private final Predicate<byte[]> validator = bytes -> {
+        int checksum = 0;
+        for (int i = 0; i < bytes.length - 1; i++) {
+            checksum += (byte) Byte.toUnsignedInt(bytes[i]);
+        }
+
+        return bytes[12] == (byte) checksum;
+    };
 
     @Override
     public Port getPort() {
@@ -33,11 +43,12 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
 
 
     @Override
-    protected void sendMessage(final int bmsNo, final int cmdId, final byte[] data) throws IOException {
+    protected List<ByteBuffer> sendMessage(final int bmsNo, final int cmdId, final byte[] data) throws IOException {
         final int address = bmsNo + 0x3F;
         final ByteBuffer sendBuffer = prepareSendFrame(address, cmdId, data);
         int framesToBeReceived = getResponseFrameCount(cmdId);
         final int frameCount = framesToBeReceived;
+        final List<ByteBuffer> readBuffers = new ArrayList<>();
 
         // read frames until the requested frame is read
         do {
@@ -45,27 +56,22 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
             LOG.debug("SEND: {}", Port.printBuffer(sendBuffer));
 
             for (int i = 0; i < frameCount; i++) {
-                ByteBuffer receiveBuffer;
+                final ByteBuffer receiveBuffer = port.receiveFrame(validator);
 
-                // repeat receiving as long as receiving command frames
-                // do {
-                receiveBuffer = port.receiveFrame(getValidator());
-                LOG.debug("\t-> {}", Port.printBuffer(receiveBuffer));
-                // } while (rxBuffer != null && rxBuffer.get(1) > 0x20);
+                LOG.debug("RECEIVED: {}", Port.printBuffer(receiveBuffer));
 
                 if (receiveBuffer.get(1) == (byte) (address - 0x40 + 1) && receiveBuffer.get(2) == (byte) cmdId) {
                     framesToBeReceived--;
+                    readBuffers.add(receiveBuffer);
                 }
 
                 getMessageHandler().handleMessage(convertReceiveFrameToDalyMessage(receiveBuffer));
-
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("RECEIVED: {}", Port.printBuffer(receiveBuffer));
-                }
             }
         } while (framesToBeReceived > 0);
 
         LOG.warn("Command {} to BMS {} successfully sent and received!", HexFormat.of().withPrefix("0x").formatHex(new byte[] { (byte) cmdId }), address - 0x3F);
+
+        return readBuffers;
     }
 
 
@@ -109,22 +115,4 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
         return msg;
     }
 
-
-    @Override
-    protected Predicate<byte[]> getValidator() {
-        return bytes -> {
-            int checksum = 0;
-            for (int i = 0; i < bytes.length - 1; i++) {
-                checksum += (byte) Byte.toUnsignedInt(bytes[i]);
-            }
-
-            return bytes[12] == (byte) checksum;
-        };
-    }
-
-
-    @Override
-    protected void send(final ByteBuffer frame) throws IOException {
-        port.sendFrame(frame);
-    }
 }

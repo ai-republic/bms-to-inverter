@@ -2,8 +2,10 @@ package com.airepublic.bmstoinverter.daly.can;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.HexFormat;
-import java.util.function.Predicate;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +27,7 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
     @CAN
     @Portname("bms.portname")
     private CANPort port;
-    private final ByteBuffer sendFrame = ByteBuffer.allocateDirect(16);
+    private final ByteBuffer sendFrame = ByteBuffer.allocateDirect(16).order(ByteOrder.LITTLE_ENDIAN);
 
     @Override
     public Port getPort() {
@@ -34,22 +36,22 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
 
 
     @Override
-    protected void sendMessage(final int bmsNo, final int cmdId, final byte[] data) throws IOException {
+    protected List<ByteBuffer> sendMessage(final int bmsNo, final int cmdId, final byte[] data) throws IOException {
         final ByteBuffer sendFrame = prepareSendFrame(bmsNo, cmdId, data);
         int framesToBeReceived = getResponseFrameCount(cmdId);
         final int frameCount = framesToBeReceived;
         int skip = 20;
+        final List<ByteBuffer> readBuffers = new ArrayList<>();
 
         LOG.debug("SEND: {}", Port.printBuffer(sendFrame));
-        send(sendFrame);
+        port.sendExtendedFrame(sendFrame);
 
         // read frames until the requested frame is read
-        LOG.debug("Reading address 0x{}, command 0x{}", Integer.toHexString(bmsNo), Integer.toHexString(cmdId));
         do {
             skip--;
 
             for (int i = 0; i < frameCount; i++) {
-                final ByteBuffer receiveFrame = port.receiveFrame(getValidator());
+                final ByteBuffer receiveFrame = port.receiveFrame(t -> true);
 
                 LOG.debug("RECEIVED: {}", Port.printBuffer(receiveFrame));
 
@@ -57,18 +59,16 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
                 final byte command = (byte) (receiveFrame.getInt(0) >> 16 & 0x000000FF);
 
                 if (receiver == (byte) 0x40 && command == (byte) cmdId) {
+                    readBuffers.add(receiveFrame);
                     framesToBeReceived--;
                 }
 
                 getMessageHandler().handleMessage(convertReceiveFrameToDalyMessage(receiveFrame));
-
-                if (LOG.isDebugEnabled()) {
-                    LOG.debug("RECEIVED: {}", Port.printBuffer(receiveFrame));
-                }
             }
         } while (framesToBeReceived > 0 & skip > 0);
 
         LOG.debug("Command 0x{} to BMS {} successfully sent and received!", HexFormat.of().toHexDigits(cmdId), bmsNo);
+        return readBuffers;
     }
 
 
@@ -77,10 +77,15 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
         sendFrame.rewind();
 
         // frame id
-        sendFrame.put((byte) 0x18)
-                .put((byte) cmdId)
-                .put((byte) address)
-                .put((byte) 0x40);
+        long frameId = 0L;
+        frameId = 0x18;
+        frameId = frameId << 8;
+        frameId += (byte) cmdId;
+        frameId = frameId << 8;
+        frameId += (byte) address;
+        frameId = frameId << 8;
+        frameId += 0x40;
+        sendFrame.putInt((int) frameId);
 
         // header
         sendFrame.put((byte) 0x08) // data length
@@ -106,10 +111,6 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
         final int frameId = buffer.getInt(0);
         msg.address = (byte) (frameId & 0x000000FF);
         msg.dataId = (byte) (frameId >> 16 & 0x000000FF);
-        // msg.length = buffer.get(4);
-
-        buffer.get(); // flags
-        buffer.getShort(); // skip the next 2 bytes
 
         final byte[] dataBytes = new byte[buffer.get(4)];
         buffer.get(8, dataBytes);
@@ -123,17 +124,5 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
         }
 
         return msg;
-    }
-
-
-    @Override
-    protected Predicate<byte[]> getValidator() {
-        return t -> true;
-    }
-
-
-    @Override
-    protected void send(final ByteBuffer frame) throws IOException {
-        port.sendExtendedFrame(frame);
     }
 }

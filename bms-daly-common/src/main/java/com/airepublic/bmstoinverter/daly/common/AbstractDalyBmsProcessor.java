@@ -3,8 +3,9 @@ package com.airepublic.bmstoinverter.daly.common;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
+import java.util.HexFormat;
+import java.util.List;
 import java.util.ServiceLoader;
-import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,7 +100,7 @@ public abstract class AbstractDalyBmsProcessor extends PortProcessor {
     protected void autoCalibrateSOC() throws IOException {
         for (int bmsAddress = 1; bmsAddress <= energyStorage.getBatteryPackCount(); bmsAddress++) {
             final BatteryPack battery = energyStorage.getBatteryPack(bmsAddress - 1);
-            final int calculatedSOC = (battery.packVoltage - battery.minPackVoltageLimit) * 100 / (battery.maxPackVoltageLimit - battery.minPackVoltageLimit);
+            final int calculatedSOC = (int) (((float) battery.packVoltage - battery.minPackVoltageLimit) * 100 / (battery.maxPackVoltageLimit - battery.minPackVoltageLimit) * 10);
             final byte[] data = new byte[8];
             final LocalDateTime date = LocalDateTime.now();
             final String yearStr = String.valueOf(date.getYear());
@@ -109,20 +110,26 @@ public abstract class AbstractDalyBmsProcessor extends PortProcessor {
             data[3] = (byte) date.getHour();
             data[4] = (byte) date.getMinute();
             data[5] = (byte) date.getSecond();
-            data[6] = (byte) (calculatedSOC >> 8);
-            data[7] = (byte) (calculatedSOC & 0x00FF);
+            data[6] = (byte) (calculatedSOC >>> 8);
+            data[7] = (byte) calculatedSOC;
 
-            sendMessage(bmsAddress, DalyCommand.WRITE_RTC_AND_SOC, data);
+            LOG.info("calibrate request (SOC " + calculatedSOC + "): " + HexFormat.of().withUpperCase().withDelimiter(", 0x").formatHex(data));
+            final List<ByteBuffer> result = sendMessage(bmsAddress, DalyCommand.WRITE_RTC_AND_SOC, data);
+            LOG.info("calibrate result: " + Port.printBuffer(result.get(0)));
+
         }
     }
 
 
-    protected abstract void sendMessage(final int bmsNo, final int cmdId, final byte[] data) throws IOException;
+    protected abstract List<ByteBuffer> sendMessage(final int bmsNo, final int cmdId, final byte[] data) throws IOException;
 
 
     protected int getResponseFrameCount(final int cmdId) {
-        if (cmdId == 0x95) {
-            return Math.round(energyStorage.getBatteryPack(0).numberOfCells / 3f + 0.5f);
+        switch (cmdId) {
+            case 0x21:
+                return 2;
+            case 0x95:
+                return Math.round(energyStorage.getBatteryPack(0).numberOfCells / 3f + 0.5f);
         }
 
         return 1;
@@ -133,10 +140,4 @@ public abstract class AbstractDalyBmsProcessor extends PortProcessor {
 
 
     protected abstract DalyMessage convertReceiveFrameToDalyMessage(final ByteBuffer buffer);
-
-
-    protected abstract Predicate<byte[]> getValidator();
-
-
-    protected abstract void send(ByteBuffer frame) throws IOException;
 }
