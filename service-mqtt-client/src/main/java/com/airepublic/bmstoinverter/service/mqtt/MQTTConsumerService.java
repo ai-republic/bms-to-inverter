@@ -56,7 +56,12 @@ public class MQTTConsumerService implements IMQTTConsumerService {
     public String consume(final long timeoutMs) throws IOException {
         try {
             final ClientMessage message = consumer.receive(timeoutMs);
-            return message.getBodyBuffer().readString();
+
+            if (message != null) {
+                return message.getBodyBuffer().readString();
+            }
+
+            return null;
         } catch (final Exception e) {
             throw new IOException("Could not receive MQTT message on topic " + topic, e);
         }

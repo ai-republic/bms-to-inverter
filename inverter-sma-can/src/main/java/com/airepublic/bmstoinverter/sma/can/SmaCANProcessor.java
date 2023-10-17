@@ -71,11 +71,13 @@ public class SmaCANProcessor extends PortProcessor {
     private SMAData getSMAData() {
         final SMAData data = new SMAData();
 
+        // get max voltage and dis-/charge limits from first pack
         data.chargeVoltageSetpoint = (char) energyStorage.getBatteryPack(0).maxPackVoltageLimit; // 57.6V
         data.dcChargeCurrentLimit = (short) energyStorage.getBatteryPack(0).maxPackChargeCurrent; // 100A
         data.dcDischargeCurrentLimit = (short) energyStorage.getBatteryPack(0).maxPackDischargeCurrent; // 100A
         data.dischargeVoltageLimit = (char) energyStorage.getBatteryPack(0).minPackVoltageLimit; // 48V
 
+        // get the minimim SOC of all the packs
         Optional<BatteryPack> opt = Stream.of(energyStorage.getBatteryPacks()).filter(b -> b.packSOC != 0).min((o1, o2) -> ((Integer) o1.packSOC).compareTo(o2.packSOC));
         if (opt.isPresent()) {
             data.soc = (char) (opt.get().packSOC / 10); // 100%
@@ -90,11 +92,11 @@ public class SmaCANProcessor extends PortProcessor {
         if (opt.isPresent()) {
             data.batteryVoltage = (short) (opt.get().packVoltage * 10);
         } else {
-            data.batteryVoltage = 5200;
+            data.batteryVoltage = 5200; // 52V
         }
 
         data.batteryCurrent = (short) Stream.of(energyStorage.getBatteryPacks()).mapToInt(b -> b.packCurrent).sum();
-        data.batteryTemperature = 350; // 35degC
+        data.batteryTemperature = (short) (Stream.of(energyStorage.getBatteryPacks()).mapToInt(b -> b.tempAverage).average().orElseGet(() -> 35d) * 10); // 35degC
 
         LOG.info("Sending SMA frame: Batt(V)={}, Batt(A)={}, SOC={}", data.batteryVoltage / 100f, data.batteryCurrent / 10f, (int) data.soc);
         return data;

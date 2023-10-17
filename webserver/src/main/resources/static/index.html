@@ -222,13 +222,54 @@
 		var alarms = new Array();
 		var idx = 0;
 		
-		for (const key of Object.keys(bmsData.batteryPacks[bmsNo].alarms)) {
-			const value = bmsData.batteryPacks[bmsNo].alarms[key];
-			
-		    if (value == true) {
-		    	alarms[idx++] = key;
-		    }
-		}
+		if (bmsData.batteryPacks[bmsNo].alarms.levelOneCellVoltageTooHigh.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelOneCellVoltageTooHigh.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoCellVoltageTooHigh.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelTwoCellVoltageTooHigh.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelOneCellVoltageTooLow.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelOneCellVoltageTooLow.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoCellVoltageTooLow.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelTwoCellVoltageTooLow.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelOnePackVoltageTooHigh.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelOnePackVoltageTooHigh.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoPackVoltageTooHigh.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelTwoPackVoltageTooHigh.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelOnePackVoltageTooLow.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelOnePackVoltageTooLow.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoPackVoltageTooLow.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelTwoPackVoltageTooLow.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelOneChargeTempTooHigh.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelOneChargeTempTooHigh.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoChargeTempTooHigh.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelTwoChargeTempTooHigh.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelOneChargeTempTooLow.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelOneChargeTempTooLow.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoChargeTempTooLow.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelTwoChargeTempTooLow.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelOneDischargeTempTooHigh.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelOneDischargeTempTooHigh.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoDischargeTempTooHigh.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelTwoDischargeTempTooHigh.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelOneDischargeTempTooLow.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelOneDischargeTempTooLow.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoDischargeTempTooLow.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelTwoDischargeTempTooLow.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelOneChargeCurrentTooHigh.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelOneChargeCurrentTooHigh.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoChargeCurrentTooHigh.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelTwoChargeCurrentTooHigh.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelOneDischargeCurrentTooHigh.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelOneDischargeCurrentTooHigh.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoDischargeCurrentTooHigh.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelTwoDischargeCurrentTooHigh.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelOneStateOfChargeTooHigh.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelOneStateOfChargeTooHigh.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoStateOfChargeTooHigh.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelTwoStateOfChargeTooHigh.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelOneStateOfChargeTooLow.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelOneStateOfChargeTooLow.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoStateOfChargeTooLow.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelTwoStateOfChargeTooLow.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelOneCellVoltageDifferenceTooHigh.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelOneCellVoltageDifferenceTooHigh.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoCellVoltageDifferenceTooHigh.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelTwoCellVoltageDifferenceTooHigh.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelOneTempSensorDifferenceTooHigh.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelOneTempSensorDifferenceTooHigh.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.levelTwoTempSensorDifferenceTooHigh.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.levelTwoTempSensorDifferenceTooHigh.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.chargeFETTemperatureTooHigh.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.chargeFETTemperatureTooHigh.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.dischargeFETTemperatureTooHigh.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.dischargeFETTemperatureTooHigh.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.failureOfChargeFETTemperatureSensor.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.failureOfChargeFETTemperatureSensor.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.failureOfDischargeFETTemperatureSensor.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.failureOfDischargeFETTemperatureSensor.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.failureOfChargeFETAdhesion.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.failureOfChargeFETAdhesion.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.failureOfDischargeFETAdhesion.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.failureOfDischargeFETAdhesion.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.failureOfChargeFETTBreaker.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.failureOfChargeFETTBreaker.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.failureOfDischargeFETBreaker.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.failureOfDischargeFETBreaker.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.failureOfAFEAcquisitionModule.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.failureOfAFEAcquisitionModule.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.failureOfVoltageSensorModule.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.failureOfVoltageSensorModule.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.failureOfTemperatureSensorModule.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.failureOfTemperatureSensorModule.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.failureOfEEPROMStorageModule.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.failureOfEEPROMStorageModule.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.failureOfRealtimeClockModule.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.failureOfRealtimeClockModule.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.failureOfPrechargeModule.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.failureOfPrechargeModule.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.failureOfVehicleCommunicationModule.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.failureOfVehicleCommunicationModule.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.failureOfIntranetCommunicationModule.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.failureOfIntranetCommunicationModule.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.failureOfCurrentSensorModule.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.failureOfCurrentSensorModule.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.failureOfMainVoltageSensorModule.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.failureOfMainVoltageSensorModule.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.failureOfShortCircuitProtection.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.failureOfShortCircuitProtection.key;
+		if (bmsData.batteryPacks[bmsNo].alarms.failureOfLowVoltageNoCharging.value == true) alarms[idx++]=bmsData.batteryPacks[bmsNo].alarms.failureOfLowVoltageNoCharging.key;
 		
 		return alarms;
 	}

@@ -403,72 +403,72 @@ public class DalyMessageHandler {
         final BatteryPack battery = energyStorage.getBatteryPack(batteryNo);
         byte byteValue = msg.data.get();
         /* 0x00 */
-        battery.alarms.put("levelOneCellVoltageTooHigh", bitRead(byteValue, 0));
-        battery.alarms.put("levelTwoCellVoltageTooHigh", bitRead(byteValue, 1));
-        battery.alarms.put("levelOneCellVoltageTooLow", bitRead(byteValue, 2));
-        battery.alarms.put("levelTwoCellVoltageTooLow", bitRead(byteValue, 3));
-        battery.alarms.put("levelOnePackVoltageTooHigh", bitRead(byteValue, 4));
-        battery.alarms.put("levelTwoPackVoltageTooHigh", bitRead(byteValue, 5));
-        battery.alarms.put("levelOnePackVoltageTooLow", bitRead(byteValue, 6));
-        battery.alarms.put("levelTwoPackVoltageTooLow", bitRead(byteValue, 7));
+        battery.alarms.levelOneCellVoltageTooHigh.value = bitRead(byteValue, 0);
+        battery.alarms.levelTwoCellVoltageTooHigh.value = bitRead(byteValue, 1);
+        battery.alarms.levelOneCellVoltageTooLow.value = bitRead(byteValue, 2);
+        battery.alarms.levelTwoCellVoltageTooLow.value = bitRead(byteValue, 3);
+        battery.alarms.levelOnePackVoltageTooHigh.value = bitRead(byteValue, 4);
+        battery.alarms.levelTwoPackVoltageTooHigh.value = bitRead(byteValue, 5);
+        battery.alarms.levelOnePackVoltageTooLow.value = bitRead(byteValue, 6);
+        battery.alarms.levelTwoPackVoltageTooLow.value = bitRead(byteValue, 7);
 
         /* 0x01 */
         byteValue = msg.data.get(1);
-        battery.alarms.put("levelOneChargeTempTooHigh", bitRead(byteValue, 1));
-        battery.alarms.put("levelTwoChargeTempTooHigh", bitRead(byteValue, 1));
-        battery.alarms.put("levelOneChargeTempTooLow", bitRead(byteValue, 1));
-        battery.alarms.put("levelTwoChargeTempTooLow", bitRead(byteValue, 1));
-        battery.alarms.put("levelOneDischargeTempTooHigh", bitRead(byteValue, 1));
-        battery.alarms.put("levelTwoDischargeTempTooHigh", bitRead(byteValue, 1));
-        battery.alarms.put("levelOneDischargeTempTooLow", bitRead(byteValue, 1));
-        battery.alarms.put("levelTwoDischargeTempTooLow", bitRead(byteValue, 1));
+        battery.alarms.levelOneChargeTempTooHigh.value = bitRead(byteValue, 1);
+        battery.alarms.levelTwoChargeTempTooHigh.value = bitRead(byteValue, 1);
+        battery.alarms.levelOneChargeTempTooLow.value = bitRead(byteValue, 1);
+        battery.alarms.levelTwoChargeTempTooLow.value = bitRead(byteValue, 1);
+        battery.alarms.levelOneDischargeTempTooHigh.value = bitRead(byteValue, 1);
+        battery.alarms.levelTwoDischargeTempTooHigh.value = bitRead(byteValue, 1);
+        battery.alarms.levelOneDischargeTempTooLow.value = bitRead(byteValue, 1);
+        battery.alarms.levelTwoDischargeTempTooLow.value = bitRead(byteValue, 1);
 
         /* 0x02 */
         byteValue = msg.data.get(2);
-        battery.alarms.put("levelOneChargeCurrentTooHigh", bitRead(byteValue, 0));
-        battery.alarms.put("levelTwoChargeCurrentTooHigh", bitRead(byteValue, 1));
-        battery.alarms.put("levelOneDischargeCurrentTooHigh", bitRead(byteValue, 2));
-        battery.alarms.put("levelTwoDischargeCurrentTooHigh", bitRead(byteValue, 3));
-        battery.alarms.put("levelOneStateOfChargeTooHigh", bitRead(byteValue, 4));
-        battery.alarms.put("levelTwoStateOfChargeTooHigh", bitRead(byteValue, 5));
-        battery.alarms.put("levelOneStateOfChargeTooLow", bitRead(byteValue, 6));
-        battery.alarms.put("levelTwoStateOfChargeTooLow", bitRead(byteValue, 7));
+        battery.alarms.levelOneChargeCurrentTooHigh.value = bitRead(byteValue, 0);
+        battery.alarms.levelTwoChargeCurrentTooHigh.value = bitRead(byteValue, 1);
+        battery.alarms.levelOneDischargeCurrentTooHigh.value = bitRead(byteValue, 2);
+        battery.alarms.levelTwoDischargeCurrentTooHigh.value = bitRead(byteValue, 3);
+        battery.alarms.levelOneStateOfChargeTooHigh.value = bitRead(byteValue, 4);
+        battery.alarms.levelTwoStateOfChargeTooHigh.value = bitRead(byteValue, 5);
+        battery.alarms.levelOneStateOfChargeTooLow.value = bitRead(byteValue, 6);
+        battery.alarms.levelTwoStateOfChargeTooLow.value = bitRead(byteValue, 7);
 
         /* 0x03 */
         byteValue = msg.data.get(3);
-        battery.alarms.put("levelOneCellVoltageDifferenceTooHigh", bitRead(byteValue, 0));
-        battery.alarms.put("levelTwoCellVoltageDifferenceTooHigh", bitRead(byteValue, 1));
-        battery.alarms.put("levelOneTempSensorDifferenceTooHigh", bitRead(byteValue, 2));
-        battery.alarms.put("levelTwoTempSensorDifferenceTooHigh", bitRead(byteValue, 3));
+        battery.alarms.levelOneCellVoltageDifferenceTooHigh.value = bitRead(byteValue, 0);
+        battery.alarms.levelTwoCellVoltageDifferenceTooHigh.value = bitRead(byteValue, 1);
+        battery.alarms.levelOneTempSensorDifferenceTooHigh.value = bitRead(byteValue, 2);
+        battery.alarms.levelTwoTempSensorDifferenceTooHigh.value = bitRead(byteValue, 3);
 
         /* 0x04 */
         byteValue = msg.data.get(4);
-        battery.alarms.put("chargeFETTemperatureTooHigh", bitRead(byteValue, 0));
-        battery.alarms.put("dischargeFETTemperatureTooHigh", bitRead(byteValue, 1));
-        battery.alarms.put("failureOfChargeFETTemperatureSensor", bitRead(byteValue, 2));
-        battery.alarms.put("failureOfDischargeFETTemperatureSensor", bitRead(byteValue, 3));
-        battery.alarms.put("failureOfChargeFETAdhesion", bitRead(byteValue, 4));
-        battery.alarms.put("failureOfDischargeFETAdhesion", bitRead(byteValue, 5));
-        battery.alarms.put("failureOfChargeFETTBreaker", bitRead(byteValue, 6));
-        battery.alarms.put("failureOfDischargeFETBreaker", bitRead(byteValue, 7));
+        battery.alarms.chargeFETTemperatureTooHigh.value = bitRead(byteValue, 0);
+        battery.alarms.dischargeFETTemperatureTooHigh.value = bitRead(byteValue, 1);
+        battery.alarms.failureOfChargeFETTemperatureSensor.value = bitRead(byteValue, 2);
+        battery.alarms.failureOfDischargeFETTemperatureSensor.value = bitRead(byteValue, 3);
+        battery.alarms.failureOfChargeFETAdhesion.value = bitRead(byteValue, 4);
+        battery.alarms.failureOfDischargeFETAdhesion.value = bitRead(byteValue, 5);
+        battery.alarms.failureOfChargeFETTBreaker.value = bitRead(byteValue, 6);
+        battery.alarms.failureOfDischargeFETBreaker.value = bitRead(byteValue, 7);
 
         /* 0x05 */
         byteValue = msg.data.get(5);
-        battery.alarms.put("failureOfAFEAcquisitionModule", bitRead(byteValue, 0));
-        battery.alarms.put("failureOfVoltageSensorModule", bitRead(byteValue, 1));
-        battery.alarms.put("failureOfTemperatureSensorModule", bitRead(byteValue, 2));
-        battery.alarms.put("failureOfEEPROMStorageModule", bitRead(byteValue, 3));
-        battery.alarms.put("failureOfRealtimeClockModule", bitRead(byteValue, 4));
-        battery.alarms.put("failureOfPrechargeModule", bitRead(byteValue, 5));
-        battery.alarms.put("failureOfVehicleCommunicationModule", bitRead(byteValue, 6));
-        battery.alarms.put("failureOfIntranetCommunicationModule", bitRead(byteValue, 7));
+        battery.alarms.failureOfAFEAcquisitionModule.value = bitRead(byteValue, 0);
+        battery.alarms.failureOfVoltageSensorModule.value = bitRead(byteValue, 1);
+        battery.alarms.failureOfTemperatureSensorModule.value = bitRead(byteValue, 2);
+        battery.alarms.failureOfEEPROMStorageModule.value = bitRead(byteValue, 3);
+        battery.alarms.failureOfRealtimeClockModule.value = bitRead(byteValue, 4);
+        battery.alarms.failureOfPrechargeModule.value = bitRead(byteValue, 5);
+        battery.alarms.failureOfVehicleCommunicationModule.value = bitRead(byteValue, 6);
+        battery.alarms.failureOfIntranetCommunicationModule.value = bitRead(byteValue, 7);
 
         /* 0x06 */
         byteValue = msg.data.get(6);
-        battery.alarms.put("failureOfCurrentSensorModule", bitRead(byteValue, 0));
-        battery.alarms.put("failureOfMainVoltageSensorModule", bitRead(byteValue, 1));
-        battery.alarms.put("failureOfShortCircuitProtection", bitRead(byteValue, 2));
-        battery.alarms.put("failureOfLowVoltageNoCharging", bitRead(byteValue, 3));
+        battery.alarms.failureOfCurrentSensorModule.value = bitRead(byteValue, 0);
+        battery.alarms.failureOfMainVoltageSensorModule.value = bitRead(byteValue, 1);
+        battery.alarms.failureOfShortCircuitProtection.value = bitRead(byteValue, 2);
+        battery.alarms.failureOfLowVoltageNoCharging.value = bitRead(byteValue, 3);
     }
 
     /*
