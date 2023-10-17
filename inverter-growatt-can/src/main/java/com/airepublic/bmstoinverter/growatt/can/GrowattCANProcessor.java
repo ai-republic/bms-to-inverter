@@ -1,9 +1,9 @@
 package com.airepublic.bmstoinverter.growatt.can;
 
 import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -29,7 +29,6 @@ public class GrowattCANProcessor extends PortProcessor {
     private Port port;
     @Inject
     private EnergyStorage energyStorage;
-    private final Map<Integer, ByteBuffer> canData = new HashMap<>();
 
     public GrowattCANProcessor() {
     }
@@ -54,9 +53,9 @@ public class GrowattCANProcessor extends PortProcessor {
 
         if (port.isOpen()) {
             try {
-                updateCANMessages(getGrowattData());
+                final List<ByteBuffer> canData = updateCANMessages(getGrowattData());
 
-                for (final ByteBuffer frame : canData.values()) {
+                for (final ByteBuffer frame : canData) {
                     LOG.debug("CAN send: {}", Port.printBuffer(frame));
                     port.sendFrame(frame);
                 }
@@ -94,82 +93,95 @@ public class GrowattCANProcessor extends PortProcessor {
         }
 
         data.batteryCurrent = (short) Stream.of(energyStorage.getBatteryPacks()).mapToInt(b -> b.packCurrent).sum();
-        data.batteryTemperature = 350; // 35degC
+        data.batteryTemperature = (short) (Stream.of(energyStorage.getBatteryPacks()).mapToInt(b -> b.tempAverage).average().orElseGet(() -> 35d) * 10); // 35degC
 
-        LOG.info("Sending SMA frame: Batt(V)={}, Batt(A)={}, SOC={}", data.batteryVoltage / 100f, data.batteryCurrent / 10f, (int) data.soc);
+        LOG.info("Sending Growatt frame: Batt(V)={}, Batt(A)={}, SOC={}", data.batteryVoltage / 100f, data.batteryCurrent / 10f, (int) data.soc);
         return data;
     }
 
 
-    private void updateCANMessages(final GrowattData data) {
+    private List<ByteBuffer> updateCANMessages(final GrowattData data) {
+        final List<ByteBuffer> frames = new ArrayList<>();
         final byte length = (byte) 8;
         // 0x0351 charge voltage, charge amp limit, discharge amp limit, discharge voltage limit
-        ByteBuffer frame = getCANData(0x0351);
+        ByteBuffer frame = ByteBuffer.allocate(16);
 
-        frame.putInt(0x0351)
+        frame.putInt(0x0311)
                 .put(length)
                 .put((byte) 0) // flags
                 .putShort((short) 0); // skip 2 bytes
-        frame.asCharBuffer().put(data.chargeVoltageSetpoint); // charge voltage setpoint (0.1V) -
-        // u_int_16
-        frame.asShortBuffer().put(data.dcChargeCurrentLimit); // max charge amps (0.1A) - s_int_16
-        frame.asShortBuffer().put(data.dcDischargeCurrentLimit); // max discharge amps (0.1A) -
-                                                                 // s_int_16
-        frame.asCharBuffer().put(data.dischargeVoltageLimit); // max discharge voltage (0.1V) -
-                                                              // u_int_16
+        // charge voltage setpoint (0.1V) - u_int_16
+        frame.asCharBuffer().put((char) energyStorage.getBatteryPack(0).maxPackVoltageLimit);
+        // max charge amps (0.1A) - u_int_16
+        frame.asCharBuffer().put((char) energyStorage.getBatteryPack(0).maxPackChargeCurrent);
+        // max discharge amps 0.1A)- u_int_16
+        frame.asCharBuffer().put((char) energyStorage.getBatteryPack(0).maxPackDischargeCurrent);
+        // status bits (see documentation)
+        frame.put(get311Status());
+        frames.add(frame);
 
-        // 0x0355 SOC, SOH, HiRes SOC
-        frame = getCANData(0x0355);
-        frame.putInt(0x0355)
-                .put(length)
-                .put((byte) 0) // flags
-                .putShort((short) 0); // skip 2 bytes
-        frame.asCharBuffer().put(data.soc) // SOC (1%) - u_int_16
-                .put(data.soh); // SOH (1%) - u_int_16
-        // frame.asShortBuffer().put((short) 50); // HiRes SOC (0.01%) - u_int_16
+        for (int battery = 0; battery < energyStorage.getBatteryPackCount(); battery++) {
+            // 0x312
+            frame = ByteBuffer.allocate(16);
+            frame.putInt(0x0312)
+                    .put(length)
+                    .put((byte) 0) // flags
+                    .putShort((short) 0); // skip 2 bytes
 
-        // 0x0356 battery voltage, battery current, battery temperature
-        frame = getCANData(0x0356);
-        frame.putInt(0x0356)
-                .put(length)
-                .put((byte) 0) // flags
-                .putShort((short) 0) // skip 2 bytes
-                .putShort(data.batteryVoltage) // battery voltage (0.01V) - s_int_16
-                .putShort(data.batteryCurrent) // battery current (0.1A) - s_int_16
-                .putShort(data.batteryTemperature); // battery temperature (0.1C) -
-                                                    // s_int_16
+            // error and warning bits
+            frame.put(getErrorBits(battery));
+            frame.put((byte) (battery + 1));
+            frame.putChar((char) 0); // skip 2 manufacturer codes
+            frame.put((byte) energyStorage.getBatteryPack(battery).numberOfCells);
+            frames.add(frame);
+        }
 
-        // 0x035A alarms and warnings
-        frame = getCANData(0x035A);
-        frame.putInt(0x035A)
-                .put(length)
-                .put((byte) 0) // flags
-                .putShort((short) 0)
-                // general arrive/leave, high voltage arrive/leave, low
-                // voltage arrive/leave, high temperature arrive/leave, low temperature
-                // arrive/leave, high temp charge
-                // arrive/leave, low temp charge arrive/leave, high current arrive/leave
-                // high current charge arrive/leave, contactor arrive/leave, short circuit
-                // arrive/leave, BMS internal arrive/leave
-                // cell imbalance arrive/leave, last 6 bits reserved
-                .putInt(data.alarms)
-                .putInt(data.warnings);
+        return frames;
     }
 
 
-    private ByteBuffer getCANData(final int id) {
-        ByteBuffer frame = canData.get(id);
+    private byte[] get311Status() {
+        final BitSet bits = new BitSet(12);
+        // charging status
+        final boolean charging = Stream.of(energyStorage.getBatteryPacks()).anyMatch(pack -> pack.chargeMOSState == true);
+        bits.set(0, charging);
+        bits.set(1, false);
 
-        if (frame == null) {
-            frame = ByteBuffer.allocateDirect(16);
-            frame.order(ByteOrder.LITTLE_ENDIAN);
-            frame.putInt(id);
-            canData.put(id, frame);
-        }
+        // error bit flag
+        bits.set(2, false);
 
-        frame.rewind();
+        // balancing status
+        bits.set(3, Stream.of(energyStorage.getBatteryPacks()).anyMatch(pack -> pack.cellBalanceActive == true));
 
-        return frame;
+        // sleep status
+        bits.set(4, false);
+
+        // output discharge status
+        bits.set(5, false);
+
+        // output charge status
+        bits.set(6, false);
+
+        // battery terminal status
+        bits.set(7, false);
+
+        // master box operation mode 00-standalone, 01-parallel, 10-parallel ready
+        bits.set(8, false);
+        bits.set(9, false);
+
+        // SP status 00-none, 01-standby, 10-charging, 11-discharging
+        bits.set(10, true);
+        bits.set(11, !charging);
+
+        return bits.toByteArray();
+    }
+
+
+    private byte[] getErrorBits(final int battery) {
+        final BitSet bits = new BitSet(32);
+        bits.set(0, energyStorage.getBatteryPack(battery).alarms.levelTwoDischargeCurrentTooHigh.value);
+
+        return bits.toByteArray();
     }
 
 }

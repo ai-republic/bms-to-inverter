@@ -44,6 +44,7 @@ public class WebserverApplication {
     public void init() throws Exception {
         final ResourceBundle bundle = ResourceBundle.getBundle("alarms");
         final Map<String, String> map = new LinkedHashMap<>();
+
         for (final String key : bundle.keySet()) {
             map.put(key, bundle.getString(key));
         }
@@ -54,7 +55,6 @@ public class WebserverApplication {
     }
 
 
-    @SuppressWarnings("resource")
     private void startMQTTClient() throws Exception {
         final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         LOG.info("Connecting to MQTT at {}/{}", locator, topic);
@@ -66,7 +66,11 @@ public class WebserverApplication {
             executor.scheduleAtFixedRate(() -> {
                 try {
                     synchronized (data) {
-                        data = mqtt.consume(1000);
+                        final String message = mqtt.consume(1000);
+
+                        if (message != null) {
+                            data = message;
+                        }
                     }
                     LOG.info("Successfully received data");
 

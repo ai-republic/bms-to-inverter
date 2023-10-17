@@ -2,7 +2,6 @@ package com.airepublic.bmstoinverter;
 
 import java.io.IOException;
 import java.util.Properties;
-import java.util.ResourceBundle;
 import java.util.ServiceLoader;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -63,23 +62,7 @@ public class BmsToInverter implements AutoCloseable {
     }
 
 
-    public void init() {
-        final ResourceBundle alarmMessages = ResourceBundle.getBundle("alarms");
-
-        // initialize alarm maps
-        if (alarmMessages != null) {
-            for (final BatteryPack battery : energyStorage.getBatteryPacks()) {
-                for (final String key : alarmMessages.keySet()) {
-                    battery.alarms.put(key, false);
-                }
-            }
-        }
-
-    }
-
-
     public void start() {
-        init();
 
         final ExecutorService executorService = Executors.newFixedThreadPool(2);
 

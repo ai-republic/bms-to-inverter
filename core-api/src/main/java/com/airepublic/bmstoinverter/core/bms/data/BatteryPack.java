@@ -1,8 +1,5 @@
 package com.airepublic.bmstoinverter.core.bms.data;
 
-import java.util.HashMap;
-import java.util.Map;
-
 /**
  * Holds all the data collected from the BMS.
  *
@@ -93,7 +90,7 @@ public class BatteryPack {
 
     // data from 0x98
     /** alarm states */
-    public Map<String, Boolean> alarms = new HashMap<>();
+    public Alarms alarms = new Alarms();
     /**
      * /** debug data string
      */
