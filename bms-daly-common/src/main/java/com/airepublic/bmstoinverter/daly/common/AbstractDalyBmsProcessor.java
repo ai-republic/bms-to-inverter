@@ -71,6 +71,8 @@ public abstract class AbstractDalyBmsProcessor extends PortProcessor {
         if (port.isOpen()) {
             try {
                 for (int bmsNo = 1; bmsNo <= energyStorage.getBatteryPackCount(); bmsNo++) {
+                    sendMessage(bmsNo, DalyCommand.READ_RATED_CAPACITY_CELL_VOLTAGE, requestData); // 0x50
+                    sendMessage(bmsNo, DalyCommand.READ_BATTERY_TYPE_INFO, requestData); // 0x53
                     sendMessage(bmsNo, DalyCommand.READ_MIN_MAX_PACK_VOLTAGE, requestData); // 0x5A
                     sendMessage(bmsNo, DalyCommand.READ_MAX_PACK_DISCHARGE_CHARGE_CURRENT, requestData); // 0x5B
                     sendMessage(bmsNo, DalyCommand.READ_VOUT_IOUT_SOC, requestData); // 0x90
