@@ -55,12 +55,49 @@ In the pom.xml you'll find the dependencies which BMS and which inverter to use.
 			<artifactId>bms-daly-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		
+<!--		<dependency>-->
+<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
+<!--			<artifactId>bms-daly-rs485</artifactId>-->
+<!--			<version>${project.version}</version>-->
+<!--		</dependency>-->
+
+
 
 		<!--		choose inverter			-->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>inverter-sma-can</artifactId>
 			<version>${project.version}</version>
+		</dependency>
+		
+<!--		<dependency>-->
+<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
+<!--			<artifactId>inverter-growatt-can</artifactId>-->
+<!--			<version>${project.version}</version>-->
+<!--		</dependency>-->
+
+
+
+		<!-- optionally add MQTT services -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>service-mqtt-broker</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>service-mqtt-client</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		
+		<!-- optionally add Email service -->
+		<dependency>
+			<groupId>com.ai-republic.email</groupId>
+			<artifactId>email-javamail</artifactId>
+			<version>1.0.0</version>
 		</dependency>
 
 
