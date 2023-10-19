@@ -7,6 +7,14 @@ package com.airepublic.bmstoinverter.core.bms.data;
  */
 public class BatteryPack {
     public int packNumber;
+    // data from 0x53
+    /** Battery type: 0=lithium iron, 1=ternary lithium, 2=lithium titanate */
+    public int type;
+    // data from 0x50
+    /** Capacity of the each cell (1mAh) */
+    public int ratedCapacitymAh;
+    /** Nominal cell voltage (1mV) */
+    public int ratedCellmV;
 
     // data from 0x5A
     /** Maximum total voltage (0.1V) */
@@ -38,7 +46,7 @@ public class BatteryPack {
     /** Number of cell with lowest voltage */
     public int minCellVNum;
     /** Difference between min and max cell voltages */
-    public int cellDiff;
+    public int cellDiffmV;
 
     // data from 0x92
     /** Maximum temperature sensor reading (�C) */

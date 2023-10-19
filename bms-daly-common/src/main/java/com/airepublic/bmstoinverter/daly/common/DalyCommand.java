@@ -1,6 +1,8 @@
 package com.airepublic.bmstoinverter.daly.common;
 
 public interface DalyCommand {
+    int READ_RATED_CAPACITY_CELL_VOLTAGE = 0x50;
+    int READ_BATTERY_TYPE_INFO = 0x53;
     int READ_MIN_MAX_PACK_VOLTAGE = 0x5A;
     int READ_MAX_PACK_DISCHARGE_CHARGE_CURRENT = 0x5B;
     int READ_VOUT_IOUT_SOC = 0x90;

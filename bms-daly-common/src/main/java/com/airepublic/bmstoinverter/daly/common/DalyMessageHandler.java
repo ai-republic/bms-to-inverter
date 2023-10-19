@@ -25,6 +25,12 @@ public class DalyMessageHandler {
     public void handleMessage(final DalyMessage msg) {
         try {
             switch (msg.dataId) {
+                case (byte) 0x50:
+                    getRatedCapacityAndCellVoltage(msg);
+                break;
+                case (byte) 0x53:
+                    getBatteryTypeInfo(msg);
+                break;
                 case (byte) 0x5A:
                     getPackVoltageLimits(msg);
                 break;
@@ -65,6 +71,39 @@ public class DalyMessageHandler {
         } catch (final IOException e) {
             LOG.error("Error reading BMS data: ", e);
         }
+    }
+
+
+    private void getBatteryTypeInfo(final DalyMessage msg) {
+        final int batteryNo = msg.address - 1;
+
+        if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
+            LOG.error("getRatedCapacityAndCellVoltage -> Found invalid battery identifier: #{}", msg.address);
+            return;
+        }
+
+        final BatteryPack battery = energyStorage.getBatteryPack(batteryNo);
+
+        battery.type = msg.data.get();
+
+        LOG.debug("battery type={}=" + battery.type);
+    }
+
+
+    private void getRatedCapacityAndCellVoltage(final DalyMessage msg) {
+        final int batteryNo = msg.address - 1;
+
+        if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
+            LOG.error("getRatedCapacityAndCellVoltage -> Found invalid battery identifier: #{}", msg.address);
+            return;
+        }
+
+        final BatteryPack battery = energyStorage.getBatteryPack(batteryNo);
+
+        battery.ratedCellmV = msg.data.getInt(); // in mV
+        battery.ratedCapacitymAh = msg.data.getInt(); // in mAh
+
+        LOG.debug("ratedCellmV={}, ratedCapacitymAh=" + battery.ratedCellmV, battery.ratedCapacitymAh);
     }
 
 
@@ -151,14 +190,14 @@ public class DalyMessageHandler {
         battery.minCellmV = msg.data.getShort();
         // data byte 5 minimum voltage cell number
         battery.minCellVNum = msg.data.get();
-        battery.cellDiff = battery.maxCellmV - battery.minCellmV;
+        battery.cellDiffmV = battery.maxCellmV - battery.minCellmV;
 
         if (LOG.isDebugEnabled()) {
             LOG.info("Battery {} Min/Max/Diff:\n"
                     + "\tMax Voltage: Cell {}({}mV)\n"
                     + "\tMin Voltage: Cell {}({}mV)\n"
                     + "\tDifference: {}mV",
-                    batteryNo + 1, battery.maxCellVNum, battery.maxCellmV, battery.minCellVNum, battery.minCellmV, battery.cellDiff);
+                    batteryNo + 1, battery.maxCellVNum, battery.maxCellmV, battery.minCellVNum, battery.minCellmV, battery.cellDiffmV);
         }
     }
 
@@ -414,14 +453,14 @@ public class DalyMessageHandler {
 
         /* 0x01 */
         byteValue = msg.data.get(1);
-        battery.alarms.levelOneChargeTempTooHigh.value = bitRead(byteValue, 1);
+        battery.alarms.levelOneChargeTempTooHigh.value = bitRead(byteValue, 0);
         battery.alarms.levelTwoChargeTempTooHigh.value = bitRead(byteValue, 1);
-        battery.alarms.levelOneChargeTempTooLow.value = bitRead(byteValue, 1);
-        battery.alarms.levelTwoChargeTempTooLow.value = bitRead(byteValue, 1);
-        battery.alarms.levelOneDischargeTempTooHigh.value = bitRead(byteValue, 1);
-        battery.alarms.levelTwoDischargeTempTooHigh.value = bitRead(byteValue, 1);
-        battery.alarms.levelOneDischargeTempTooLow.value = bitRead(byteValue, 1);
-        battery.alarms.levelTwoDischargeTempTooLow.value = bitRead(byteValue, 1);
+        battery.alarms.levelOneChargeTempTooLow.value = bitRead(byteValue, 2);
+        battery.alarms.levelTwoChargeTempTooLow.value = bitRead(byteValue, 3);
+        battery.alarms.levelOneDischargeTempTooHigh.value = bitRead(byteValue, 4);
+        battery.alarms.levelTwoDischargeTempTooHigh.value = bitRead(byteValue, 5);
+        battery.alarms.levelOneDischargeTempTooLow.value = bitRead(byteValue, 6);
+        battery.alarms.levelTwoDischargeTempTooLow.value = bitRead(byteValue, 7);
 
         /* 0x02 */
         byteValue = msg.data.get(2);
@@ -480,7 +519,7 @@ public class DalyMessageHandler {
      */
 
 
-    boolean bitRead(final int n, final int k) {
-        return (n >> k & 1) == 1;
+    boolean bitRead(final int value, final int index) {
+        return (value >> index & 1) == 1;
     }
 }
