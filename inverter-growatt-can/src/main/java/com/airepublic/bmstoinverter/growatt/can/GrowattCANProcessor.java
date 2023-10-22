@@ -246,7 +246,7 @@ public class GrowattCANProcessor extends PortProcessor {
         frame.put((byte) 0);
         // update successful count
         frame.put((byte) 0);
-        frame.putInt((int) 0L);
+        frame.putInt((int)0L);
 
         frames.add(frame);
         return frames;
