@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="hello" default="remote-run" basedir="."
+	xmlns:artifact="antlib:org.apache.maven.artifact.ant">
+
+    <!-- Setup RASPBERRY PI properties -->
+	<property name="raspberrypi" value="192.168.100.42" />
+	<property name="raspberryfolder" value="~" />
+	<property name="username" value="" />
+	<property name="password" value="" />
+
+<!--	<path id="maven-ant-tasks.classpath" path="${ant.libs.dir}/maven-ant-tasks-2.1.3.jar" />-->
+
+<!--	<typedef -->
+<!--		resource="org/apache/maven/artifact/ant/antlib.xml"-->
+<!--		uri="antlib:org.apache.maven.artifact.ant"-->
+<!--		classpathref="maven-ant-tasks.classpath" />-->
+    	
+<!--     Add maven install target to be run before deploy -->
+    	
+<!--	<target name="maven-install"> -->
+<!--		<artifact:mvn pom="pom.xml"> -->
+<!--			<arg value="install"/> -->
+<!--		</artifact:mvn> -->
+<!--	</target> -->
+
+    <!-- Locate the project jar and transfer via scp to RASPBERRY PI depends="maven-install" -->
+	<target name="transfer" >
+		<first id="zip">
+			<!--
+			<fileset dir="target" includes="**/*-SNAPSHOT.jar" />
+			-->
+			<fileset dir="target" includes="**/*.zip" />
+		</first>
+		<pathconvert pathsep="," property="zip.path" refid="zip" />
+		<basename file="${zip.path}" property="zip.filename" />
+		<basename file="${zip.filename}" property="app.folder" suffix=".zip"/>
+		<echo>">>> Found application ${zip.path}"</echo>
+
+		<echo>">>> Copying application to ${raspberrypi}:${raspberryfolder}/${zip.filename}"</echo>
+		
+		<sshexec host="${raspberrypi}" username="${username}" password="${password}" command="rm ${zip.filename}" failonerror="false"/>
+		<sshexec host="${raspberrypi}" username="${username}" password="${password}" command="rm -R ${app.folder}" failonerror="false"/>
+		
+		<scp 
+			localfile="${zip.path}" 
+			todir="${username}:${password}@${raspberrypi}:${raspberryfolder}" 
+			trust="true" />
+
+		<pathconvert dirsep="/" pathsep=" " property="unzip.files" refid="zip">
+		  <map from="${archives}" to="${archives.destination}" />
+		</pathconvert>
+		
+		<!-- execute the command.  Use the "-d" option to unzip so it will work
+		     whatever the "current" directory on the remote side -->
+		<sshexec host="${raspberrypi}" username="${username}" password="${password}" command="unzip ${zip.filename}" />
+		
+	</target>
+		
+	<!-- Run java -->
+	<target name="remote-run" depends="transfer">	
+		<echo>">>> Starting ${raspberrypi}:${raspberryfolder}/${app.folder}/${app.folder}.jar"</echo>
+
+		<sshexec 
+			host="${raspberrypi}" 
+			username="${username}" 
+			password="${password}" 
+			trust="true" 
+			failonerror="true" 
+			usepty="true" 
+			command="cd ${app.folder}; java -jar ${app.folder}.jar" />
+	</target>
+	
+	<!-- Run java in debug mode and keep waiting for execution -->
+	<target name="remote-debug" depends="transfer">	
+		<echo>">>> Starting ${raspberrypi}:${raspberryfolder}/${jar.filename} in debug mode"</echo>
+		<sshexec 
+			host="${raspberrypi}" 
+			username="${username}" 
+			password="${password}" 
+			trust="true" 
+			failonerror="true" 
+			usepty="true" 
+			command="cd ${app.folder}; java -Xdebug -Xrunjdwp:server=y,transport=dt_socket,address=8000,suspend=y -jar ${app.folder}.jar" />
+	</target>
+</project>
