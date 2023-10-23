@@ -5,26 +5,28 @@ import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
 import java.util.HexFormat;
 import java.util.List;
-import java.util.ServiceLoader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.airepublic.bmstoinverter.core.Bms;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.PortProcessor;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
-import com.airepublic.bmstoinverter.core.service.IMQTTProducerService;
 
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 
+/**
+ * An abstraction for the {@link PortProcessor} for the Daly {@link Bms} since the RS485 and CAN
+ * communication is very similar.
+ */
 public abstract class AbstractDalyBmsProcessor extends PortProcessor {
     private final static Logger LOG = LoggerFactory.getLogger(AbstractDalyBmsProcessor.class);
     @Inject
     private EnergyStorage energyStorage;
     private DalyMessageHandler messageHandler;
-    private final IMQTTProducerService mqttProducer = ServiceLoader.load(IMQTTProducerService.class).findFirst().orElse(null);
     private final byte[] requestData = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
     private Port port;
 
@@ -34,20 +36,15 @@ public abstract class AbstractDalyBmsProcessor extends PortProcessor {
         super.init();
         port = getPort();
 
-        if (mqttProducer != null) {
-            final String locator = System.getProperty("mqtt.locator");
-            final String topic = System.getProperty("mqtt.topic");
-
-            try {
-                mqttProducer.connect(locator, topic);
-            } catch (final Exception e) {
-                LOG.error("Could not connect MQTT producer client at {} on topic {}", locator, topic, e);
-            }
-        }
-
     }
 
 
+    /**
+     * Gets the {@link DalyMessageHandler} to process the {@link DalyMessage} converted by the
+     * individual {@link PortProcessor}.
+     *
+     * @return the {@link DalyMessageHandler}
+     */
     public DalyMessageHandler getMessageHandler() {
         return messageHandler;
     }
@@ -86,11 +83,6 @@ public abstract class AbstractDalyBmsProcessor extends PortProcessor {
                     sendMessage(bmsNo, DalyCommand.READ_FAILURE_CODES, requestData); // 0x98
                 }
 
-                if (mqttProducer != null) {
-                    // send energystorage data to MQTT broker
-                    mqttProducer.sendMessage(energyStorage.toJson());
-                }
-
                 autoCalibrateSOC();
             } catch (final Throwable e) {
                 LOG.error("Error requesting data!", e);
@@ -99,6 +91,12 @@ public abstract class AbstractDalyBmsProcessor extends PortProcessor {
     }
 
 
+    /**
+     * Calibrate the SOC of all {@link BatteryPack} according to their maximum and minimum voltage
+     * compared to the actual voltage.
+     *
+     * @throws IOException if setting of SOC failed
+     */
     protected void autoCalibrateSOC() throws IOException {
         for (int bmsAddress = 1; bmsAddress <= energyStorage.getBatteryPackCount(); bmsAddress++) {
             final BatteryPack battery = energyStorage.getBatteryPack(bmsAddress - 1);
@@ -123,11 +121,26 @@ public abstract class AbstractDalyBmsProcessor extends PortProcessor {
     }
 
 
-    protected abstract List<ByteBuffer> sendMessage(final int bmsNo, final int cmdId, final byte[] data) throws IOException;
+    /**
+     * Sends the specified {@link DalyCommand} and frame data to the specified BMS.
+     *
+     * @param bmsNo the bms to send to
+     * @param cmd the {@link DalyCommand}
+     * @param data the frame data
+     * @return
+     * @throws IOException
+     */
+    protected abstract List<ByteBuffer> sendMessage(final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException;
 
 
-    protected int getResponseFrameCount(final int cmdId) {
-        switch (cmdId) {
+    /**
+     * Gets the expected number of response frames for the specified {@link DalyCommand}.
+     *
+     * @param cmd the {@link DalyCommand}
+     * @return the expected number of response frames
+     */
+    protected int getResponseFrameCount(final DalyCommand cmd) {
+        switch (cmd.id) {
             case 0x21:
                 return 2;
             case 0x95:
@@ -138,8 +151,23 @@ public abstract class AbstractDalyBmsProcessor extends PortProcessor {
     }
 
 
-    protected abstract ByteBuffer prepareSendFrame(final int address, final int cmdId, final byte[] data);
+    /**
+     * Prepared the send frame according to the specified bms address, {@link DalyCommand} and frame
+     * data.
+     *
+     * @param address the bms address
+     * @param cmd the {@link DalyCommand}
+     * @param data the frame data
+     * @return the frame {@link ByteBuffer}
+     */
+    protected abstract ByteBuffer prepareSendFrame(final int address, final DalyCommand cmd, final byte[] data);
 
 
+    /**
+     * Converts the received frame {@link ByteBuffer} to a {@link DalyMessage}.
+     *
+     * @param buffer the frame {@link ByteBuffer}
+     * @return the {@link DalyMessage}
+     */
     protected abstract DalyMessage convertReceiveFrameToDalyMessage(final ByteBuffer buffer);
 }

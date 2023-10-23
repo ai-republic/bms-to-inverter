@@ -7,6 +7,9 @@ import java.lang.annotation.Retention;
 
 import jakarta.inject.Qualifier;
 
+/**
+ * The {@link Qualifier} to identify a BMS {@link PortProcessor}.
+ */
 @Qualifier
 @Retention(RUNTIME)
 @Documented

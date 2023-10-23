@@ -1,9 +1,9 @@
 package com.airepublic.bmstoinverter.core.bms.data;
 
 /**
- * Holds all the data collected from the BMS.
+ * Holds all the data of a set of battery cells - a battery pack - collected from the BMS.
  *
- * Comments specify precision and units.
+ * Comments specify the precision and units of the value.
  */
 public class BatteryPack {
     public int packNumber;
@@ -99,11 +99,12 @@ public class BatteryPack {
     // data from 0x98
     /** alarm states */
     public Alarms alarms = new Alarms();
-    /**
-     * /** debug data string
-     */
-    public String aDebug;
 
+    /**
+     * Constructor.
+     *
+     * @param packNumber the battery pack number.
+     */
     public BatteryPack(final int packNumber) {
         this.packNumber = packNumber;
     }

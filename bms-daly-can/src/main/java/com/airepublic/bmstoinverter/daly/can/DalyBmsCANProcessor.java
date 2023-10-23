@@ -12,14 +12,19 @@ import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.Bms;
 import com.airepublic.bmstoinverter.core.Port;
+import com.airepublic.bmstoinverter.core.PortProcessor;
 import com.airepublic.bmstoinverter.core.Portname;
 import com.airepublic.bmstoinverter.core.protocol.can.CAN;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 import com.airepublic.bmstoinverter.daly.common.AbstractDalyBmsProcessor;
+import com.airepublic.bmstoinverter.daly.common.DalyCommand;
 import com.airepublic.bmstoinverter.daly.common.DalyMessage;
 
 import jakarta.inject.Inject;
 
+/**
+ * The {@link PortProcessor} to handle CAN messages from a Daly BMS.
+ */
 @Bms
 public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
     private final static Logger LOG = LoggerFactory.getLogger(DalyBmsCANProcessor.class);
@@ -36,9 +41,9 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
 
 
     @Override
-    protected List<ByteBuffer> sendMessage(final int bmsNo, final int cmdId, final byte[] data) throws IOException {
-        final ByteBuffer sendFrame = prepareSendFrame(bmsNo, cmdId, data);
-        int framesToBeReceived = getResponseFrameCount(cmdId);
+    protected List<ByteBuffer> sendMessage(final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException {
+        final ByteBuffer sendFrame = prepareSendFrame(bmsNo, cmd, data);
+        int framesToBeReceived = getResponseFrameCount(cmd);
         final int frameCount = framesToBeReceived;
         int skip = 20;
         final List<ByteBuffer> readBuffers = new ArrayList<>();
@@ -58,7 +63,7 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
                 final byte receiver = (byte) (receiveFrame.getInt(0) >> 8 & 0x000000FF);
                 final byte command = (byte) (receiveFrame.getInt(0) >> 16 & 0x000000FF);
 
-                if (receiver == (byte) 0x40 && command == (byte) cmdId) {
+                if (receiver == (byte) 0x40 && command == (byte) cmd.id) {
                     readBuffers.add(receiveFrame);
                     framesToBeReceived--;
                 }
@@ -67,20 +72,20 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
             }
         } while (framesToBeReceived > 0 & skip > 0);
 
-        LOG.debug("Command 0x{} to BMS {} successfully sent and received!", HexFormat.of().toHexDigits(cmdId), bmsNo);
+        LOG.debug("Command 0x{} to BMS {} successfully sent and received!", HexFormat.of().toHexDigits(cmd.id), bmsNo);
         return readBuffers;
     }
 
 
     @Override
-    protected ByteBuffer prepareSendFrame(final int address, final int cmdId, final byte[] data) {
+    protected ByteBuffer prepareSendFrame(final int address, final DalyCommand cmd, final byte[] data) {
         sendFrame.rewind();
 
         // frame id
         long frameId = 0L;
         frameId = 0x18;
         frameId = frameId << 8;
-        frameId += (byte) cmdId;
+        frameId += (byte) cmd.id;
         frameId = frameId << 8;
         frameId += (byte) address;
         frameId = frameId << 8;
@@ -110,7 +115,7 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
         final DalyMessage msg = new DalyMessage();
         final int frameId = buffer.getInt(0);
         msg.address = (byte) (frameId & 0x000000FF);
-        msg.dataId = (byte) (frameId >> 16 & 0x000000FF);
+        msg.cmd = DalyCommand.valueOf(frameId >> 16 & 0x000000FF);
 
         final byte[] dataBytes = new byte[buffer.get(4)];
         buffer.get(8, dataBytes);
@@ -119,7 +124,7 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
         if (LOG.isDebugEnabled()) {
             LOG.info("DALY Message: frameId= " + Integer.toHexString(frameId)
                     + ", address=" + HexFormat.of().toHexDigits(msg.address)
-                    + ", dataId=" + HexFormat.of().toHexDigits(msg.dataId)
+                    + ", dataId=" + HexFormat.of().toHexDigits(msg.cmd.id)
                     + ", data=" + HexFormat.of().formatHex(dataBytes));
         }
 

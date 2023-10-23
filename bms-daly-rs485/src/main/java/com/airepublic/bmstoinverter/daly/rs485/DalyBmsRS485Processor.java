@@ -12,13 +12,18 @@ import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.Bms;
 import com.airepublic.bmstoinverter.core.Port;
+import com.airepublic.bmstoinverter.core.PortProcessor;
 import com.airepublic.bmstoinverter.core.Portname;
 import com.airepublic.bmstoinverter.core.protocol.rs485.RS485;
 import com.airepublic.bmstoinverter.daly.common.AbstractDalyBmsProcessor;
+import com.airepublic.bmstoinverter.daly.common.DalyCommand;
 import com.airepublic.bmstoinverter.daly.common.DalyMessage;
 
 import jakarta.inject.Inject;
 
+/**
+ * The {@link PortProcessor} to handle RS485 messages from a Daly BMS.
+ */
 @Bms
 public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
     private final static Logger LOG = LoggerFactory.getLogger(AbstractDalyBmsProcessor.class);
@@ -26,7 +31,7 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
     @RS485
     @Portname("bms.portname")
     private Port port;
-    final ByteBuffer sendFrame = ByteBuffer.allocate(13);
+    private final ByteBuffer sendFrame = ByteBuffer.allocate(13);
     private final Predicate<byte[]> validator = bytes -> {
         int checksum = 0;
         for (int i = 0; i < bytes.length - 1; i++) {
@@ -43,10 +48,10 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
 
 
     @Override
-    protected List<ByteBuffer> sendMessage(final int bmsNo, final int cmdId, final byte[] data) throws IOException {
+    protected List<ByteBuffer> sendMessage(final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException {
         final int address = bmsNo + 0x3F;
-        final ByteBuffer sendBuffer = prepareSendFrame(address, cmdId, data);
-        int framesToBeReceived = getResponseFrameCount(cmdId);
+        final ByteBuffer sendBuffer = prepareSendFrame(address, cmd, data);
+        int framesToBeReceived = getResponseFrameCount(cmd);
         final int frameCount = framesToBeReceived;
         final List<ByteBuffer> readBuffers = new ArrayList<>();
 
@@ -60,7 +65,7 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
 
                 LOG.debug("RECEIVED: {}", Port.printBuffer(receiveBuffer));
 
-                if (receiveBuffer.get(1) == (byte) (address - 0x40 + 1) && receiveBuffer.get(2) == (byte) cmdId) {
+                if (receiveBuffer.get(1) == (byte) (address - 0x40 + 1) && receiveBuffer.get(2) == (byte) cmd.id) {
                     framesToBeReceived--;
                     readBuffers.add(receiveBuffer);
                 }
@@ -69,14 +74,14 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
             }
         } while (framesToBeReceived > 0);
 
-        LOG.warn("Command {} to BMS {} successfully sent and received!", HexFormat.of().withPrefix("0x").formatHex(new byte[] { (byte) cmdId }), address - 0x3F);
+        LOG.warn("Command {} to BMS {} successfully sent and received!", HexFormat.of().withPrefix("0x").formatHex(new byte[] { (byte) cmd.id }), address - 0x3F);
 
         return readBuffers;
     }
 
 
     @Override
-    protected ByteBuffer prepareSendFrame(final int address, final int cmdId, final byte[] data) {
+    protected ByteBuffer prepareSendFrame(final int address, final DalyCommand cmd, final byte[] data) {
         sendFrame.rewind();
 
         int checksum = 0;
@@ -84,8 +89,8 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
         checksum += 0xA5;
         sendFrame.put((byte) address);
         checksum += address;
-        sendFrame.put((byte) cmdId);
-        checksum += cmdId;
+        sendFrame.put((byte) cmd.id);
+        checksum += cmd.id;
         sendFrame.put((byte) 0x08);
         checksum += 0x08;
 
@@ -106,7 +111,7 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
     protected DalyMessage convertReceiveFrameToDalyMessage(final ByteBuffer buffer) {
         final DalyMessage msg = new DalyMessage();
         msg.address = buffer.get(1);
-        msg.dataId = buffer.get(2);
+        msg.cmd = DalyCommand.valueOf(buffer.get(2));
         final byte[] dataBytes = new byte[8];
         buffer.get(4, dataBytes);
         msg.data = ByteBuffer.wrap(dataBytes);

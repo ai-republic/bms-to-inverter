@@ -12,11 +12,13 @@ import com.airepublic.bmstoinverter.core.protocol.modbus.ModBusPort;
 import com.ghgande.j2mod.modbus.facade.ModbusSerialMaster;
 import com.ghgande.j2mod.modbus.util.SerialParameters;
 
+/**
+ * The implementation of the {@link ModBusPort} using the J2Mod implementation.
+ */
 @ModBus
 public class J2ModPort extends ModBusPort {
     private final static Logger LOG = LoggerFactory.getLogger(J2ModPort.class);
     private ModbusSerialMaster port;
-    private final int unitId = 11;
 
     @Override
     public void open() throws IOException {

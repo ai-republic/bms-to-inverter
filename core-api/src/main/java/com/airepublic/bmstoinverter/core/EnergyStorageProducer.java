@@ -7,11 +7,18 @@ import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 
 import jakarta.enterprise.inject.Produces;
 
+/**
+ * Producer to create an {@link EnergyStorage} to use application wide.
+ */
 public class EnergyStorageProducer {
     private final static Logger LOG = LoggerFactory.getLogger(EnergyStorageProducer.class);
     private static EnergyStorage energyStorage;
 
-    public void init() {
+    /**
+     * Reads the <code>numBatteryPacks</code> from the <code>config.properties</code> and
+     * initializes the {@link EnergyStorage} accordingly.
+     */
+    private void init() {
         if (!System.getProperties().containsKey("numBatteryPacks")) {
             LOG.error("No system property \"numBatteryPacks\" defined via -DnumBatteryPacks=<value> or in 'pi.properties'");
             return;
@@ -23,6 +30,11 @@ public class EnergyStorageProducer {
     }
 
 
+    /**
+     * Provides the application wide {@link EnergyStorage} object.
+     *
+     * @return the application wide {@link EnergyStorage} object
+     */
     @Produces
     public EnergyStorage getEnergyStorage() {
         if (energyStorage == null) {

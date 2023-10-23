@@ -8,6 +8,10 @@ import org.slf4j.LoggerFactory;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 
+/**
+ * The handler to interpret the {@link DalyMessage} and update the application wide
+ * {@link EnergyStorage} object.
+ */
 public class DalyMessageHandler {
     private final static Logger LOG = LoggerFactory.getLogger(DalyMessageHandler.class);
     private final static int MIN_NUMBER_CELLS = 1;
@@ -22,46 +26,51 @@ public class DalyMessageHandler {
     }
 
 
+    /**
+     * Handles the {@link DalyMessage} and updates the {@link EnergyStorage} object.
+     *
+     * @param msg the {@link DalyMessage}
+     */
     public void handleMessage(final DalyMessage msg) {
         try {
-            switch (msg.dataId) {
-                case (byte) 0x50:
+            switch (msg.cmd.id) {
+                case 0x50:
                     getRatedCapacityAndCellVoltage(msg);
                 break;
-                case (byte) 0x53:
+                case 0x53:
                     getBatteryTypeInfo(msg);
                 break;
-                case (byte) 0x5A:
+                case 0x5A:
                     getPackVoltageLimits(msg);
                 break;
-                case (byte) 0x5B:
+                case 0x5B:
                     getPackDischargeChargeLimits(msg);
                 break;
-                case (byte) 0x90:
+                case 0x90:
                     getPackMeasurements(msg);
                 break;
-                case (byte) 0x91:
+                case 0x91:
                     getMinMaxCellVoltage(msg);
                 break;
-                case (byte) 0x92:
+                case 0x92:
                     getPackTemp(msg);
                 break;
-                case (byte) 0x93:
+                case 0x93:
                     getDischargeChargeMosStatus(msg);
                 break;
-                case (byte) 0x94:
+                case 0x94:
                     getStatusInfo(msg);
                 break;
-                case (byte) 0x95:
+                case 0x95:
                     getCellVoltages(msg);
                 break;
-                case (byte) 0x96:
+                case 0x96:
                     getCellTemperature(msg);
                 break;
-                case (byte) 0x97:
+                case 0x97:
                     getCellBalanceState(msg);
                 break;
-                case (byte) 0x98:
+                case 0x98:
                     getFailureCodes(msg);
                 break;
                 default:
@@ -107,7 +116,7 @@ public class DalyMessageHandler {
     }
 
 
-    protected void getPackDischargeChargeLimits(final DalyMessage msg) {
+    private void getPackDischargeChargeLimits(final DalyMessage msg) {
         final int batteryNo = msg.address - 1;
 
         if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
@@ -127,7 +136,7 @@ public class DalyMessageHandler {
     }
 
 
-    protected void getPackVoltageLimits(final DalyMessage msg) {
+    private void getPackVoltageLimits(final DalyMessage msg) {
         final int batteryNo = msg.address - 1;
 
         if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
@@ -144,7 +153,7 @@ public class DalyMessageHandler {
     }
 
 
-    void getPackMeasurements(final DalyMessage msg) throws IOException { // 0x90
+    private void getPackMeasurements(final DalyMessage msg) throws IOException { // 0x90
         final int batteryNo = msg.address - 1;
 
         if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
@@ -172,7 +181,7 @@ public class DalyMessageHandler {
     }
 
 
-    void getMinMaxCellVoltage(final DalyMessage msg) throws IOException { // 0x91
+    private void getMinMaxCellVoltage(final DalyMessage msg) throws IOException { // 0x91
         final int batteryNo = msg.address - 1;
 
         if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
@@ -202,7 +211,7 @@ public class DalyMessageHandler {
     }
 
 
-    void getPackTemp(final DalyMessage msg) throws IOException { // 0x92
+    private void getPackTemp(final DalyMessage msg) throws IOException { // 0x92
         final int batteryNo = msg.address - 1;
 
         if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
@@ -228,7 +237,7 @@ public class DalyMessageHandler {
     }
 
 
-    void getDischargeChargeMosStatus(final DalyMessage msg) throws IOException { // 0x93
+    private void getDischargeChargeMosStatus(final DalyMessage msg) throws IOException { // 0x93
         final int batteryNo = msg.address - 1;
 
         if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
@@ -272,7 +281,7 @@ public class DalyMessageHandler {
     }
 
 
-    void getStatusInfo(final DalyMessage msg) throws IOException { // 0x94
+    private void getStatusInfo(final DalyMessage msg) throws IOException { // 0x94
         final int batteryNo = msg.address - 1;
 
         if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
@@ -302,7 +311,7 @@ public class DalyMessageHandler {
     }
 
 
-    void getCellVoltages(final DalyMessage msg) throws IOException { // 0x95
+    private void getCellVoltages(final DalyMessage msg) throws IOException { // 0x95
         final int batteryNo = msg.address - 1;
 
         if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
@@ -346,7 +355,7 @@ public class DalyMessageHandler {
     }
 
 
-    void getCellTemperature(final DalyMessage msg) throws IOException { // 0x96
+    private void getCellTemperature(final DalyMessage msg) throws IOException { // 0x96
         final int batteryNo = msg.address - 1;
 
         if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
@@ -380,7 +389,7 @@ public class DalyMessageHandler {
     }
 
 
-    void getCellBalanceState(final DalyMessage msg) throws IOException { // 0x97
+    private void getCellBalanceState(final DalyMessage msg) throws IOException { // 0x97
         final int batteryNo = msg.address - 1;
 
         if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
@@ -430,7 +439,7 @@ public class DalyMessageHandler {
     }
 
 
-    void getFailureCodes(final DalyMessage msg) throws IOException // 0x98
+    private void getFailureCodes(final DalyMessage msg) throws IOException // 0x98
     {
         final int batteryNo = msg.address - 1;
 
@@ -519,7 +528,7 @@ public class DalyMessageHandler {
      */
 
 
-    boolean bitRead(final int value, final int index) {
+    private boolean bitRead(final int value, final int index) {
         return (value >> index & 1) == 1;
     }
 }

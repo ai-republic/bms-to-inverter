@@ -13,6 +13,9 @@ import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.service.IMQTTConsumerService;
 
+/**
+ * The implementation of the {@link IMQTTConsumerService} using the ActiveMQ Artemis implementation.
+ */
 public class MQTTConsumerService implements IMQTTConsumerService {
     private final static Logger LOG = LoggerFactory.getLogger(MQTTConsumerService.class);
     private boolean running = false;
@@ -84,6 +87,11 @@ public class MQTTConsumerService implements IMQTTConsumerService {
     }
 
 
+    /**
+     * Main method to test the consumer.
+     *
+     * @param args none
+     */
     public static void main(final String[] args) {
         final String locator = "tcp://127.0.0.1:61616";
         final String topic = "energystorage";

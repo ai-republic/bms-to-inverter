@@ -5,7 +5,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -21,6 +20,10 @@ import com.airepublic.bmstoinverter.core.protocol.can.CAN;
 
 import jakarta.inject.Inject;
 
+/**
+ * The {@link PortProcessor} to handle CAN messages from a Growatt low voltage (12V/24V/48V)
+ * inverter.
+ */
 @Inverter
 public class GrowattCANProcessor extends PortProcessor {
     private final static Logger LOG = LoggerFactory.getLogger(GrowattCANProcessor.class);
@@ -30,10 +33,6 @@ public class GrowattCANProcessor extends PortProcessor {
     private Port port;
     @Inject
     private EnergyStorage energyStorage;
-
-    public GrowattCANProcessor() {
-    }
-
 
     @Override
     public Port getPort() {
@@ -54,7 +53,7 @@ public class GrowattCANProcessor extends PortProcessor {
 
         if (port.isOpen()) {
             try {
-                final List<ByteBuffer> canData = updateCANMessages(getGrowattData());
+                final List<ByteBuffer> canData = updateCANMessages();
 
                 for (final ByteBuffer frame : canData) {
                     LOG.debug("CAN send: {}", Port.printBuffer(frame));
@@ -68,40 +67,7 @@ public class GrowattCANProcessor extends PortProcessor {
     }
 
 
-    private GrowattData getGrowattData() {
-        final GrowattData data = new GrowattData();
-
-        data.chargeVoltageSetpoint = (char) energyStorage.getBatteryPack(0).maxPackVoltageLimit; // 57.6V
-        data.dcChargeCurrentLimit = (short) energyStorage.getBatteryPack(0).maxPackChargeCurrent; // 100A
-        data.dcDischargeCurrentLimit = (short) energyStorage.getBatteryPack(0).maxPackDischargeCurrent; // 100A
-        data.dischargeVoltageLimit = (char) energyStorage.getBatteryPack(0).minPackVoltageLimit; // 48V
-
-        Optional<BatteryPack> opt = Stream.of(energyStorage.getBatteryPacks()).filter(b -> b.packSOC != 0).min((o1, o2) -> ((Integer) o1.packSOC).compareTo(o2.packSOC));
-        if (opt.isPresent()) {
-            data.soc = (char) (opt.get().packSOC / 10); // 100%
-        } else {
-            data.soc = (char) 50;
-        }
-
-        data.soh = 100; // 100%
-
-        opt = Stream.of(energyStorage.getBatteryPacks()).filter(b -> b.packVoltage != 0).min((o1, o2) -> ((Integer) o1.packVoltage).compareTo(o2.packVoltage));
-
-        if (opt.isPresent()) {
-            data.batteryVoltage = (short) (opt.get().packVoltage * 10);
-        } else {
-            data.batteryVoltage = 5200;
-        }
-
-        data.batteryCurrent = (short) Stream.of(energyStorage.getBatteryPacks()).mapToInt(b -> b.packCurrent).sum();
-        data.batteryTemperature = (short) (Stream.of(energyStorage.getBatteryPacks()).mapToInt(b -> b.tempAverage).average().orElseGet(() -> 35d) * 10); // 35degC
-
-        LOG.info("Sending Growatt frame: Batt(V)={}, Batt(A)={}, SOC={}", data.batteryVoltage / 100f, data.batteryCurrent / 10f, (int) data.soc);
-        return data;
-    }
-
-
-    private List<ByteBuffer> updateCANMessages(final GrowattData data) {
+    private List<ByteBuffer> updateCANMessages() {
         final List<ByteBuffer> frames = new ArrayList<>();
         final byte length = (byte) 8;
         // 0x0351 charge voltage, charge amp limit, discharge amp limit, discharge voltage limit
@@ -246,14 +212,14 @@ public class GrowattCANProcessor extends PortProcessor {
         frame.put((byte) 0);
         // update successful count
         frame.put((byte) 0);
-        frame.putInt((int)0L);
+        frame.putInt((int) 0L);
 
         frames.add(frame);
         return frames;
     }
 
 
-    boolean bitRead(final int value, final int index) {
+    private boolean bitRead(final int value, final int index) {
         return (value >> index & 1) == 1;
     }
 

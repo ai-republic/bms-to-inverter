@@ -15,15 +15,26 @@ import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.CanFrame;
 import tel.schich.javacan.RawCanChannel;
 
+/**
+ * The implementation of the {@link CANPort} using the javacan implementation.
+ */
 @CAN
 public class JavaCANPort extends CANPort {
     private RawCanChannel canChannel;
     private ExecutorService executor;
 
+    /**
+     * Constructor.
+     */
     public JavaCANPort() {
     }
 
 
+    /**
+     * Constructor.
+     *
+     * @param portname the portname
+     */
     public JavaCANPort(final String portname) {
         super(portname);
     }
