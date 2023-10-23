@@ -18,6 +18,9 @@ import com.airepublic.bmstoinverter.core.service.IMQTTBrokerService;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
+/**
+ * The implementation of the {@link IMQTTBrokerService} using the ActiveMQ Artemis implementation.
+ */
 @ApplicationScoped
 public class MQTTBrokerService implements IMQTTBrokerService {
     private final static Logger LOG = LoggerFactory.getLogger(MQTTBrokerService.class);
@@ -94,6 +97,11 @@ public class MQTTBrokerService implements IMQTTBrokerService {
     }
 
 
+    /**
+     * Main method to test the broker.
+     *
+     * @param args none
+     */
     public static void main(final String[] args) {
         final String locator = "tcp://127.0.0.1:61616";
         final String topic = "energystorage";

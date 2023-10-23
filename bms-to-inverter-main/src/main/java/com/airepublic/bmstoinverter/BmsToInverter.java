@@ -16,6 +16,7 @@ import com.airepublic.bmstoinverter.core.PortProcessor;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.service.IMQTTBrokerService;
+import com.airepublic.bmstoinverter.core.service.IMQTTProducerService;
 import com.airepublic.email.api.EmailAccount;
 import com.airepublic.email.api.IEmailService;
 
@@ -24,6 +25,12 @@ import jakarta.enterprise.inject.se.SeContainer;
 import jakarta.enterprise.inject.se.SeContainerInitializer;
 import jakarta.inject.Inject;
 
+/**
+ * The main class to initiate communication between the configured BMS and the inverter. The BMS
+ * values are read and stored in the {@link EnergyStorage}. Once read these values are send to the
+ * (optional) MQTT Broker. Alarms and warnings will be analysed and (optionally) sent by email if
+ * some occurred. The the data is sent to the inverter {@link PortProcessor}.
+ */
 @ApplicationScoped
 public class BmsToInverter implements AutoCloseable {
     private final static Logger LOG = LoggerFactory.getLogger(BmsToInverter.class);
@@ -36,11 +43,18 @@ public class BmsToInverter implements AutoCloseable {
     @Inverter
     private PortProcessor inverter;
     private final IMQTTBrokerService mqttBroker = ServiceLoader.load(IMQTTBrokerService.class).findFirst().orElse(null);
+    private final IMQTTProducerService mqttProducer = ServiceLoader.load(IMQTTProducerService.class).findFirst().orElse(null);
     private final IEmailService emailService = ServiceLoader.load(IEmailService.class).findFirst().orElse(null);
-    private final EmailAccount account = emailService != null ? new EmailAccount() : null;
+    private EmailAccount account;
 
+    /**
+     * The main method to start the application.
+     *
+     * @param args none
+     * @throws IOException
+     */
     public static void main(final String[] args) throws IOException {
-        // update all non-specified system parameters from "pi.properties"
+        // update all non-specified system parameters from "config.properties"
         updateSystemProperties();
 
         final SeContainerInitializer initializer = SeContainerInitializer.newInstance();
@@ -50,6 +64,9 @@ public class BmsToInverter implements AutoCloseable {
     }
 
 
+    /**
+     * Constructor.
+     */
     public BmsToInverter() {
         // check for MQTT broker service module
         if (mqttBroker != null) {
@@ -59,9 +76,36 @@ public class BmsToInverter implements AutoCloseable {
             mqttBroker.start(locator);
             mqttBroker.createTopic(topic, 1L);
         }
+
+        // check for MQTT producer service module
+        if (mqttProducer != null) {
+            final String locator = System.getProperty("mqtt.locator");
+            final String topic = System.getProperty("mqtt.topic");
+
+            try {
+                mqttProducer.connect(locator, topic);
+            } catch (final Exception e) {
+                LOG.error("Could not connect MQTT producer client at {} on topic {}", locator, topic, e);
+            }
+        }
+
+        // check for EmailService service module
+        if (emailService != null) {
+            try {
+                final Properties mailProperties = new Properties();
+                mailProperties.load(BmsToInverter.class.getClassLoader().getResourceAsStream("mail.properties"));
+                account = new EmailAccount(mailProperties);
+            } catch (final IOException e) {
+                LOG.error("EmailService could not be initialized due to missing mail.properties file!", e);
+            }
+        }
     }
 
 
+    /**
+     * Starts the reading and processing of the BMS data in parallel execution reading and writing
+     * synchronized to the {@link EnergyStorage}.
+     */
     public void start() {
 
         final ExecutorService executorService = Executors.newFixedThreadPool(2);
@@ -83,15 +127,22 @@ public class BmsToInverter implements AutoCloseable {
 
                 LOG.info(createBatteryOverview());
 
+                if (mqttProducer != null) {
+                    // send energystorage data to MQTT broker
+                    mqttProducer.sendMessage(energyStorage.toJson());
+                }
+
                 analyseBMSFaults();
 
                 // send data to inverter
-                // try {
-                // result = executorService.submit(() -> inverter.process());
-                // result.get();
-                // } catch (final Exception e) {
-                // LOG.error("Error sending inverter data!", e);
-                // }
+                if (inverter != null) {
+                    // try {
+                    // result = executorService.submit(() -> inverter.process());
+                    // result.get();
+                    // } catch (final Exception e) {
+                    // LOG.error("Error sending inverter data!", e);
+                    // }
+                }
             }
         } catch (final Throwable e) {
             LOG.error("Failed to perform initial reading of BMS values!", e);
@@ -100,6 +151,10 @@ public class BmsToInverter implements AutoCloseable {
     }
 
 
+    /**
+     * Analyzes and aggregates the warnings and alarms and sends them to the configured mail
+     * account(s).
+     */
     private void analyseBMSFaults() {
         for (final BatteryPack battery : energyStorage.getBatteryPacks()) {
 
@@ -134,6 +189,9 @@ public class BmsToInverter implements AutoCloseable {
     }
 
 
+    /**
+     * Reads the <code>config.properties</code> and adds them to the system properties.
+     */
     private static void updateSystemProperties() {
         final Properties props = new Properties();
         try {

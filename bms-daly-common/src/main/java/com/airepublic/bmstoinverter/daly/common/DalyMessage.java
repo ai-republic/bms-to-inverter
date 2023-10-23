@@ -2,9 +2,12 @@ package com.airepublic.bmstoinverter.daly.common;
 
 import java.nio.ByteBuffer;
 
+/**
+ * The message that contains the frame data, bms address and {@link DalyCommand}.
+ */
 public class DalyMessage {
     public byte address;
-    public byte dataId;
+    public DalyCommand cmd;
     public ByteBuffer data = ByteBuffer.allocate(8);
 
 }

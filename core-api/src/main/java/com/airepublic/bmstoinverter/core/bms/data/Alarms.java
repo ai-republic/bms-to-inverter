@@ -1,7 +1,7 @@
 package com.airepublic.bmstoinverter.core.bms.data;
 
 /**
- * Alarms holds flags for all possible errors/warnings from the BMS.
+ * Alarms holds alarm and warning flags for all possible errors/warnings from the BMS.
  */
 public class Alarms {
     // data from 0x98

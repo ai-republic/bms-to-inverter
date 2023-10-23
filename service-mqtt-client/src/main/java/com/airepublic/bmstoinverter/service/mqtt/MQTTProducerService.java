@@ -13,6 +13,9 @@ import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.service.IMQTTProducerService;
 
+/**
+ * The implementation of the {@link IMQTTProducerService} using the ActiveMQ Artemis implementation.
+ */
 public class MQTTProducerService implements IMQTTProducerService {
     private final static Logger LOG = LoggerFactory.getLogger(MQTTProducerService.class);
     private boolean running = false;
@@ -81,6 +84,11 @@ public class MQTTProducerService implements IMQTTProducerService {
     }
 
 
+    /**
+     * Main method to test the producer.
+     *
+     * @param args none
+     */
     public static void main(final String[] args) {
 
         try {

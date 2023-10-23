@@ -12,6 +12,9 @@ import com.airepublic.bmstoinverter.core.protocol.rs485.RS485;
 import com.airepublic.bmstoinverter.core.protocol.rs485.RS485Port;
 import com.fazecast.jSerialComm.SerialPort;
 
+/**
+ * The implementation of the {@link RS485Port} using the JSerialComm implementation.
+ */
 @RS485
 public class JSerialCommPort extends RS485Port {
     private final static Logger LOG = LoggerFactory.getLogger(JSerialCommPort.class);

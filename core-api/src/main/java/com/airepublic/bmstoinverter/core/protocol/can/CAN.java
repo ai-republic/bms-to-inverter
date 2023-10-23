@@ -7,6 +7,9 @@ import java.lang.annotation.Retention;
 
 import jakarta.inject.Qualifier;
 
+/**
+ * Qualifier to identify a {@link Port} that handles CAN messages.
+ */
 @Qualifier
 @Retention(RUNTIME)
 @Documented

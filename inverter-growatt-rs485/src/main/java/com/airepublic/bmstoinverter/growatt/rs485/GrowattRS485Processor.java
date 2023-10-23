@@ -16,6 +16,10 @@ import com.airepublic.bmstoinverter.core.protocol.modbus.ModBus;
 
 import jakarta.inject.Inject;
 
+/**
+ * The {@link PortProcessor} to handle RS485 messages from a Growatt low voltage (12V/24V/48V)
+ * inverter.
+ */
 @Inverter
 public class GrowattRS485Processor extends PortProcessor {
     private final static Logger LOG = LoggerFactory.getLogger(GrowattRS485Processor.class);
@@ -25,10 +29,6 @@ public class GrowattRS485Processor extends PortProcessor {
     private Port port;
     @Inject
     private EnergyStorage energyStorage;
-
-    public GrowattRS485Processor() {
-    }
-
 
     @Override
     public Port getPort() {
