@@ -18,6 +18,7 @@ Currently implemented BMS:
 
 Currently implemented inverters:
 * SMA Sunny Island (CAN)
+* Growatt low voltage (12V/24V/48V) inverters (CAN)
 
 ----------
 
