@@ -8,17 +8,18 @@ Or you can just read out your BMS's data and use the optional MQTT broker or Web
 The (reference) project uses a Raspberry Pi 4 with a [Waveshare RS485/CAN](https://www.waveshare.com/rs485-can-hat.htm) hat or [Waveshare 2-Channel CAN FD HAT](https://www.waveshare.com/2-ch-can-fd-hat.htm) module but you can use any CAN or RS485 module for your PI that provides ports like `can0` or `ttyS0` or similar.
 The appplication supports _multiple_ battery packs, aggregating them and sending the data to the configurable inverter.
 
-Any BMS or inverter can be supported in a very short time by just mapping the manufacturers protocol specification in an own implementation of the [`PortProcessor`](https://github.com/ai-republic/bms-to-inverter/blob/main/core-api/src/main/java/com/airepublic/bmstoinverter/core/PortProcessor.java).
-
 This way _you_ control what gets send to the inverter.
 You can monitor each of your battery packs cells and view alarm states on the included webserver or hook up via the MQTT broker on your smart home.
 
-Currently implemented BMS:
+## Currently implemented BMS:
 * Daly BMS (RS485 or CAN)
 
-Currently implemented inverters:
+## Currently implemented inverters:
 * SMA Sunny Island (CAN)
 * Growatt low voltage (12V/24V/48V) inverters (CAN)
+
+Any BMS or inverter can be supported in a very short time by just mapping the manufacturers protocol specification in an own implementation of the [`PortProcessor`](https://github.com/ai-republic/bms-to-inverter/blob/main/core-api/src/main/java/com/airepublic/bmstoinverter/core/PortProcessor.java).
+NOTE: Growatt inverter tests are still outstanding. I would appreciate support to test the inverter bindings on the different inverters.
 
 ----------
 
