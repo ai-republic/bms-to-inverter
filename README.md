@@ -1,4 +1,5 @@
 # BMS to Solar Inverter communication
+(Use, monitor and control any battery brand with any inverter)
 
 This application is reading data from a BMS and sending it to an inverter. This way you have no restriction on what battery brands you can use with your inverter. 
 Many inverter manufacturers only allow batteries from certain battery manufacturers and certain models.
