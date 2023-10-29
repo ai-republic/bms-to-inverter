@@ -17,7 +17,7 @@ import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 import jakarta.inject.Inject;
 
 /**
- * The {@link PortProcessor} to handle CAN messages from a Daly BMS.
+ * The {@link PortProcessor} to handle CAN messages from a JK BMS.
  */
 @Bms
 public class JKBmsCANProcessor extends PortProcessor {
