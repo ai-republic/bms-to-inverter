@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 
+import jakarta.inject.Inject;
+
 /**
  * The handler to interpret the {@link DalyMessage} and update the application wide
  * {@link EnergyStorage} object.
@@ -19,10 +21,13 @@ public class DalyMessageHandler {
     private final static int MIN_NUMBER_TEMP_SENSORS = 1;
     private final static int MAX_NUMBER_TEMP_SENSORS = 16;
 
-    private final EnergyStorage energyStorage;
+    @Inject
+    private EnergyStorage energyStorage;
 
-    public DalyMessageHandler(final EnergyStorage energyStorage) {
-        this.energyStorage = energyStorage;
+    /**
+     * Constructor.
+     */
+    public DalyMessageHandler() {
     }
 
 

@@ -26,6 +26,7 @@ public abstract class AbstractDalyBmsProcessor extends PortProcessor {
     private final static Logger LOG = LoggerFactory.getLogger(AbstractDalyBmsProcessor.class);
     @Inject
     private EnergyStorage energyStorage;
+    @Inject
     private DalyMessageHandler messageHandler;
     private final byte[] requestData = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
     private Port port;
@@ -56,7 +57,6 @@ public abstract class AbstractDalyBmsProcessor extends PortProcessor {
             // open port on Daly BMSes/interfaceboards(WNT)
             try {
                 LOG.info("Opening " + port.getPortname() + ", number of battery packs = " + energyStorage.getBatteryPackCount() + " ...");
-                messageHandler = new DalyMessageHandler(energyStorage);
                 port.open();
                 LOG.info("Opening port {} SUCCESSFUL", port);
 
