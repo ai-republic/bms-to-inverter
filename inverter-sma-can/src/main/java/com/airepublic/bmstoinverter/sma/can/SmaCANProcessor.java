@@ -55,6 +55,7 @@ public class SmaCANProcessor extends PortProcessor {
 
                 for (final ByteBuffer frame : canData.values()) {
                     LOG.debug("CAN send: {}", Port.printBuffer(frame));
+                    frame.rewind();
                     port.sendFrame(frame);
                 }
 
