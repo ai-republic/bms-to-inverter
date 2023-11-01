@@ -28,10 +28,15 @@ Any BMS or inverter can be supported in a very short time by just mapping the ma
 
 ## Currently implemented BMS:
 * Daly BMS (RS485 or CAN)
+* JK BMS (CAN)*
+* Seplos BMS (CAN)*
 
 ## Currently implemented inverters:
 * SMA Sunny Island (CAN)
-* Growatt low voltage (12V/24V/48V) inverters (CAN)
+* Growatt low voltage (12V/24V/48V) inverters (CAN)*
+
+
+\* need testing on real hardware - testers welcome!
 
 ----------
 
