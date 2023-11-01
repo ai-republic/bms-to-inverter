@@ -11,6 +11,14 @@
 
 	<artifactId>protocol-rs485</artifactId>
 
+	<name>${project.artifactId}-${project.version}</name>
+	<description>Module for the RS485 protocol support</description>
+
+	<properties>
+		<encoding>UTF-8</encoding>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>

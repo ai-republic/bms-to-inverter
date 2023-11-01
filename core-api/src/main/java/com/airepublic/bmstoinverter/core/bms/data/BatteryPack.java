@@ -99,6 +99,9 @@ public class BatteryPack {
     // data from 0x98
     /** alarm states */
     public Alarms alarms = new Alarms();
+    //
+    /** The manufacturer code */
+    public String manufacturerCode;
 
     /**
      * Constructor.

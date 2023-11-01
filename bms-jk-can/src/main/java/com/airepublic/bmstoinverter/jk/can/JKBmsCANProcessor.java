@@ -113,22 +113,22 @@ public class JKBmsCANProcessor extends PortProcessor {
         byte value = data.get();
 
         // unit overvoltage
-        int bits = readBits(value, 0);
+        int bits = read2Bits(value, 0);
         energyStorage.getBatteryPack(bmsNo).alarms.levelOneCellVoltageTooHigh.value = bits == 1;
         energyStorage.getBatteryPack(bmsNo).alarms.levelTwoCellVoltageTooHigh.value = bits >= 2;
 
         // unit undervoltage
-        bits = readBits(value, 2);
+        bits = read2Bits(value, 2);
         energyStorage.getBatteryPack(bmsNo).alarms.levelOneCellVoltageTooLow.value = bits == 1;
         energyStorage.getBatteryPack(bmsNo).alarms.levelTwoCellVoltageTooLow.value = bits >= 2;
 
         // total voltage overvoltage
-        bits = readBits(value, 4);
+        bits = read2Bits(value, 4);
         energyStorage.getBatteryPack(bmsNo).alarms.levelOnePackVoltageTooHigh.value = bits == 1;
         energyStorage.getBatteryPack(bmsNo).alarms.levelTwoPackVoltageTooHigh.value = bits >= 2;
 
         // total voltage undervoltage
-        bits = readBits(value, 6);
+        bits = read2Bits(value, 6);
         energyStorage.getBatteryPack(bmsNo).alarms.levelOnePackVoltageTooLow.value = bits == 1;
         energyStorage.getBatteryPack(bmsNo).alarms.levelTwoPackVoltageTooLow.value = bits >= 2;
 
@@ -136,20 +136,20 @@ public class JKBmsCANProcessor extends PortProcessor {
         value = data.get();
 
         // Large pressure difference in cell (not mapped)
-        bits = readBits(value, 0);
+        bits = read2Bits(value, 0);
 
         // discharge overcurrent
-        bits = readBits(value, 2);
+        bits = read2Bits(value, 2);
         energyStorage.getBatteryPack(bmsNo).alarms.levelOneDischargeCurrentTooHigh.value = bits == 1;
         energyStorage.getBatteryPack(bmsNo).alarms.levelTwoDischargeCurrentTooHigh.value = bits >= 2;
 
         // charge overcurrent
-        bits = readBits(value, 4);
+        bits = read2Bits(value, 4);
         energyStorage.getBatteryPack(bmsNo).alarms.levelOneChargeCurrentTooHigh.value = bits == 1;
         energyStorage.getBatteryPack(bmsNo).alarms.levelTwoChargeCurrentTooHigh.value = bits >= 2;
 
         // temperature too high
-        bits = readBits(value, 6);
+        bits = read2Bits(value, 6);
         energyStorage.getBatteryPack(bmsNo).alarms.levelOneChargeTempTooHigh.value = bits == 1;
         energyStorage.getBatteryPack(bmsNo).alarms.levelTwoChargeTempTooHigh.value = bits >= 2;
 
@@ -157,42 +157,42 @@ public class JKBmsCANProcessor extends PortProcessor {
         value = data.get();
 
         // temperature too low
-        bits = readBits(value, 0);
+        bits = read2Bits(value, 0);
         energyStorage.getBatteryPack(bmsNo).alarms.levelOneChargeTempTooLow.value = bits == 1;
         energyStorage.getBatteryPack(bmsNo).alarms.levelTwoChargeTempTooLow.value = bits >= 2;
 
         // excessive temperature difference
-        bits = readBits(value, 2);
+        bits = read2Bits(value, 2);
         energyStorage.getBatteryPack(bmsNo).alarms.levelOneTempSensorDifferenceTooHigh.value = bits == 1;
         energyStorage.getBatteryPack(bmsNo).alarms.levelTwoTempSensorDifferenceTooHigh.value = bits >= 2;
 
         // SOC too low
-        bits = readBits(value, 4);
+        bits = read2Bits(value, 4);
         energyStorage.getBatteryPack(bmsNo).alarms.levelOneStateOfChargeTooLow.value = bits == 1;
         energyStorage.getBatteryPack(bmsNo).alarms.levelTwoStateOfChargeTooLow.value = bits >= 2;
 
         // insulation too low (not mapped)
-        bits = readBits(value, 6);
+        bits = read2Bits(value, 6);
 
         // read next 8 bits
         value = data.get();
 
         // high voltage interlock fault
-        bits = readBits(value, 0);
+        bits = read2Bits(value, 0);
         energyStorage.getBatteryPack(bmsNo).alarms.failureOfVoltageSensorModule.value = bits != 0;
 
         // external communication failure
-        bits = readBits(value, 2);
+        bits = read2Bits(value, 2);
         energyStorage.getBatteryPack(bmsNo).alarms.failureOfVehicleCommunicationModule.value = bits != 0;
 
         // internal communication failure
-        bits = readBits(value, 4);
+        bits = read2Bits(value, 4);
         energyStorage.getBatteryPack(bmsNo).alarms.failureOfIntranetCommunicationModule.value = bits != 0;
 
     }
 
 
-    private static int readBits(final byte value, final int index) {
+    private static int read2Bits(final byte value, final int index) {
         String str = Integer.toBinaryString(value);
         System.out.println("Str to parse: " + str);
 
