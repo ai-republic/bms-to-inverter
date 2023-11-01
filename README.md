@@ -34,6 +34,7 @@ Any BMS or inverter can be supported in a very short time by just mapping the ma
 ## Currently implemented inverters:
 * SMA Sunny Island (CAN)
 * Growatt low voltage (12V/24V/48V) inverters (CAN)*
+* Deye inverters (CAN)*
 
 
 \* need testing on real hardware - testers welcome!
