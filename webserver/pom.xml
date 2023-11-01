@@ -12,11 +12,12 @@
 
 	<artifactId>webserver</artifactId>
 
-	<name>webserver</name>
-	<description>Demo project for Spring Boot</description>
-
+	<name>${project.artifactId}-${project.version}</name>
+	<description>Module for the webserver</description>
 
 	<properties>
+		<encoding>UTF-8</encoding>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>17</java.version>
 		<start-class>com.airepublic.bmstoinverter.webserver.WebserverApplication</start-class>
 	</properties>

@@ -5,13 +5,19 @@
 
 	<artifactId>bms-to-inverter-main</artifactId>
 
-
 	<parent>
 		<groupId>com.ai-republic.bms-to-inverter</groupId>
 		<artifactId>bms-to-inverter-parent</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
+	<name>${project.artifactId}-${project.version}</name>
+	<description>Application to communicate between a BMS and inverter</description>
+
+	<properties>
+		<encoding>UTF-8</encoding>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+	</properties>
 
 	<build>
 		<plugins>

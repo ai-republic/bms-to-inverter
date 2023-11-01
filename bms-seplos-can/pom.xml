@@ -9,10 +9,10 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>bms-daly-common</artifactId>
-
+	<artifactId>bms-seplos-can</artifactId>
+	
 	<name>${project.artifactId}-${project.version}</name>
-	<description>Module for the common Daly BMS CAN classes</description>
+	<description>Module for the Seplos BMS CAN support</description>
 
 	<properties>
 		<encoding>UTF-8</encoding>
@@ -22,7 +22,7 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>core-api</artifactId>
+			<artifactId>protocol-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>

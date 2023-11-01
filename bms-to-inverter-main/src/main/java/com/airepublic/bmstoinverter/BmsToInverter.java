@@ -91,13 +91,7 @@ public class BmsToInverter implements AutoCloseable {
 
         // check for EmailService service module
         if (emailService != null) {
-            try {
-                final Properties mailProperties = new Properties();
-                mailProperties.load(BmsToInverter.class.getClassLoader().getResourceAsStream("mail.properties"));
-                account = new EmailAccount(mailProperties);
-            } catch (final IOException e) {
-                LOG.error("EmailService could not be initialized due to missing mail.properties file!", e);
-            }
+            account = new EmailAccount(System.getProperties());
         }
     }
 
@@ -136,12 +130,12 @@ public class BmsToInverter implements AutoCloseable {
 
                 // send data to inverter
                 if (inverter != null) {
-                     try {
-                     result = executorService.submit(() -> inverter.process());
-                     result.get();
-                     } catch (final Exception e) {
-                     LOG.error("Error sending inverter data!", e);
-                     }
+                    try {
+                        result = executorService.submit(() -> inverter.process());
+                        result.get();
+                    } catch (final Exception e) {
+                        LOG.error("Error sending inverter data!", e);
+                    }
                 }
             }
         } catch (final Throwable e) {
