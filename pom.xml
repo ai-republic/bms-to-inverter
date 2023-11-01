@@ -30,6 +30,7 @@
 		<module>inverter-growatt-can</module>
 		<module>bms-jk-can</module>
 		<module>bms-seplos-can</module>
+		<module>inverter-deye-can</module>
 	</modules>
 
 	<build>
