@@ -17,7 +17,7 @@ import com.airepublic.bmstoinverter.core.protocol.modbus.ModBus;
 import jakarta.inject.Inject;
 
 /**
- * The {@link PortProcessor} to handle RS485 messages from a Growatt low voltage (12V/24V/48V)
+ * The {@link PortProcessor} to handle RS485 messages for a Growatt low voltage (12V/24V/48V)
  * inverter.
  */
 @Inverter

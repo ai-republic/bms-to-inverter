@@ -1,4 +1,4 @@
-package com.airepublic.bmstoinverter.deye.can;
+package com.airepublic.bmstoinverter.solark.can;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -19,11 +19,11 @@ import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 import jakarta.inject.Inject;
 
 /**
- * The {@link PortProcessor} to handle CAN messages for Deye inverters.
+ * The {@link PortProcessor} to handle CAN messages for SolArk inverters.
  */
 @Inverter
-public class DeyeInverterCANProcessor extends PortProcessor {
-    private final static Logger LOG = LoggerFactory.getLogger(DeyeInverterCANProcessor.class);
+public class SolArkInverterCANProcessor extends PortProcessor {
+    private final static Logger LOG = LoggerFactory.getLogger(SolArkInverterCANProcessor.class);
     @Inject
     @CAN
     @Portname("inverter.portname")
