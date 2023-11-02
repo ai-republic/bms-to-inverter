@@ -35,6 +35,8 @@ public class BatteryPack {
     public int packCurrent;
     /** State Of Charge (0.1%) */
     public int packSOC;
+    /** State of Health (0.1%) */
+    public int packSOH;
 
     // data from 0x91
     /** Maximum cell voltage (mV) */
