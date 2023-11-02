@@ -32,6 +32,7 @@
 		<module>bms-seplos-can</module>
 		<module>inverter-deye-can</module>
 		<module>inverter-solark-can</module>
+		<module>bms-pylon-can</module>
 	</modules>
 
 	<build>
