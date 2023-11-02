@@ -51,9 +51,9 @@ public class BatteryPack {
     public int cellDiffmV;
 
     // data from 0x92
-    /** Maximum temperature sensor reading (�C) */
+    /** Maximum temperature sensor reading (1C) */
     public int tempMax;
-    /** Minimum temperature sensor reading (�C) */
+    /** Minimum temperature sensor reading (1C) */
     public int tempMin;
     /** Average of temp sensors */
     public int tempAverage;
