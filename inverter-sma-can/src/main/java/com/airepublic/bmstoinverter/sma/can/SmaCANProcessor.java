@@ -19,7 +19,7 @@ import com.airepublic.bmstoinverter.core.protocol.can.CAN;
 import jakarta.inject.Inject;
 
 /**
- * The {@link PortProcessor} to handle CAN messages from a SMA inverter.
+ * The {@link PortProcessor} to handle CAN messages for a SMA inverter.
  */
 @Inverter
 public class SmaCANProcessor extends PortProcessor {

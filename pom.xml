@@ -31,6 +31,7 @@
 		<module>bms-jk-can</module>
 		<module>bms-seplos-can</module>
 		<module>inverter-deye-can</module>
+		<module>inverter-solark-can</module>
 	</modules>
 
 	<build>

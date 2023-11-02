@@ -17,7 +17,7 @@ import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 import jakarta.inject.Inject;
 
 /**
- * The {@link PortProcessor} to handle CAN messages from a JK BMS.
+ * The {@link PortProcessor} to handle CAN messages from a Seplos BMS.
  */
 @Bms
 public class SeplosBmsCANProcessor extends PortProcessor {
@@ -77,19 +77,21 @@ public class SeplosBmsCANProcessor extends PortProcessor {
     }
 
 
+    // 0x351
     private void readChargeDischargeInfo(final int bmsNo, final ByteBuffer data) {
         // Battery charge voltage (0.1V) - uint_16
-        // energyStorage.getBatteryPack(bmsNo).maxPackVoltageLimit = data.getChar();
+        energyStorage.getBatteryPack(bmsNo).maxPackVoltageLimit = data.getChar();
         // Charge current limit (0.1A) - sint_16
         energyStorage.getBatteryPack(bmsNo).maxPackChargeCurrent = data.getShort();
         // Discharge current limit (0.1A) - sint_16
         energyStorage.getBatteryPack(bmsNo).maxPackDischargeCurrent = data.getShort();
         // Battery discharge voltage (0.1V) - uint_16
-        // energyStorage.getBatteryPack(bmsNo).packVoltage = data.getChar();
+        energyStorage.getBatteryPack(bmsNo).minPackVoltageLimit = data.getChar();
 
     }
 
 
+    // 0x355
     private void readSOC(final int bmsNo, final ByteBuffer data) {
         // SOC (1%) - uint_16
         energyStorage.getBatteryPack(bmsNo).maxPackDischargeCurrent = data.getChar();
@@ -98,6 +100,7 @@ public class SeplosBmsCANProcessor extends PortProcessor {
     }
 
 
+    // 0x356
     private void readBatteryVoltage(final int bmsNo, final ByteBuffer data) {
         // Battery voltage (0.01V) - uint_16
         energyStorage.getBatteryPack(bmsNo).packVoltage = data.getShort();
@@ -108,6 +111,7 @@ public class SeplosBmsCANProcessor extends PortProcessor {
     }
 
 
+    // 0x35C
     private void requestChargeDischargeConfigChange(final int bmsNo, final ByteBuffer data) {
         final byte bits = data.get();
 
@@ -129,6 +133,7 @@ public class SeplosBmsCANProcessor extends PortProcessor {
     }
 
 
+    // 0x370
     private void readMinMaxTemperatureVoltage(final int bmsNo, final ByteBuffer data) {
         // Maximum cell temperature (0.1C) - uint_16
         energyStorage.getBatteryPack(bmsNo).tempMax = data.getShort();
@@ -141,6 +146,7 @@ public class SeplosBmsCANProcessor extends PortProcessor {
     }
 
 
+    // 0x371
     private void readTemperatureIds(final int bmsNo, final ByteBuffer data) {
         // Maximum cell temperature (0.1C) - uint_16
         // energyStorage.getBatteryPack(bmsNo).tempMax = data.getShort();
@@ -153,6 +159,7 @@ public class SeplosBmsCANProcessor extends PortProcessor {
     }
 
 
+    // 0x35E
     private void readManufacturer(final int bmsNo, final ByteBuffer data) {
         final char first = (char) data.get();
         final char second = (char) data.get();
@@ -161,6 +168,7 @@ public class SeplosBmsCANProcessor extends PortProcessor {
     }
 
 
+    // 0x359
     private void readAlarms(final int bmsNo, final ByteBuffer data) {
         // read first 8 bits
         int value = data.getInt();
