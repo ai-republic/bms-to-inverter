@@ -27,40 +27,55 @@ public class SeplosBmsCANProcessor extends PortProcessor {
 
     @Override
     public void process() {
-        for (final Port port : getPorts()) {
+        for (int bmsNo = 0; bmsNo < getPorts().size(); bmsNo++) {
             try {
-                final ByteBuffer frame = port.receiveFrame(null);
-                final int frameId = frame.getInt();
-                final byte[] bytes = new byte[8];
-                frame.get(bytes);
-                final ByteBuffer data = ByteBuffer.wrap(bytes);
-                final int bmsNo = 0; // Seplos aggregates all data to one BMS
+                final Port port = getPorts().get(bmsNo);
 
-                switch (frameId) {
-                    case 0x351:
-                        readChargeDischargeInfo(bmsNo, data);
-                    break;
-                    case 0x355:
-                        readSOC(bmsNo, data);
-                    break;
-                    case 0x356:
-                        readBatteryVoltage(bmsNo, data);
-                    break;
-                    case 0x35C:
-                        requestChargeDischargeConfigChange(bmsNo, data);
-                    break;
-                    case 0x370:
-                        readMinMaxTemperatureVoltage(bmsNo, data);
-                    break;
-                    case 0x371:
-                        readTemperatureIds(bmsNo, data);
-                    break;
-                    case 0x35E:
-                        readManufacturer(bmsNo, data);
-                    break;
-                    case 0x359:
-                        readAlarms(bmsNo, data);
-                    break;
+                if (!port.isOpen()) {
+                    // open port
+                    try {
+                        LOG.info("Opening " + port.getPortname() + ", number of battery packs = " + energyStorage.getBatteryPackCount() + " ...");
+                        port.open();
+                        LOG.info("Opening port {} SUCCESSFUL", port);
+
+                    } catch (final Throwable e) {
+                        LOG.error("Opening port {} FAILED!", port, e);
+                    }
+                }
+
+                if (port.isOpen()) {
+                    final ByteBuffer frame = port.receiveFrame(null);
+                    final int frameId = frame.getInt();
+                    final byte[] bytes = new byte[8];
+                    frame.get(bytes);
+                    final ByteBuffer data = ByteBuffer.wrap(bytes);
+
+                    switch (frameId) {
+                        case 0x351:
+                            readChargeDischargeInfo(bmsNo, data);
+                        break;
+                        case 0x355:
+                            readSOC(bmsNo, data);
+                        break;
+                        case 0x356:
+                            readBatteryVoltage(bmsNo, data);
+                        break;
+                        case 0x35C:
+                            requestChargeDischargeConfigChange(bmsNo, data);
+                        break;
+                        case 0x370:
+                            readMinMaxTemperatureVoltage(bmsNo, data);
+                        break;
+                        case 0x371:
+                            readTemperatureIds(bmsNo, data);
+                        break;
+                        case 0x35E:
+                            readManufacturer(bmsNo, data);
+                        break;
+                        case 0x359:
+                            readAlarms(bmsNo, data);
+                        break;
+                    }
                 }
             } catch (final IOException e) {
                 LOG.error("Error receiving frame!", e);
