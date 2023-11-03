@@ -9,10 +9,9 @@ import org.slf4j.LoggerFactory;
 import com.airepublic.bmstoinverter.core.Bms;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.PortProcessor;
-import com.airepublic.bmstoinverter.core.Portname;
+import com.airepublic.bmstoinverter.core.PortType;
+import com.airepublic.bmstoinverter.core.Protocol;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
-import com.airepublic.bmstoinverter.core.protocol.can.CAN;
-import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 
 import jakarta.inject.Inject;
 
@@ -20,47 +19,40 @@ import jakarta.inject.Inject;
  * The {@link PortProcessor} to handle CAN messages from a JK BMS.
  */
 @Bms
+@PortType(Protocol.CAN)
 public class JKBmsCANProcessor extends PortProcessor {
     private final static Logger LOG = LoggerFactory.getLogger(JKBmsCANProcessor.class);
-    @Inject
-    @CAN
-    @Portname("bms.portname")
-    private CANPort port;
     @Inject
     private EnergyStorage energyStorage;
 
     @Override
-    public Port getPort() {
-        return port;
-    }
-
-
-    @Override
     public void process() {
-        try {
-            final ByteBuffer frame = port.receiveFrame(null);
-            final int frameId = frame.getInt();
-            final byte[] bytes = new byte[8];
-            frame.get(bytes);
-            final ByteBuffer data = ByteBuffer.wrap(bytes);
-            final int bmsNo = frameId >> 8;
+        for (final Port port : getPorts()) {
+            try {
+                final ByteBuffer frame = port.receiveFrame(null);
+                final int frameId = frame.getInt();
+                final byte[] bytes = new byte[8];
+                frame.get(bytes);
+                final ByteBuffer data = ByteBuffer.wrap(bytes);
+                final int bmsNo = frameId >> 8;
 
-            switch (frameId) {
-                case 0x2F4:
-                    readBatteryStatus(bmsNo, data);
-                break;
-                case 0x4F4:
-                    readCellVoltage(bmsNo, data);
-                break;
-                case 0x5F4:
-                    readCellTemperature(bmsNo, data);
-                break;
-                case 0x7F4:
-                    readAlarms(bmsNo, data);
-                break;
+                switch (frameId) {
+                    case 0x2F4:
+                        readBatteryStatus(bmsNo, data);
+                    break;
+                    case 0x4F4:
+                        readCellVoltage(bmsNo, data);
+                    break;
+                    case 0x5F4:
+                        readCellTemperature(bmsNo, data);
+                    break;
+                    case 0x7F4:
+                        readAlarms(bmsNo, data);
+                    break;
+                }
+            } catch (final IOException e) {
+                LOG.error("Error receiving frame!", e);
             }
-        } catch (final IOException e) {
-            LOG.error("Error receiving frame!", e);
         }
     }
 

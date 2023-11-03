@@ -16,6 +16,23 @@ public abstract class RS485Port extends Port {
     private int frameLength = 0;
 
     /**
+     * Constructor.
+     */
+    public RS485Port() {
+    }
+
+
+    /**
+     * Constructor.
+     * 
+     * @param portname the portname
+     */
+    public RS485Port(final String portname) {
+        super(portname);
+    }
+
+
+    /**
      * Initializes the baud rate, start flag and frame length from the
      * <code>config.properties</code> or system properties <code>RS485.baudrate</code>,
      * <code>RS485.startFlag</code> and <code>RS485.frameLength</code>.

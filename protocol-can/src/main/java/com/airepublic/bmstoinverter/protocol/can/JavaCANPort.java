@@ -1,4 +1,4 @@
-package com.airepublic.bmstoinverter.protocol.can.javacan;
+package com.airepublic.bmstoinverter.protocol.can;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -37,6 +37,12 @@ public class JavaCANPort extends CANPort {
      */
     public JavaCANPort(final String portname) {
         super(portname);
+    }
+
+
+    @Override
+    public JavaCANPort create(final String portname) {
+        return new JavaCANPort(portname);
     }
 
 

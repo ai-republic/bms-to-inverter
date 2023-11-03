@@ -13,35 +13,24 @@ import org.slf4j.LoggerFactory;
 import com.airepublic.bmstoinverter.core.Bms;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.PortProcessor;
-import com.airepublic.bmstoinverter.core.Portname;
-import com.airepublic.bmstoinverter.core.protocol.can.CAN;
+import com.airepublic.bmstoinverter.core.PortType;
+import com.airepublic.bmstoinverter.core.Protocol;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 import com.airepublic.bmstoinverter.daly.common.AbstractDalyBmsProcessor;
 import com.airepublic.bmstoinverter.daly.common.DalyCommand;
 import com.airepublic.bmstoinverter.daly.common.DalyMessage;
 
-import jakarta.inject.Inject;
-
 /**
  * The {@link PortProcessor} to handle CAN messages from a Daly BMS.
  */
 @Bms
+@PortType(Protocol.CAN)
 public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
     private final static Logger LOG = LoggerFactory.getLogger(DalyBmsCANProcessor.class);
-    @Inject
-    @CAN
-    @Portname("bms.portname")
-    private CANPort port;
     private final ByteBuffer sendFrame = ByteBuffer.allocateDirect(16).order(ByteOrder.LITTLE_ENDIAN);
 
     @Override
-    public Port getPort() {
-        return port;
-    }
-
-
-    @Override
-    protected List<ByteBuffer> sendMessage(final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException {
+    protected List<ByteBuffer> sendMessage(final Port port, final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException {
         final ByteBuffer sendFrame = prepareSendFrame(bmsNo, cmd, data);
         int framesToBeReceived = getResponseFrameCount(cmd);
         final int frameCount = framesToBeReceived;
@@ -49,7 +38,7 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
         final List<ByteBuffer> readBuffers = new ArrayList<>();
 
         LOG.debug("SEND: {}", Port.printBuffer(sendFrame));
-        port.sendExtendedFrame(sendFrame);
+        ((CANPort) port).sendExtendedFrame(sendFrame);
 
         // read frames until the requested frame is read
         do {

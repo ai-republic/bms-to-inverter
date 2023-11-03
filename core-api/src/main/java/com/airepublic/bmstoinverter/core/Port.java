@@ -28,6 +28,15 @@ public abstract class Port implements AutoCloseable {
 
 
     /**
+     * Creates a new instance of this class with the specified portname.
+     *
+     * @param portname the portname
+     * @return the instance
+     */
+    protected abstract Port create(String portname);
+
+
+    /**
      * Gets the portname.
      *
      * @return the portname
@@ -144,4 +153,5 @@ public abstract class Port implements AutoCloseable {
     public String toString() {
         return getClass().getName() + "[portname=" + getPortname() + "]";
     }
+
 }
