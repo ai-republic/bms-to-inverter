@@ -13,6 +13,23 @@ public abstract class ModBusPort extends Port {
     private int baudrate = 9600;
 
     /**
+     * Constructor.
+     */
+    public ModBusPort() {
+    }
+
+
+    /**
+     * Constructor.
+     * 
+     * @param portname the portname
+     */
+    public ModBusPort(final String portname) {
+        super(portname);
+    }
+
+
+    /**
      * Initializes the baud rate from the <code>config.properties</code> or system property
      * <code>ModBus.baudrate</code>.
      */

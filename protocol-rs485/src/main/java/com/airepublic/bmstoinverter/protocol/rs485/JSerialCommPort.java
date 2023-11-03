@@ -20,6 +20,29 @@ public class JSerialCommPort extends RS485Port {
     private final static Logger LOG = LoggerFactory.getLogger(JSerialCommPort.class);
     private SerialPort port;
 
+    /**
+     * Constructor.
+     */
+    public JSerialCommPort() {
+    }
+
+
+    /**
+     * Constructor.
+     * 
+     * @param portname the portname
+     */
+    public JSerialCommPort(final String portname) {
+        super(portname);
+    }
+
+
+    @Override
+    protected Port create(final String portname) {
+        return new JSerialCommPort(portname);
+    }
+
+
     @Override
     public void open() throws IOException {
         try {

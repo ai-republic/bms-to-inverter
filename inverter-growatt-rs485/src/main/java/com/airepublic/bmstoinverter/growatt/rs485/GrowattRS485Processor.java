@@ -10,9 +10,9 @@ import org.slf4j.LoggerFactory;
 import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.PortProcessor;
-import com.airepublic.bmstoinverter.core.Portname;
+import com.airepublic.bmstoinverter.core.PortType;
+import com.airepublic.bmstoinverter.core.Protocol;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
-import com.airepublic.bmstoinverter.core.protocol.modbus.ModBus;
 
 import jakarta.inject.Inject;
 
@@ -21,43 +21,36 @@ import jakarta.inject.Inject;
  * inverter.
  */
 @Inverter
+@PortType(Protocol.RS485)
 public class GrowattRS485Processor extends PortProcessor {
     private final static Logger LOG = LoggerFactory.getLogger(GrowattRS485Processor.class);
-    @Inject
-    @ModBus
-    @Portname("inverter.portname")
-    private Port port;
     @Inject
     private EnergyStorage energyStorage;
 
     @Override
-    public Port getPort() {
-        return port;
-    }
-
-
-    @Override
     public void process() {
-        if (!port.isOpen()) {
-            try {
-                port.open();
-                LOG.debug("Opening port {} SUCCESSFUL", port);
-            } catch (final Throwable e) {
-                LOG.error("Opening port {} FAILED!", port, e);
-            }
-        }
-
-        if (port.isOpen()) {
-            try {
-                final List<ByteBuffer> sendBuffers = collectBMSData();
-
-                for (final ByteBuffer frame : sendBuffers) {
-                    LOG.debug("Frame send: {}", Port.printBuffer(frame));
-                    port.sendFrame(frame);
+        for (final Port port : getPorts()) {
+            if (!port.isOpen()) {
+                try {
+                    port.open();
+                    LOG.debug("Opening port {} SUCCESSFUL", port);
+                } catch (final Throwable e) {
+                    LOG.error("Opening port {} FAILED!", port, e);
                 }
+            }
 
-            } catch (final Throwable e) {
-                LOG.error("Failed to send frame", e);
+            if (port.isOpen()) {
+                try {
+                    final List<ByteBuffer> sendBuffers = collectBMSData();
+
+                    for (final ByteBuffer frame : sendBuffers) {
+                        LOG.debug("Frame send: {}", Port.printBuffer(frame));
+                        port.sendFrame(frame);
+                    }
+
+                } catch (final Throwable e) {
+                    LOG.error("Failed to send frame", e);
+                }
             }
         }
     }

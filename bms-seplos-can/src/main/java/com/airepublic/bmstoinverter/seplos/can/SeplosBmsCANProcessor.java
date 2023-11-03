@@ -9,10 +9,9 @@ import org.slf4j.LoggerFactory;
 import com.airepublic.bmstoinverter.core.Bms;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.PortProcessor;
-import com.airepublic.bmstoinverter.core.Portname;
+import com.airepublic.bmstoinverter.core.PortType;
+import com.airepublic.bmstoinverter.core.Protocol;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
-import com.airepublic.bmstoinverter.core.protocol.can.CAN;
-import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 
 import jakarta.inject.Inject;
 
@@ -20,59 +19,52 @@ import jakarta.inject.Inject;
  * The {@link PortProcessor} to handle CAN messages from a Seplos BMS.
  */
 @Bms
+@PortType(Protocol.CAN)
 public class SeplosBmsCANProcessor extends PortProcessor {
     private final static Logger LOG = LoggerFactory.getLogger(SeplosBmsCANProcessor.class);
-    @Inject
-    @CAN
-    @Portname("bms.portname")
-    private CANPort port;
     @Inject
     private EnergyStorage energyStorage;
 
     @Override
-    public Port getPort() {
-        return port;
-    }
-
-
-    @Override
     public void process() {
-        try {
-            final ByteBuffer frame = port.receiveFrame(null);
-            final int frameId = frame.getInt();
-            final byte[] bytes = new byte[8];
-            frame.get(bytes);
-            final ByteBuffer data = ByteBuffer.wrap(bytes);
-            final int bmsNo = 0; // Seplos aggregates all data to one BMS
+        for (final Port port : getPorts()) {
+            try {
+                final ByteBuffer frame = port.receiveFrame(null);
+                final int frameId = frame.getInt();
+                final byte[] bytes = new byte[8];
+                frame.get(bytes);
+                final ByteBuffer data = ByteBuffer.wrap(bytes);
+                final int bmsNo = 0; // Seplos aggregates all data to one BMS
 
-            switch (frameId) {
-                case 0x351:
-                    readChargeDischargeInfo(bmsNo, data);
-                break;
-                case 0x355:
-                    readSOC(bmsNo, data);
-                break;
-                case 0x356:
-                    readBatteryVoltage(bmsNo, data);
-                break;
-                case 0x35C:
-                    requestChargeDischargeConfigChange(bmsNo, data);
-                break;
-                case 0x370:
-                    readMinMaxTemperatureVoltage(bmsNo, data);
-                break;
-                case 0x371:
-                    readTemperatureIds(bmsNo, data);
-                break;
-                case 0x35E:
-                    readManufacturer(bmsNo, data);
-                break;
-                case 0x359:
-                    readAlarms(bmsNo, data);
-                break;
+                switch (frameId) {
+                    case 0x351:
+                        readChargeDischargeInfo(bmsNo, data);
+                    break;
+                    case 0x355:
+                        readSOC(bmsNo, data);
+                    break;
+                    case 0x356:
+                        readBatteryVoltage(bmsNo, data);
+                    break;
+                    case 0x35C:
+                        requestChargeDischargeConfigChange(bmsNo, data);
+                    break;
+                    case 0x370:
+                        readMinMaxTemperatureVoltage(bmsNo, data);
+                    break;
+                    case 0x371:
+                        readTemperatureIds(bmsNo, data);
+                    break;
+                    case 0x35E:
+                        readManufacturer(bmsNo, data);
+                    break;
+                    case 0x359:
+                        readAlarms(bmsNo, data);
+                    break;
+                }
+            } catch (final IOException e) {
+                LOG.error("Error receiving frame!", e);
             }
-        } catch (final IOException e) {
-            LOG.error("Error receiving frame!", e);
         }
     }
 
