@@ -2,9 +2,10 @@ package com.airepublic.bmstoinverter.protocol.can;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.function.Predicate;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.protocol.can.CAN;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
@@ -18,8 +19,8 @@ import tel.schich.javacan.RawCanChannel;
  */
 @CAN
 public class JavaCANPort extends CANPort {
+    private final static Logger LOG = LoggerFactory.getLogger(JavaCANPort.class);
     private RawCanChannel canChannel;
-    private ExecutorService executor;
 
     /**
      * Constructor.
@@ -46,10 +47,6 @@ public class JavaCANPort extends CANPort {
 
     @Override
     public void open() throws IOException {
-        if (executor == null || executor.isShutdown()) {
-            executor = Executors.newSingleThreadExecutor();
-        }
-
         // close old channel first
         if (canChannel != null) {
             close();
@@ -67,25 +64,21 @@ public class JavaCANPort extends CANPort {
 
     @Override
     public ByteBuffer receiveFrame(final Predicate<byte[]> validator) throws IOException {
-        // final Future<ByteBuffer> result = executor.submit(() -> {
+        ensureOpen();
+
         final CanFrame frame = canChannel.read();
         final ByteBuffer buffer = frame.getBuffer();
         buffer.rewind();
         buffer.putInt(frame.getId());
         buffer.rewind();
         return buffer;
-        // });
-        //
-        // try {
-        // return result.get(500, TimeUnit.MILLISECONDS);
-        // } catch (final Exception e) {
-        // throw new IOException("Failed to read response!", e);
-        // }
     }
 
 
     @Override
     public void sendFrame(final ByteBuffer frame) throws IOException {
+        ensureOpen();
+
         final CanFrame sendFrame = CanFrame.create(frame);
         canChannel.write(sendFrame);
     }
@@ -93,6 +86,7 @@ public class JavaCANPort extends CANPort {
 
     @Override
     public void sendExtendedFrame(final ByteBuffer frame) throws IOException {
+        ensureOpen();
         /**
          * Frame bytes 0-3 frame-id as int, 4 data length, 5 flags for FD frames, 6 ?, 7 - 15 data
          * bytes
@@ -111,16 +105,31 @@ public class JavaCANPort extends CANPort {
 
     @Override
     public void close() throws IOException {
-        try {
-            executor.shutdownNow();
-            executor = null;
-        } catch (final Exception e) {
-        }
-
         // close old channel first
         if (canChannel != null) {
             canChannel.close();
         }
+    }
+
+
+    private boolean ensureOpen() {
+        if (!isOpen()) {
+            // open port on Daly BMSes/interfaceboards(WNT)
+            try {
+                LOG.info("Opening " + getPortname() + " ...");
+                open();
+                LOG.info("Opening port {} SUCCESSFUL", getPortname());
+
+            } catch (final Throwable e) {
+                LOG.error("Opening port {} FAILED!", getPortname(), e);
+            }
+        }
+
+        if (isOpen()) {
+            return true;
+        }
+
+        return false;
     }
 
 }

@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.Bms;
 import com.airepublic.bmstoinverter.core.Inverter;
-import com.airepublic.bmstoinverter.core.PortProcessor;
 import com.airepublic.bmstoinverter.core.bms.data.Alarms;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
@@ -32,10 +31,10 @@ import jakarta.enterprise.inject.se.SeContainerInitializer;
 import jakarta.inject.Inject;
 
 /**
- * The main class to initiate communication between the configured BMS and the inverter. The BMS
- * values are read and stored in the {@link EnergyStorage}. Once read these values are send to the
- * (optional) MQTT Broker. Alarms and warnings will be analysed and (optionally) sent by email if
- * some occurred. The the data is sent to the inverter {@link PortProcessor}.
+ * The main class to initiate communication between the configured BMS and the inverter. The
+ * {@link Bms} values are read and stored in the {@link EnergyStorage}. Once read these values are
+ * send to the (optional) MQTT Broker. Alarms and warnings will be analysed and (optionally) sent by
+ * email if some occurred. The the data is sent to the {@link Inverter}.
  */
 @ApplicationScoped
 public class BmsToInverter implements AutoCloseable {
@@ -43,11 +42,9 @@ public class BmsToInverter implements AutoCloseable {
     @Inject
     private EnergyStorage energyStorage;
     @Inject
-    @Bms
-    private PortProcessor bms;
+    private Bms bms;
     @Inject
-    @Inverter
-    private PortProcessor inverter;
+    private Inverter inverter;
     private final IMQTTBrokerService mqttBroker = ServiceLoader.load(IMQTTBrokerService.class).findFirst().orElse(null);
     private final IMQTTProducerService mqttProducer = ServiceLoader.load(IMQTTProducerService.class).findFirst().orElse(null);
     private final IEmailService emailService = ServiceLoader.load(IEmailService.class).findFirst().orElse(null);
@@ -368,8 +365,10 @@ public class BmsToInverter implements AutoCloseable {
         // header
         log.append("\nBMS\tSOC\t  V  \t  A  \t CellMinV \t CellMaxV\tCellDiff\n");
 
-        for (final BatteryPack b : energyStorage.getBatteryPacks()) {
-            log.append(b.packNumber + 1
+        for (int bmsNo = 0; bmsNo < energyStorage.getBatteryPackCount(); bmsNo++) {
+            final BatteryPack b = energyStorage.getBatteryPack(bmsNo);
+
+            log.append(bmsNo + 1
                     + "\t " + b.packSOC / 10f
                     + "\t" + b.packVoltage / 10f
                     + "\t" + b.packCurrent / 10f

@@ -1,12 +1,15 @@
 package com.airepublic.bmstoinverter.core.bms.data;
 
+import com.airepublic.bmstoinverter.core.Port;
+
 /**
  * Holds all the data of a set of battery cells - a battery pack - collected from the BMS.
  *
  * Comments specify the precision and units of the value.
  */
 public class BatteryPack {
-    public int packNumber;
+    /** The port via which the BMS communicates with this battery pack. */
+    public Port port;
     // data from 0x53
     /** Battery type: 0=lithium iron, 1=ternary lithium, 2=lithium titanate */
     public int type;
@@ -106,12 +109,12 @@ public class BatteryPack {
     public String manufacturerCode;
 
     /**
-     * Constructor.
+     * The {@link Port} to use to communicate with this {@link BatteryPack}.
      *
-     * @param packNumber the battery pack number.
+     * @param port the {@link Port}
      */
-    public BatteryPack(final int packNumber) {
-        this.packNumber = packNumber;
+    public BatteryPack(final Port port) {
+        this.port = port;
     }
 
 }

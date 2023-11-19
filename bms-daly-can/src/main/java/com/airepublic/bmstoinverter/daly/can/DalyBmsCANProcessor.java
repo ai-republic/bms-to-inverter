@@ -10,32 +10,35 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.airepublic.bmstoinverter.core.Bms;
 import com.airepublic.bmstoinverter.core.Port;
-import com.airepublic.bmstoinverter.core.PortProcessor;
 import com.airepublic.bmstoinverter.core.PortType;
 import com.airepublic.bmstoinverter.core.Protocol;
+import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 import com.airepublic.bmstoinverter.daly.common.AbstractDalyBmsProcessor;
 import com.airepublic.bmstoinverter.daly.common.DalyCommand;
 import com.airepublic.bmstoinverter.daly.common.DalyMessage;
 
+import jakarta.inject.Inject;
+
 /**
- * The {@link PortProcessor} to handle CAN messages from a Daly BMS.
+ * The class to handle CAN messages from a Daly BMS.
  */
-@Bms
 @PortType(Protocol.CAN)
 public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
     private final static Logger LOG = LoggerFactory.getLogger(DalyBmsCANProcessor.class);
     private final ByteBuffer sendFrame = ByteBuffer.allocateDirect(16).order(ByteOrder.LITTLE_ENDIAN);
+    @Inject
+    private EnergyStorage energyStorage;
 
     @Override
-    protected List<ByteBuffer> sendMessage(final Port port, final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException {
+    protected List<ByteBuffer> sendMessage(final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException {
         final ByteBuffer sendFrame = prepareSendFrame(bmsNo + 1, cmd, data);
         int framesToBeReceived = getResponseFrameCount(cmd);
         final int frameCount = framesToBeReceived;
         int skip = 20;
         final List<ByteBuffer> readBuffers = new ArrayList<>();
+        final Port port = energyStorage.getBatteryPack(bmsNo).port;
 
         LOG.debug("SEND: {}", Port.printBuffer(sendFrame));
         ((CANPort) port).sendExtendedFrame(sendFrame);

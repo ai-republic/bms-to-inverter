@@ -8,62 +8,46 @@ import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.Bms;
 import com.airepublic.bmstoinverter.core.Port;
-import com.airepublic.bmstoinverter.core.PortProcessor;
 import com.airepublic.bmstoinverter.core.PortType;
 import com.airepublic.bmstoinverter.core.Protocol;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
+import com.airepublic.bmstoinverter.core.protocol.can.CAN;
 
 import jakarta.inject.Inject;
 
 /**
- * The {@link PortProcessor} to handle CAN messages from a JK BMS.
+ * The class to handle {@link CAN} messages from a JK {@link Bms}.
  */
-@Bms
 @PortType(Protocol.CAN)
-public class JKBmsCANProcessor extends PortProcessor {
+public class JKBmsCANProcessor implements Bms {
     private final static Logger LOG = LoggerFactory.getLogger(JKBmsCANProcessor.class);
     @Inject
     private EnergyStorage energyStorage;
 
     @Override
     public void process() {
-        for (int bmsNo = 0; bmsNo < getPorts().size(); bmsNo++) {
+        for (int bmsNo = 0; bmsNo < energyStorage.getBatteryPackCount(); bmsNo++) {
             try {
-                final Port port = getPorts().get(bmsNo);
+                final Port port = energyStorage.getBatteryPack(bmsNo).port;
+                final ByteBuffer frame = port.receiveFrame(null);
+                final int frameId = frame.getInt();
+                final byte[] bytes = new byte[8];
+                frame.get(bytes);
+                final ByteBuffer data = ByteBuffer.wrap(bytes);
 
-                if (!port.isOpen()) {
-                    // open port
-                    try {
-                        LOG.info("Opening " + port.getPortname() + ", number of battery packs = " + energyStorage.getBatteryPackCount() + " ...");
-                        port.open();
-                        LOG.info("Opening port {} SUCCESSFUL", port);
-
-                    } catch (final Throwable e) {
-                        LOG.error("Opening port {} FAILED!", port, e);
-                    }
-                }
-
-                if (port.isOpen()) {
-                    final ByteBuffer frame = port.receiveFrame(null);
-                    final int frameId = frame.getInt();
-                    final byte[] bytes = new byte[8];
-                    frame.get(bytes);
-                    final ByteBuffer data = ByteBuffer.wrap(bytes);
-
-                    switch (frameId) {
-                        case 0x2F4:
-                            readBatteryStatus(bmsNo, data);
-                        break;
-                        case 0x4F4:
-                            readCellVoltage(bmsNo, data);
-                        break;
-                        case 0x5F4:
-                            readCellTemperature(bmsNo, data);
-                        break;
-                        case 0x7F4:
-                            readAlarms(bmsNo, data);
-                        break;
-                    }
+                switch (frameId) {
+                    case 0x2F4:
+                        readBatteryStatus(bmsNo, data);
+                    break;
+                    case 0x4F4:
+                        readCellVoltage(bmsNo, data);
+                    break;
+                    case 0x5F4:
+                        readCellTemperature(bmsNo, data);
+                    break;
+                    case 0x7F4:
+                        readAlarms(bmsNo, data);
+                    break;
                 }
             } catch (final IOException e) {
                 LOG.error("Error receiving frame!", e);
