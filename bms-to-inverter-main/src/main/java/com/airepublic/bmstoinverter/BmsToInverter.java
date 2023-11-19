@@ -149,12 +149,12 @@ public class BmsToInverter implements AutoCloseable {
 
                 // send data to inverter
                 if (inverter != null) {
-                    // try {
-                    // result = executorService.submit(() -> inverter.process());
-                    // result.get();
-                    // } catch (final Exception e) {
-                    // LOG.error("Error sending inverter data!", e);
-                    // }
+                    try {
+                        result = executorService.submit(() -> inverter.process());
+                        result.get();
+                    } catch (final Exception e) {
+                        LOG.error("Error sending inverter data!", e);
+                    }
                 }
             }
         } catch (final Throwable e) {
