@@ -38,7 +38,7 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
 
     @Override
     protected List<ByteBuffer> sendMessage(final Port port, final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException {
-        final int address = bmsNo + 0x3F;
+        final int address = bmsNo + 0x40;
         final ByteBuffer sendBuffer = prepareSendFrame(address, cmd, data);
         int framesToBeReceived = getResponseFrameCount(cmd);
         final int frameCount = framesToBeReceived;

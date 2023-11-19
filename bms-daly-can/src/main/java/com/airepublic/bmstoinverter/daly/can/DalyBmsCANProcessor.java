@@ -31,7 +31,7 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
 
     @Override
     protected List<ByteBuffer> sendMessage(final Port port, final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException {
-        final ByteBuffer sendFrame = prepareSendFrame(bmsNo, cmd, data);
+        final ByteBuffer sendFrame = prepareSendFrame(bmsNo + 1, cmd, data);
         int framesToBeReceived = getResponseFrameCount(cmd);
         final int frameCount = framesToBeReceived;
         int skip = 20;
@@ -61,7 +61,7 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
             }
         } while (framesToBeReceived > 0 & skip > 0);
 
-        LOG.debug("Command 0x{} to BMS {} successfully sent and received!", HexFormat.of().toHexDigits(cmd.id), bmsNo);
+        LOG.debug("Command 0x{} to BMS {} successfully sent and received!", HexFormat.of().toHexDigits(cmd.id), bmsNo + 1);
         return readBuffers;
     }
 
