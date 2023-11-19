@@ -132,21 +132,59 @@ Once you have your right dependencies and target architecture defined check the 
 ```
 numBatteryPacks=8
 
-# RS485 properties
+###### RS485 properties ######
 RS485.baudrate=9600
 RS485.startFlag=165
 RS485.frameLength=13
 
-# CAN properties
-#bms.portname=com3				# RS485 on Windows for testing
-#bms.portname=/dev/ttyS0		# RS485 on Raspberry
-bms.portname=can0
-inverter.portname=can1		# can1 for Waveshare 2CH-CAN-HAT-FD, otherwise can0 for e.g. Waveshare RS485/CAN hat
+
+##### ModBus properties #####
+ModBus.baudrate=9600
 
 
-#MQTT properties
+##### BMS port properties #####
+#bms.portProtocol=RS485
+#bms.portLocator=com3
+#bms.portLocator=/dev/ttyS0
+
+### simple single port configuration
+bms.portProtocol=CAN
+bms.portLocator=can0
+
+### or for multiple BMSes connected to multiple ports 
+#bms.0.portProtocol=CAN
+#bms.0.portLocator=can0
+#bms.1.portProtocol=CAN
+#bms.1.portLocator=can1
+#bms.2.portProtocol=CAN
+#bms.2.portLocator=can2
+#etc...
+
+
+##### Inverter port properties #####
+inverter.portLocator=can1
+
+
+##### Service properties #####
+
+### MQTT properties
 mqtt.locator=tcp://127.0.0.1:61616
 mqtt.topic=energystorage
+
+### Email properties
+mail.out.debug=true
+mail.out.host=smtp.gmail.com
+mail.out.port=587
+# smtp for TLS, smtps for SSL
+mail.out.type=smtp
+mail.out.username=
+mail.out.password= 
+# disable if using TLS
+mail.out.sslEnable=false
+# disable if using SSL
+mail.out.tlsEnable=true
+mail.out.defaultEmail=
+mail.recipients=
 ```
 
 If you intend to use the [`webserver`](https://github.com/ai-republic/bms-to-inverter/blob/main/webserver) project to monitor your BMSes you might want to review the [`application.properties`](https://github.com/ai-republic/bms-to-inverter/blob/main/webserver/src/main/resources) to define the server port and make sure that the MQTT properties match those in your `config.properties`.

@@ -11,48 +11,34 @@ import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.Port;
-import com.airepublic.bmstoinverter.core.PortProcessor;
 import com.airepublic.bmstoinverter.core.PortType;
 import com.airepublic.bmstoinverter.core.Protocol;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
+import com.airepublic.bmstoinverter.core.protocol.can.CAN;
 
 import jakarta.inject.Inject;
 
 /**
- * The {@link PortProcessor} to handle CAN messages for SolArk inverters.
+ * The class to handle {@link CAN} messages for SolArk {@link Inverter}.
  */
-@Inverter
 @PortType(Protocol.CAN)
-public class SolArkInverterCANProcessor extends PortProcessor {
+public class SolArkInverterCANProcessor extends Inverter {
     private final static Logger LOG = LoggerFactory.getLogger(SolArkInverterCANProcessor.class);
     @Inject
     private EnergyStorage energyStorage;
 
     @Override
     public void process() {
-        for (final Port port : getPorts()) {
-            if (!port.isOpen()) {
-                try {
-                    port.open();
-                    LOG.debug("Opening port {} SUCCESSFUL", port);
-                } catch (final Throwable e) {
-                    LOG.error("Opening port {} FAILED!", port, e);
-                }
+        try {
+            final List<ByteBuffer> canData = updateCANMessages();
+
+            for (final ByteBuffer frame : canData) {
+                LOG.debug("CAN send: {}", Port.printBuffer(frame));
+                getPort().sendFrame(frame);
             }
 
-            if (port.isOpen()) {
-                try {
-                    final List<ByteBuffer> canData = updateCANMessages();
-
-                    for (final ByteBuffer frame : canData) {
-                        LOG.debug("CAN send: {}", Port.printBuffer(frame));
-                        port.sendFrame(frame);
-                    }
-
-                } catch (final Throwable e) {
-                    LOG.error("Failed to send CAN frame", e);
-                }
-            }
+        } catch (final Throwable e) {
+            LOG.error("Failed to send CAN frame", e);
         }
     }
 

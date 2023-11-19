@@ -15,17 +15,18 @@ import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.Bms;
 import com.airepublic.bmstoinverter.core.Port;
-import com.airepublic.bmstoinverter.core.PortProcessor;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
+import com.airepublic.bmstoinverter.core.protocol.can.CAN;
+import com.airepublic.bmstoinverter.core.protocol.rs485.RS485;
 
 import jakarta.inject.Inject;
 
 /**
- * An abstraction for the {@link PortProcessor} for the Daly {@link Bms} since the RS485 and CAN
- * communication is very similar.
+ * An abstraction for the Daly {@link Bms} since the {@link RS485} and {@link CAN} communication is
+ * very similar.
  */
-public abstract class AbstractDalyBmsProcessor extends PortProcessor {
+public abstract class AbstractDalyBmsProcessor implements Bms {
     private final static Logger LOG = LoggerFactory.getLogger(AbstractDalyBmsProcessor.class);
     @Inject
     private EnergyStorage energyStorage;
@@ -48,42 +49,26 @@ public abstract class AbstractDalyBmsProcessor extends PortProcessor {
 
     @Override
     public void process() {
-        for (final Port port : getPorts()) {
-            if (!port.isOpen()) {
-                // open port on Daly BMSes/interfaceboards(WNT)
-                try {
-                    LOG.info("Opening " + port.getPortname() + ", number of battery packs = " + energyStorage.getBatteryPackCount() + " ...");
-                    port.open();
-                    LOG.info("Opening port {} SUCCESSFUL", port);
-
-                } catch (final Throwable e) {
-                    LOG.error("Opening port {} FAILED!", port, e);
-                }
+        try {
+            for (int bmsNo = 0; bmsNo < energyStorage.getBatteryPackCount(); bmsNo++) {
+                sendMessage(bmsNo, DalyCommand.READ_RATED_CAPACITY_CELL_VOLTAGE, requestData); // 0x50
+                sendMessage(bmsNo, DalyCommand.READ_BATTERY_TYPE_INFO, requestData); // 0x53
+                sendMessage(bmsNo, DalyCommand.READ_MIN_MAX_PACK_VOLTAGE, requestData); // 0x5A
+                sendMessage(bmsNo, DalyCommand.READ_MAX_PACK_DISCHARGE_CHARGE_CURRENT, requestData); // 0x5B
+                sendMessage(bmsNo, DalyCommand.READ_VOUT_IOUT_SOC, requestData); // 0x90
+                sendMessage(bmsNo, DalyCommand.READ_MIN_MAX_CELL_VOLTAGE, requestData); // 0x91
+                sendMessage(bmsNo, DalyCommand.READ_MIN_MAX_TEMPERATURE, requestData); // 0x92
+                sendMessage(bmsNo, DalyCommand.READ_DISCHARGE_CHARGE_MOS_STATUS, requestData); // 0x93
+                sendMessage(bmsNo, DalyCommand.READ_STATUS_INFO, requestData); // 0x94
+                sendMessage(bmsNo, DalyCommand.READ_CELL_VOLTAGES, requestData); // 0x95
+                sendMessage(bmsNo, DalyCommand.READ_CELL_TEMPERATURE, requestData); // 0x96
+                sendMessage(bmsNo, DalyCommand.READ_CELL_BALANCE_STATE, requestData); // 0x97
+                sendMessage(bmsNo, DalyCommand.READ_FAILURE_CODES, requestData); // 0x98
             }
 
-            if (port.isOpen()) {
-                try {
-                    for (int bmsNo = 0; bmsNo < energyStorage.getBatteryPackCount(); bmsNo++) {
-                        sendMessage(port, bmsNo, DalyCommand.READ_RATED_CAPACITY_CELL_VOLTAGE, requestData); // 0x50
-                        sendMessage(port, bmsNo, DalyCommand.READ_BATTERY_TYPE_INFO, requestData); // 0x53
-                        sendMessage(port, bmsNo, DalyCommand.READ_MIN_MAX_PACK_VOLTAGE, requestData); // 0x5A
-                        sendMessage(port, bmsNo, DalyCommand.READ_MAX_PACK_DISCHARGE_CHARGE_CURRENT, requestData); // 0x5B
-                        sendMessage(port, bmsNo, DalyCommand.READ_VOUT_IOUT_SOC, requestData); // 0x90
-                        sendMessage(port, bmsNo, DalyCommand.READ_MIN_MAX_CELL_VOLTAGE, requestData); // 0x91
-                        sendMessage(port, bmsNo, DalyCommand.READ_MIN_MAX_TEMPERATURE, requestData); // 0x92
-                        sendMessage(port, bmsNo, DalyCommand.READ_DISCHARGE_CHARGE_MOS_STATUS, requestData); // 0x93
-                        sendMessage(port, bmsNo, DalyCommand.READ_STATUS_INFO, requestData); // 0x94
-                        sendMessage(port, bmsNo, DalyCommand.READ_CELL_VOLTAGES, requestData); // 0x95
-                        sendMessage(port, bmsNo, DalyCommand.READ_CELL_TEMPERATURE, requestData); // 0x96
-                        sendMessage(port, bmsNo, DalyCommand.READ_CELL_BALANCE_STATE, requestData); // 0x97
-                        sendMessage(port, bmsNo, DalyCommand.READ_FAILURE_CODES, requestData); // 0x98
-                    }
-
-                    // autoCalibrateSOC(port);
-                } catch (final Throwable e) {
-                    LOG.error("Error requesting data!", e);
-                }
-            }
+            // autoCalibrateSOC(port);
+        } catch (final Throwable e) {
+            LOG.error("Error requesting data!", e);
         }
     }
 
@@ -118,7 +103,7 @@ public abstract class AbstractDalyBmsProcessor extends PortProcessor {
                     final Future<List<ByteBuffer>> future = executor.submit(() -> {
 
                         LOG.info("calibrate request (SOC " + calculatedSOC + "): " + HexFormat.of().withUpperCase().withDelimiter(", 0x").formatHex(data));
-                        final List<ByteBuffer> result = sendMessage(port, bmsNum, DalyCommand.WRITE_RTC_AND_SOC, data);
+                        final List<ByteBuffer> result = sendMessage(bmsNum, DalyCommand.WRITE_RTC_AND_SOC, data);
                         LOG.info("calibrate result: " + Port.printBuffer(result.get(0)));
                         return result;
                     });
@@ -145,7 +130,7 @@ public abstract class AbstractDalyBmsProcessor extends PortProcessor {
      * @return
      * @throws IOException
      */
-    protected abstract List<ByteBuffer> sendMessage(Port port, final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException;
+    protected abstract List<ByteBuffer> sendMessage(final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException;
 
 
     /**

@@ -1,5 +1,8 @@
 package com.airepublic.bmstoinverter.core.bms.data;
 
+import java.util.List;
+
+import com.airepublic.bmstoinverter.core.Port;
 import com.google.gson.Gson;
 
 /**
@@ -13,12 +16,18 @@ public class EnergyStorage {
      * Constructor.
      * 
      * @param numBatteryPacks the number of {@link BatteryPack}s in the system.
+     * @param ports the port or ports to communicate to the {@link BatteryPack}s (can be one port
+     *        for all or one port for each BMS)
      */
-    public EnergyStorage(final int numBatteryPacks) {
+    public EnergyStorage(final int numBatteryPacks, final List<Port> ports) {
         batteryPacks = new BatteryPack[numBatteryPacks];
 
+        if (ports == null || !(ports.size() == 1 || ports.size() == numBatteryPacks)) {
+            throw new RuntimeException("Ports are not configured correctly in config.properties. Please make sure you have either one port configured for all BMS or for each BMS!");
+        }
+
         for (int i = 0; i < numBatteryPacks; i++) {
-            batteryPacks[i] = new BatteryPack(i);
+            batteryPacks[i] = new BatteryPack(ports.size() == 1 ? ports.get(0) : ports.get(i));
         }
     }
 

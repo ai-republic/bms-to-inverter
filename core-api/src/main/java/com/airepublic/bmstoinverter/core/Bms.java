@@ -1,18 +1,15 @@
 package com.airepublic.bmstoinverter.core;
 
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
-
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-
-import jakarta.inject.Qualifier;
+import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 
 /**
- * The {@link Qualifier} to identify a BMS {@link PortProcessor}.
+ * The interface to identify a BMS.
  */
-@Qualifier
-@Retention(RUNTIME)
-@Documented
-public @interface Bms {
+public interface Bms {
+
+    /**
+     * Process data received by the port and update the {@link EnergyStorage} for a {@link Bms}.
+     */
+    void process();
 
 }

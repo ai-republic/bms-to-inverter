@@ -8,75 +8,61 @@ import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.Bms;
 import com.airepublic.bmstoinverter.core.Port;
-import com.airepublic.bmstoinverter.core.PortProcessor;
 import com.airepublic.bmstoinverter.core.PortType;
 import com.airepublic.bmstoinverter.core.Protocol;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
+import com.airepublic.bmstoinverter.core.protocol.can.CAN;
 
 import jakarta.inject.Inject;
 
 /**
- * The {@link PortProcessor} to handle CAN messages from a Pylon BMS.
+ * The class to handle {@link CAN} messages from a Pylon {@link Bms}.
  */
-@Bms
+
 @PortType(Protocol.CAN)
-public class PylonBmsCANProcessor extends PortProcessor {
+public class PylonBmsCANProcessor implements Bms {
     private final static Logger LOG = LoggerFactory.getLogger(PylonBmsCANProcessor.class);
     @Inject
     private EnergyStorage energyStorage;
 
     @Override
     public void process() {
-        for (int bmsNo = 0; bmsNo < getPorts().size(); bmsNo++) {
+        for (int bmsNo = 0; bmsNo < energyStorage.getBatteryPackCount(); bmsNo++) {
             try {
-                final Port port = getPorts().get(bmsNo);
+                final Port port = energyStorage.getBatteryPack(bmsNo).port;
+                final ByteBuffer frame = port.receiveFrame(null);
+                final int frameId = frame.getInt();
+                final byte[] bytes = new byte[8];
+                frame.get(bytes);
+                final ByteBuffer data = ByteBuffer.wrap(bytes);
 
-                if (!port.isOpen()) {
-                    // open port
-                    try {
-                        LOG.info("Opening " + port.getPortname() + ", number of battery packs = " + energyStorage.getBatteryPackCount() + " ...");
-                        port.open();
-                        LOG.info("Opening port {} SUCCESSFUL", port);
-
-                    } catch (final Throwable e) {
-                        LOG.error("Opening port {} FAILED!", port, e);
-                    }
+                switch (frameId) {
+                    case 0x351:
+                        readChargeDischargeInfo(bmsNo, data);
+                    break;
+                    case 0x355:
+                        readSOC(bmsNo, data);
+                    break;
+                    case 0x356:
+                        readBatteryVoltage(bmsNo, data);
+                    break;
+                    case 0x35C:
+                        requestChargeDischargeConfigChange(bmsNo, data);
+                    break;
+                    case 0x370:
+                        readMinMaxTemperatureVoltage(bmsNo, data);
+                    break;
+                    case 0x371:
+                        readTemperatureIds(bmsNo, data);
+                    break;
+                    case 0x35E:
+                        readManufacturer(bmsNo, data);
+                    break;
+                    case 0x359:
+                        readAlarms(bmsNo, data);
+                    break;
                 }
 
-                if (port.isOpen()) {
-                    final ByteBuffer frame = port.receiveFrame(null);
-                    final int frameId = frame.getInt();
-                    final byte[] bytes = new byte[8];
-                    frame.get(bytes);
-                    final ByteBuffer data = ByteBuffer.wrap(bytes);
-
-                    switch (frameId) {
-                        case 0x351:
-                            readChargeDischargeInfo(bmsNo, data);
-                        break;
-                        case 0x355:
-                            readSOC(bmsNo, data);
-                        break;
-                        case 0x356:
-                            readBatteryVoltage(bmsNo, data);
-                        break;
-                        case 0x35C:
-                            requestChargeDischargeConfigChange(bmsNo, data);
-                        break;
-                        case 0x370:
-                            readMinMaxTemperatureVoltage(bmsNo, data);
-                        break;
-                        case 0x371:
-                            readTemperatureIds(bmsNo, data);
-                        break;
-                        case 0x35E:
-                            readManufacturer(bmsNo, data);
-                        break;
-                        case 0x359:
-                            readAlarms(bmsNo, data);
-                        break;
-                    }
-                }
             } catch (final IOException e) {
                 LOG.error("Error receiving frame!", e);
             }

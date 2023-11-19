@@ -10,23 +10,25 @@ import java.util.function.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.airepublic.bmstoinverter.core.Bms;
 import com.airepublic.bmstoinverter.core.Port;
-import com.airepublic.bmstoinverter.core.PortProcessor;
 import com.airepublic.bmstoinverter.core.PortType;
 import com.airepublic.bmstoinverter.core.Protocol;
+import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.daly.common.AbstractDalyBmsProcessor;
 import com.airepublic.bmstoinverter.daly.common.DalyCommand;
 import com.airepublic.bmstoinverter.daly.common.DalyMessage;
 
+import jakarta.inject.Inject;
+
 /**
- * The {@link PortProcessor} to handle RS485 messages from a Daly BMS.
+ * The class to handle RS485 messages from a Daly BMS.
  */
-@Bms
 @PortType(Protocol.RS485)
 public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
     private final static Logger LOG = LoggerFactory.getLogger(AbstractDalyBmsProcessor.class);
     private final ByteBuffer sendFrame = ByteBuffer.allocate(13);
+    @Inject
+    private EnergyStorage energyStorage;
     private final Predicate<byte[]> validator = bytes -> {
         int checksum = 0;
         for (int i = 0; i < bytes.length - 1; i++) {
@@ -37,12 +39,13 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
     };
 
     @Override
-    protected List<ByteBuffer> sendMessage(final Port port, final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException {
+    protected List<ByteBuffer> sendMessage(final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException {
         final int address = bmsNo + 0x40;
         final ByteBuffer sendBuffer = prepareSendFrame(address, cmd, data);
         int framesToBeReceived = getResponseFrameCount(cmd);
         final int frameCount = framesToBeReceived;
         final List<ByteBuffer> readBuffers = new ArrayList<>();
+        final Port port = energyStorage.getBatteryPack(bmsNo).port;
 
         // read frames until the requested frame is read
         do {
