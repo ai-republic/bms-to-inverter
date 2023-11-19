@@ -64,41 +64,83 @@ The following architectures are supported:
 The reference project [`bms-to-inverter-main`](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-to-inverter-main) shows how to communicate with Daly BMS to a Sunny Island inverter. Please make sure you have the right ports/devices configured in [`config.properties`](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-to-inverter-main/src/main/resources/config.properties).
 
 #### *<ins>1. Choose your BMS and inverter with the appropriate protocol</ins>*
-In the `pom.xml` file of the [`bms-to-inverter-main`](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-to-inverter-main) project you'll find the dependencies which BMS and which inverter to use. If you're not using Daly BMS to SMA Sunny Island both communicating via CAN protocol you'll have to change the following dependencies according to your BMS, inverter and optional services.
+In the [`pom.xml`](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-to-inverter-main/pom.xml) file of the [`bms-to-inverter-main`](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-to-inverter-main) project you'll find the dependencies which BMS and which inverter to use. If you're not using Daly BMS to SMA Sunny Island both communicating via CAN protocol you'll have to change the following dependencies according to your BMS, inverter and optional services.
 
 ```
 
-		<!--		choose BMS 		-->
+<!-- #################### !!!!!!!!	Choose BMS 	!!!!!!!! ###################### -->
+		
+		<!-- ####################  DALY(CAN) ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>bms-daly-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		
+		<!-- ####################  DALY (RS485)  ################### -->
 <!--		<dependency>-->
 <!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
 <!--			<artifactId>bms-daly-rs485</artifactId>-->
 <!--			<version>${project.version}</version>-->
 <!--		</dependency>-->
 
+		<!-- ####################  PYLONTECH (CAN)  ################### -->
+<!--		<dependency>-->
+<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
+<!--			<artifactId>bms-pylon-can</artifactId>-->
+<!--			<version>${project.version}</version>-->
+<!--		</dependency>-->
+
+		<!-- ####################  JK (CAN)  ################### -->
+<!--		<dependency>-->
+<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
+<!--			<artifactId>bms-jk-can</artifactId>-->
+<!--			<version>${project.version}</version>-->
+<!--		</dependency>-->
+
+		<!-- ####################  SEPLOS (CAN)  ################### -->
+<!--		<dependency>-->
+<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
+<!--			<artifactId>bms-seplos-can</artifactId>-->
+<!--			<version>${project.version}</version>-->
+<!--		</dependency>-->
 
 
-		<!--		choose inverter			-->
+<!-- #################### !!!!!!!!	Choose Inverter 	!!!!!!!! ###################### -->
+
+		<!-- ####################  SMA Sunny Island (CAN)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>inverter-sma-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		
+		<!-- ####################  GROWATT (CAN)  ################### -->
 <!--		<dependency>-->
 <!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
 <!--			<artifactId>inverter-growatt-can</artifactId>-->
 <!--			<version>${project.version}</version>-->
 <!--		</dependency>-->
 
+		<!-- ####################  DEYE (CAN)  ################### -->
+<!--		<dependency>-->
+<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
+<!--			<artifactId>inverter-deye-can</artifactId>-->
+<!--			<version>${project.version}</version>-->
+<!--		</dependency>-->
+
+		<!-- ####################  SOLARK (CAN)  ################### -->
+<!--		<dependency>-->
+<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
+<!--			<artifactId>inverter-solark-can</artifactId>-->
+<!--			<version>${project.version}</version>-->
+<!--		</dependency>-->
 
 
-		<!-- optionally add MQTT and/or email services -->
+
+<!-- #################### !!!!!!!!	Choose optional services 	!!!!!!!! ###################### -->
+
+		<!-- optionally add MQTT services -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>service-mqtt-broker</artifactId>
@@ -110,13 +152,15 @@ In the `pom.xml` file of the [`bms-to-inverter-main`](https://github.com/ai-repu
 			<artifactId>service-mqtt-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
 		
 		<!-- optionally add Email service -->
 		<dependency>
 			<groupId>com.ai-republic.email</groupId>
 			<artifactId>email-javamail</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.5</version>
 		</dependency>
+
 
 
 ```
