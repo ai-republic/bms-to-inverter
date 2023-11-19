@@ -4,8 +4,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 import com.airepublic.bmstoinverter.core.protocol.can.CAN;
@@ -69,20 +67,20 @@ public class JavaCANPort extends CANPort {
 
     @Override
     public ByteBuffer receiveFrame(final Predicate<byte[]> validator) throws IOException {
-        final Future<ByteBuffer> result = executor.submit(() -> {
-            final CanFrame frame = canChannel.read();
-            final ByteBuffer buffer = frame.getBuffer();
-            buffer.rewind();
-            buffer.putInt(frame.getId());
-            buffer.rewind();
-            return buffer;
-        });
-
-        try {
-            return result.get(500, TimeUnit.MILLISECONDS);
-        } catch (final Exception e) {
-            throw new IOException("Failed to read response!", e);
-        }
+        // final Future<ByteBuffer> result = executor.submit(() -> {
+        final CanFrame frame = canChannel.read();
+        final ByteBuffer buffer = frame.getBuffer();
+        buffer.rewind();
+        buffer.putInt(frame.getId());
+        buffer.rewind();
+        return buffer;
+        // });
+        //
+        // try {
+        // return result.get(500, TimeUnit.MILLISECONDS);
+        // } catch (final Exception e) {
+        // throw new IOException("Failed to read response!", e);
+        // }
     }
 
 

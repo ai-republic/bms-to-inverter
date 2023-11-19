@@ -5,6 +5,10 @@ import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +32,8 @@ public abstract class AbstractDalyBmsProcessor extends PortProcessor {
     @Inject
     private DalyMessageHandler messageHandler;
     private final byte[] requestData = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
+    private final int calibrationCounter = 1;
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     /**
      * Gets the {@link DalyMessageHandler} to process the {@link DalyMessage} converted by the
@@ -57,7 +63,7 @@ public abstract class AbstractDalyBmsProcessor extends PortProcessor {
 
             if (port.isOpen()) {
                 try {
-                    for (int bmsNo = 1; bmsNo <= energyStorage.getBatteryPackCount(); bmsNo++) {
+                    for (int bmsNo = 0; bmsNo < energyStorage.getBatteryPackCount(); bmsNo++) {
                         sendMessage(port, bmsNo, DalyCommand.READ_RATED_CAPACITY_CELL_VOLTAGE, requestData); // 0x50
                         sendMessage(port, bmsNo, DalyCommand.READ_BATTERY_TYPE_INFO, requestData); // 0x53
                         sendMessage(port, bmsNo, DalyCommand.READ_MIN_MAX_PACK_VOLTAGE, requestData); // 0x5A
@@ -73,7 +79,7 @@ public abstract class AbstractDalyBmsProcessor extends PortProcessor {
                         sendMessage(port, bmsNo, DalyCommand.READ_FAILURE_CODES, requestData); // 0x98
                     }
 
-                    autoCalibrateSOC(port);
+                    // autoCalibrateSOC(port);
                 } catch (final Throwable e) {
                     LOG.error("Error requesting data!", e);
                 }
@@ -87,11 +93,10 @@ public abstract class AbstractDalyBmsProcessor extends PortProcessor {
      * compared to the actual voltage.
      *
      * @param port the {@link Port} to use
-     * @throws IOException if setting of SOC failed
      */
-    protected void autoCalibrateSOC(final Port port) throws IOException {
-        for (int bmsAddress = 1; bmsAddress <= energyStorage.getBatteryPackCount(); bmsAddress++) {
-            final BatteryPack battery = energyStorage.getBatteryPack(bmsAddress - 1);
+    protected void autoCalibrateSOC(final Port port) {
+        for (int bmsNo = 0; bmsNo < energyStorage.getBatteryPackCount(); bmsNo++) {
+            final BatteryPack battery = energyStorage.getBatteryPack(bmsNo);
             final int calculatedSOC = (int) (((float) battery.packVoltage - battery.minPackVoltageLimit) * 100 / (battery.maxPackVoltageLimit - battery.minPackVoltageLimit) * 10);
             final byte[] data = new byte[8];
             final LocalDateTime date = LocalDateTime.now();
@@ -105,11 +110,28 @@ public abstract class AbstractDalyBmsProcessor extends PortProcessor {
             data[6] = (byte) (calculatedSOC >>> 8);
             data[7] = (byte) calculatedSOC;
 
-            LOG.info("calibrate request (SOC " + calculatedSOC + "): " + HexFormat.of().withUpperCase().withDelimiter(", 0x").formatHex(data));
-            final List<ByteBuffer> result = sendMessage(port, bmsAddress, DalyCommand.WRITE_RTC_AND_SOC, data);
-            LOG.info("calibrate result: " + Port.printBuffer(result.get(0)));
+            boolean retry = false;
+            int retries = 0;
+            final int bmsNum = bmsNo;
+            do {
+                try {
+                    final Future<List<ByteBuffer>> future = executor.submit(() -> {
 
+                        LOG.info("calibrate request (SOC " + calculatedSOC + "): " + HexFormat.of().withUpperCase().withDelimiter(", 0x").formatHex(data));
+                        final List<ByteBuffer> result = sendMessage(port, bmsNum, DalyCommand.WRITE_RTC_AND_SOC, data);
+                        LOG.info("calibrate result: " + Port.printBuffer(result.get(0)));
+                        return result;
+                    });
+
+                    future.get(500, TimeUnit.MILLISECONDS);
+                } catch (final Exception e) {
+                    LOG.warn("Auto-calibration timed out");
+                    retries++;
+                    retry = true;
+                }
+            } while (retry && retries <= 3);
         }
+
     }
 
 
