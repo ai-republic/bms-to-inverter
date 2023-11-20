@@ -66,7 +66,7 @@ public abstract class AbstractDalyBmsProcessor implements Bms {
                 sendMessage(bmsNo, DalyCommand.READ_FAILURE_CODES, requestData); // 0x98
             }
 
-            // autoCalibrateSOC(port);
+            // autoCalibrateSOC();
         } catch (final Throwable e) {
             LOG.error("Error requesting data!", e);
         }
@@ -76,10 +76,8 @@ public abstract class AbstractDalyBmsProcessor implements Bms {
     /**
      * Calibrate the SOC of all {@link BatteryPack} according to their maximum and minimum voltage
      * compared to the actual voltage.
-     *
-     * @param port the {@link Port} to use
      */
-    protected void autoCalibrateSOC(final Port port) {
+    protected void autoCalibrateSOC() {
         for (int bmsNo = 0; bmsNo < energyStorage.getBatteryPackCount(); bmsNo++) {
             final BatteryPack battery = energyStorage.getBatteryPack(bmsNo);
             final int calculatedSOC = (int) (((float) battery.packVoltage - battery.minPackVoltageLimit) * 100 / (battery.maxPackVoltageLimit - battery.minPackVoltageLimit) * 10);
