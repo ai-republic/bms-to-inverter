@@ -68,16 +68,21 @@ public class JSerialCommPort extends RS485Port {
 
     @Override
     public void close() throws IOException {
-        try {
-            port.closePort();
-        } catch (final Exception e) {
-            throw new IOException("Port could not be closed!", e);
+        if (port != null) {
+            try {
+                port.closePort();
+            } catch (final Exception e) {
+                throw new IOException("Port could not be closed!", e);
+            }
         }
+
+        port = null;
     }
 
 
     @Override
     public ByteBuffer receiveFrame(final Predicate<byte[]> validator) throws IOException {
+        ensureOpen();
 
         // read frame
         final byte[] bytes = new byte[getFrameLength()];
@@ -135,6 +140,8 @@ public class JSerialCommPort extends RS485Port {
 
     @Override
     public void sendFrame(final ByteBuffer frame) throws IOException {
+        ensureOpen();
+
         final byte[] bytes = frame.array();
         LOG.debug("Send: {}", Port.printBytes(bytes));
         while (!port.getRTS() && !port.setRTS()) {
@@ -147,5 +154,26 @@ public class JSerialCommPort extends RS485Port {
         while (port.getRTS() && !port.clearRTS()) {
             ;
         }
+    }
+
+
+    private boolean ensureOpen() {
+        if (!isOpen()) {
+            // open port
+            try {
+                LOG.info("Opening " + getPortname() + " ...");
+                open();
+                LOG.info("Opening port {} SUCCESSFUL", getPortname());
+
+            } catch (final Throwable e) {
+                LOG.error("Opening port {} FAILED!", getPortname(), e);
+            }
+        }
+
+        if (isOpen()) {
+            return true;
+        }
+
+        return false;
     }
 }

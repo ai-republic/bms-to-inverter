@@ -114,7 +114,7 @@ public class JavaCANPort extends CANPort {
 
     private boolean ensureOpen() {
         if (!isOpen()) {
-            // open port on Daly BMSes/interfaceboards(WNT)
+            // open port
             try {
                 LOG.info("Opening " + getPortname() + " ...");
                 open();
