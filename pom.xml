@@ -33,6 +33,7 @@
 		<module>inverter-deye-can</module>
 		<module>inverter-solark-can</module>
 		<module>bms-pylon-can</module>
+		<module>inverter-dummy</module>
 	</modules>
 
 	<build>
