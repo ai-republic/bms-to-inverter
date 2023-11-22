@@ -39,7 +39,9 @@ public class JSerialCommPort extends RS485Port {
 
     @Override
     protected Port create(final String portname) {
-        return new JSerialCommPort(portname);
+        final JSerialCommPort port = new JSerialCommPort(portname);
+        port.init();
+        return port;
     }
 
 
