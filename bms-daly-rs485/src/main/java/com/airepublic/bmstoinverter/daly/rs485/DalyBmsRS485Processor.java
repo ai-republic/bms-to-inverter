@@ -103,7 +103,7 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
     protected DalyMessage convertReceiveFrameToDalyMessage(final ByteBuffer buffer) {
         final DalyMessage msg = new DalyMessage();
         msg.address = buffer.get(1);
-        msg.cmd = DalyCommand.valueOf(buffer.get(2));
+        msg.cmd = DalyCommand.valueOf(Byte.toUnsignedInt(buffer.get(2)));
         final byte[] dataBytes = new byte[8];
         buffer.get(4, dataBytes);
         msg.data = ByteBuffer.wrap(dataBytes);
