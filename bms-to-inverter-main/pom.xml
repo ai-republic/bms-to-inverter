@@ -131,9 +131,16 @@
 		<!-- ####################  SMA Sunny Island (CAN)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>inverter-sma-can</artifactId>
+			<artifactId>inverter-dummy</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		
+		<!-- ####################  SMA Sunny Island (CAN)  ################### -->
+<!--		<dependency>-->
+<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
+<!--			<artifactId>inverter-sma-can</artifactId>-->
+<!--			<version>${project.version}</version>-->
+<!--		</dependency>-->
 		
 		<!-- ####################  GROWATT (CAN)  ################### -->
 <!--		<dependency>-->

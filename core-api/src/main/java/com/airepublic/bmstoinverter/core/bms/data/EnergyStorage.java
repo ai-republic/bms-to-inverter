@@ -9,7 +9,7 @@ import com.google.gson.Gson;
  * This class holds the data of the all battery storage modules ({@link BatteryPack} of the system.
  */
 public class EnergyStorage {
-    private final static Gson gson = new Gson();
+    private transient final static Gson gson = new Gson();
     private BatteryPack[] batteryPacks;
 
     /**
