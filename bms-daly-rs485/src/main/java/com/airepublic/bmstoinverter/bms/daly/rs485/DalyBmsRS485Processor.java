@@ -62,7 +62,14 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
                     readBuffers.add(receiveBuffer);
                 }
 
-                getMessageHandler().handleMessage(convertReceiveFrameToDalyMessage(receiveBuffer));
+                final DalyMessage dalyMsg = convertReceiveFrameToDalyMessage(receiveBuffer);
+
+                if (dalyMsg != null) {
+                    getMessageHandler().handleMessage(dalyMsg);
+                } else {
+                    LOG.warn("Message could not be interpreted " + Port.printBuffer(receiveBuffer));
+                    return readBuffers;
+                }
             }
         } while (framesToBeReceived > 0);
 
@@ -104,6 +111,12 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
         final DalyMessage msg = new DalyMessage();
         msg.address = buffer.get(1);
         msg.cmd = DalyCommand.valueOf(Byte.toUnsignedInt(buffer.get(2)));
+
+        if (msg.cmd == null) {
+            LOG.error("Received unknown command: " + Byte.toUnsignedInt(buffer.get(2)));
+            return null;
+        }
+
         final byte[] dataBytes = new byte[8];
         buffer.get(4, dataBytes);
         msg.data = ByteBuffer.wrap(dataBytes);

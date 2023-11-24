@@ -9,7 +9,7 @@ import com.airepublic.bmstoinverter.core.Port;
  */
 public class BatteryPack {
     /** The port via which the BMS communicates with this battery pack. */
-    public Port port;
+    public transient Port port;
     // data from 0x53
     /** Battery type: 0=lithium iron, 1=ternary lithium, 2=lithium titanate */
     public int type;
