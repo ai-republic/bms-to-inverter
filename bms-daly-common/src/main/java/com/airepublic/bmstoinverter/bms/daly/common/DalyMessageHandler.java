@@ -82,8 +82,8 @@ public class DalyMessageHandler {
                 break;
             }
 
-        } catch (final IOException e) {
-            LOG.error("Error reading BMS data: ", e);
+        } catch (final Exception e) {
+            LOG.error("Error reading BMS data for command: " + msg, e);
         }
     }
 

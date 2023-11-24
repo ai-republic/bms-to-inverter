@@ -60,7 +60,14 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
                     framesToBeReceived--;
                 }
 
-                getMessageHandler().handleMessage(convertReceiveFrameToDalyMessage(receiveFrame));
+                final DalyMessage dalyMsg = convertReceiveFrameToDalyMessage(receiveFrame);
+
+                if (dalyMsg != null) {
+                    getMessageHandler().handleMessage(dalyMsg);
+                } else {
+                    LOG.warn("Message could not be interpreted " + Port.printBuffer(receiveFrame));
+                    return readBuffers;
+                }
             }
         } while (framesToBeReceived > 0 & skip > 0);
 
@@ -108,6 +115,11 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
         final int frameId = buffer.getInt(0);
         msg.address = (byte) (frameId & 0x000000FF);
         msg.cmd = DalyCommand.valueOf(frameId >> 16 & 0x000000FF);
+
+        if (msg.cmd == null) {
+            LOG.error("Received unknown command: " + Byte.toUnsignedInt(buffer.get(2)));
+            return null;
+        }
 
         final byte[] dataBytes = new byte[buffer.get(4)];
         buffer.get(8, dataBytes);
