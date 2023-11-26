@@ -46,7 +46,7 @@ public class JavaCANPort extends CANPort {
 
 
     @Override
-    public void open() throws IOException {
+    public void open() throws Exception {
         // close old channel first
         if (canChannel != null) {
             close();
@@ -104,11 +104,18 @@ public class JavaCANPort extends CANPort {
 
 
     @Override
-    public void close() throws IOException {
+    public void close() throws Exception {
         // close old channel first
-        if (canChannel != null) {
-            canChannel.close();
+        if (isOpen()) {
+            try {
+                canChannel.close();
+                LOG.info("Shutting down port '{}'...OK", getPortname());
+            } catch (final Exception e) {
+                LOG.error("Shutting down port '{}'...FAILED", getPortname(), e);
+            }
         }
+
+        canChannel = null;
     }
 
 

@@ -25,7 +25,7 @@ public class SeplosBmsCANProcessor implements Bms {
     private EnergyStorage energyStorage;
 
     @Override
-    public void process() {
+    public void process(final Runnable callback) {
         for (int bmsNo = 0; bmsNo < energyStorage.getBatteryPackCount(); bmsNo++) {
             try {
                 final Port port = energyStorage.getBatteryPack(bmsNo).port;
@@ -64,6 +64,12 @@ public class SeplosBmsCANProcessor implements Bms {
             } catch (final IOException e) {
                 LOG.error("Error receiving frame!", e);
             }
+        }
+
+        try {
+            callback.run();
+        } catch (final Exception e) {
+            LOG.error("BMS process callback threw an exception!", e);
         }
     }
 

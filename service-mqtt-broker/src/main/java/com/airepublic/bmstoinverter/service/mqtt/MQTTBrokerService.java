@@ -86,13 +86,19 @@ public class MQTTBrokerService implements IMQTTBrokerService {
             }
             running = false;
         } catch (final Exception e) {
+            throw new RuntimeException("Failed to stop MQTT broker!", e);
         }
     }
 
 
     @Override
     public void close() throws Exception {
-        stop();
+        try {
+            stop();
+            LOG.info("Shutting down MQTT broker on '{}'...OK", locator);
+        } catch (final Exception e) {
+            LOG.error("Shutting down MQTT broker on '{}'...FAILED", locator, e);
+        }
         embedded = null;
     }
 

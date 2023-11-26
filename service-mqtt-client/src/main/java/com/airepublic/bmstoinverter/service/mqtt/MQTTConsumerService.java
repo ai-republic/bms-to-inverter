@@ -21,11 +21,12 @@ public class MQTTConsumerService implements IMQTTConsumerService {
     private boolean running = false;
     private ClientSession session;
     private ClientConsumer consumer;
-
+    private String locator;
     private String topic;
 
     @Override
     public MQTTConsumerService create(final String locator, final String topic) throws IOException {
+        this.locator = locator;
         this.topic = topic;
 
         try {
@@ -77,13 +78,19 @@ public class MQTTConsumerService implements IMQTTConsumerService {
             session.close();
             running = false;
         } catch (final Exception e) {
+            throw new RuntimeException("Failed to stop MQTT consumer!", e);
         }
     }
 
 
     @Override
     public void close() throws Exception {
-        stop();
+        try {
+            stop();
+            LOG.info("Shutting down MQTT consumer on '{}'...OK", locator);
+        } catch (final Exception e) {
+            LOG.error("Shutting down MQTT consumer on '{}'...FAILED", locator, e);
+        }
     }
 
 

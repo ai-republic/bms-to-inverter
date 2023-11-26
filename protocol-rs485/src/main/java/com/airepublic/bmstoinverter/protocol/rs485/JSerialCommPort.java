@@ -39,42 +39,44 @@ public class JSerialCommPort extends RS485Port {
 
     @Override
     protected Port create(final String portname) {
-        JSerialCommPort port = new JSerialCommPort(portname);
+        final JSerialCommPort port = new JSerialCommPort(portname);
         port.init();
         return port;
     }
 
 
     @Override
-    public void open() throws IOException {
-        try {
-            port = SerialPort.getCommPort(getPortname());
-            // set port configuration
-            port.setComPortParameters(getBaudrate(), 8, 1, SerialPort.NO_PARITY, true);
-            port.setComPortTimeouts(SerialPort.TIMEOUT_READ_BLOCKING | SerialPort.TIMEOUT_WRITE_BLOCKING, 0, 0);
-            // open port
-            port.openPort();
+    public synchronized void open() throws IOException {
+        if (!isOpen()) {
+            try {
+                port = SerialPort.getCommPort(getPortname());
+                // set port configuration
+                port.setComPortParameters(getBaudrate(), 8, 1, SerialPort.NO_PARITY, true);
+                port.setComPortTimeouts(SerialPort.TIMEOUT_READ_BLOCKING | SerialPort.TIMEOUT_WRITE_BLOCKING, 0, 0);
+                // open port
+                port.openPort();
 
-        } catch (final Exception e) {
-            LOG.error("Could not open port {}!", getPortname(), e);
+            } catch (final Exception e) {
+                LOG.error("Could not open port {}!", getPortname(), e);
+            }
         }
     }
 
 
     @Override
     public boolean isOpen() {
-
         return port != null && port.isOpen();
     }
 
 
     @Override
-    public void close() throws IOException {
-        if (port != null) {
+    public void close() throws Exception {
+        if (isOpen()) {
             try {
                 port.closePort();
+                LOG.info("Shutting down port '{}'...OK", getPortname());
             } catch (final Exception e) {
-                throw new IOException("Port could not be closed!", e);
+                LOG.error("Shutting down port '{}'...FAILED", getPortname(), e);
             }
         }
 
@@ -159,7 +161,7 @@ public class JSerialCommPort extends RS485Port {
     }
 
 
-    private boolean ensureOpen() {
+    private synchronized boolean ensureOpen() {
         if (!isOpen()) {
             // open port
             try {

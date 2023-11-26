@@ -7,7 +7,7 @@ import com.airepublic.bmstoinverter.core.Port;
  *
  * Comments specify the precision and units of the value.
  */
-public class BatteryPack {
+public class BatteryPack implements AutoCloseable {
     /** The port via which the BMS communicates with this battery pack. */
     public transient Port port;
     // data from 0x53
@@ -117,4 +117,11 @@ public class BatteryPack {
         this.port = port;
     }
 
+
+    @Override
+    public void close() throws Exception {
+        if (port != null && port.isOpen()) {
+            port.close();
+        }
+    }
 }

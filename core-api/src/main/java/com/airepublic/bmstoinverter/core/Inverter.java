@@ -59,7 +59,9 @@ public abstract class Inverter {
 
     /**
      * Process sending the data via the {@link Port} to the {@link Inverter}.
+     *
+     * @param callback the code executed after successful processing
      */
-    public abstract void process();
+    public abstract void process(Runnable callback);
 
 }

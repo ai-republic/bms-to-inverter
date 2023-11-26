@@ -56,11 +56,12 @@ public class J2ModPort extends ModBusPort {
 
 
     @Override
-    public void close() throws IOException {
+    public void close() throws Exception {
         try {
             port.disconnect();
+            LOG.info("Shutting down port '{}'...OK", getPortname());
         } catch (final Exception e) {
-            throw new IOException("Port could not be closed!", e);
+            LOG.error("Shutting down port '{}'...FAILED", getPortname(), e);
         }
     }
 

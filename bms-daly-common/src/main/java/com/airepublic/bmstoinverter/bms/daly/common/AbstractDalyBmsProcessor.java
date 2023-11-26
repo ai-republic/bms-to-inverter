@@ -48,7 +48,7 @@ public abstract class AbstractDalyBmsProcessor implements Bms {
 
 
     @Override
-    public void process() {
+    public void process(final Runnable callback) {
         try {
             for (int bmsNo = 0; bmsNo < energyStorage.getBatteryPackCount(); bmsNo++) {
                 sendMessage(bmsNo, DalyCommand.READ_RATED_CAPACITY_CELL_VOLTAGE, requestData); // 0x50
@@ -69,6 +69,12 @@ public abstract class AbstractDalyBmsProcessor implements Bms {
             // autoCalibrateSOC();
         } catch (final Throwable e) {
             LOG.error("Error requesting data!", e);
+        }
+
+        try {
+            callback.run();
+        } catch (final Exception e) {
+            LOG.error("BMS process callback threw an exception!", e);
         }
     }
 
