@@ -8,7 +8,7 @@ import com.google.gson.Gson;
 /**
  * This class holds the data of the all battery storage modules ({@link BatteryPack} of the system.
  */
-public class EnergyStorage {
+public class EnergyStorage implements AutoCloseable {
     private transient final static Gson gson = new Gson();
     private BatteryPack[] batteryPacks;
 
@@ -91,6 +91,17 @@ public class EnergyStorage {
      */
     public BatteryPack fromJson(final String json) {
         return gson.fromJson(json, BatteryPack.class);
+    }
+
+
+    @Override
+    public void close() throws Exception {
+        for (final BatteryPack pack : batteryPacks) {
+            try {
+                pack.close();
+            } catch (final Exception e) {
+            }
+        }
     }
 
 }

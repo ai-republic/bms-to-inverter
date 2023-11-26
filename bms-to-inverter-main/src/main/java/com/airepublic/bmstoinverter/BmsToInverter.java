@@ -6,9 +6,9 @@ import java.util.List;
 import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.StringTokenizer;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,6 +51,7 @@ public class BmsToInverter implements AutoCloseable {
     private EmailAccount account;
     private final List<String> emailRecipients = new ArrayList<>();
     private List<String> lastAlarms = new ArrayList<>();
+    final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
 
     /**
      * The main method to start the application.
@@ -73,6 +74,8 @@ public class BmsToInverter implements AutoCloseable {
      * Constructor.
      */
     public BmsToInverter() {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> close()));
+
         // check for MQTT broker service module
         if (mqttBroker != null) {
             final String locator = System.getProperty("mqtt.locator");
@@ -117,47 +120,51 @@ public class BmsToInverter implements AutoCloseable {
      * synchronized to the {@link EnergyStorage}.
      */
     public void start() {
-
-        final ExecutorService executorService = Executors.newFixedThreadPool(2);
+        final int bmsPollInterval = Integer.parseInt(System.getProperty("bms.pollInterval", "0"));
+        final int inverterSendInterval = Integer.parseInt(System.getProperty("inverter.sendInterval", "0"));
 
         try {
 
-            Future<?> result = executorService.submit(() -> bms.process());
-            result.get();
+            LOG.info("Starting BMS receiver...");
+            // receive BMS data
+            executorService.scheduleWithFixedDelay(() -> bms.process(() -> receivedData()), 3, bmsPollInterval, TimeUnit.SECONDS);
 
-            while (true) {
+            // send data to inverter
+            if (inverter != null) {
 
-                // receive BMS data
-                try {
-                    result = executorService.submit(() -> bms.process());
-                    result.get();
-                } catch (final Exception e) {
-                    LOG.error("Error receiving BMS data!", e);
-                }
-
-                LOG.info(createBatteryOverview());
-
-                if (mqttProducer != null) {
-                    // send energystorage data to MQTT broker
-                    mqttProducer.sendMessage(energyStorage.toJson());
-                }
-
-                analyseBMSFaults();
-
-                // send data to inverter
-                if (inverter != null) {
-                    try {
-                        result = executorService.submit(() -> inverter.process());
-                        result.get();
-                    } catch (final Exception e) {
-                        LOG.error("Error sending inverter data!", e);
-                    }
-                }
+                LOG.info("Starting inverter sender...");
+                executorService.scheduleWithFixedDelay(() -> inverter.process(() -> sentData()), 3, inverterSendInterval, TimeUnit.SECONDS);
             }
         } catch (final Throwable e) {
-            LOG.error("Failed to perform initial reading of BMS values!", e);
-            executorService.shutdownNow();
+            LOG.error("Error occured during processing!", e);
         }
+    }
+
+
+    /**
+     * Called after the BMS received data.
+     */
+    private void receivedData() {
+        LOG.info(createBatteryOverview());
+
+        if (mqttProducer != null) {
+            // send energystorage data to MQTT broker
+            try {
+                mqttProducer.sendMessage(energyStorage.toJson());
+            } catch (final IOException e) {
+                LOG.error("Failed to send MQTT message!", e);
+            }
+        }
+
+        analyseBMSFaults();
+
+    }
+
+
+    /**
+     * Called after the data was sent to the inverter.
+     */
+    private void sentData() {
     }
 
 
@@ -353,9 +360,35 @@ public class BmsToInverter implements AutoCloseable {
 
 
     @Override
-    public void close() throws Exception {
+    public void close() {
+        try {
+            executorService.shutdownNow();
+            LOG.info("Shutting down BMS and inverter threads...OK");
+        } catch (final Exception e) {
+            LOG.info("Shutting down BMS and inverter threads...FAILED");
+        }
+
+        if (mqttProducer != null) {
+            try {
+                mqttProducer.close();
+                LOG.info("Shutting down MQTT producer threads...OK");
+            } catch (final Exception e) {
+                LOG.info("Shutting down MQTT producer threads...FAILED");
+            }
+        }
+
         if (mqttBroker != null) {
-            mqttBroker.close();
+            try {
+                mqttBroker.close();
+                LOG.info("Shutting down MQTT broker threads...OK");
+            } catch (final Exception e) {
+                LOG.info("Shutting down MQTT broker threads...FAILED");
+            }
+        }
+
+        try {
+            energyStorage.close();
+        } catch (final Exception e) {
         }
     }
 

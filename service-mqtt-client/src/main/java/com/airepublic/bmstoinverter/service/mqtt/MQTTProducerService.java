@@ -22,9 +22,11 @@ public class MQTTProducerService implements IMQTTProducerService {
     private ClientSession session;
     private String topic;
     private ClientProducer producer;
+    private String locator;
 
     @Override
     public MQTTProducerService connect(final String locator, final String topic) throws IOException {
+        this.locator = locator;
         this.topic = topic;
 
         try {
@@ -74,13 +76,19 @@ public class MQTTProducerService implements IMQTTProducerService {
             session.close();
             running = false;
         } catch (final Exception e) {
+            throw new RuntimeException("Failed to stop MQTT producer!", e);
         }
     }
 
 
     @Override
     public void close() throws Exception {
-        stop();
+        try {
+            stop();
+            LOG.info("Shutting down MQTT producer on '{}'...OK", locator);
+        } catch (final Exception e) {
+            LOG.error("Shutting down MQTT producer on '{}'...FAILED", locator, e);
+        }
     }
 
 

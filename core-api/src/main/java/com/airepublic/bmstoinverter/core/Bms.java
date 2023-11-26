@@ -9,7 +9,9 @@ public interface Bms {
 
     /**
      * Process data received by the port and update the {@link EnergyStorage} for a {@link Bms}.
+     *
+     * @param callback the code executed after successful processing
      */
-    void process();
+    void process(Runnable callback);
 
 }

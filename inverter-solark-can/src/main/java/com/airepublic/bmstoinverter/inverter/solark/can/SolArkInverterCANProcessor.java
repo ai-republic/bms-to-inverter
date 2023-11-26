@@ -28,7 +28,7 @@ public class SolArkInverterCANProcessor extends Inverter {
     private EnergyStorage energyStorage;
 
     @Override
-    public void process() {
+    public void process(final Runnable callback) {
         try {
             final List<ByteBuffer> canData = updateCANMessages();
 
@@ -39,6 +39,12 @@ public class SolArkInverterCANProcessor extends Inverter {
 
         } catch (final Throwable e) {
             LOG.error("Failed to send CAN frame", e);
+        }
+
+        try {
+            callback.run();
+        } catch (final Exception e) {
+            LOG.error("Inverter process callback threw an exception!", e);
         }
     }
 

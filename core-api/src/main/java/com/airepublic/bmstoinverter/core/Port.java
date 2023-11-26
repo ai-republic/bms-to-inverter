@@ -59,9 +59,9 @@ public abstract class Port implements AutoCloseable {
     /**
      * Opens the port for communication.
      * 
-     * @throws IOException if port could not be opened
+     * @throws Exception if port could not be opened
      */
-    public abstract void open() throws IOException;
+    public abstract void open() throws Exception;
 
 
     /**
@@ -92,7 +92,7 @@ public abstract class Port implements AutoCloseable {
 
 
     @Override
-    public abstract void close() throws IOException;
+    public abstract void close() throws Exception;
 
 
     /**

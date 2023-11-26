@@ -27,7 +27,7 @@ public class GrowattRS485Processor extends Inverter {
     private EnergyStorage energyStorage;
 
     @Override
-    public void process() {
+    public void process(final Runnable callback) {
         try {
             final List<ByteBuffer> sendBuffers = collectBMSData();
 
@@ -38,6 +38,12 @@ public class GrowattRS485Processor extends Inverter {
 
         } catch (final Throwable e) {
             LOG.error("Failed to send frame", e);
+        }
+
+        try {
+            callback.run();
+        } catch (final Exception e) {
+            LOG.error("Inverter process callback threw an exception!", e);
         }
     }
 

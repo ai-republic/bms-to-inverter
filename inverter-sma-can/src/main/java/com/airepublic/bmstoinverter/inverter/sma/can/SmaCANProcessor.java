@@ -29,7 +29,7 @@ public class SmaCANProcessor extends Inverter {
     private final Map<Integer, ByteBuffer> canData = new HashMap<>();
 
     @Override
-    public void process() {
+    public void process(final Runnable callback) {
         try {
             updateCANMessages();
 
@@ -41,6 +41,12 @@ public class SmaCANProcessor extends Inverter {
 
         } catch (final Throwable e) {
             LOG.error("Failed to send CAN frame", e);
+        }
+
+        try {
+            callback.run();
+        } catch (final Exception e) {
+            LOG.error("Inverter process callback threw an exception!", e);
         }
     }
 
