@@ -73,7 +73,7 @@ public abstract class AbstractDalyBmsProcessor implements Bms {
 
         try {
             callback.run();
-        } catch (final Exception e) {
+        } catch (final Throwable e) {
             LOG.error("BMS process callback threw an exception!", e);
         }
     }
