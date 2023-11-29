@@ -3,6 +3,7 @@ package com.airepublic.bmstoinverter.core;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.ServiceLoader;
 
 import org.slf4j.Logger;
@@ -64,8 +65,12 @@ public class EnergyStorageProducer {
                 throw new RuntimeException("Port configuration is not correct for '" + portLocator + "' and protocol '" + portProtocol + "'!");
             }
 
-            LOG.debug("Getting port for protocol '{}' at location '{}'", protocol.name(), portLocator);
-            return Arrays.asList(ServiceLoader.load(protocol.portClass).findFirst().get().create(portLocator));
+            LOG.debug("Getting class for protocol '{}' at location '{}': {}", protocol.name(), portLocator, protocol.portClass);
+            final Optional<? extends Port> optional = ServiceLoader.load(protocol.portClass).findFirst();
+            LOG.debug("Looking for protocol class {}: {}", protocol.portClass, optional.isPresent());
+            final Port port = optional.get().create(portLocator);
+            LOG.debug("Loaded protocol class {}", port);
+            return Arrays.asList(port);
         }
 
         // otherwise use the multiple incremental numbering
