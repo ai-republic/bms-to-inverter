@@ -90,8 +90,7 @@ public class JSerialCommPort extends RS485Port {
 
         // read frame
         final byte[] bytes = new byte[getFrameLength()];
-        final int read = port.getInputStream().read(bytes);
-
+        final int read = port.getInputStream().readNBytes(bytes, 0, getFrameLength());
         LOG.debug("Initial read: {}", Port.printBytes(bytes));
 
         if (read != bytes.length) {
@@ -116,7 +115,7 @@ public class JSerialCommPort extends RS485Port {
 
                     // fill up the rest with the next bytes from the stream
                     startPos = bytes.length - startPos;
-                    port.getInputStream().read(bytes, startPos, bytes.length - startPos);
+                    port.getInputStream().readNBytes(bytes, startPos, bytes.length - startPos);
 
                     LOG.debug("Final filling up:  {}", Port.printBytes(bytes));
                 } else {
