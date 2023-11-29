@@ -64,6 +64,7 @@ public class EnergyStorageProducer {
                 throw new RuntimeException("Port configuration is not correct for '" + portLocator + "' and protocol '" + portProtocol + "'!");
             }
 
+            LOG.debug("Getting port for protocol '{}' at location '{}'", protocol.name(), portLocator);
             return Arrays.asList(ServiceLoader.load(protocol.portClass).findFirst().get().create(portLocator));
         }
 
