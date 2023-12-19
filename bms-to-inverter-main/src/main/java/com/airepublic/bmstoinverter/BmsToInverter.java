@@ -145,19 +145,22 @@ public class BmsToInverter implements AutoCloseable {
      * Called after the BMS received data.
      */
     private void receivedData() {
-        LOG.info(createBatteryOverview());
+        try {
+            LOG.info(createBatteryOverview());
 
-        if (mqttProducer != null) {
-            // send energystorage data to MQTT broker
-            try {
-                mqttProducer.sendMessage(energyStorage.toJson());
-            } catch (final Throwable e) {
-                LOG.error("Failed to send MQTT message!", e);
+            if (mqttProducer != null) {
+                // send energystorage data to MQTT broker
+                try {
+                    mqttProducer.sendMessage(energyStorage.toJson());
+                } catch (final Throwable e) {
+                    LOG.error("Failed to send MQTT message!", e);
+                }
             }
+
+            analyseBMSFaults();
+        } catch (final Throwable e) {
+            LOG.error("Error after data received!", e);
         }
-
-        analyseBMSFaults();
-
     }
 
 
