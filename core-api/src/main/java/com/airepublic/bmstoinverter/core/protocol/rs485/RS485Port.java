@@ -1,5 +1,7 @@
 package com.airepublic.bmstoinverter.core.protocol.rs485;
 
+import java.nio.ByteBuffer;
+
 import com.airepublic.bmstoinverter.core.Port;
 
 import jakarta.annotation.PostConstruct;
@@ -14,6 +16,7 @@ public abstract class RS485Port extends Port {
     private int baudrate = 9600;
     private int startFlag = 0;
     private int frameLength = 0;
+    private ByteBuffer frameBuffer;
 
     /**
      * Constructor.
@@ -39,9 +42,9 @@ public abstract class RS485Port extends Port {
      */
     @PostConstruct
     public void init() {
-        baudrate = Integer.parseInt(System.getProperty("RS485.baudrate"));
-        startFlag = Integer.parseInt(System.getProperty("RS485.startFlag"));
-        frameLength = Integer.parseInt(System.getProperty("RS485.frameLength"));
+        setBaudrate(Integer.parseInt(System.getProperty("RS485.baudrate")));
+        setStartFlag(Integer.parseInt(System.getProperty("RS485.startFlag")));
+        setFrameLength(Integer.parseInt(System.getProperty("RS485.frameLength")));
     }
 
 
@@ -102,6 +105,17 @@ public abstract class RS485Port extends Port {
      */
     public void setFrameLength(final int frameLength) {
         this.frameLength = frameLength;
+        frameBuffer = ByteBuffer.allocate(frameLength);
+    }
+
+
+    /**
+     * Gets the frame buffer used to store the bytes of a received frame.
+     *
+     * @return the frameBuffer
+     */
+    public ByteBuffer getFrameBuffer() {
+        return frameBuffer;
     }
 
 }

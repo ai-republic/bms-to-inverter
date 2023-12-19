@@ -119,7 +119,7 @@ public class BatteryPack implements AutoCloseable {
 
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         if (port != null && port.isOpen()) {
             port.close();
         }

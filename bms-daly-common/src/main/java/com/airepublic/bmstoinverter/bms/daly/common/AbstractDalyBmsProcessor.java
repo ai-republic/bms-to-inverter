@@ -35,6 +35,7 @@ public abstract class AbstractDalyBmsProcessor implements Bms {
     private final byte[] requestData = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
     private final int calibrationCounter = 1;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private boolean initialRequestsDone = false;
 
     /**
      * Gets the {@link DalyMessageHandler} to process the {@link DalyMessage} converted by the
@@ -50,11 +51,19 @@ public abstract class AbstractDalyBmsProcessor implements Bms {
     @Override
     public void process(final Runnable callback) {
         try {
+            LOG.info("---------------------------------> Thread " + Thread.currentThread().getId());
+
             for (int bmsNo = 0; bmsNo < energyStorage.getBatteryPackCount(); bmsNo++) {
-                sendMessage(bmsNo, DalyCommand.READ_RATED_CAPACITY_CELL_VOLTAGE, requestData); // 0x50
-                sendMessage(bmsNo, DalyCommand.READ_BATTERY_TYPE_INFO, requestData); // 0x53
-                sendMessage(bmsNo, DalyCommand.READ_MIN_MAX_PACK_VOLTAGE, requestData); // 0x5A
-                sendMessage(bmsNo, DalyCommand.READ_MAX_PACK_DISCHARGE_CHARGE_CURRENT, requestData); // 0x5B
+                if (!initialRequestsDone) {
+                    // sendMessage(bmsNo, DalyCommand.READ_RATED_CAPACITY_CELL_VOLTAGE,
+                    // requestData); // 0x50
+                    // sendMessage(bmsNo, DalyCommand.READ_BATTERY_TYPE_INFO, requestData); // 0x53
+                    // sendMessage(bmsNo, DalyCommand.READ_MIN_MAX_PACK_VOLTAGE, requestData); //
+                    // 0x5A
+                    // sendMessage(bmsNo, DalyCommand.READ_MAX_PACK_DISCHARGE_CHARGE_CURRENT,
+                    // requestData); // 0x5B
+                }
+
                 sendMessage(bmsNo, DalyCommand.READ_VOUT_IOUT_SOC, requestData); // 0x90
                 sendMessage(bmsNo, DalyCommand.READ_MIN_MAX_CELL_VOLTAGE, requestData); // 0x91
                 sendMessage(bmsNo, DalyCommand.READ_MIN_MAX_TEMPERATURE, requestData); // 0x92
@@ -66,6 +75,7 @@ public abstract class AbstractDalyBmsProcessor implements Bms {
                 sendMessage(bmsNo, DalyCommand.READ_FAILURE_CODES, requestData); // 0x98
             }
 
+            initialRequestsDone = true;
             // autoCalibrateSOC();
         } catch (final Throwable e) {
             LOG.error("Error requesting data!", e);

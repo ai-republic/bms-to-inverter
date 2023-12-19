@@ -51,7 +51,7 @@ public class BmsToInverter implements AutoCloseable {
     private EmailAccount account;
     private final List<String> emailRecipients = new ArrayList<>();
     private List<String> lastAlarms = new ArrayList<>();
-    final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
+    final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
 
     /**
      * The main method to start the application.
@@ -127,7 +127,7 @@ public class BmsToInverter implements AutoCloseable {
 
             LOG.info("Starting BMS receiver...");
             // receive BMS data
-            executorService.scheduleWithFixedDelay(() -> bms.process(() -> receivedData()), 3, bmsPollInterval, TimeUnit.SECONDS);
+            executorService.scheduleWithFixedDelay(() -> bms.process(() -> receivedData()), 1, bmsPollInterval, TimeUnit.SECONDS);
 
             // send data to inverter
             if (inverter != null) {
@@ -364,7 +364,7 @@ public class BmsToInverter implements AutoCloseable {
         try {
             executorService.shutdownNow();
             LOG.info("Shutting down BMS and inverter threads...OK");
-        } catch (final Exception e) {
+        } catch (final Throwable e) {
             LOG.info("Shutting down BMS and inverter threads...FAILED");
         }
 
@@ -372,7 +372,7 @@ public class BmsToInverter implements AutoCloseable {
             try {
                 mqttProducer.close();
                 LOG.info("Shutting down MQTT producer threads...OK");
-            } catch (final Exception e) {
+            } catch (final Throwable e) {
                 LOG.info("Shutting down MQTT producer threads...FAILED");
             }
         }
@@ -381,14 +381,16 @@ public class BmsToInverter implements AutoCloseable {
             try {
                 mqttBroker.close();
                 LOG.info("Shutting down MQTT broker threads...OK");
-            } catch (final Exception e) {
+            } catch (final Throwable e) {
                 LOG.info("Shutting down MQTT broker threads...FAILED");
             }
         }
 
         try {
             energyStorage.close();
-        } catch (final Exception e) {
+            LOG.info("Shutting down ports...OK");
+        } catch (final Throwable e) {
+            LOG.info("Shutting down ports...FAILED");
         }
     }
 

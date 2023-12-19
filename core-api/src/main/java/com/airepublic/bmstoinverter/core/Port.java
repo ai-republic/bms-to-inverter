@@ -92,7 +92,7 @@ public abstract class Port implements AutoCloseable {
 
 
     @Override
-    public abstract void close() throws Exception;
+    public abstract void close();
 
 
     /**

@@ -17,6 +17,7 @@ import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.PortType;
 import com.airepublic.bmstoinverter.core.Protocol;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
+import com.airepublic.bmstoinverter.core.protocol.rs485.RS485Port;
 
 import jakarta.inject.Inject;
 
@@ -45,7 +46,8 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
         int framesToBeReceived = getResponseFrameCount(cmd);
         final int frameCount = framesToBeReceived;
         final List<ByteBuffer> readBuffers = new ArrayList<>();
-        final Port port = energyStorage.getBatteryPack(bmsNo).port;
+        final RS485Port port = (RS485Port) energyStorage.getBatteryPack(bmsNo).port;
+        int failureCount = 0;
 
         // read frames until the requested frame is read
         do {
@@ -54,6 +56,22 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
 
             for (int i = 0; i < frameCount; i++) {
                 final ByteBuffer receiveBuffer = port.receiveFrame(validator);
+
+                if (receiveBuffer == null || receiveBuffer.capacity() < port.getFrameLength()) {
+                    failureCount++;
+
+                    if (receiveBuffer != null && receiveBuffer.capacity() < port.getFrameLength()) {
+                        LOG.debug("Wrong number of bytes received! {}", Port.printBuffer(receiveBuffer));
+                    }
+
+                    if (failureCount > 10) {
+                        throw new IOException("Too many times wrong number of received - start new reading round!");
+                    }
+
+                    i--;
+
+                    continue;
+                }
 
                 LOG.debug("RECEIVED: {}", Port.printBuffer(receiveBuffer));
 
