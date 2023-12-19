@@ -139,4 +139,8 @@ public class JavaCANPort extends CANPort {
         return false;
     }
 
+
+    @Override
+    public void clearBuffers() {
+    }
 }

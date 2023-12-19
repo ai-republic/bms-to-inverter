@@ -26,6 +26,11 @@ public class PylonBmsCANProcessor implements Bms {
     private EnergyStorage energyStorage;
 
     @Override
+    public void initialize() {
+    }
+
+
+    @Override
     public void process(final Runnable callback) {
         for (int bmsNo = 0; bmsNo < energyStorage.getBatteryPackCount(); bmsNo++) {
             try {

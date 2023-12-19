@@ -117,5 +117,4 @@ public abstract class RS485Port extends Port {
     public ByteBuffer getFrameBuffer() {
         return frameBuffer;
     }
-
 }

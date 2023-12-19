@@ -76,4 +76,9 @@ public class J2ModPort extends ModBusPort {
     @Override
     public void sendFrame(final ByteBuffer frame) throws IOException {
     }
+
+
+    @Override
+    public void clearBuffers() {
+    }
 }
