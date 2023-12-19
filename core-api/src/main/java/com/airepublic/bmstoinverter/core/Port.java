@@ -91,6 +91,12 @@ public abstract class Port implements AutoCloseable {
     public abstract void sendFrame(ByteBuffer frame) throws IOException;
 
 
+    /**
+     * Clears any buffers or queues to restart communication.
+     */
+    public abstract void clearBuffers();
+
+
     @Override
     public abstract void close();
 

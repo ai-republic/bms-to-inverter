@@ -174,6 +174,15 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
 
 
     @Override
+    public void clearBuffers() {
+        synchronized (queue) {
+            queue.clear();
+            getFrameBuffer().clear();
+        }
+    }
+
+
+    @Override
     public int getListeningEvents() {
         return SerialPort.LISTENING_EVENT_DATA_RECEIVED;
     }
