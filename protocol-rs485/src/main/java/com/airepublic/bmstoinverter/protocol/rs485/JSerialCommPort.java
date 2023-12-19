@@ -68,6 +68,11 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
 
             } catch (final Exception e) {
                 LOG.error("Could not open port {}!", getPortname(), e);
+                try {
+                    port.closePort();
+                    port.openPort();
+                } catch (final Throwable t) {
+                }
             }
 
         }
