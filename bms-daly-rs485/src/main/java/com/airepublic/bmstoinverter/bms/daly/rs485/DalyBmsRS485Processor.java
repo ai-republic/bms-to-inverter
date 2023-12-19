@@ -65,7 +65,7 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
                     }
 
                     if (failureCount > 10) {
-                        throw new IOException("Too many times wrong number of received - start new reading round!");
+                        throw new IOException("Received wrong number of bytes too many times - start new reading round!");
                     }
 
                     i--;
