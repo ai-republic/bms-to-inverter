@@ -104,7 +104,7 @@ public class JavaCANPort extends CANPort {
 
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         // close old channel first
         if (isOpen()) {
             try {

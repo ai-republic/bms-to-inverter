@@ -2,6 +2,7 @@ package com.airepublic.bmstoinverter.protocol.rs485;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Predicate;
 
 import org.slf4j.Logger;
@@ -11,14 +12,17 @@ import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.protocol.rs485.RS485;
 import com.airepublic.bmstoinverter.core.protocol.rs485.RS485Port;
 import com.fazecast.jSerialComm.SerialPort;
+import com.fazecast.jSerialComm.SerialPortDataListener;
+import com.fazecast.jSerialComm.SerialPortEvent;
 
 /**
  * The implementation of the {@link RS485Port} using the JSerialComm implementation.
  */
 @RS485
-public class JSerialCommPort extends RS485Port {
+public class JSerialCommPort extends RS485Port implements SerialPortDataListener {
     private final static Logger LOG = LoggerFactory.getLogger(JSerialCommPort.class);
     private SerialPort port;
+    private final ConcurrentLinkedQueue<byte[]> queue = new ConcurrentLinkedQueue<>();
 
     /**
      * Constructor.
@@ -52,13 +56,20 @@ public class JSerialCommPort extends RS485Port {
                 port = SerialPort.getCommPort(getPortname());
                 // set port configuration
                 port.setComPortParameters(getBaudrate(), 8, 1, SerialPort.NO_PARITY, true);
-                port.setComPortTimeouts(SerialPort.TIMEOUT_READ_BLOCKING | SerialPort.TIMEOUT_WRITE_BLOCKING, 0, 0);
+                port.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING |
+                        SerialPort.TIMEOUT_WRITE_BLOCKING, 0, 0);
+                // port.setRs485ModeParameters(true, true, true, false, 100000, 100000);
+                // port.setFlowControl(SerialPort.FLOW_CONTROL_RTS_ENABLED |
+                // SerialPort.FLOW_CONTROL_CTS_ENABLED);
                 // open port
+
+                port.addDataListener(this);
                 port.openPort();
 
             } catch (final Exception e) {
                 LOG.error("Could not open port {}!", getPortname(), e);
             }
+
         }
     }
 
@@ -70,12 +81,13 @@ public class JSerialCommPort extends RS485Port {
 
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         if (isOpen()) {
             try {
+                port.removeDataListener();
                 port.closePort();
                 LOG.info("Shutting down port '{}'...OK", getPortname());
-            } catch (final Exception e) {
+            } catch (final Throwable e) {
                 LOG.error("Shutting down port '{}'...FAILED", getPortname(), e);
             }
         }
@@ -88,55 +100,23 @@ public class JSerialCommPort extends RS485Port {
     public ByteBuffer receiveFrame(final Predicate<byte[]> validator) throws IOException {
         ensureOpen();
 
-        // read frame
-        final byte[] bytes = new byte[getFrameLength()];
-        final int read = port.getInputStream().readNBytes(bytes, 0, getFrameLength());
-        LOG.debug("Initial read: {}", Port.printBytes(bytes));
+        byte[] bytes = queue.poll();
+        int failureCount = 0;
 
-        if (read != bytes.length) {
-            throw new IOException("Wrong number of bytes read!");
-        }
-
-        do {
-            int startPos = 0;
-
-            // verify it starts with the startflag
-            if (bytes[0] != (byte) getStartFlag()) {
-                // otherwise search within the received bytes for a startflag
-                do {
-                    startPos++;
-                } while (startPos < bytes.length && bytes[startPos] != (byte) getStartFlag());
-
-                // if a startflag was found
-                if (startPos < bytes.length && bytes[startPos] == (byte) getStartFlag()) {
-                    // shift the bytes left from the found startflag
-                    System.arraycopy(bytes, startPos, bytes, 0, bytes.length - startPos);
-                    LOG.debug("Copied startflag to beginning: {}", Port.printBytes(bytes));
-
-                    // fill up the rest with the next bytes from the stream
-                    startPos = bytes.length - startPos;
-                    port.getInputStream().readNBytes(bytes, startPos, bytes.length - startPos);
-
-                    LOG.debug("Final filling up:  {}", Port.printBytes(bytes));
-                } else {
-                    // otherwise continue to read the next frame
-                    LOG.debug("Ignoring frame: {}", Port.printBytes(bytes));
-                    return receiveFrame(validator);
+        while (bytes == null && failureCount < 10) {
+            failureCount++;
+            // if the queue is empty we have to wait for the next bytes
+            synchronized (queue) {
+                try {
+                    queue.wait(500);
+                    bytes = queue.poll();
+                } catch (final InterruptedException e) {
                 }
             }
-
-            // now we should have a frame starting with the start flag
-            // next is to validate the frame
-
-            if (!validator.test(bytes)) {
-                LOG.debug("Validation of frame failed!");
-
-                // read the bytes from pos 1 to find possible other startflag
-                // and remove the startflag as first byte
-                bytes[0] = 0;
-            }
-        } while (bytes[0] != (byte) getStartFlag());
-
+        }
+        if (bytes == null) {
+            return null;
+        }
         return ByteBuffer.wrap(bytes);
     }
 
@@ -144,6 +124,8 @@ public class JSerialCommPort extends RS485Port {
     @Override
     public void sendFrame(final ByteBuffer frame) throws IOException {
         ensureOpen();
+
+        getFrameBuffer().clear();
 
         final byte[] bytes = frame.array();
         LOG.debug("Send: {}", Port.printBytes(bytes));
@@ -156,6 +138,11 @@ public class JSerialCommPort extends RS485Port {
 
         while (port.getRTS() && !port.clearRTS()) {
             ;
+        }
+
+        try {
+            Thread.sleep(100);
+        } catch (final InterruptedException e) {
         }
     }
 
@@ -178,5 +165,70 @@ public class JSerialCommPort extends RS485Port {
         }
 
         return false;
+    }
+
+
+    @Override
+    public int getListeningEvents() {
+        return SerialPort.LISTENING_EVENT_DATA_RECEIVED;
+    }
+
+
+    @Override
+    public void serialEvent(final SerialPortEvent event) {
+        if (event.getEventType() == SerialPort.LISTENING_EVENT_DATA_RECEIVED) {
+            synchronized (queue) {
+                final byte[] bytes = event.getReceivedData();
+
+                LOG.debug("Received: {}", Port.printBytes(bytes));
+
+                if (bytes != null) {
+                    final ByteBuffer frameBuffer = getFrameBuffer();
+
+                    // check if the bytes still fit into the framebuffer
+                    if (bytes.length <= frameBuffer.remaining()) {
+                        frameBuffer.put(bytes);
+
+                        // check if the framebuffer is full
+                        if (frameBuffer.remaining() == 0) {
+                            // add the frame to the queue
+                            final byte[] frame = new byte[getFrameLength()];
+                            System.arraycopy(frameBuffer.array(), 0, frame, 0, getFrameLength());
+                            queue.add(frame);
+                            queue.notify();
+
+                            // clear the framebuffer
+                            frameBuffer.clear();
+                        }
+                    } else {
+                        int idx = 0;
+
+                        while (bytes.length - idx >= getFrameLength()) {
+                            // put a complete frame into the framebuffer
+                            frameBuffer.put(bytes, idx, getFrameLength());
+
+                            idx += getFrameLength();
+
+                            // add the frame to the queue
+                            final byte[] frame = new byte[getFrameLength()];
+                            System.arraycopy(frameBuffer.array(), 0, frame, 0, getFrameLength());
+                            queue.add(frame);
+                            queue.notify();
+
+                            // clear the framebuffer
+                            frameBuffer.clear();
+                        }
+
+                        // if bytes are left over
+                        if (bytes.length - idx > 0) {
+                            // add the remaining bytes
+                            frameBuffer.put(bytes, idx, bytes.length - idx);
+                        }
+                    }
+                }
+            }
+        } else {
+            LOG.debug("Error unknown serial event: " + event);
+        }
     }
 }
