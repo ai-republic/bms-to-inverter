@@ -180,6 +180,7 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
     @Override
     public void clearBuffers() {
         synchronized (queue) {
+            LOG.debug("Clearing RX buffers");
             queue.clear();
             getFrameBuffer().clear();
         }
@@ -222,6 +223,13 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
                 } else {
                     int idx = 0;
 
+                    // first fill up the current framebuffer
+                    if (frameBuffer.remaining() != 0) {
+                        idx += frameBuffer.remaining();
+                        frameBuffer.put(bytes, 0, frameBuffer.remaining());
+                    }
+
+                    // then add all complete frames
                     while (bytes.length - idx >= getFrameLength()) {
                         // put a complete frame into the framebuffer
                         frameBuffer.put(bytes, idx, getFrameLength());
@@ -240,7 +248,7 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
                         frameBuffer.clear();
                     }
 
-                    // if bytes are left over
+                    // if bytes are left over put them in the framebuffer
                     if (bytes.length - idx > 0) {
                         // add the remaining bytes
                         frameBuffer.put(bytes, idx, bytes.length - idx);
