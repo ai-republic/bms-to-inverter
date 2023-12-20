@@ -133,9 +133,6 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
     public void sendFrame(final ByteBuffer frame) throws IOException {
         ensureOpen();
 
-        getFrameBuffer().clear();
-        port.flushIOBuffers();
-
         final byte[] bytes = frame.array();
         LOG.debug("Send: {}", Port.printBytes(bytes));
         // while (!port.getRTS() && !port.setRTS()) {
@@ -183,6 +180,7 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
             LOG.debug("Clearing RX buffers");
             queue.clear();
             getFrameBuffer().clear();
+            port.flushIOBuffers();
         }
     }
 
@@ -210,15 +208,7 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
                     // check if the framebuffer is full
                     if (frameBuffer.remaining() == 0) {
                         // add the frame to the queue
-                        final byte[] frame = new byte[getFrameLength()];
-                        System.arraycopy(frameBuffer.array(), 0, frame, 0, getFrameLength());
-                        queue.add(frame);
-
-                        synchronized (queue) {
-                            queue.notify();
-                        }
-                        // clear the framebuffer
-                        frameBuffer.clear();
+                        addFrameBufferToQueue();
                     }
                 } else {
                     int idx = 0;
@@ -227,6 +217,8 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
                     if (frameBuffer.remaining() != 0) {
                         idx += frameBuffer.remaining();
                         frameBuffer.put(bytes, 0, frameBuffer.remaining());
+
+                        addFrameBufferToQueue();
                     }
 
                     // then add all complete frames
@@ -237,15 +229,7 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
                         idx += getFrameLength();
 
                         // add the frame to the queue
-                        final byte[] frame = new byte[getFrameLength()];
-                        System.arraycopy(frameBuffer.array(), 0, frame, 0, getFrameLength());
-                        queue.add(frame);
-
-                        synchronized (queue) {
-                            queue.notify();
-                        }
-                        // clear the framebuffer
-                        frameBuffer.clear();
+                        addFrameBufferToQueue();
                     }
 
                     // if bytes are left over put them in the framebuffer
@@ -259,5 +243,20 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
         } else {
             LOG.debug("Error unknown serial event: " + event);
         }
+    }
+
+
+    private void addFrameBufferToQueue() {
+        final byte[] frame = new byte[getFrameLength()];
+        System.arraycopy(getFrameBuffer().array(), 0, frame, 0, getFrameLength());
+
+        LOG.debug("Adding frame to TX queue: {}", printBytes(frame));
+        queue.add(frame);
+
+        synchronized (queue) {
+            queue.notify();
+        }
+        // clear the framebuffer
+        getFrameBuffer().clear();
     }
 }
