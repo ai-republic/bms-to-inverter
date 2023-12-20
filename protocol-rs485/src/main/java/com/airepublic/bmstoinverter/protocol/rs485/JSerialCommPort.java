@@ -131,19 +131,20 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
         ensureOpen();
 
         getFrameBuffer().clear();
+        port.flushIOBuffers();
 
         final byte[] bytes = frame.array();
         LOG.debug("Send: {}", Port.printBytes(bytes));
-        while (!port.getRTS() && !port.setRTS()) {
-            ;
-        }
+        // while (!port.getRTS() && !port.setRTS()) {
+        // ;
+        // }
 
         port.getOutputStream().write(bytes);
         port.getOutputStream().flush();
 
-        while (port.getRTS() && !port.clearRTS()) {
-            ;
-        }
+        // while (port.getRTS() && !port.clearRTS()) {
+        // ;
+        // }
 
         try {
             Thread.sleep(100);
@@ -191,56 +192,59 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
     @Override
     public void serialEvent(final SerialPortEvent event) {
         if (event.getEventType() == SerialPort.LISTENING_EVENT_DATA_RECEIVED) {
-            synchronized (queue) {
-                final byte[] bytes = event.getReceivedData();
+            final byte[] bytes = event.getReceivedData();
 
-                LOG.debug("Received: {}", Port.printBytes(bytes));
+            LOG.debug("Received: {}", Port.printBytes(bytes));
 
-                if (bytes != null) {
-                    final ByteBuffer frameBuffer = getFrameBuffer();
+            if (bytes != null) {
+                final ByteBuffer frameBuffer = getFrameBuffer();
 
-                    // check if the bytes still fit into the framebuffer
-                    if (bytes.length <= frameBuffer.remaining()) {
-                        frameBuffer.put(bytes);
+                // check if the bytes still fit into the framebuffer
+                if (bytes.length <= frameBuffer.remaining()) {
+                    frameBuffer.put(bytes);
 
-                        // check if the framebuffer is full
-                        if (frameBuffer.remaining() == 0) {
-                            // add the frame to the queue
-                            final byte[] frame = new byte[getFrameLength()];
-                            System.arraycopy(frameBuffer.array(), 0, frame, 0, getFrameLength());
-                            queue.add(frame);
+                    // check if the framebuffer is full
+                    if (frameBuffer.remaining() == 0) {
+                        // add the frame to the queue
+                        final byte[] frame = new byte[getFrameLength()];
+                        System.arraycopy(frameBuffer.array(), 0, frame, 0, getFrameLength());
+                        queue.add(frame);
+
+                        synchronized (queue) {
                             queue.notify();
-
-                            // clear the framebuffer
-                            frameBuffer.clear();
                         }
-                    } else {
-                        int idx = 0;
+                        // clear the framebuffer
+                        frameBuffer.clear();
+                    }
+                } else {
+                    int idx = 0;
 
-                        while (bytes.length - idx >= getFrameLength()) {
-                            // put a complete frame into the framebuffer
-                            frameBuffer.put(bytes, idx, getFrameLength());
+                    while (bytes.length - idx >= getFrameLength()) {
+                        // put a complete frame into the framebuffer
+                        frameBuffer.put(bytes, idx, getFrameLength());
 
-                            idx += getFrameLength();
+                        idx += getFrameLength();
 
-                            // add the frame to the queue
-                            final byte[] frame = new byte[getFrameLength()];
-                            System.arraycopy(frameBuffer.array(), 0, frame, 0, getFrameLength());
-                            queue.add(frame);
+                        // add the frame to the queue
+                        final byte[] frame = new byte[getFrameLength()];
+                        System.arraycopy(frameBuffer.array(), 0, frame, 0, getFrameLength());
+                        queue.add(frame);
+
+                        synchronized (queue) {
                             queue.notify();
-
-                            // clear the framebuffer
-                            frameBuffer.clear();
                         }
+                        // clear the framebuffer
+                        frameBuffer.clear();
+                    }
 
-                        // if bytes are left over
-                        if (bytes.length - idx > 0) {
-                            // add the remaining bytes
-                            frameBuffer.put(bytes, idx, bytes.length - idx);
-                        }
+                    // if bytes are left over
+                    if (bytes.length - idx > 0) {
+                        // add the remaining bytes
+                        frameBuffer.put(bytes, idx, bytes.length - idx);
                     }
                 }
             }
+
         } else {
             LOG.debug("Error unknown serial event: " + event);
         }
