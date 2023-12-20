@@ -250,16 +250,16 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
 
 
     private void addFrameBufferToQueue() {
-        final byte[] frame = new byte[getFrameLength()];
-        System.arraycopy(getFrameBuffer().array(), 0, frame, 0, getFrameLength());
-
-        LOG.debug("Adding frame to TX queue: {}", printBytes(frame));
-        queue.add(frame);
-
         synchronized (queue) {
+            final byte[] frame = new byte[getFrameLength()];
+            System.arraycopy(getFrameBuffer().array(), 0, frame, 0, getFrameLength());
+
+            LOG.debug("Adding frame to TX queue: {}", printBytes(frame));
+            queue.add(frame);
             queue.notify();
+
+            // clear the framebuffer
+            getFrameBuffer().clear();
         }
-        // clear the framebuffer
-        getFrameBuffer().clear();
     }
 }
