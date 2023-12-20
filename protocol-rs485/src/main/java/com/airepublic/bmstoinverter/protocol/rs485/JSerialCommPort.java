@@ -106,21 +106,21 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
         ensureOpen();
 
         LOG.debug("RX queue: {}", queue);
-        byte[] bytes = queue.poll();
-        int failureCount = 0;
-
-        while (bytes == null && failureCount < 10) {
-            failureCount++;
-            // if the queue is empty we have to wait for the next bytes
-            try {
-                synchronized (queue) {
-                    queue.wait(500);
-                }
-            } catch (final InterruptedException e) {
-            }
-
-            bytes = queue.poll();
-        }
+        final byte[] bytes = queue.poll();
+        // int failureCount = 0;
+        //
+        // while (bytes == null && failureCount < 10) {
+        // failureCount++;
+        // // if the queue is empty we have to wait for the next bytes
+        // try {
+        // synchronized (queue) {
+        // queue.wait(500);
+        // }
+        // } catch (final InterruptedException e) {
+        // }
+        //
+        // bytes = queue.poll();
+        // }
 
         if (bytes == null) {
             return null;
