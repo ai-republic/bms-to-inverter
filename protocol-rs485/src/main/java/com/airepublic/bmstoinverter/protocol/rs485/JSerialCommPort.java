@@ -180,7 +180,10 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
             LOG.debug("Clearing RX buffers");
             queue.clear();
             getFrameBuffer().clear();
-            port.flushIOBuffers();
+
+            if (isOpen()) {
+                port.flushIOBuffers();
+            }
         }
     }
 
