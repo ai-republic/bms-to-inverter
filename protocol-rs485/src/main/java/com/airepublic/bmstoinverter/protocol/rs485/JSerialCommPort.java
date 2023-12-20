@@ -105,20 +105,23 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
     public ByteBuffer receiveFrame(final Predicate<byte[]> validator) throws IOException {
         ensureOpen();
 
+        LOG.debug("RX queue: {}", queue);
         byte[] bytes = queue.poll();
         int failureCount = 0;
 
         while (bytes == null && failureCount < 10) {
             failureCount++;
             // if the queue is empty we have to wait for the next bytes
-            synchronized (queue) {
-                try {
+            try {
+                synchronized (queue) {
                     queue.wait(500);
-                    bytes = queue.poll();
-                } catch (final InterruptedException e) {
                 }
+            } catch (final InterruptedException e) {
             }
+
+            bytes = queue.poll();
         }
+
         if (bytes == null) {
             return null;
         }
