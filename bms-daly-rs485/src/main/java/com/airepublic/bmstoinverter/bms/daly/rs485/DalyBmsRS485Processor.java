@@ -70,7 +70,7 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
 
                     // try and wait for the next message to arrive
                     try {
-                        Thread.sleep(100);
+                        Thread.sleep(300);
                     } catch (final InterruptedException e) {
                     }
 
