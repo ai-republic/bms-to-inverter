@@ -2,6 +2,7 @@ package com.airepublic.bmstoinverter.protocol.rs485;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Predicate;
 
@@ -174,6 +175,16 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
     }
 
 
+    /**
+     * Gets the queue of frames.
+     *
+     * @return queue of frames
+     */
+    public Queue<byte[]> getQueue() {
+        return queue;
+    }
+
+
     @Override
     public void clearBuffers() {
         synchronized (queue) {
@@ -204,41 +215,56 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
             if (bytes != null) {
                 final ByteBuffer frameBuffer = getFrameBuffer();
 
-                // check if the bytes still fit into the framebuffer
-                if (bytes.length <= frameBuffer.remaining()) {
-                    frameBuffer.put(bytes);
+                synchronized (frameBuffer) {
+                    // check if the bytes still fit into the framebuffer
+                    if (bytes.length <= frameBuffer.remaining()) {
+                        frameBuffer.put(bytes);
 
-                    // check if the framebuffer is full
-                    if (frameBuffer.remaining() == 0) {
-                        // add the frame to the queue
-                        addFrameBufferToQueue();
-                    }
-                } else {
-                    int idx = 0;
+                        // check if the framebuffer is full
+                        if (frameBuffer.remaining() == 0) {
+                            // add the frame to the queue
+                            addFrameBufferToQueue();
+                        }
+                    } else {
+                        int idx = 0;
 
-                    // first fill up the current framebuffer
-                    if (frameBuffer.remaining() != 0) {
-                        idx += frameBuffer.remaining();
-                        frameBuffer.put(bytes, 0, frameBuffer.remaining());
+                        // first fill up the current framebuffer
+                        if (frameBuffer.remaining() != 0) {
+                            idx += frameBuffer.remaining();
+                            frameBuffer.put(bytes, 0, frameBuffer.remaining());
 
-                        addFrameBufferToQueue();
-                    }
+                            addFrameBufferToQueue();
+                        }
 
-                    // then add all complete frames
-                    while (bytes.length - idx >= getFrameLength()) {
-                        // put a complete frame into the framebuffer
-                        frameBuffer.put(bytes, idx, getFrameLength());
+                        // then add all complete frames
+                        while (bytes.length - idx >= getFrameLength()) {
+                            // put a complete frame into the framebuffer
+                            frameBuffer.put(bytes, idx, getFrameLength());
 
-                        idx += getFrameLength();
+                            idx += getFrameLength();
 
-                        // add the frame to the queue
-                        addFrameBufferToQueue();
-                    }
+                            // add the frame to the queue
+                            addFrameBufferToQueue();
+                        }
 
-                    // if bytes are left over put them in the framebuffer
-                    if (bytes.length - idx > 0) {
-                        // add the remaining bytes
-                        frameBuffer.put(bytes, idx, bytes.length - idx);
+                        // if bytes are left over put them in the framebuffer
+                        if (idx < bytes.length) {
+                            // check if the bytes fit into the remaining buffer (could happen if
+                            // startflag was not at first position)
+                            if (bytes.length - idx > frameBuffer.remaining()) {
+                                final int remaining = frameBuffer.remaining();
+                                frameBuffer.put(bytes, idx, frameBuffer.remaining());
+                                idx += remaining;
+
+                                // add the frame to the queue
+                                addFrameBufferToQueue();
+                            }
+
+                            if (idx < bytes.length) {
+                                // add the remaining bytes
+                                frameBuffer.put(bytes, idx, bytes.length - idx);
+                            }
+                        }
                     }
                 }
             }
@@ -250,13 +276,28 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
 
 
     private void addFrameBufferToQueue() {
-        synchronized (queue) {
+        synchronized (getFrameBuffer()) {
+            int start = 0;
+            while (start < getFrameLength() && Byte.toUnsignedInt(getFrameBuffer().get(start)) != getStartFlag()) {
+                start++;
+            }
+
+            if (start > 0) {
+                final byte[] tmp = new byte[getFrameLength() - start];
+                System.arraycopy(getFrameBuffer().array(), start, tmp, 0, tmp.length);
+                System.arraycopy(tmp, 0, getFrameBuffer().array(), 0, tmp.length);
+                getFrameBuffer().position(tmp.length);
+                return;
+            }
+
             final byte[] frame = new byte[getFrameLength()];
             System.arraycopy(getFrameBuffer().array(), 0, frame, 0, getFrameLength());
 
             LOG.debug("Adding frame to TX queue: {}", printBytes(frame));
-            queue.add(frame);
-            queue.notify();
+            synchronized (queue) {
+                queue.add(frame);
+                queue.notify();
+            }
 
             // clear the framebuffer
             getFrameBuffer().clear();

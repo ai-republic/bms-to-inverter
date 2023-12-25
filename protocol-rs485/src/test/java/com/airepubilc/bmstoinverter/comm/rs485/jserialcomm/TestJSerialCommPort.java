@@ -2,10 +2,14 @@ package com.airepubilc.bmstoinverter.comm.rs485.jserialcomm;
 
 import java.nio.ByteBuffer;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.protocol.rs485.JSerialCommPort;
+import com.fazecast.jSerialComm.SerialPort;
+import com.fazecast.jSerialComm.SerialPortEvent;
 
 public class TestJSerialCommPort {
     private final static Logger LOG = LoggerFactory.getLogger(TestJSerialCommPort.class);
@@ -36,4 +40,75 @@ public class TestJSerialCommPort {
         } while (port.isOpen());
         port.close();
     }
+
+
+    @Test
+    public void testSerialEventValidFullFrame() {
+        // GIVEN: a port configured with startflag and framelength
+        final JSerialCommPort port = new JSerialCommPort();
+        port.setStartFlag(0xA5);
+        port.setFrameLength(13);
+
+        // WHEN:
+        // a valid full frame is received
+        port.serialEvent(new SerialPortEvent(SerialPort.getCommPort("com1"), SerialPort.LISTENING_EVENT_DATA_RECEIVED, new byte[] { Integer.valueOf(0xA5).byteValue(), 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C }));
+
+        // THEN:
+        // a frame should be added to the queue
+        Assertions.assertEquals(1, port.getQueue().size());
+    }
+
+
+    @Test
+    public void testSerialEventInvalidFullFrame() {
+        // GIVEN: a port configured with startflag and framelength
+        final JSerialCommPort port = new JSerialCommPort();
+        port.setStartFlag(0xA5);
+        port.setFrameLength(13);
+
+        // WHEN:
+        // an invalid full frame is received
+        port.serialEvent(new SerialPortEvent(SerialPort.getCommPort("com1"), SerialPort.LISTENING_EVENT_DATA_RECEIVED, new byte[] { Integer.valueOf(0xA4).byteValue(), 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C }));
+
+        // THEN:
+        // no frame should be added to the queue
+        Assertions.assertEquals(0, port.getQueue().size());
+    }
+
+
+    @Test
+    public void testSerialEventShiftedFullFrame() {
+        // GIVEN: a port configured with startflag and framelength
+        final JSerialCommPort port = new JSerialCommPort();
+        port.setStartFlag(0xA5);
+        port.setFrameLength(13);
+
+        // WHEN:
+        // a full frame with startflag in wrong place is received
+        port.serialEvent(new SerialPortEvent(SerialPort.getCommPort("com1"), SerialPort.LISTENING_EVENT_DATA_RECEIVED, new byte[] { 0x00, 0x01, Integer.valueOf(0xA5).byteValue(), 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C }));
+
+        // THEN:
+        // no frame should be added to the queue
+        Assertions.assertEquals(0, port.getQueue().size());
+    }
+
+
+    @Test
+    public void testSerialEventShiftedTooLongFrame() {
+        // GIVEN: a port configured with startflag and framelength
+        final JSerialCommPort port = new JSerialCommPort();
+        port.setStartFlag(0xA5);
+        port.setFrameLength(13);
+
+        // WHEN:
+        // a full frame with startflag in wrong place is received
+        port.serialEvent(new SerialPortEvent(SerialPort.getCommPort("com1"), SerialPort.LISTENING_EVENT_DATA_RECEIVED, new byte[] { 0x00, 0x01, Integer.valueOf(0xA5).byteValue(), 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F }));
+
+        // THEN:
+        // 1 frame should be added to the queue
+        Assertions.assertEquals(1, port.getQueue().size());
+        // there should be the too long bytes in the framebuffer
+        Assertions.assertEquals(0x0F, port.getFrameBuffer().get(0));
+    }
+
 }
