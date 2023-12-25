@@ -116,8 +116,8 @@
 					'<td class="overviewDataFieldValue">' + (pack.packSOC / 10).toFixed(1) + ' %</td>' +
 					'<td class="overviewDataFieldValue">' + (pack.packVoltage / 10).toFixed(1) + ' V</td>' +
 					'<td class="overviewDataFieldValue">' + (pack.packCurrent / 10).toFixed(1) + ' A</td>' +
-					'<td class="overviewDataFieldValue">' + (pack.minCellmV / 1000).toFixed(3) + ' V (#' + pack.minCellVNum + ')</td>' +
-					'<td class="overviewDataFieldValue">' + (pack.maxCellmV / 1000).toFixed(3) + ' V (#' + pack.maxCellVNum + ')</td>' +
+					'<td class="overviewDataFieldValue">' + (pack.minCellmV / 1000).toFixed(3) + ' V (#' + pack.minCellVNum.toString().padStart(2, '0') + ')</td>' +
+					'<td class="overviewDataFieldValue">' + (pack.maxCellmV / 1000).toFixed(3) + ' V (#' + pack.maxCellVNum.toString().padStart(2, '0') + ')</td>' +
 					'<td class="overviewDataFieldValue">' + ((pack.maxCellmV - pack.minCellmV) / 1000).toFixed(3) + ' V</td>' +
 				'</tr>';
 				
@@ -176,9 +176,9 @@
 					'<td class="bmsDataFieldName">Pack-SOC</td><td id="packSOCValue" class="bmsDataFieldValue">' + (bmsData.batteryPacks[bmsNo].packSOC / 10).toFixed(1) + ' %</td>' +
 				'</tr>' +
 				'<tr>' +
-					'<td class="bmsDataFieldName">Min. Cell Voltage</td><td id="minCellVoltageValue" class="bmsDataFieldValue">' + (bmsData.batteryPacks[bmsNo].minCellmV / 1000).toFixed(3) + ' V (#' + bmsData.batteryPacks[bmsNo].minCellVNum + ')</td>' +
-					'<td class="bmsDataFieldName">Max. Cell Voltage</td><td id="maxCellVoltageValue" class="bmsDataFieldValue">' + (bmsData.batteryPacks[bmsNo].maxCellmV / 1000).toFixed(3) + ' V (#' + bmsData.batteryPacks[bmsNo].maxCellVNum + ')</td>' +
-					'<td class="bmsDataFieldName">Cell Diff.</td><td id="cellDiffValue" class="bmsDataFieldValue">' + (bmsData.batteryPacks[bmsNo].cellDiff / 1000).toFixed(3) + ' V</td>' +
+					'<td class="bmsDataFieldName">Min. Cell Voltage</td><td id="minCellVoltageValue" class="bmsDataFieldValue">' + (bmsData.batteryPacks[bmsNo].minCellmV / 1000).toFixed(3) + ' V (#' + bmsData.batteryPacks[bmsNo].minCellVNum.toString().padStart(2, '0') + ')</td>' +
+					'<td class="bmsDataFieldName">Max. Cell Voltage</td><td id="maxCellVoltageValue" class="bmsDataFieldValue">' + (bmsData.batteryPacks[bmsNo].maxCellmV / 1000).toFixed(3) + ' V (#' + bmsData.batteryPacks[bmsNo].maxCellVNum.toString().padStart(2, '0') + ')</td>' +
+					'<td class="bmsDataFieldName">Cell Diff.</td><td id="cellDiffValue" class="bmsDataFieldValue">' + ((bmsData.batteryPacks[bmsNo].maxCellmV - bmsData.batteryPacks[bmsNo].minCellmV) / 1000).toFixed(3) + ' V</td>' +
 				'</tr>' +
 				'<tr>' +
 					'<td class="bmsDataFieldName">Dis-/Charge Status</td><td id="chargeDischargeStatusValue" class="bmsDataFieldValue">' + bmsData.batteryPacks[bmsNo].chargeDischargeStatus + '</td>' +
