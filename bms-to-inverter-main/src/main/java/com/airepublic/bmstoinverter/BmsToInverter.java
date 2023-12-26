@@ -190,7 +190,7 @@ public class BmsToInverter implements AutoCloseable {
         if (!currentAlarms.isEmpty()) {
             LOG.info("BMS alarms:\n" + currentAlarms.toString());
         } else {
-            LOG.info("BMS alarms: NONE");
+            LOG.info("BMS alarms: \n\tNONE");
         }
 
         // check if alarms have changed
