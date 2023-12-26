@@ -62,6 +62,8 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
 
                     if (receiveBuffer != null && receiveBuffer.capacity() < port.getFrameLength()) {
                         LOG.debug("Wrong number of bytes received! {}", Port.printBuffer(receiveBuffer));
+                    } else {
+                        LOG.warn("No bytes received: " + failureCount + "times!");
                     }
 
                     if (failureCount > 10) {
