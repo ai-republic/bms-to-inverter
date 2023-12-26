@@ -187,23 +187,32 @@ public class BmsToInverter implements AutoCloseable {
             }
         }
 
-        // check if alarms have changed
-        if (!currentAlarms.isEmpty() && !currentAlarms.equals(lastAlarms)) {
-            final StringBuffer content = new StringBuffer("This is a generated email - do not reply!\n\n Your BMS has reported the following alarms:\n");
-            content.append(alarmContent);
-            email = new Email(account.getOutgoingMailServerEmail(), emailRecipients, "BMS Alarms occured", content.toString(), false);
-            // otherwise check if alarms have resolved
-        } else if (currentAlarms.isEmpty() && !lastAlarms.isEmpty()) {
-            final String content = "This is a generated email - do not reply!\n\n Your BMS is back to working normally.";
-            email = new Email(account.getOutgoingMailServerEmail(), emailRecipients, "BMS Alarms resolved", content, false);
+        if (!currentAlarms.isEmpty()) {
+            LOG.info("BMS alarms:\n" + currentAlarms.toString());
+        } else {
+            LOG.info("BMS alarms: NONE");
         }
 
-        if (email != null) {
-            try {
-                emailService.sendEmail(email, account);
-                lastAlarms = currentAlarms;
-            } catch (final EmailException e) {
-                LOG.error("Email could not be sent!", e);
+        // check if alarms have changed
+        if (emailService != null) {
+            if (!currentAlarms.isEmpty() && !currentAlarms.equals(lastAlarms)) {
+                final StringBuffer content = new StringBuffer("This is a generated email - do not reply!\n\n Your BMS has reported the following alarms:\n");
+                content.append(alarmContent);
+
+                email = new Email(account.getOutgoingMailServerEmail(), emailRecipients, "BMS Alarms occured", content.toString(), false);
+                // otherwise check if alarms have resolved
+            } else if (currentAlarms.isEmpty() && !lastAlarms.isEmpty()) {
+                final String content = "This is a generated email - do not reply!\n\n Your BMS is back to working normally.";
+                email = new Email(account.getOutgoingMailServerEmail(), emailRecipients, "BMS Alarms resolved", content, false);
+            }
+
+            if (email != null) {
+                try {
+                    emailService.sendEmail(email, account);
+                    lastAlarms = currentAlarms;
+                } catch (final EmailException e) {
+                    LOG.error("Email could not be sent!", e);
+                }
             }
         }
     }
