@@ -42,6 +42,16 @@ public class TestJSerialCommPort {
     }
 
 
+    SerialPort getPort() {
+        final SerialPort[] ports = SerialPort.getCommPorts();
+        if (ports != null && ports.length > 0) {
+            return ports[0];
+        }
+
+        throw new IllegalArgumentException("No port available on this machine!");
+    }
+
+
     @Test
     public void testSerialEventValidFullFrame() {
         // GIVEN: a port configured with startflag and framelength
@@ -51,7 +61,7 @@ public class TestJSerialCommPort {
 
         // WHEN:
         // a valid full frame is received
-        port.serialEvent(new SerialPortEvent(SerialPort.getCommPort("com1"), SerialPort.LISTENING_EVENT_DATA_RECEIVED, new byte[] { Integer.valueOf(0xA5).byteValue(), 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C }));
+        port.serialEvent(new SerialPortEvent(getPort(), SerialPort.LISTENING_EVENT_DATA_RECEIVED, new byte[] { Integer.valueOf(0xA5).byteValue(), 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C }));
 
         // THEN:
         // a frame should be added to the queue
@@ -68,7 +78,7 @@ public class TestJSerialCommPort {
 
         // WHEN:
         // an invalid full frame is received
-        port.serialEvent(new SerialPortEvent(SerialPort.getCommPort("com1"), SerialPort.LISTENING_EVENT_DATA_RECEIVED, new byte[] { Integer.valueOf(0xA4).byteValue(), 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C }));
+        port.serialEvent(new SerialPortEvent(getPort(), SerialPort.LISTENING_EVENT_DATA_RECEIVED, new byte[] { Integer.valueOf(0xA4).byteValue(), 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C }));
 
         // THEN:
         // no frame should be added to the queue
@@ -85,7 +95,7 @@ public class TestJSerialCommPort {
 
         // WHEN:
         // a full frame with startflag in wrong place is received
-        port.serialEvent(new SerialPortEvent(SerialPort.getCommPort("com1"), SerialPort.LISTENING_EVENT_DATA_RECEIVED, new byte[] { 0x00, 0x01, Integer.valueOf(0xA5).byteValue(), 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C }));
+        port.serialEvent(new SerialPortEvent(getPort(), SerialPort.LISTENING_EVENT_DATA_RECEIVED, new byte[] { 0x00, 0x01, Integer.valueOf(0xA5).byteValue(), 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C }));
 
         // THEN:
         // no frame should be added to the queue
@@ -102,7 +112,7 @@ public class TestJSerialCommPort {
 
         // WHEN:
         // a full frame with startflag in wrong place is received
-        port.serialEvent(new SerialPortEvent(SerialPort.getCommPort("com1"), SerialPort.LISTENING_EVENT_DATA_RECEIVED, new byte[] { 0x00, 0x01, Integer.valueOf(0xA5).byteValue(), 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F }));
+        port.serialEvent(new SerialPortEvent(getPort(), SerialPort.LISTENING_EVENT_DATA_RECEIVED, new byte[] { 0x00, 0x01, Integer.valueOf(0xA5).byteValue(), 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F }));
 
         // THEN:
         // 1 frame should be added to the queue
