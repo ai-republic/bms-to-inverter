@@ -83,6 +83,8 @@ public abstract class AbstractDalyBmsProcessor implements Bms {
             }
 
             // autoCalibrateSOC();
+        } catch (final NoDataAvailableException e) {
+            return;
         } catch (final Throwable e) {
             LOG.error("Error requesting data!", e);
             return;
