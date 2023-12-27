@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.airepublic.bmstoinverter.bms.daly.common.AbstractDalyBmsProcessor;
 import com.airepublic.bmstoinverter.bms.daly.common.DalyCommand;
 import com.airepublic.bmstoinverter.bms.daly.common.DalyMessage;
+import com.airepublic.bmstoinverter.bms.daly.common.NoDataAvailableException;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.PortType;
 import com.airepublic.bmstoinverter.core.Protocol;
@@ -66,8 +67,9 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
                         LOG.warn("No bytes received: " + failureCount + " times!");
                     }
 
-                    if (failureCount > 10) {
-                        throw new IOException("Received wrong number of bytes too many times - start new reading round!");
+                    if (failureCount >= 10) {
+                        LOG.error("Received wrong number of bytes too many times - start new reading round!");
+                        throw new NoDataAvailableException();
                     }
 
                     // try and wait for the next message to arrive
