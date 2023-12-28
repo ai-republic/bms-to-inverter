@@ -420,7 +420,7 @@ public class BmsToInverter implements AutoCloseable {
                     + "\t" + b.packVoltage / 10f
                     + "\t" + b.packCurrent / 10f
                     + "\t" + b.minCellmV / 1000f + "(#" + b.minCellVNum + ") "
-                    + "\t" + b.maxCellmV / 1000f + "(#" + b.maxCellVNum / 1000f + ")"
+                    + "\t" + b.maxCellmV / 1000f + "(#" + b.maxCellVNum + ")"
                     + "\t" + (b.maxCellmV - b.minCellmV) / 1000f + " \n");
         }
 
