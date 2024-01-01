@@ -1,0 +1,91 @@
+###################################################################
+###                  System specific settings                   ###
+###################################################################
+
+# The number of battery packs (not cells) of the system
+numBatteryPacks=1
+
+
+###################################################################
+###                 Protocol specific settings                  ###
+###################################################################
+
+# RS485 properties
+RS485.baudrate=9600
+RS485.startFlag=165
+RS485.frameLength=13
+
+
+# ModBus properties
+ModBus.baudrate=9600
+
+
+###################################################################
+###                       BMS settings                          ###
+###################################################################
+
+####  Simple single port configuration ####
+# BMS port protocol (CAN/RS485/ModBus)
+bms.portProtocol=RS485
+#bms.portProtocol=CAN
+
+# The port name/device to use to communicate to the BMS  
+#bms.portLocator=com3
+#bms.portLocator=can0
+#bms.portLocator=/dev/ttyS0
+bms.portLocator=/dev/ttyUSB0
+
+#### Or for multiple BMSes connected to multiple ports #### 
+#bms.0.portProtocol=CAN
+#bms.0.portLocator=can0
+#bms.1.portProtocol=CAN
+#bms.1.portLocator=can1
+#bms.2.portProtocol=CAN
+#bms.2.portLocator=can2
+#etc...
+
+# Interval to request BMS data (in seconds) 
+bms.pollInterval=60
+
+
+###################################################################
+###                    Inverter settings                        ###
+###################################################################
+
+# The port name/device to use to communicate to the  inverter  
+inverter.portLocator=can1
+# Interval to send data to the inverter (in seconds) 
+inverter.sendInterval=1
+
+
+###################################################################
+###                 Optional services settings                  ###
+###################################################################
+
+#### MQTT properties ####
+# The URL to of the MQTT broker  
+mqtt.locator=tcp://127.0.0.1:61616
+# The topic name on the MQTT broker
+mqtt.topic=energystorage
+
+
+#### Email properties ####
+mail.out.debug=false
+# SMTP or IMAP address of the outgoing server 
+mail.out.host=smtp.gmail.com
+# The port of the outgoing server
+mail.out.port=587
+# smtp for TLS, smtps for SSL
+mail.out.type=smtp
+# User name to authenticate at the outgoing server
+mail.out.username=
+# Password to authenticate at the outgoing server
+mail.out.password= 
+# Disable if using TLS
+mail.out.sslEnable=false
+# Disable if using SSL
+mail.out.tlsEnable=true
+# The email address to use when sending emails
+mail.out.defaultEmail=
+# A (comma separated) list of pre-configured email recipients
+mail.recipients=
