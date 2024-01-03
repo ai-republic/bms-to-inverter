@@ -22,7 +22,7 @@
 		</RollingFile>
 	</appenders>
 	<loggers>
-		<root level="info"> <!-- We log everything -->
+		<root level="debug"> <!-- We log everything -->
 			<appender-ref ref="Console"/> <!-- To console -->
 			<appender-ref ref="RollingFile"/> <!-- And to a rotated file -->
 		</root>
