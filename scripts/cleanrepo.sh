@@ -3,9 +3,9 @@
 cd ~/bms-to-inverter
 git restore *
 git pull
-cp ~/bms-to-inverter/pom.xml.mine ~/bms-to-inverter/bms-to-inverter-main/pom.xml
-cp ~/bms-to-inverter/config.properties.mine ~/bms-to-inverter/bms-to-inverter-main/src/main/resources/config.properties
-cp ~/bms-to-inverter/log4j2.xml.mine ~/bms-to-inverter/bms-to-inverter-main/src/main/resources/log4j2.xml
+cp ~/pom.xml.mine ~/bms-to-inverter/bms-to-inverter-main/pom.xml
+cp ~/config.properties.mine ~/bms-to-inverter/bms-to-inverter-main/src/main/resources/config.properties
+cp ~/log4j2.xml.mine ~/bms-to-inverter/bms-to-inverter-main/src/main/resources/log4j2.xml
 
 mvn clean package -DskipTests
 rm -R ~/final

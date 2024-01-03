@@ -66,7 +66,9 @@ public class JavaCANPort extends CANPort {
     public ByteBuffer receiveFrame(final Predicate<byte[]> validator) throws IOException {
         ensureOpen();
 
+        LOG.debug("CAN frame read...");
         final CanFrame frame = canChannel.read();
+        LOG.debug("CAN read frame {}", printBuffer(frame.getBuffer()));
         final ByteBuffer buffer = frame.getBuffer();
         buffer.rewind();
         buffer.putInt(frame.getId());
@@ -100,6 +102,7 @@ public class JavaCANPort extends CANPort {
 
         final CanFrame sendFrame = CanFrame.createExtended(frameId, flags, data, 0, length);
         canChannel.write(sendFrame);
+        LOG.debug("CAN frame sent: {}", printBuffer(sendFrame.getBuffer()));
     }
 
 

@@ -26,14 +26,14 @@ ModBus.baudrate=9600
 
 ####  Simple single port configuration ####
 # BMS port protocol (CAN/RS485/ModBus)
-bms.portProtocol=RS485
-#bms.portProtocol=CAN
+#bms.portProtocol=RS485
+bms.portProtocol=CAN
 
 # The port name/device to use to communicate to the BMS  
 #bms.portLocator=com3
-#bms.portLocator=can0
+bms.portLocator=can0
 #bms.portLocator=/dev/ttyS0
-bms.portLocator=/dev/ttyUSB0
+#bms.portLocator=/dev/ttyUSB0
 
 #### Or for multiple BMSes connected to multiple ports #### 
 #bms.0.portProtocol=CAN
@@ -54,6 +54,7 @@ bms.pollInterval=60
 
 # The port name/device to use to communicate to the  inverter  
 inverter.portLocator=can1
+
 # Interval to send data to the inverter (in seconds) 
 inverter.sendInterval=1
 
