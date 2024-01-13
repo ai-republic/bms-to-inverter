@@ -109,7 +109,7 @@ public class JavaCANPort extends CANPort {
     @Override
     public void close() {
         // close old channel first
-        if (isOpen()) {
+        if (canChannel != null) {
             try {
                 canChannel.close();
                 LOG.info("Shutting down port '{}'...OK", getPortname());
@@ -119,27 +119,6 @@ public class JavaCANPort extends CANPort {
         }
 
         canChannel = null;
-    }
-
-
-    private boolean ensureOpen() {
-        if (!isOpen()) {
-            // open port
-            try {
-                LOG.info("Opening " + getPortname() + " ...");
-                open();
-                LOG.info("Opening port {} SUCCESSFUL", getPortname());
-
-            } catch (final Throwable e) {
-                LOG.error("Opening port {} FAILED!", getPortname(), e);
-            }
-        }
-
-        if (isOpen()) {
-            return true;
-        }
-
-        return false;
     }
 
 

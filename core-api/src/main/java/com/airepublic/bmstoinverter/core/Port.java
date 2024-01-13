@@ -4,10 +4,14 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.function.Predicate;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * The definition of a communication port, e.g. for RS485, CAN, ModBus, etc.
  */
 public abstract class Port implements AutoCloseable {
+    private final static Logger LOG = LoggerFactory.getLogger(Port.class);
     private String portname;
 
     /**
@@ -70,6 +74,32 @@ public abstract class Port implements AutoCloseable {
      * @return true if port is open, otherwise false.
      */
     public abstract boolean isOpen();
+
+
+    /**
+     * Ensures the port is open. If it is closed it will reopen the port.
+     *
+     * @return true if the port is or could be opened otherwise false
+     */
+    public synchronized boolean ensureOpen() {
+        if (!isOpen()) {
+            // open port
+            try {
+                LOG.info("Opening " + getPortname() + " ...");
+                open();
+                LOG.info("Opening port {} SUCCESSFUL", getPortname());
+
+            } catch (final Throwable e) {
+                LOG.error("Opening port {} FAILED!", getPortname(), e);
+            }
+        }
+
+        if (isOpen()) {
+            return true;
+        }
+
+        return false;
+    }
 
 
     /**

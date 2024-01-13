@@ -6,7 +6,8 @@ import java.nio.ByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.airepublic.bmstoinverter.core.Bms;
+import com.airepublic.bmstoinverter.core.AbstractBMSProcessor;
+import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.PortType;
 import com.airepublic.bmstoinverter.core.Protocol;
@@ -16,10 +17,10 @@ import com.airepublic.bmstoinverter.core.protocol.can.CAN;
 import jakarta.inject.Inject;
 
 /**
- * The class to handle {@link CAN} messages from a JK {@link Bms}.
+ * The class to handle {@link CAN} messages from a JK {@link BMS}.
  */
 @PortType(Protocol.CAN)
-public class JKBmsCANProcessor implements Bms {
+public class JKBmsCANProcessor extends AbstractBMSProcessor {
     private final static Logger LOG = LoggerFactory.getLogger(JKBmsCANProcessor.class);
     @Inject
     private EnergyStorage energyStorage;
@@ -30,40 +31,32 @@ public class JKBmsCANProcessor implements Bms {
 
 
     @Override
-    public void process(final Runnable callback) {
-        for (int bmsNo = 0; bmsNo < energyStorage.getBatteryPackCount(); bmsNo++) {
-            try {
-                final Port port = energyStorage.getBatteryPack(bmsNo).port;
-                final ByteBuffer frame = port.receiveFrame(null);
-                final int frameId = frame.getInt();
-                final byte[] bytes = new byte[8];
-                frame.get(bytes);
-                final ByteBuffer data = ByteBuffer.wrap(bytes);
-
-                switch (frameId) {
-                    case 0x2F4:
-                        readBatteryStatus(bmsNo, data);
-                    break;
-                    case 0x4F4:
-                        readCellVoltage(bmsNo, data);
-                    break;
-                    case 0x5F4:
-                        readCellTemperature(bmsNo, data);
-                    break;
-                    case 0x7F4:
-                        readAlarms(bmsNo, data);
-                    break;
-                }
-
-            } catch (final IOException e) {
-                LOG.error("Error receiving frame!", e);
-            }
-        }
-
+    public void collectData(final int bmsNo) {
         try {
-            callback.run();
-        } catch (final Exception e) {
-            LOG.error("BMS process callback threw an exception!", e);
+            final Port port = energyStorage.getBatteryPack(bmsNo).port;
+            final ByteBuffer frame = port.receiveFrame(null);
+            final int frameId = frame.getInt();
+            final byte[] bytes = new byte[8];
+            frame.get(bytes);
+            final ByteBuffer data = ByteBuffer.wrap(bytes);
+
+            switch (frameId) {
+                case 0x2F4:
+                    readBatteryStatus(bmsNo, data);
+                break;
+                case 0x4F4:
+                    readCellVoltage(bmsNo, data);
+                break;
+                case 0x5F4:
+                    readCellTemperature(bmsNo, data);
+                break;
+                case 0x7F4:
+                    readAlarms(bmsNo, data);
+                break;
+            }
+
+        } catch (final IOException e) {
+            LOG.error("Error receiving frame!", e);
         }
     }
 
