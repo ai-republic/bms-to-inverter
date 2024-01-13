@@ -13,7 +13,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.airepublic.bmstoinverter.core.Bms;
+import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.bms.data.Alarms;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
@@ -32,7 +32,7 @@ import jakarta.inject.Inject;
 
 /**
  * The main class to initiate communication between the configured BMS and the inverter. The
- * {@link Bms} values are read and stored in the {@link EnergyStorage}. Once read these values are
+ * {@link BMS} values are read and stored in the {@link EnergyStorage}. Once read these values are
  * send to the (optional) MQTT Broker. Alarms and warnings will be analysed and (optionally) sent by
  * email if some occurred. The the data is sent to the {@link Inverter}.
  */
@@ -42,7 +42,7 @@ public class BmsToInverter implements AutoCloseable {
     @Inject
     private EnergyStorage energyStorage;
     @Inject
-    private Bms bms;
+    private BMS bms;
     @Inject
     private Inverter inverter;
     private final IMQTTBrokerService mqttBroker = ServiceLoader.load(IMQTTBrokerService.class).findFirst().orElse(null);

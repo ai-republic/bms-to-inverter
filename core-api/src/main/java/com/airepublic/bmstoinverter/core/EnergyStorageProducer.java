@@ -38,7 +38,7 @@ public class EnergyStorageProducer {
 
     /**
      * Search the implementing class for the {@link PortType} annotation and whether it resembles a
-     * {@link Bms} or {@link Inverter}. Corresponding to both annotations it will check the system
+     * {@link BMS} or {@link Inverter}. Corresponding to both annotations it will check the system
      * properties for the port names configuration defined in the <code>config.properties</code>
      * file. Port names can be defined, e.g. like<br>
      * <br>

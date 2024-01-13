@@ -13,8 +13,11 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.airepublic.bmstoinverter.core.Bms;
+import com.airepublic.bmstoinverter.core.AbstractBMSProcessor;
+import com.airepublic.bmstoinverter.core.BMS;
+import com.airepublic.bmstoinverter.core.NoDataAvailableException;
 import com.airepublic.bmstoinverter.core.Port;
+import com.airepublic.bmstoinverter.core.TooManyInvalidFramesException;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.protocol.can.CAN;
@@ -23,10 +26,10 @@ import com.airepublic.bmstoinverter.core.protocol.rs485.RS485;
 import jakarta.inject.Inject;
 
 /**
- * An abstraction for the Daly {@link Bms} since the {@link RS485} and {@link CAN} communication is
+ * An abstraction for the Daly {@link BMS} since the {@link RS485} and {@link CAN} communication is
  * very similar.
  */
-public abstract class AbstractDalyBmsProcessor implements Bms {
+public abstract class AbstractDalyBmsProcessor extends AbstractBMSProcessor implements BMS {
     private final static Logger LOG = LoggerFactory.getLogger(AbstractDalyBmsProcessor.class);
     @Inject
     private EnergyStorage energyStorage;
@@ -65,36 +68,18 @@ public abstract class AbstractDalyBmsProcessor implements Bms {
 
 
     @Override
-    public void process(final Runnable callback) {
-        try {
-            LOG.info("---------------------------------> Thread " + Thread.currentThread().getId());
-            clearBuffers();
+    public void collectData(final int bmsNo) throws IOException, TooManyInvalidFramesException, NoDataAvailableException {
 
-            for (int bmsNo = 0; bmsNo < energyStorage.getBatteryPackCount(); bmsNo++) {
-                sendMessage(bmsNo, DalyCommand.READ_VOUT_IOUT_SOC, requestData); // 0x90
-                sendMessage(bmsNo, DalyCommand.READ_MIN_MAX_CELL_VOLTAGE, requestData); // 0x91
-                sendMessage(bmsNo, DalyCommand.READ_MIN_MAX_TEMPERATURE, requestData); // 0x92
-                sendMessage(bmsNo, DalyCommand.READ_DISCHARGE_CHARGE_MOS_STATUS, requestData); // 0x93
-                sendMessage(bmsNo, DalyCommand.READ_STATUS_INFO, requestData); // 0x94
-                sendMessage(bmsNo, DalyCommand.READ_CELL_VOLTAGES, requestData); // 0x95
-                sendMessage(bmsNo, DalyCommand.READ_CELL_TEMPERATURE, requestData); // 0x96
-                sendMessage(bmsNo, DalyCommand.READ_CELL_BALANCE_STATE, requestData); // 0x97
-                sendMessage(bmsNo, DalyCommand.READ_FAILURE_CODES, requestData); // 0x98
-            }
+        sendMessage(bmsNo, DalyCommand.READ_VOUT_IOUT_SOC, requestData); // 0x90
+        sendMessage(bmsNo, DalyCommand.READ_MIN_MAX_CELL_VOLTAGE, requestData); // 0x91
+        sendMessage(bmsNo, DalyCommand.READ_MIN_MAX_TEMPERATURE, requestData); // 0x92
+        sendMessage(bmsNo, DalyCommand.READ_DISCHARGE_CHARGE_MOS_STATUS, requestData); // 0x93
+        sendMessage(bmsNo, DalyCommand.READ_STATUS_INFO, requestData); // 0x94
+        sendMessage(bmsNo, DalyCommand.READ_CELL_VOLTAGES, requestData); // 0x95
+        sendMessage(bmsNo, DalyCommand.READ_CELL_TEMPERATURE, requestData); // 0x96
+        sendMessage(bmsNo, DalyCommand.READ_CELL_BALANCE_STATE, requestData); // 0x97
+        sendMessage(bmsNo, DalyCommand.READ_FAILURE_CODES, requestData); // 0x98
 
-            // autoCalibrateSOC();
-        } catch (final NoDataAvailableException e) {
-            return;
-        } catch (final Throwable e) {
-            LOG.error("Error requesting data!", e);
-            return;
-        }
-
-        try {
-            callback.run();
-        } catch (final Throwable e) {
-            LOG.error("BMS process callback threw an exception!", e);
-        }
     }
 
 
@@ -153,7 +138,7 @@ public abstract class AbstractDalyBmsProcessor implements Bms {
      * @return
      * @throws IOException
      */
-    protected abstract List<ByteBuffer> sendMessage(final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException;
+    protected abstract List<ByteBuffer> sendMessage(final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException, NoDataAvailableException, TooManyInvalidFramesException;
 
 
     /**
@@ -195,13 +180,4 @@ public abstract class AbstractDalyBmsProcessor implements Bms {
      */
     protected abstract DalyMessage convertReceiveFrameToDalyMessage(final ByteBuffer buffer);
 
-
-    /**
-     * Clears any buffers or queues on all associated ports to restart communication.
-     */
-    protected void clearBuffers() {
-        for (final BatteryPack pack : energyStorage.getBatteryPacks()) {
-            pack.port.clearBuffers();
-        }
-    }
 }

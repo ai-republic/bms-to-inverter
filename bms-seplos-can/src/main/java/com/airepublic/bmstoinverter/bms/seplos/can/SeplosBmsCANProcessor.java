@@ -6,7 +6,8 @@ import java.nio.ByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.airepublic.bmstoinverter.core.Bms;
+import com.airepublic.bmstoinverter.core.AbstractBMSProcessor;
+import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.PortType;
 import com.airepublic.bmstoinverter.core.Protocol;
@@ -16,10 +17,10 @@ import com.airepublic.bmstoinverter.core.protocol.can.CAN;
 import jakarta.inject.Inject;
 
 /**
- * The class to handle {@link CAN} messages from a Seplos {@link Bms}.
+ * The class to handle {@link CAN} messages from a Seplos {@link BMS}.
  */
 @PortType(Protocol.CAN)
-public class SeplosBmsCANProcessor implements Bms {
+public class SeplosBmsCANProcessor extends AbstractBMSProcessor {
     private final static Logger LOG = LoggerFactory.getLogger(SeplosBmsCANProcessor.class);
     @Inject
     private EnergyStorage energyStorage;
@@ -30,51 +31,43 @@ public class SeplosBmsCANProcessor implements Bms {
 
 
     @Override
-    public void process(final Runnable callback) {
-        for (int bmsNo = 0; bmsNo < energyStorage.getBatteryPackCount(); bmsNo++) {
-            try {
-                final Port port = energyStorage.getBatteryPack(bmsNo).port;
-                final ByteBuffer frame = port.receiveFrame(null);
-                final int frameId = frame.getInt();
-                final byte[] bytes = new byte[8];
-                frame.get(bytes);
-                final ByteBuffer data = ByteBuffer.wrap(bytes);
-
-                switch (frameId) {
-                    case 0x351:
-                        readChargeDischargeInfo(bmsNo, data);
-                    break;
-                    case 0x355:
-                        readSOC(bmsNo, data);
-                    break;
-                    case 0x356:
-                        readBatteryVoltage(bmsNo, data);
-                    break;
-                    case 0x35C:
-                        requestChargeDischargeConfigChange(bmsNo, data);
-                    break;
-                    case 0x370:
-                        readMinMaxTemperatureVoltage(bmsNo, data);
-                    break;
-                    case 0x371:
-                        readTemperatureIds(bmsNo, data);
-                    break;
-                    case 0x35E:
-                        readManufacturer(bmsNo, data);
-                    break;
-                    case 0x359:
-                        readAlarms(bmsNo, data);
-                    break;
-                }
-            } catch (final IOException e) {
-                LOG.error("Error receiving frame!", e);
-            }
-        }
-
+    public void collectData(final int bmsNo) {
         try {
-            callback.run();
-        } catch (final Exception e) {
-            LOG.error("BMS process callback threw an exception!", e);
+            final Port port = energyStorage.getBatteryPack(bmsNo).port;
+            final ByteBuffer frame = port.receiveFrame(null);
+            final int frameId = frame.getInt();
+            final byte[] bytes = new byte[8];
+            frame.get(bytes);
+            final ByteBuffer data = ByteBuffer.wrap(bytes);
+
+            switch (frameId) {
+                case 0x351:
+                    readChargeDischargeInfo(bmsNo, data);
+                break;
+                case 0x355:
+                    readSOC(bmsNo, data);
+                break;
+                case 0x356:
+                    readBatteryVoltage(bmsNo, data);
+                break;
+                case 0x35C:
+                    requestChargeDischargeConfigChange(bmsNo, data);
+                break;
+                case 0x370:
+                    readMinMaxTemperatureVoltage(bmsNo, data);
+                break;
+                case 0x371:
+                    readTemperatureIds(bmsNo, data);
+                break;
+                case 0x35E:
+                    readManufacturer(bmsNo, data);
+                break;
+                case 0x359:
+                    readAlarms(bmsNo, data);
+                break;
+            }
+        } catch (final IOException e) {
+            LOG.error("Error receiving frame!", e);
         }
     }
 

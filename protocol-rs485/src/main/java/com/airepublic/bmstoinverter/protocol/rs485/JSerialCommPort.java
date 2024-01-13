@@ -154,27 +154,6 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
     }
 
 
-    private synchronized boolean ensureOpen() {
-        if (!isOpen()) {
-            // open port
-            try {
-                LOG.info("Opening " + getPortname() + " ...");
-                open();
-                LOG.info("Opening port {} SUCCESSFUL", getPortname());
-
-            } catch (final Throwable e) {
-                LOG.error("Opening port {} FAILED!", getPortname(), e);
-            }
-        }
-
-        if (isOpen()) {
-            return true;
-        }
-
-        return false;
-    }
-
-
     /**
      * Gets the queue of frames.
      *
