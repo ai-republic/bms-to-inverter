@@ -60,6 +60,11 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
             port.sendFrame(sendBuffer);
             LOG.debug("SEND: {}", Port.printBuffer(sendBuffer));
 
+            try {
+                Thread.sleep(50);
+            } catch (final InterruptedException e) {
+            }
+
             // read the expected response frame(s)
             for (int i = 0; i < frameCount; i++) {
                 final ByteBuffer receiveBuffer = port.receiveFrame(validator);
