@@ -6,11 +6,11 @@ import java.nio.ByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.airepublic.bmstoinverter.core.AbstractBMSProcessor;
 import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.PortType;
 import com.airepublic.bmstoinverter.core.Protocol;
+import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.protocol.can.CAN;
 
@@ -20,7 +20,7 @@ import jakarta.inject.Inject;
  * The class to handle {@link CAN} messages from a Seplos {@link BMS}.
  */
 @PortType(Protocol.CAN)
-public class SeplosBmsCANProcessor extends AbstractBMSProcessor {
+public class SeplosBmsCANProcessor extends BMS {
     private final static Logger LOG = LoggerFactory.getLogger(SeplosBmsCANProcessor.class);
     @Inject
     private EnergyStorage energyStorage;
@@ -33,7 +33,8 @@ public class SeplosBmsCANProcessor extends AbstractBMSProcessor {
     @Override
     public void collectData(final int bmsNo) {
         try {
-            final Port port = energyStorage.getBatteryPack(bmsNo).port;
+            final BatteryPack pack = energyStorage.getBatteryPack(bmsNo);
+            final Port port = pack.port;
             final ByteBuffer frame = port.receiveFrame(null);
             final int frameId = frame.getInt();
             final byte[] bytes = new byte[8];
@@ -42,28 +43,28 @@ public class SeplosBmsCANProcessor extends AbstractBMSProcessor {
 
             switch (frameId) {
                 case 0x351:
-                    readChargeDischargeInfo(bmsNo, data);
+                    readChargeDischargeInfo(pack, data);
                 break;
                 case 0x355:
-                    readSOC(bmsNo, data);
+                    readSOC(pack, data);
                 break;
                 case 0x356:
-                    readBatteryVoltage(bmsNo, data);
+                    readBatteryVoltage(pack, data);
                 break;
                 case 0x35C:
-                    requestChargeDischargeConfigChange(bmsNo, data);
+                    requestChargeDischargeConfigChange(pack, data);
                 break;
                 case 0x370:
-                    readMinMaxTemperatureVoltage(bmsNo, data);
+                    readMinMaxTemperatureVoltage(pack, data);
                 break;
                 case 0x371:
-                    readTemperatureIds(bmsNo, data);
+                    readTemperatureIds(pack, data);
                 break;
                 case 0x35E:
-                    readManufacturer(bmsNo, data);
+                    readManufacturer(pack, data);
                 break;
                 case 0x359:
-                    readAlarms(bmsNo, data);
+                    readAlarms(pack, data);
                 break;
             }
         } catch (final IOException e) {
@@ -73,41 +74,41 @@ public class SeplosBmsCANProcessor extends AbstractBMSProcessor {
 
 
     // 0x351
-    private void readChargeDischargeInfo(final int bmsNo, final ByteBuffer data) {
+    private void readChargeDischargeInfo(final BatteryPack pack, final ByteBuffer data) {
         // Battery charge voltage (0.1V) - uint_16
-        energyStorage.getBatteryPack(bmsNo).maxPackVoltageLimit = data.getChar();
+        pack.maxPackVoltageLimit = data.getChar();
         // Charge current limit (0.1A) - sint_16
-        energyStorage.getBatteryPack(bmsNo).maxPackChargeCurrent = data.getShort();
+        pack.maxPackChargeCurrent = data.getShort();
         // Discharge current limit (0.1A) - sint_16
-        energyStorage.getBatteryPack(bmsNo).maxPackDischargeCurrent = data.getShort();
+        pack.maxPackDischargeCurrent = data.getShort();
         // Battery discharge voltage (0.1V) - uint_16
-        energyStorage.getBatteryPack(bmsNo).minPackVoltageLimit = data.getChar();
+        pack.minPackVoltageLimit = data.getChar();
 
     }
 
 
     // 0x355
-    private void readSOC(final int bmsNo, final ByteBuffer data) {
+    private void readSOC(final BatteryPack pack, final ByteBuffer data) {
         // SOC (1%) - uint_16
-        energyStorage.getBatteryPack(bmsNo).maxPackDischargeCurrent = data.getChar();
+        pack.maxPackDischargeCurrent = data.getChar();
         // SOH (1%) - uint_16
-        energyStorage.getBatteryPack(bmsNo).packVoltage = data.getChar();
+        pack.packVoltage = data.getChar();
     }
 
 
     // 0x356
-    private void readBatteryVoltage(final int bmsNo, final ByteBuffer data) {
+    private void readBatteryVoltage(final BatteryPack pack, final ByteBuffer data) {
         // Battery voltage (0.01V) - uint_16
-        energyStorage.getBatteryPack(bmsNo).packVoltage = data.getShort();
+        pack.packVoltage = data.getShort();
         // Battery current (0.1A) - uint_16
-        energyStorage.getBatteryPack(bmsNo).packCurrent = data.getShort();
+        pack.packCurrent = data.getShort();
         // Battery current (0.1C) - uint_16
-        energyStorage.getBatteryPack(bmsNo).tempAverage = data.getShort();
+        pack.tempAverage = data.getShort();
     }
 
 
     // 0x35C
-    private void requestChargeDischargeConfigChange(final int bmsNo, final ByteBuffer data) {
+    private void requestChargeDischargeConfigChange(final BatteryPack pack, final ByteBuffer data) {
         final byte bits = data.get();
 
         if (bitRead(bits, 4)) {
@@ -129,64 +130,64 @@ public class SeplosBmsCANProcessor extends AbstractBMSProcessor {
 
 
     // 0x370
-    private void readMinMaxTemperatureVoltage(final int bmsNo, final ByteBuffer data) {
+    private void readMinMaxTemperatureVoltage(final BatteryPack pack, final ByteBuffer data) {
         // Maximum cell temperature (0.1C) - uint_16
-        energyStorage.getBatteryPack(bmsNo).tempMax = data.getShort();
+        pack.tempMax = data.getShort();
         // Minimum cell temperature (0.1C) - uint_16
-        energyStorage.getBatteryPack(bmsNo).tempMin = data.getShort();
+        pack.tempMin = data.getShort();
         // Maximum cell voltage (0.1V) - uint_16
-        energyStorage.getBatteryPack(bmsNo).maxCellmV = data.getShort();
+        pack.maxCellmV = data.getShort();
         // Minimum cell voltage (0.1V) - uint_16
-        energyStorage.getBatteryPack(bmsNo).minCellmV = data.getShort();
+        pack.minCellmV = data.getShort();
     }
 
 
     // 0x371
-    private void readTemperatureIds(final int bmsNo, final ByteBuffer data) {
+    private void readTemperatureIds(final BatteryPack pack, final ByteBuffer data) {
         // Maximum cell temperature (0.1C) - uint_16
-        // energyStorage.getBatteryPack(bmsNo).tempMax = data.getShort();
+        // pack.tempMax = data.getShort();
         // Minimum cell temperature (0.1C) - uint_16
-        // energyStorage.getBatteryPack(bmsNo).tempMin = data.getShort();
+        // pack.tempMin = data.getShort();
         // Maximum cell voltage id - uint_16
-        energyStorage.getBatteryPack(bmsNo).maxCellVNum = data.getShort();
+        pack.maxCellVNum = data.getShort();
         // Minimum cell voltage id - uint_16
-        energyStorage.getBatteryPack(bmsNo).minCellVNum = data.getShort();
+        pack.minCellVNum = data.getShort();
     }
 
 
     // 0x35E
-    private void readManufacturer(final int bmsNo, final ByteBuffer data) {
+    private void readManufacturer(final BatteryPack pack, final ByteBuffer data) {
         final char first = (char) data.get();
         final char second = (char) data.get();
 
-        energyStorage.getBatteryPack(bmsNo).manufacturerCode = "" + first + second;
+        pack.manufacturerCode = "" + first + second;
     }
 
 
     // 0x359
-    private void readAlarms(final int bmsNo, final ByteBuffer data) {
+    private void readAlarms(final BatteryPack pack, final ByteBuffer data) {
         // read first 8 bits
         int value = data.getInt();
 
         // protection alarms
-        energyStorage.getBatteryPack(bmsNo).alarms.levelTwoCellVoltageTooHigh.value = bitRead(value, 1);
-        energyStorage.getBatteryPack(bmsNo).alarms.levelTwoCellVoltageTooLow.value = bitRead(value, 2);
-        energyStorage.getBatteryPack(bmsNo).alarms.levelTwoDischargeTempTooHigh.value = bitRead(value, 3);
-        energyStorage.getBatteryPack(bmsNo).alarms.levelTwoDischargeTempTooLow.value = bitRead(value, 4);
-        energyStorage.getBatteryPack(bmsNo).alarms.levelTwoDischargeCurrentTooHigh.value = bitRead(value, 7);
-        energyStorage.getBatteryPack(bmsNo).alarms.levelTwoChargeCurrentTooHigh.value = bitRead(value, 8);
+        pack.alarms.levelTwoCellVoltageTooHigh.value = bitRead(value, 1);
+        pack.alarms.levelTwoCellVoltageTooLow.value = bitRead(value, 2);
+        pack.alarms.levelTwoDischargeTempTooHigh.value = bitRead(value, 3);
+        pack.alarms.levelTwoDischargeTempTooLow.value = bitRead(value, 4);
+        pack.alarms.levelTwoDischargeCurrentTooHigh.value = bitRead(value, 7);
+        pack.alarms.levelTwoChargeCurrentTooHigh.value = bitRead(value, 8);
 
         // warning alarms
-        energyStorage.getBatteryPack(bmsNo).alarms.levelOneCellVoltageTooHigh.value = bitRead(value, 17);
-        energyStorage.getBatteryPack(bmsNo).alarms.levelOneCellVoltageTooLow.value = bitRead(value, 18);
-        energyStorage.getBatteryPack(bmsNo).alarms.levelOneChargeTempTooHigh.value = bitRead(value, 19);
-        energyStorage.getBatteryPack(bmsNo).alarms.levelOneChargeTempTooLow.value = bitRead(value, 20);
-        energyStorage.getBatteryPack(bmsNo).alarms.levelOneDischargeCurrentTooHigh.value = bitRead(value, 23);
-        energyStorage.getBatteryPack(bmsNo).alarms.levelOneChargeCurrentTooHigh.value = bitRead(value, 24);
-        energyStorage.getBatteryPack(bmsNo).alarms.failureOfIntranetCommunicationModule.value = bitRead(value, 27);
-        energyStorage.getBatteryPack(bmsNo).alarms.levelTwoCellVoltageDifferenceTooHigh.value = bitRead(value, 28);
+        pack.alarms.levelOneCellVoltageTooHigh.value = bitRead(value, 17);
+        pack.alarms.levelOneCellVoltageTooLow.value = bitRead(value, 18);
+        pack.alarms.levelOneChargeTempTooHigh.value = bitRead(value, 19);
+        pack.alarms.levelOneChargeTempTooLow.value = bitRead(value, 20);
+        pack.alarms.levelOneDischargeCurrentTooHigh.value = bitRead(value, 23);
+        pack.alarms.levelOneChargeCurrentTooHigh.value = bitRead(value, 24);
+        pack.alarms.failureOfIntranetCommunicationModule.value = bitRead(value, 27);
+        pack.alarms.levelTwoCellVoltageDifferenceTooHigh.value = bitRead(value, 28);
 
-        energyStorage.getBatteryPack(bmsNo).numberOfCells = data.get();
+        pack.numberOfCells = data.get();
 
         // skip two bytes
         data.getShort();

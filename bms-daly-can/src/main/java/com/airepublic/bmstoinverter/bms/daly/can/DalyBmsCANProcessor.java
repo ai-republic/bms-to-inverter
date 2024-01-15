@@ -38,10 +38,11 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
         final int frameCount = framesToBeReceived;
         int skip = 20;
         final List<ByteBuffer> readBuffers = new ArrayList<>();
-        final Port port = energyStorage.getBatteryPack(bmsNo).port;
+        @SuppressWarnings("resource")
+        final CANPort port = (CANPort) energyStorage.getBatteryPack(bmsNo).port;
 
         LOG.debug("SEND: {}", Port.printBuffer(sendFrame));
-        ((CANPort) port).sendExtendedFrame(sendFrame);
+        port.sendExtendedFrame(sendFrame);
 
         // read frames until the requested frame is read
         do {
@@ -90,6 +91,11 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
         frameId = frameId << 8;
         frameId += 0x40;
         sendFrame.putInt((int) frameId);
+
+        // sendFrame.put((byte) 0x40);
+        // sendFrame.put((byte) address);
+        // sendFrame.put((byte) cmd.id);
+        // sendFrame.put((byte) 0x18);
 
         // header
         sendFrame.put((byte) 0x08) // data length
