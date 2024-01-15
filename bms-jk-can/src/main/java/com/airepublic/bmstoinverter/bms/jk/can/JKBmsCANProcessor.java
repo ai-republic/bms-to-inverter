@@ -6,11 +6,11 @@ import java.nio.ByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.airepublic.bmstoinverter.core.AbstractBMSProcessor;
 import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.PortType;
 import com.airepublic.bmstoinverter.core.Protocol;
+import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.protocol.can.CAN;
 
@@ -20,7 +20,7 @@ import jakarta.inject.Inject;
  * The class to handle {@link CAN} messages from a JK {@link BMS}.
  */
 @PortType(Protocol.CAN)
-public class JKBmsCANProcessor extends AbstractBMSProcessor {
+public class JKBmsCANProcessor extends BMS {
     private final static Logger LOG = LoggerFactory.getLogger(JKBmsCANProcessor.class);
     @Inject
     private EnergyStorage energyStorage;
@@ -33,7 +33,8 @@ public class JKBmsCANProcessor extends AbstractBMSProcessor {
     @Override
     public void collectData(final int bmsNo) {
         try {
-            final Port port = energyStorage.getBatteryPack(bmsNo).port;
+            final BatteryPack pack = energyStorage.getBatteryPack(bmsNo);
+            final Port port = pack.port;
             final ByteBuffer frame = port.receiveFrame(null);
             final int frameId = frame.getInt();
             final byte[] bytes = new byte[8];
@@ -42,16 +43,16 @@ public class JKBmsCANProcessor extends AbstractBMSProcessor {
 
             switch (frameId) {
                 case 0x2F4:
-                    readBatteryStatus(bmsNo, data);
+                    readBatteryStatus(pack, data);
                 break;
                 case 0x4F4:
-                    readCellVoltage(bmsNo, data);
+                    readCellVoltage(pack, data);
                 break;
                 case 0x5F4:
-                    readCellTemperature(bmsNo, data);
+                    readCellTemperature(pack, data);
                 break;
                 case 0x7F4:
-                    readAlarms(bmsNo, data);
+                    readAlarms(pack, data);
                 break;
             }
 
@@ -61,14 +62,14 @@ public class JKBmsCANProcessor extends AbstractBMSProcessor {
     }
 
 
-    private void readBatteryStatus(final int bmsNo, final ByteBuffer data) {
+    private void readBatteryStatus(final BatteryPack pack, final ByteBuffer data) {
         // frame id is already read, so start at the first data byte
         // Battery voltage (0.1V)
-        energyStorage.getBatteryPack(bmsNo).packVoltage = data.getShort();
+        pack.packVoltage = data.getShort();
         // Battery current (0.1A) offset 4000
-        energyStorage.getBatteryPack(bmsNo).packCurrent = data.getShort() - 4000;
+        pack.packCurrent = data.getShort() - 4000;
         // Battery SOC (1%)
-        energyStorage.getBatteryPack(bmsNo).packSOC = data.get();
+        pack.packSOC = data.get();
         // skip 1 byte
         data.get();
         // discharge time, e.g. 100h (not mapped)
@@ -76,57 +77,58 @@ public class JKBmsCANProcessor extends AbstractBMSProcessor {
     }
 
 
-    private void readCellVoltage(final int bmsNo, final ByteBuffer data) {
+    private void readCellVoltage(final BatteryPack pack, final ByteBuffer data) {
         // frame id is already read, so start at the first data byte
         // Maximum cell voltage (1mV)
-        energyStorage.getBatteryPack(bmsNo).maxCellmV = data.getShort();
+        pack.maxCellmV = data.getShort();
         // Maximum cell voltage cell number
-        energyStorage.getBatteryPack(bmsNo).maxCellVNum = data.get();
+        pack.maxCellVNum = data.get();
         // Minimum cell voltage (1mV)
-        energyStorage.getBatteryPack(bmsNo).minCellmV = data.getShort();
+        pack.minCellmV = data.getShort();
         // Minimum cell voltage cell number
-        energyStorage.getBatteryPack(bmsNo).minCellVNum = data.get();
+        pack.minCellVNum = data.get();
     }
 
 
-    private void readCellTemperature(final int bmsNo, final ByteBuffer data) {
+    private void readCellTemperature(final BatteryPack pack, final ByteBuffer data) {
         // frame id is already read, so start at the first data byte
         // Maximum cell temperature (C) offset -50
-        energyStorage.getBatteryPack(bmsNo).tempMax = data.get();
+        pack.tempMax = data.get();
         // Maximum cell temperature cell number
         data.get();
         // Minimum cell temperature (C) offset -50
-        energyStorage.getBatteryPack(bmsNo).tempMin = data.get();
+        pack.tempMin = data.get();
         // Minimum cell temperature cell number
         data.get();
         // Average cell temperature (C) offset -50
-        energyStorage.getBatteryPack(bmsNo).tempAverage = data.get();
+        pack.tempAverage = data.get();
     }
 
 
-    private void readAlarms(final int bmsNo, final ByteBuffer data) {
+    @SuppressWarnings("resource")
+    private void readAlarms(final BatteryPack pack, final ByteBuffer data) {
         // read first 8 bits
         byte value = data.get();
 
         // unit overvoltage
         int bits = read2Bits(value, 0);
-        energyStorage.getBatteryPack(bmsNo).alarms.levelOneCellVoltageTooHigh.value = bits == 1;
-        energyStorage.getBatteryPack(bmsNo).alarms.levelTwoCellVoltageTooHigh.value = bits >= 2;
+        pack.alarms.levelOneCellVoltageTooHigh.value = bits == 1;
+        pack.alarms.levelTwoCellVoltageTooHigh.value = bits >= 2;
 
         // unit undervoltage
         bits = read2Bits(value, 2);
-        energyStorage.getBatteryPack(bmsNo).alarms.levelOneCellVoltageTooLow.value = bits == 1;
-        energyStorage.getBatteryPack(bmsNo).alarms.levelTwoCellVoltageTooLow.value = bits >= 2;
+        pack.alarms.levelOneCellVoltageTooLow.value = bits == 1;
+        pack.alarms.levelTwoCellVoltageTooLow.value = bits >= 2;
 
         // total voltage overvoltage
         bits = read2Bits(value, 4);
-        energyStorage.getBatteryPack(bmsNo).alarms.levelOnePackVoltageTooHigh.value = bits == 1;
-        energyStorage.getBatteryPack(bmsNo).alarms.levelTwoPackVoltageTooHigh.value = bits >= 2;
+        pack.alarms.levelOnePackVoltageTooHigh.value = bits == 1;
+        pack.alarms.levelTwoPackVoltageTooHigh.value = bits >= 2;
 
         // total voltage undervoltage
         bits = read2Bits(value, 6);
-        energyStorage.getBatteryPack(bmsNo).alarms.levelOnePackVoltageTooLow.value = bits == 1;
-        energyStorage.getBatteryPack(bmsNo).alarms.levelTwoPackVoltageTooLow.value = bits >= 2;
+        pack.alarms.levelOnePackVoltageTooLow.value = bits == 1;
+        pack.alarms.levelTwoPackVoltageTooLow.value = bits >= 2;
 
         // read next 8 bits
         value = data.get();
@@ -136,36 +138,36 @@ public class JKBmsCANProcessor extends AbstractBMSProcessor {
 
         // discharge overcurrent
         bits = read2Bits(value, 2);
-        energyStorage.getBatteryPack(bmsNo).alarms.levelOneDischargeCurrentTooHigh.value = bits == 1;
-        energyStorage.getBatteryPack(bmsNo).alarms.levelTwoDischargeCurrentTooHigh.value = bits >= 2;
+        pack.alarms.levelOneDischargeCurrentTooHigh.value = bits == 1;
+        pack.alarms.levelTwoDischargeCurrentTooHigh.value = bits >= 2;
 
         // charge overcurrent
         bits = read2Bits(value, 4);
-        energyStorage.getBatteryPack(bmsNo).alarms.levelOneChargeCurrentTooHigh.value = bits == 1;
-        energyStorage.getBatteryPack(bmsNo).alarms.levelTwoChargeCurrentTooHigh.value = bits >= 2;
+        pack.alarms.levelOneChargeCurrentTooHigh.value = bits == 1;
+        pack.alarms.levelTwoChargeCurrentTooHigh.value = bits >= 2;
 
         // temperature too high
         bits = read2Bits(value, 6);
-        energyStorage.getBatteryPack(bmsNo).alarms.levelOneChargeTempTooHigh.value = bits == 1;
-        energyStorage.getBatteryPack(bmsNo).alarms.levelTwoChargeTempTooHigh.value = bits >= 2;
+        pack.alarms.levelOneChargeTempTooHigh.value = bits == 1;
+        pack.alarms.levelTwoChargeTempTooHigh.value = bits >= 2;
 
         // read next 8 bits
         value = data.get();
 
         // temperature too low
         bits = read2Bits(value, 0);
-        energyStorage.getBatteryPack(bmsNo).alarms.levelOneChargeTempTooLow.value = bits == 1;
-        energyStorage.getBatteryPack(bmsNo).alarms.levelTwoChargeTempTooLow.value = bits >= 2;
+        pack.alarms.levelOneChargeTempTooLow.value = bits == 1;
+        pack.alarms.levelTwoChargeTempTooLow.value = bits >= 2;
 
         // excessive temperature difference
         bits = read2Bits(value, 2);
-        energyStorage.getBatteryPack(bmsNo).alarms.levelOneTempSensorDifferenceTooHigh.value = bits == 1;
-        energyStorage.getBatteryPack(bmsNo).alarms.levelTwoTempSensorDifferenceTooHigh.value = bits >= 2;
+        pack.alarms.levelOneTempSensorDifferenceTooHigh.value = bits == 1;
+        pack.alarms.levelTwoTempSensorDifferenceTooHigh.value = bits >= 2;
 
         // SOC too low
         bits = read2Bits(value, 4);
-        energyStorage.getBatteryPack(bmsNo).alarms.levelOneStateOfChargeTooLow.value = bits == 1;
-        energyStorage.getBatteryPack(bmsNo).alarms.levelTwoStateOfChargeTooLow.value = bits >= 2;
+        pack.alarms.levelOneStateOfChargeTooLow.value = bits == 1;
+        pack.alarms.levelTwoStateOfChargeTooLow.value = bits >= 2;
 
         // insulation too low (not mapped)
         bits = read2Bits(value, 6);
@@ -175,15 +177,15 @@ public class JKBmsCANProcessor extends AbstractBMSProcessor {
 
         // high voltage interlock fault
         bits = read2Bits(value, 0);
-        energyStorage.getBatteryPack(bmsNo).alarms.failureOfVoltageSensorModule.value = bits != 0;
+        pack.alarms.failureOfVoltageSensorModule.value = bits != 0;
 
         // external communication failure
         bits = read2Bits(value, 2);
-        energyStorage.getBatteryPack(bmsNo).alarms.failureOfVehicleCommunicationModule.value = bits != 0;
+        pack.alarms.failureOfVehicleCommunicationModule.value = bits != 0;
 
         // internal communication failure
         bits = read2Bits(value, 4);
-        energyStorage.getBatteryPack(bmsNo).alarms.failureOfIntranetCommunicationModule.value = bits != 0;
+        pack.alarms.failureOfIntranetCommunicationModule.value = bits != 0;
 
     }
 

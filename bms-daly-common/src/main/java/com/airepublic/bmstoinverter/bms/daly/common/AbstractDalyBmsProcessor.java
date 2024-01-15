@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.airepublic.bmstoinverter.core.AbstractBMSProcessor;
 import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.NoDataAvailableException;
 import com.airepublic.bmstoinverter.core.Port;
@@ -29,7 +28,7 @@ import jakarta.inject.Inject;
  * An abstraction for the Daly {@link BMS} since the {@link RS485} and {@link CAN} communication is
  * very similar.
  */
-public abstract class AbstractDalyBmsProcessor extends AbstractBMSProcessor implements BMS {
+public abstract class AbstractDalyBmsProcessor extends BMS {
     private final static Logger LOG = LoggerFactory.getLogger(AbstractDalyBmsProcessor.class);
     @Inject
     private EnergyStorage energyStorage;
@@ -69,7 +68,6 @@ public abstract class AbstractDalyBmsProcessor extends AbstractBMSProcessor impl
 
     @Override
     public void collectData(final int bmsNo) throws IOException, TooManyInvalidFramesException, NoDataAvailableException {
-
         sendMessage(bmsNo, DalyCommand.READ_VOUT_IOUT_SOC, requestData); // 0x90
         sendMessage(bmsNo, DalyCommand.READ_MIN_MAX_CELL_VOLTAGE, requestData); // 0x91
         sendMessage(bmsNo, DalyCommand.READ_MIN_MAX_TEMPERATURE, requestData); // 0x92
@@ -79,7 +77,6 @@ public abstract class AbstractDalyBmsProcessor extends AbstractBMSProcessor impl
         sendMessage(bmsNo, DalyCommand.READ_CELL_TEMPERATURE, requestData); // 0x96
         sendMessage(bmsNo, DalyCommand.READ_CELL_BALANCE_STATE, requestData); // 0x97
         sendMessage(bmsNo, DalyCommand.READ_FAILURE_CODES, requestData); // 0x98
-
     }
 
 

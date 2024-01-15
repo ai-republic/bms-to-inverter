@@ -48,6 +48,7 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
         int framesToBeReceived = getResponseFrameCount(cmd);
         final int frameCount = framesToBeReceived;
         final List<ByteBuffer> readBuffers = new ArrayList<>();
+        @SuppressWarnings("resource")
         final RS485Port port = (RS485Port) energyStorage.getBatteryPack(bmsNo).port;
         int failureCount = 0;
         int noDataReceived = 0;
