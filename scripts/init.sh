@@ -20,10 +20,12 @@ cp ~/bms-to-inverter/src/bms-to-inverter/scripts/*.* ~/bms-to-inverter
 chmod 777 ~/bms-to-inverter/startcan.sh
 chmod 777 ~/bms-to-inverter/cleanrepo.sh
 chmod 777 ~/bms-to-inverter/startBmsToInverter.sh
+chmod 777 ~/bms-to-inverter/startWebserver.sh
 mv ~/bms-to-inverter/pom.xml.mine ~/bms-to-inverter/config
 mv ~/bms-to-inverter/config.properties.mine ~/bms-to-inverter/config
 mv ~/bms-to-inverter/log4j2.xml.mine ~/bms-to-inverter/config
 mv ~/bms-to-inverter/libjavacan-core.so.mine ~/bms-to-inverter/config
+mv ~/bms-to-inverter/webserver.properties.mine ~/bms-to-inverter/config
 
 echo Done - you are ready to configure your application now!
 echo Please configure your system:
