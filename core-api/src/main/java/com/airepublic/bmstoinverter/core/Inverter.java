@@ -27,8 +27,8 @@ public abstract class Inverter {
         final PortType portType = getClass().getAnnotation(PortType.class);
 
         if (portType == null) {
-            LOG.error(PortType.class.getName() + " Annotation is missing on PortProcessor " + getClass().getCanonicalName());
-            throw new IllegalArgumentException(PortType.class.getName() + " Annotation is missing on PortProcessor " + getClass().getCanonicalName());
+            LOG.error(PortType.class.getName() + " Annotation is missing on Inverter " + getClass().getCanonicalName());
+            throw new IllegalArgumentException(PortType.class.getName() + " Annotation is missing on Inverter " + getClass().getCanonicalName());
         }
 
         // from the protocol get the service class to use

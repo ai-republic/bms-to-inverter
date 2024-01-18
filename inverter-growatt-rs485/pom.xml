@@ -18,6 +18,12 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>core-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>protocol-modbus</artifactId>
 			<version>${project.version}</version>
 		</dependency>
