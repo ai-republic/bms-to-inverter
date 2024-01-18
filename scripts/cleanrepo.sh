@@ -3,7 +3,7 @@
 
 ### get a fresh copy
 echo Updating the application from GitHub...
-cd ~/bms-to-inverter/src
+cd ~/bms-to-inverter/src/bms-to-inverter
 git restore *
 git pull
 
