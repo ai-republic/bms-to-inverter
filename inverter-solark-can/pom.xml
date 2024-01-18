@@ -22,6 +22,12 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>core-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>protocol-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
