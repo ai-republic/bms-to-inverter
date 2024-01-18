@@ -91,18 +91,18 @@
 <!-- #################### !!!!!!!!	Choose BMS 	!!!!!!!! ###################### -->
 		
 		<!-- ####################  DALY(CAN) ################### -->
-		<dependency>
-			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>bms-daly-can</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		
-		<!-- ####################  DALY (RS485)  ################### -->
 <!--		<dependency>-->
 <!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>bms-daly-rs485</artifactId>-->
+<!--			<artifactId>bms-daly-can</artifactId>-->
 <!--			<version>${project.version}</version>-->
 <!--		</dependency>-->
+		
+		<!-- ####################  DALY (RS485)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-daly-rs485</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- ####################  PYLONTECH (CAN)  ################### -->
 <!--		<dependency>-->
@@ -128,12 +128,12 @@
 
 <!-- #################### !!!!!!!!	Choose Inverter 	!!!!!!!! ###################### -->
 
-		<!-- ####################  SMA Sunny Island (CAN)  ################### -->
-		<dependency>
-			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>inverter-dummy</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+		<!-- ####################  Dummy Inverter  ################### -->
+<!--		<dependency>-->
+<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
+<!--			<artifactId>inverter-dummy</artifactId>-->
+<!--			<version>${project.version}</version>-->
+<!--		</dependency>-->
 		
 		<!-- ####################  SMA Sunny Island (CAN)  ################### -->
 <!--		<dependency>-->
@@ -143,11 +143,11 @@
 <!--		</dependency>-->
 		
 		<!-- ####################  GROWATT (CAN)  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>inverter-growatt-can</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-growatt-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- ####################  DEYE (CAN)  ################### -->
 <!--		<dependency>-->
