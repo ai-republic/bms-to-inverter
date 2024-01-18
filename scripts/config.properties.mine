@@ -31,9 +31,9 @@ bms.portProtocol=CAN
 
 # The port name/device to use to communicate to the BMS  
 #bms.portLocator=com3
-bms.portLocator=can0
 #bms.portLocator=/dev/ttyS0
 #bms.portLocator=/dev/ttyUSB0
+bms.portLocator=can0
 
 #### Or for multiple BMSes connected to multiple ports #### 
 #bms.0.portProtocol=CAN
@@ -45,7 +45,7 @@ bms.portLocator=can0
 #etc...
 
 # Interval to request BMS data (in seconds) 
-bms.pollInterval=60
+bms.pollInterval=1
 
 
 ###################################################################
