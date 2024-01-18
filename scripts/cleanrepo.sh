@@ -3,7 +3,7 @@
 
 ### get a fresh copy
 echo Updating the application from GitHub...
-cd ~/bms-to-inverter
+cd ~/bms-to-inverter/src
 git restore *
 git pull
 
@@ -24,8 +24,8 @@ mvn clean package -DskipTests
 
 ### unpack it in the final folder
 echo Unpacking the application to the app folder...
-rm -R ~/app
-mkdir ~/app
+rm -R ~/bms-to-inverter/app
+mkdir ~/bms-to-inverter/app
 unzip ~/bms-to-inverter/src/bms-to-inverter/bms-to-inverter-main/target/bms-to-inverter-main-0.0.1-SNAPSHOT.zip -d ~/bms-to-inverter/app
 cp ~/bms-to-inverter/src/bms-to-inverter/webserver/target/webserver-0.0.1-SNAPSHOT ~/bms-to-inverter/app
 
