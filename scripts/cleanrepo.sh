@@ -25,12 +25,10 @@ mvn clean package -DskipTests
 ### unpack it in the final folder
 echo Unpacking the application to the app folder...
 rm -R ~/bms-to-inverter/app
-mkdir ~/bms-to-inverter/app
-unzip ~/bms-to-inverter/src/bms-to-inverter/bms-to-inverter-main/target/bms-to-inverter-main-0.0.1-SNAPSHOT.zip -d ~/bms-to-inverter/app
-cp ~/bms-to-inverter/src/bms-to-inverter/webserver/target/webserver-0.0.1-SNAPSHOT ~/bms-to-inverter/app
+unzip ~/bms-to-inverter/src/bms-to-inverter/bms-to-inverter-main/target/bms-to-inverter-main-0.0.1-SNAPSHOT.zip -d ~/bms-to-inverter
+mv ~/bms-to-inverter/bms-to-inverter-main-0.0.1-SNAPSHOT ~/bms-to-inverter/app
+cp ~/bms-to-inverter/src/bms-to-inverter/webserver/target/webserver-0.0.1-SNAPSHOT.jar ~/bms-to-inverter/app
 
 
 ### start the application
-echo Starting the application...
-cd ~/bms-to-inverter/app/bms-to-inverter-main-0.0.1-SNAPSHOT
-java -jar bms-to-inverter-main-0.0.1-SNAPSHOT.jar
+echo Ready to start the application - call startBmsToInverter.sh and optionally startWebserver.sh
