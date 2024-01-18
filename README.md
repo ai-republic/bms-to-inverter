@@ -61,13 +61,22 @@ The following architectures are supported:
 ----------
 
 ## How to use
-The reference project [`bms-to-inverter-main`](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-to-inverter-main) shows how to communicate with Daly BMS to a Sunny Island inverter. Please make sure you have the right ports/devices configured in [`config.properties`](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-to-inverter-main/src/main/resources/config.properties).
 
-#### *<ins>1. Choose your BMS and inverter with the appropriate protocol</ins>*
-In the [`pom.xml`](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-to-inverter-main/pom.xml) file of the [`bms-to-inverter-main`](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-to-inverter-main) project you'll find the dependencies which BMS and which inverter to use. If you're not using Daly BMS to SMA Sunny Island both communicating via CAN protocol you'll have to change the following dependencies according to your BMS, inverter and optional services.
+#### *<ins>1. Initialize application and configuration files</ins>*
+Download the script [`init.sh`](https://github.com/ai-republic/bms-to-inverter/tree/main/scripts/init.sh) and run the commands:
 
 ```
+sudo chmod 777 init.sh
+init.sh
+```
+This script will first install any prerequisites like Java JDK, Git and Maven.  Then it will create a folder structure in your home directory called `bms-to-inverter`, download the application source into `~/bms-to-inverter/src`, copy all configuration file templates to `~/bms-to-inverter/config`.
 
+#### *<ins>2. Choose your BMS and inverter with the appropriate protocol</ins>*
+In the `~/bms-to-inverter/config/pom.xml.mine` you'll need to choose which BMS, inverter and optional services to use. 
+For example: if you like to use the DALY BMS using RS485 you must uncomment the `dependency`-block for that BMS. Do the same for the inverter you want to use. If you just like to read BMS data only then choose the *Dummy Inverter*.
+In the end there must be only 1 BMS and 1 inverter dependency uncommented and any of the optional services. 
+
+```
 <!-- #################### !!!!!!!!	Choose BMS 	!!!!!!!! ###################### -->
 		
 		<!-- ####################  DALY(CAN) ################### -->
@@ -108,12 +117,19 @@ In the [`pom.xml`](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-
 
 <!-- #################### !!!!!!!!	Choose Inverter 	!!!!!!!! ###################### -->
 
-		<!-- ####################  SMA Sunny Island (CAN)  ################### -->
+		<!-- ####################  Dummy Inverter  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>inverter-sma-can</artifactId>
+			<artifactId>inverter-dummy</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		
+		<!-- ####################  SMA Sunny Island (CAN)  ################### -->
+<!--		<dependency>-->
+<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
+<!--			<artifactId>inverter-sma-can</artifactId>-->
+<!--			<version>${project.version}</version>-->
+<!--		</dependency>-->
 		
 		<!-- ####################  GROWATT (CAN)  ################### -->
 <!--		<dependency>-->
@@ -160,42 +176,57 @@ In the [`pom.xml`](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-
 			<artifactId>email-javamail</artifactId>
 			<version>1.0.5</version>
 		</dependency>
-
+	</dependencies>
 
 
 ```
 
-So if you like to use RS485 protocol to communicate with the Daly BMS you can just change the `bms-daly-can` to `bms-daly-rs485`.
 
-#### *<ins>2. Choose your target architecture (!!! only if using CAN protocol !!!)</ins>*
-In the [`native`](https://github.com/ai-republic/bms-to-inverter/blob/main/protocol-can/src/main/resources/native) folder of the  [`protocol-can`](https://github.com/ai-republic/bms-to-inverter/blob/main/protocol-can) project you have sub-folders for all the supported architectures. Choose your target architecture and copy the `libjavacan-core.so` file from the appropriate architecture folder to the [`native`](https://github.com/ai-republic/bms-to-inverter/blob/main/protocol-can/src/main/resources/native) folder.
+#### *<ins>3. Choose your target architecture (!!! only needed if using CAN protocol !!!)</ins>*
+In the `~/bms-to-inverter/src/bms-to-inverter/protocol-can/src/main/resources/native` folder you have sub-folders for all the supported architectures. Choose your target architecture and copy the `libjavacan-core.so` file from the appropriate architecture folder and put it in your `~/bms-to-inverter/config` folder and name it `libjavacan-core.so.mine`.
 
-#### *<ins>3. Configuration</ins>*
-Once you have your right dependencies and target architecture defined check the [`config.properties`](https://github.com/ai-republic/bms-to-inverter/blob/main/bms-to-inverter-main/src/main/resources/config.properties) to define the number of battery packs, port assignments and MQTT properties.
+#### *<ins>4. Configuration</ins>*
+
+Check the `~/bms-to-inverter/config/config.properties.mine` in your config folder and configure the number of battery packs (not cells!), port assignments and optional service properties for MQTT and Email.
 
 ```
-numBatteryPacks=8
+###################################################################
+###                  System specific settings                   ###
+###################################################################
 
-###### RS485 properties ######
+# The number of battery packs (not cells) of the system
+numBatteryPacks=1
+
+
+###################################################################
+###                 Protocol specific settings                  ###
+###################################################################
+
+# RS485 properties
 RS485.baudrate=9600
 RS485.startFlag=165
 RS485.frameLength=13
 
 
-##### ModBus properties #####
+# ModBus properties
 ModBus.baudrate=9600
 
 
-##### BMS port properties #####
+###################################################################
+###                       BMS settings                          ###
+###################################################################
+
+####  Simple single port configuration ####
+# BMS port protocol (CAN/RS485/ModBus)
 #bms.portProtocol=RS485
+bms.portProtocol=CAN
+
+# The port name/device to use to communicate to the BMS  
 #bms.portLocator=com3
 #bms.portLocator=/dev/ttyS0
-
-### simple single port configuration
-bms.portProtocol=CAN
 bms.portLocator=can0
 
-### or for multiple BMSes connected to multiple ports 
+#### Or for multiple BMSes connected to multiple ports #### 
 #bms.0.portProtocol=CAN
 #bms.0.portLocator=can0
 #bms.1.portProtocol=CAN
@@ -204,9 +235,15 @@ bms.portLocator=can0
 #bms.2.portLocator=can2
 #etc...
 
+# Interval to request BMS data (in seconds) 
+bms.pollInterval=2
+
 
 ##### Inverter port properties #####
+# The port name/device to use to communicate to the  inverter  
 inverter.portLocator=can1
+# Interval to send data to the inverter (in seconds) 
+inverter.sendInterval=1
 
 
 ##### Service properties #####
@@ -231,7 +268,7 @@ mail.out.defaultEmail=
 mail.recipients=
 ```
 
-If you intend to use the [`webserver`](https://github.com/ai-republic/bms-to-inverter/blob/main/webserver) project to monitor your BMSes you might want to review the [`application.properties`](https://github.com/ai-republic/bms-to-inverter/blob/main/webserver/src/main/resources) to define the server port and make sure that the MQTT properties match those in your `config.properties`.
+If you intend to use the [`webserver`](https://github.com/ai-republic/bms-to-inverter/blob/main/webserver) project to monitor your BMSes you might want to review the `~/bms-to-inverter/config/webserver.properties.mine` to define the server port and make sure that the MQTT properties match those in your `bms-to-inverter/config/config.properties.mine`.
 
 ```
 # Webserver properties
@@ -243,13 +280,27 @@ mqtt.topic=energystorage
 ```
 
 
-#### *<ins>4. Building the project</ins>*
+#### *<ins>5. Building the application</ins>*
 
-Once your project is configured you can simply build it with `mvn clean package` to produce a `zip` file found under the `target` directory.
-The `zip` file contains the main jar plus all dependencies in a lib folder.
-Copy this to your target machine, e.g. a Raspberry, unpack it and start it with `java -jar bms-to-inverter-main-0.0.1-SNAPSHOT.jar`.
+Once your project is configured you can simply build it using the `~/bms-to-inverter/cleanrepo.sh` script.
 
-If you're using the [`webserver`](https://github.com/ai-republic/bms-to-inverter/blob/main/webserver) then you'll have to copy the `webserver-0.0.1-SNAPSHOT.jar` found in the `webserver/target` folder to your target machine and start it with `java -jar webserver-0.0.1-SNAPSHOT`.
+#### *<ins>6. Start the application</ins>*
+
+Now your application is ready to go! 
+If ever you change any configuration in `~/bms-to-inverter/config` you will need to call the `~/bms-to-inverter/cleanrepo.sh` script again.
+
+You can start the application:
+
+```
+~/bms-to-inverter/app/startBmsToInverter.sh
+```
+
+If you want to use the webserver too, just start it with:
+
+```
+~/bms-to-inverter/app/startWebserver.sh
+```
+
 
 ----------
 
