@@ -237,6 +237,8 @@ bms.portLocator=can0
 
 # Interval to request BMS data (in seconds) 
 bms.pollInterval=2
+# Delay after receiving no data (in ms)
+bms.delayAfterNoBytes=200
 
 
 ##### Inverter port properties #####
@@ -287,6 +289,7 @@ Once your project is configured you can simply build it using the `~/bms-to-inve
 #### *<ins>6. Start the application</ins>*
 
 Now your application is ready to go! 
+
 If ever you change any configuration in `~/bms-to-inverter/config` you will need to call the `~/bms-to-inverter/cleanrepo.sh` script again.
 
 You can start the application:
