@@ -40,6 +40,7 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
 
         return bytes[12] == (byte) checksum;
     };
+    private final long delayAfterNoBytes = Long.parseLong(System.getProperty("bms.delayAfterNoBytes", "200"));
 
     @Override
     protected List<ByteBuffer> sendMessage(final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException, TooManyInvalidFramesException, NoDataAvailableException {
@@ -91,13 +92,13 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
                         if (noDataReceived >= 10) {
                             throw new NoDataAvailableException();
                         }
-                    }
 
-                    // try and wait for the next message to arrive
-                    try {
-                        LOG.debug("Waiting for messages to arrive....");
-                        Thread.sleep(200);
-                    } catch (final InterruptedException e) {
+                        // try and wait for the next message to arrive
+                        try {
+                            LOG.debug("Waiting for messages to arrive....");
+                            Thread.sleep(delayAfterNoBytes);
+                        } catch (final InterruptedException e) {
+                        }
                     }
 
                     // try to receive the response again

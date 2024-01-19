@@ -46,7 +46,8 @@ bms.portLocator=can0
 
 # Interval to request BMS data (in seconds) 
 bms.pollInterval=1
-
+# Delay after receiving no data (in ms)
+bms.delayAfterNoBytes=200
 
 ###################################################################
 ###                    Inverter settings                        ###
