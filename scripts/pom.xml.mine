@@ -87,6 +87,12 @@
 			<version>5.1.1.Final</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.ai-republic.email</groupId>
+			<artifactId>email-api</artifactId>
+			<version>1.0.5</version>
+		</dependency>
+
 
 <!-- #################### !!!!!!!!	Choose BMS 	!!!!!!!! ###################### -->
 		
@@ -98,37 +104,37 @@
 		</dependency>
 		
 		<!-- ####################  DALY (RS485)  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>bms-daly-rs485</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-daly-rs485</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- ####################  PYLONTECH (CAN)  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>bms-pylon-can</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-pylon-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- ####################  JK (CAN)  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>bms-jk-can</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-jk-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- ####################  SEPLOS (CAN)  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>bms-seplos-can</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-seplos-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 
 <!-- #################### !!!!!!!!	Choose Inverter 	!!!!!!!! ###################### -->
 
-		<!-- ####################  Dummy inverter  ################### -->
+		<!-- ####################  Dummy Inverter  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>inverter-dummy</artifactId>
@@ -136,37 +142,31 @@
 		</dependency>
 		
 		<!-- ####################  SMA Sunny Island (CAN)  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>inverter-sma-can</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-sma-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		
 		<!-- ####################  GROWATT (CAN)  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>inverter-growatt-can</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-growatt-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- ####################  DEYE (CAN)  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>inverter-deye-can</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-deye-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- ####################  SOLARK (CAN)  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>inverter-solark-can</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
-
 		<dependency>
-			<groupId>com.ai-republic.email</groupId>
-			<artifactId>email-api</artifactId>
-			<version>1.0.5</version>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-solark-can</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 
 
