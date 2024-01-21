@@ -4,16 +4,15 @@ import java.nio.ByteBuffer;
 
 import com.airepublic.bmstoinverter.core.Port;
 
-import jakarta.annotation.PostConstruct;
-
 /**
  * A {@link Port} that is used for RS485 messages. Expecting <code>config.properties</code> or
  * System properties <code>RS485.baudrate</code>, <code>RS485.startFlag</code> and
  * <code>RS485.frameLength</code> to be set.
  */
-@RS485
 public abstract class RS485Port extends Port {
-    private int baudrate = 9600;
+    private int dataBits;
+    private int stopBits;
+    private int parity;
     private int startFlag = 0;
     private int frameLength = 0;
     private ByteBuffer frameBuffer;
@@ -29,42 +28,65 @@ public abstract class RS485Port extends Port {
      * Constructor.
      * 
      * @param portname the portname
+     * @param baudrate the baudrate
      */
-    public RS485Port(final String portname) {
-        super(portname);
+    public RS485Port(final String portname, final int baudrate, final int dataBits, final int stopBits, final int parity, final int startFlag, final int frameLength) {
+        super(portname, baudrate);
+        this.dataBits = dataBits;
+        this.stopBits = stopBits;
+        this.parity = parity;
+        this.startFlag = startFlag;
+        this.frameLength = frameLength;
+        frameBuffer = ByteBuffer.allocate(frameLength);
+
     }
 
 
     /**
-     * Initializes the baud rate, start flag and frame length from the
-     * <code>config.properties</code> or system properties <code>RS485.baudrate</code>,
-     * <code>RS485.startFlag</code> and <code>RS485.frameLength</code>.
+     * @return the dataBits
      */
-    @PostConstruct
-    public void init() {
-        setBaudrate(Integer.parseInt(System.getProperty("RS485.baudrate")));
-        setStartFlag(Integer.parseInt(System.getProperty("RS485.startFlag")));
-        setFrameLength(Integer.parseInt(System.getProperty("RS485.frameLength")));
+    public int getDataBits() {
+        return dataBits;
     }
 
 
     /**
-     * Gets the baud rate.
-     *
-     * @return the baud rate
+     * @param dataBits the dataBits to set
      */
-    public int getBaudrate() {
-        return baudrate;
+    public void setDataBits(final int dataBits) {
+        this.dataBits = dataBits;
     }
 
 
     /**
-     * Sets the baud rate.
-     *
-     * @param baudrate the baud rate
+     * @return the stopBits
      */
-    public void setBaudrate(final int baudrate) {
-        this.baudrate = baudrate;
+    public int getStopBits() {
+        return stopBits;
+    }
+
+
+    /**
+     * @param stopBits the stopBits to set
+     */
+    public void setStopBits(final int stopBits) {
+        this.stopBits = stopBits;
+    }
+
+
+    /**
+     * @return the parity
+     */
+    public int getParity() {
+        return parity;
+    }
+
+
+    /**
+     * @param parity the parity to set
+     */
+    public void setParity(final int parity) {
+        this.parity = parity;
     }
 
 

@@ -18,11 +18,12 @@ public abstract class CANPort extends Port {
 
     /**
      * Constructor.
-     * 
+     *
      * @param portname the portname
+     * @param baudrate the baudrate
      */
-    public CANPort(final String portname) {
-        super(portname);
+    public CANPort(final String portname, final int baudrate) {
+        super(portname, baudrate);
     }
 
 

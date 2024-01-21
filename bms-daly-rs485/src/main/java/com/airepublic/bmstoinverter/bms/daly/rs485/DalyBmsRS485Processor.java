@@ -15,23 +15,15 @@ import com.airepublic.bmstoinverter.bms.daly.common.DalyCommand;
 import com.airepublic.bmstoinverter.bms.daly.common.DalyMessage;
 import com.airepublic.bmstoinverter.core.NoDataAvailableException;
 import com.airepublic.bmstoinverter.core.Port;
-import com.airepublic.bmstoinverter.core.PortType;
-import com.airepublic.bmstoinverter.core.Protocol;
 import com.airepublic.bmstoinverter.core.TooManyInvalidFramesException;
-import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.protocol.rs485.RS485Port;
-
-import jakarta.inject.Inject;
 
 /**
  * The class to handle RS485 messages from a Daly BMS.
  */
-@PortType(Protocol.RS485)
 public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
     private final static Logger LOG = LoggerFactory.getLogger(AbstractDalyBmsProcessor.class);
     private final ByteBuffer sendFrame = ByteBuffer.allocate(13);
-    @Inject
-    private EnergyStorage energyStorage;
     private final Predicate<byte[]> validator = bytes -> {
         int checksum = 0;
         for (int i = 0; i < bytes.length - 1; i++) {
@@ -40,17 +32,14 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
 
         return bytes[12] == (byte) checksum;
     };
-    private final long delayAfterNoBytes = Long.parseLong(System.getProperty("bms.delayAfterNoBytes", "200"));
 
     @Override
-    protected List<ByteBuffer> sendMessage(final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException, TooManyInvalidFramesException, NoDataAvailableException {
+    protected List<ByteBuffer> sendMessage(final Port port, final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException, TooManyInvalidFramesException, NoDataAvailableException {
         final int address = bmsNo + 0x40;
         final ByteBuffer sendBuffer = prepareSendFrame(address, cmd, data);
         int framesToBeReceived = getResponseFrameCount(cmd);
         final int frameCount = framesToBeReceived;
         final List<ByteBuffer> readBuffers = new ArrayList<>();
-        @SuppressWarnings("resource")
-        final RS485Port port = (RS485Port) energyStorage.getBatteryPack(bmsNo).port;
         int failureCount = 0;
         int noDataReceived = 0;
 
@@ -71,10 +60,10 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
                 final ByteBuffer receiveBuffer = port.receiveFrame(validator);
 
                 // check if a valid frame was received or no bytes
-                if (receiveBuffer == null || receiveBuffer.capacity() < port.getFrameLength()) {
+                if (receiveBuffer == null || receiveBuffer.capacity() < ((RS485Port) port).getFrameLength()) {
 
                     // did we receive an invalid frame length
-                    if (receiveBuffer != null && receiveBuffer.capacity() < port.getFrameLength()) {
+                    if (receiveBuffer != null && receiveBuffer.capacity() < ((RS485Port) port).getFrameLength()) {
                         // keep track of how often invalid frames were received
                         failureCount++;
                         LOG.debug("Wrong number of bytes received! {}", Port.printBuffer(receiveBuffer));
@@ -96,7 +85,7 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
                         // try and wait for the next message to arrive
                         try {
                             LOG.debug("Waiting for messages to arrive....");
-                            Thread.sleep(delayAfterNoBytes);
+                            Thread.sleep(getDelayAfterNoBytes());
                         } catch (final InterruptedException e) {
                         }
                     }
@@ -114,7 +103,7 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
                     final DalyMessage dalyMsg = convertReceiveFrameToDalyMessage(receiveBuffer);
 
                     if (dalyMsg != null) {
-                        getMessageHandler().handleMessage(dalyMsg);
+                        getMessageHandler().handleMessage(this, dalyMsg);
                     } else {
                         LOG.warn("Message could not be interpreted " + Port.printBuffer(receiveBuffer));
                         return readBuffers;

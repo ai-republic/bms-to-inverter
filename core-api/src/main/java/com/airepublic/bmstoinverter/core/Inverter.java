@@ -1,59 +1,53 @@
 package com.airepublic.bmstoinverter.core;
 
-import java.util.ServiceLoader;
+import java.nio.ByteBuffer;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import jakarta.annotation.PostConstruct;
+import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
+import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 
 /**
  * The class to identify an {@link Inverter}.
  */
 public abstract class Inverter {
     private final static Logger LOG = LoggerFactory.getLogger(Inverter.class);
-    private Port port;
+    private String portLocator;
+    private int sendInterval;
 
     /**
-     * Search the implementing class for the {@link PortType} annotation defined in the
-     * <code>config.properties</code> file. The {@link Inverter} port can be configured like
-     * e.g.:<br>
-     * <br>
-     * <code>inverter.portLocator=can0</code><br>
+     * Initializes the {@link Inverter} with the specified {@link InverterConfig}, initializing the
+     * port parameters from the system properties.
      */
-    @PostConstruct
-    public void init() {
-        // Check the protocol to use on the port
-        final PortType portType = getClass().getAnnotation(PortType.class);
-
-        if (portType == null) {
-            LOG.error(PortType.class.getName() + " Annotation is missing on Inverter " + getClass().getCanonicalName());
-            throw new IllegalArgumentException(PortType.class.getName() + " Annotation is missing on Inverter " + getClass().getCanonicalName());
+    public void initialize(final InverterConfig config) {
+        if (!PortAllocator.hasPort(config.getPortLocator())) {
+            PortAllocator.addPort(config.getPortLocator(), config.getDescriptor().createPort(config));
         }
 
-        // from the protocol get the service class to use
-        final Class<? extends Port> portServiceClass = portType.value().portClass;
-        final Port port = ServiceLoader.load(portServiceClass).findFirst().orElseThrow();
-
-        // check if the simple single portname is defined
-        final String portname = System.getProperty("inverter.portLocator");
-
-        if (portname != null) {
-            this.port = port.create(portname);
-        } else {
-            LOG.error("The property 'inverter.portLocator' not correctly defined in config.properties!");
-            throw new IllegalArgumentException("The property 'inverter.portLocator' not correctly defined in config.properties!");
-        }
+        portLocator = config.getPortLocator();
+        sendInterval = config.getSendInterval();
     }
 
 
     /**
-     * Gets the {@link Port} of the {@link Inverter}.
+     * Gets the interval the data is sent to the inverter.
      *
-     * @return the {@link Port}
+     * @return the interval the data is sent to the inverter
      */
-    public Port getPort() {
-        return port;
+    public int getSendInterval() {
+        return sendInterval;
+    }
+
+
+    /**
+     * Gets the assigned {@link Port}s locator.
+     *
+     * @return the assigned {@link Port}s locator
+     */
+    public String getPortLocator() {
+        return portLocator;
     }
 
 
@@ -62,6 +56,32 @@ public abstract class Inverter {
      *
      * @param callback the code executed after successful processing
      */
-    public abstract void process(Runnable callback);
+    public void process(final Runnable callback) {
+        try {
+            final List<ByteBuffer> canData = updateCANMessages();
+            final Port port = PortAllocator.allocate(getPortLocator());
 
+            for (final ByteBuffer frame : canData) {
+                LOG.debug("CAN send: {}", Port.printBuffer(frame));
+                port.sendFrame(frame);
+            }
+        } catch (final Throwable e) {
+            LOG.error("Failed to send CAN frame", e);
+        }
+
+        try {
+            callback.run();
+        } catch (final Exception e) {
+            LOG.error("Inverter process callback threw an exception!", e);
+        }
+    }
+
+
+    /**
+     * Aggregate all {@link BatteryPack}s of the {@link EnergyStorage} and create CAN messages to be
+     * sent to the inverter.
+     *
+     * @return the CAN messages to be sent to the inverter
+     */
+    protected abstract List<ByteBuffer> updateCANMessages();
 }

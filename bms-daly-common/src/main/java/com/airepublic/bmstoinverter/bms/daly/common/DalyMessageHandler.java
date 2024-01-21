@@ -5,10 +5,9 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
-
-import jakarta.inject.Inject;
 
 /**
  * The handler to interpret the {@link DalyMessage} and update the application wide
@@ -20,9 +19,6 @@ public class DalyMessageHandler {
     private final static int MAX_NUMBER_CELLS = 48;
     private final static int MIN_NUMBER_TEMP_SENSORS = 1;
     private final static int MAX_NUMBER_TEMP_SENSORS = 16;
-
-    @Inject
-    private EnergyStorage energyStorage;
 
     /**
      * Constructor.
@@ -36,47 +32,54 @@ public class DalyMessageHandler {
      *
      * @param msg the {@link DalyMessage}
      */
-    public void handleMessage(final DalyMessage msg) {
+    public void handleMessage(final BMS bms, final DalyMessage msg) {
+        final int batteryNo = msg.address - 1;
+
+        if (batteryNo != bms.getBmsNo()) {
+            LOG.error("Found invalid battery identifier: #{}", msg.address);
+            return;
+        }
+
         try {
             switch (msg.cmd.id) {
                 case 0x50:
-                    getRatedCapacityAndCellVoltage(msg);
+                    getRatedCapacityAndCellVoltage(msg, bms);
                 break;
                 case 0x53:
-                    getBatteryTypeInfo(msg);
+                    getBatteryTypeInfo(msg, bms);
                 break;
                 case 0x5A:
-                    getPackVoltageLimits(msg);
+                    getPackVoltageLimits(msg, bms);
                 break;
                 case 0x5B:
-                    getPackDischargeChargeLimits(msg);
+                    getPackDischargeChargeLimits(msg, bms);
                 break;
                 case 0x90:
-                    getPackMeasurements(msg);
+                    getPackMeasurements(msg, bms);
                 break;
                 case 0x91:
-                    getMinMaxCellVoltage(msg);
+                    getMinMaxCellVoltage(msg, bms);
                 break;
                 case 0x92:
-                    getPackTemp(msg);
+                    getPackTemp(msg, bms);
                 break;
                 case 0x93:
-                    getDischargeChargeMosStatus(msg);
+                    getDischargeChargeMosStatus(msg, bms);
                 break;
                 case 0x94:
-                    getStatusInfo(msg);
+                    getStatusInfo(msg, bms);
                 break;
                 case 0x95:
-                    getCellVoltages(msg);
+                    getCellVoltages(msg, bms);
                 break;
                 case 0x96:
-                    getCellTemperature(msg);
+                    getCellTemperature(msg, bms);
                 break;
                 case 0x97:
-                    getCellBalanceState(msg);
+                    getCellBalanceState(msg, bms);
                 break;
                 case 0x98:
-                    getFailureCodes(msg);
+                    getFailureCodes(msg, bms);
                 break;
                 default:
                 break;
@@ -88,15 +91,8 @@ public class DalyMessageHandler {
     }
 
 
-    private void getBatteryTypeInfo(final DalyMessage msg) {
-        final int batteryNo = msg.address - 1;
-
-        if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
-            LOG.error("getRatedCapacityAndCellVoltage -> Found invalid battery identifier: #{}", msg.address);
-            return;
-        }
-
-        final BatteryPack battery = energyStorage.getBatteryPack(batteryNo);
+    private void getBatteryTypeInfo(final DalyMessage msg, final BMS bms) {
+        final BatteryPack battery = bms.getBatteryPack();
 
         battery.type = msg.data.get();
 
@@ -104,15 +100,8 @@ public class DalyMessageHandler {
     }
 
 
-    private void getRatedCapacityAndCellVoltage(final DalyMessage msg) {
-        final int batteryNo = msg.address - 1;
-
-        if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
-            LOG.error("getRatedCapacityAndCellVoltage -> Found invalid battery identifier: #{}", msg.address);
-            return;
-        }
-
-        final BatteryPack battery = energyStorage.getBatteryPack(batteryNo);
+    private void getRatedCapacityAndCellVoltage(final DalyMessage msg, final BMS bms) {
+        final BatteryPack battery = bms.getBatteryPack();
 
         battery.ratedCellmV = msg.data.getInt(); // in mV
         battery.ratedCapacitymAh = msg.data.getInt(); // in mAh
@@ -121,15 +110,8 @@ public class DalyMessageHandler {
     }
 
 
-    private void getPackDischargeChargeLimits(final DalyMessage msg) {
-        final int batteryNo = msg.address - 1;
-
-        if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
-            LOG.error("getPackDischargeChargeLimits -> Found invalid battery identifier: #{}", msg.address);
-            return;
-        }
-
-        final BatteryPack battery = energyStorage.getBatteryPack(batteryNo);
+    private void getPackDischargeChargeLimits(final DalyMessage msg, final BMS bms) {
+        final BatteryPack battery = bms.getBatteryPack();
 
         battery.maxPackDischargeCurrent = 30000 - msg.data.getShort(); // 30000 offset
         // skip the next 2 bytes because only reading level 1
@@ -141,15 +123,8 @@ public class DalyMessageHandler {
     }
 
 
-    private void getPackVoltageLimits(final DalyMessage msg) {
-        final int batteryNo = msg.address - 1;
-
-        if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
-            LOG.error("getPackVoltageLimits -> Found invalid battery identifier: #{}", msg.address);
-            return;
-        }
-
-        final BatteryPack battery = energyStorage.getBatteryPack(batteryNo);
+    private void getPackVoltageLimits(final DalyMessage msg, final BMS bms) {
+        final BatteryPack battery = bms.getBatteryPack();
 
         battery.maxPackVoltageLimit = msg.data.getShort();
         // skip the next 2 bytes because only reading level 1
@@ -158,15 +133,8 @@ public class DalyMessageHandler {
     }
 
 
-    private void getPackMeasurements(final DalyMessage msg) throws IOException { // 0x90
-        final int batteryNo = msg.address - 1;
-
-        if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
-            LOG.error("getPackMeasurements -> Found invalid battery identifier: #{}", msg.address);
-            return;
-        }
-
-        final BatteryPack battery = energyStorage.getBatteryPack(batteryNo);
+    private void getPackMeasurements(final DalyMessage msg, final BMS bms) throws IOException { // 0x90
+        final BatteryPack battery = bms.getBatteryPack();
 
         // data bytes 0-1 pack voltage
         battery.packVoltage = msg.data.getShort();
@@ -186,15 +154,8 @@ public class DalyMessageHandler {
     }
 
 
-    private void getMinMaxCellVoltage(final DalyMessage msg) throws IOException { // 0x91
-        final int batteryNo = msg.address - 1;
-
-        if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
-            LOG.debug("getMinMaxCellVoltage -> Found invalid battery identifier: #{}", msg.address);
-            return;
-        }
-
-        final BatteryPack battery = energyStorage.getBatteryPack(batteryNo);
+    private void getMinMaxCellVoltage(final DalyMessage msg, final BMS bms) throws IOException { // 0x91
+        final BatteryPack battery = bms.getBatteryPack();
 
         // data byte 0-1 maximum cell voltage in mV
         battery.maxCellmV = msg.data.getShort();
@@ -211,20 +172,13 @@ public class DalyMessageHandler {
                     + "\tMax Voltage: Cell {}({}mV)\n"
                     + "\tMin Voltage: Cell {}({}mV)\n"
                     + "\tDifference: {}mV",
-                    batteryNo + 1, battery.maxCellVNum, battery.maxCellmV, battery.minCellVNum, battery.minCellmV, battery.cellDiffmV);
+                    bms.getBmsNo() + 1, battery.maxCellVNum, battery.maxCellmV, battery.minCellVNum, battery.minCellmV, battery.cellDiffmV);
         }
     }
 
 
-    private void getPackTemp(final DalyMessage msg) throws IOException { // 0x92
-        final int batteryNo = msg.address - 1;
-
-        if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
-            LOG.debug("getPackTemp -> Found invalid battery identifier: #{}", msg.address);
-            return;
-        }
-
-        final BatteryPack battery = energyStorage.getBatteryPack(batteryNo);
+    private void getPackTemp(final DalyMessage msg, final BMS bms) throws IOException { // 0x92
+        final BatteryPack battery = bms.getBatteryPack();
 
         // byte 0 maximum temperature with offset of 40
         battery.tempMax = msg.data.get(0) - 40;
@@ -237,20 +191,13 @@ public class DalyMessageHandler {
                     + "\tMax: {}C\n"
                     + "\tMin: {}C\n"
                     + "\tAvg: {}C",
-                    batteryNo + 1, battery.tempMax, battery.tempMin, battery.tempAverage);
+                    bms.getBmsNo() + 1, battery.tempMax, battery.tempMin, battery.tempAverage);
         }
     }
 
 
-    private void getDischargeChargeMosStatus(final DalyMessage msg) throws IOException { // 0x93
-        final int batteryNo = msg.address - 1;
-
-        if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
-            LOG.debug("getDischargeChargeMosStatus -> Found invalid battery identifier: #{}", msg.address);
-            return;
-        }
-
-        final BatteryPack battery = energyStorage.getBatteryPack(batteryNo);
+    private void getDischargeChargeMosStatus(final DalyMessage msg, final BMS bms) throws IOException { // 0x93
+        final BatteryPack battery = bms.getBatteryPack();
 
         // read data byte 0 MOS status
         switch (msg.data.get()) {
@@ -281,20 +228,13 @@ public class DalyMessageHandler {
                     + "\tChargeMOS-State: {}\n"
                     + "\tDisChargeMOS-State: {}\n"
                     + "\tBMSHeartBeat: {}",
-                    batteryNo + 1, battery.chargeDischargeStatus, battery.chargeMOSState, battery.disChargeMOSState, battery.bmsHeartBeat);
+                    bms.getBmsNo() + 1, battery.chargeDischargeStatus, battery.chargeMOSState, battery.disChargeMOSState, battery.bmsHeartBeat);
         }
     }
 
 
-    private void getStatusInfo(final DalyMessage msg) throws IOException { // 0x94
-        final int batteryNo = msg.address - 1;
-
-        if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
-            LOG.debug("getStatusInfo -> Found invalid battery identifier: #{}", msg.address);
-            return;
-        }
-
-        final BatteryPack battery = energyStorage.getBatteryPack(batteryNo);
+    private void getStatusInfo(final DalyMessage msg, final BMS bms) throws IOException { // 0x94
+        final BatteryPack battery = bms.getBatteryPack();
 
         // data byte 0 number of cells
         battery.numberOfCells = msg.data.get();
@@ -316,15 +256,8 @@ public class DalyMessageHandler {
     }
 
 
-    private void getCellVoltages(final DalyMessage msg) throws IOException { // 0x95
-        final int batteryNo = msg.address - 1;
-
-        if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
-            LOG.debug("getCellVoltages -> Found invalid battery identifier: #{}", msg.address);
-            return;
-        }
-
-        final BatteryPack battery = energyStorage.getBatteryPack(batteryNo);
+    private void getCellVoltages(final DalyMessage msg, final BMS bms) throws IOException { // 0x95
+        final BatteryPack battery = bms.getBatteryPack();
 
         // Check to make sure we have a valid number of cells
         if (battery.numberOfCells < MIN_NUMBER_CELLS && battery.numberOfCells >= MAX_NUMBER_CELLS) {
@@ -340,7 +273,7 @@ public class DalyMessageHandler {
             LOG.debug("BMS #{}, Frame No.: {}, Cell No: {}. {}mV", msg.address, frameNo, cellNo + 1, volt);
 
             if (cellNo + 1 < MIN_NUMBER_CELLS || cellNo + 1 > MAX_NUMBER_CELLS) {
-                LOG.debug("Invalid cell number " + (cellNo + 1) + " for battery pack #" + (batteryNo + 1) + "(" + battery.numberOfCells + "cells)");
+                LOG.debug("Invalid cell number " + (cellNo + 1) + " for battery pack #" + (bms.getBmsNo() + 1) + "(" + battery.numberOfCells + "cells)");
                 break;
             }
 
@@ -349,7 +282,7 @@ public class DalyMessageHandler {
         }
 
         if (LOG.isDebugEnabled() && frameNo * 3 + cellNo >= battery.numberOfCells) {
-            final StringBuilder buf = new StringBuilder("Battery #" + (batteryNo + 1) + " voltages:\n");
+            final StringBuilder buf = new StringBuilder("Battery #" + (bms.getBmsNo() + 1) + " voltages:\n");
 
             for (int i = 0; i < battery.numberOfCells; i++) {
                 buf.append("\t#" + (i + 1) + ": " + battery.cellVmV[i] / 1000f + "V\n");
@@ -360,16 +293,9 @@ public class DalyMessageHandler {
     }
 
 
-    private void getCellTemperature(final DalyMessage msg) throws IOException { // 0x96
-        final int batteryNo = msg.address - 1;
-
-        if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
-            LOG.debug("getCellTemperature -> Found invalid battery identifier: #{}", msg.address);
-            return;
-        }
-
+    private void getCellTemperature(final DalyMessage msg, final BMS bms) throws IOException { // 0x96
         int sensorNo = 0;
-        final BatteryPack battery = energyStorage.getBatteryPack(batteryNo);
+        final BatteryPack battery = bms.getBatteryPack();
 
         // Check to make sure we have a valid number of temp sensors
         if (battery.numOfTempSensors < MIN_NUMBER_TEMP_SENSORS && battery.numOfTempSensors >= MAX_NUMBER_TEMP_SENSORS) {
@@ -394,17 +320,10 @@ public class DalyMessageHandler {
     }
 
 
-    private void getCellBalanceState(final DalyMessage msg) throws IOException { // 0x97
-        final int batteryNo = msg.address - 1;
-
-        if (batteryNo < 0 || batteryNo >= energyStorage.getBatteryPackCount()) {
-            LOG.debug("getCellBalanceState -> Found invalid battery identifier: #{}", msg.address);
-            return;
-        }
-
+    private void getCellBalanceState(final DalyMessage msg, final BMS bms) throws IOException { // 0x97
         boolean cellBalanceActive = false;
         int cellNo = 0;
-        final BatteryPack battery = energyStorage.getBatteryPack(batteryNo);
+        final BatteryPack battery = bms.getBatteryPack();
 
         // Check to make sure we have a valid number of cells
         if (battery.numberOfCells < MIN_NUMBER_CELLS && battery.numberOfCells >= MAX_NUMBER_CELLS) {
@@ -444,16 +363,9 @@ public class DalyMessageHandler {
     }
 
 
-    private void getFailureCodes(final DalyMessage msg) throws IOException // 0x98
+    private void getFailureCodes(final DalyMessage msg, final BMS bms) throws IOException // 0x98
     {
-        final int batteryNo = msg.address - 1;
-
-        if (batteryNo + 1 > energyStorage.getBatteryPackCount()) {
-            LOG.debug("getFailureCodes -> Found invalid battery identifier: #{}", batteryNo + 1);
-            return;
-        }
-
-        final BatteryPack battery = energyStorage.getBatteryPack(batteryNo);
+        final BatteryPack battery = bms.getBatteryPack();
         byte byteValue = msg.data.get();
         /* 0x00 */
         battery.alarms.levelOneCellVoltageTooHigh.value = bitRead(byteValue, 0);

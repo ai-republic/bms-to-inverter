@@ -91,11 +91,11 @@
 <!-- #################### !!!!!!!!	Choose BMS 	!!!!!!!! ###################### -->
 		
 		<!-- ####################  DALY(CAN) ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>bms-daly-can</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-daly-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		
 		<!-- ####################  DALY (RS485)  ################### -->
 		<dependency>
@@ -105,42 +105,42 @@
 		</dependency>
 
 		<!-- ####################  PYLONTECH (CAN)  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>bms-pylon-can</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-pylon-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- ####################  JK (CAN)  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>bms-jk-can</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-jk-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- ####################  SEPLOS (CAN)  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>bms-seplos-can</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-seplos-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 
 <!-- #################### !!!!!!!!	Choose Inverter 	!!!!!!!! ###################### -->
 
 		<!-- ####################  Dummy Inverter  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>inverter-dummy</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-dummy</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		
 		<!-- ####################  SMA Sunny Island (CAN)  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>inverter-sma-can</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-sma-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		
 		<!-- ####################  GROWATT (CAN)  ################### -->
 		<dependency>
@@ -150,35 +150,35 @@
 		</dependency>
 
 		<!-- ####################  DEYE (CAN)  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>inverter-deye-can</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-deye-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- ####################  SOLARK (CAN)  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>inverter-solark-can</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-solark-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 
 
 <!-- #################### !!!!!!!!	Choose optional services 	!!!!!!!! ###################### -->
 
 		<!-- optionally add MQTT services -->
-		<dependency>
-			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>service-mqtt-broker</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
+<!--			<artifactId>service-mqtt-broker</artifactId>-->
+<!--			<version>${project.version}</version>-->
+<!--		</dependency>-->
 
-		<dependency>
-			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>service-mqtt-client</artifactId>
-			<version>${project.version}</version>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
+<!--			<artifactId>service-mqtt-client</artifactId>-->
+<!--			<version>${project.version}</version>-->
+<!--		</dependency>-->
 
 		
 		<!-- optionally add Email service -->

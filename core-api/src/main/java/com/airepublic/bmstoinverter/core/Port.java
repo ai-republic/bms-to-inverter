@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 public abstract class Port implements AutoCloseable {
     private final static Logger LOG = LoggerFactory.getLogger(Port.class);
     private String portname;
+    private int baudrate;
 
     /**
      * Constructor.
@@ -25,19 +26,12 @@ public abstract class Port implements AutoCloseable {
      * Constructor.
      * 
      * @param portname the name of the system port, e.g. COM4, TtyS0, etc.
+     * @param baudrate the baudrate
      */
-    public Port(final String portname) {
+    public Port(final String portname, final int baudrate) {
         this.portname = portname;
+        this.baudrate = baudrate;
     }
-
-
-    /**
-     * Creates a new instance of this class with the specified portname.
-     *
-     * @param portname the portname
-     * @return the instance
-     */
-    protected abstract Port create(String portname);
 
 
     /**
@@ -57,6 +51,26 @@ public abstract class Port implements AutoCloseable {
      */
     public void setPortname(final String portname) {
         this.portname = portname;
+    }
+
+
+    /**
+     * Gets the baudrate of the port.
+     *
+     * @return the baudrate of the port
+     */
+    public int getBaudrate() {
+        return baudrate;
+    }
+
+
+    /**
+     * Sets the baudrate of the port.
+     *
+     * @param baudrate the baudrate of the port
+     */
+    public void setBaudrate(final int baudrate) {
+        this.baudrate = baudrate;
     }
 
 

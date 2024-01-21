@@ -2,59 +2,33 @@ package com.airepublic.bmstoinverter.inverter.sma.can;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.Inverter;
-import com.airepublic.bmstoinverter.core.Port;
-import com.airepublic.bmstoinverter.core.PortType;
-import com.airepublic.bmstoinverter.core.Protocol;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
-import com.airepublic.bmstoinverter.core.protocol.can.CAN;
 
 import jakarta.inject.Inject;
 
 /**
- * The class to handle {@link CAN} messages for a SMA {@link Inverter}.
+ * The class to handle CAN messages for a SMA {@link Inverter}.
  */
-@PortType(Protocol.CAN)
-public class SmaCANProcessor extends Inverter {
-    private final static Logger LOG = LoggerFactory.getLogger(SmaCANProcessor.class);
+public class SMAInverterCANProcessor extends Inverter {
+    private final static Logger LOG = LoggerFactory.getLogger(SMAInverterCANProcessor.class);
     @Inject
     private EnergyStorage energyStorage;
-    private final Map<Integer, ByteBuffer> canData = new HashMap<>();
 
     @Override
-    public void process(final Runnable callback) {
-        try {
-            updateCANMessages();
-
-            for (final ByteBuffer frame : canData.values()) {
-                LOG.debug("CAN send: {}", Port.printBuffer(frame));
-                frame.rewind();
-                getPort().sendFrame(frame);
-            }
-
-        } catch (final Throwable e) {
-            LOG.error("Failed to send CAN frame", e);
-        }
-
-        try {
-            callback.run();
-        } catch (final Exception e) {
-            LOG.error("Inverter process callback threw an exception!", e);
-        }
-    }
-
-
-    private void updateCANMessages() {
+    protected List<ByteBuffer> updateCANMessages() {
+        final List<ByteBuffer> frames = new ArrayList<>();
         final byte length = (byte) 8;
         // 0x0351 charge voltage, charge amp limit, discharge amp limit, discharge voltage limit
-        ByteBuffer frame = getCANData(0x0351);
+        ByteBuffer frame = ByteBuffer.allocateDirect(16);
+        frame.order(ByteOrder.LITTLE_ENDIAN);
 
         frame.putInt(0x0351)
                 .put(length)
@@ -68,9 +42,12 @@ public class SmaCANProcessor extends Inverter {
         frame.asShortBuffer().put((short) energyStorage.getBatteryPack(0).maxPackDischargeCurrent);
         // max discharge voltage (0.1V) - u_int_16
         frame.asCharBuffer().put((char) energyStorage.getBatteryPack(0).minPackVoltageLimit);
+        frames.add(frame);
 
         // 0x0355 SOC, SOH, HiRes SOC
-        frame = getCANData(0x0355);
+        frame = ByteBuffer.allocateDirect(16);
+        frame.order(ByteOrder.LITTLE_ENDIAN);
+
         frame.putInt(0x0355)
                 .put(length)
                 .put((byte) 0) // flags
@@ -83,9 +60,12 @@ public class SmaCANProcessor extends Inverter {
                 // SOH (1%) - u_int_16
                 .put((char) 80);
         // frame.asShortBuffer().put((short) 50); // HiRes SOC (0.01%) - u_int_16
+        frames.add(frame);
 
         // 0x0356 battery voltage, battery current, battery temperature
-        frame = getCANData(0x0356);
+        frame = ByteBuffer.allocateDirect(16);
+        frame.order(ByteOrder.LITTLE_ENDIAN);
+
         frame.putInt(0x0356)
                 .put(length)
                 .put((byte) 0) // flags
@@ -101,9 +81,12 @@ public class SmaCANProcessor extends Inverter {
                 .putShort(batteryCurrent)
                 // battery temperature (0.1C) - s_int_16
                 .putShort(batteryTemperature);
+        frames.add(frame);
 
         // 0x035A alarms and warnings
-        frame = getCANData(0x035A);
+        frame = ByteBuffer.allocateDirect(16);
+        frame.order(ByteOrder.LITTLE_ENDIAN);
+
         frame.putInt(0x035A)
                 .put(length)
                 .put((byte) 0) // flags
@@ -117,24 +100,11 @@ public class SmaCANProcessor extends Inverter {
                 // cell imbalance arrive/leave, last 6 bits reserved
                 .putInt(0) // alarms
                 .putInt(0); // warnings
+        frames.add(frame);
 
         LOG.info("Sending SMA frame: Batt(V)={}, Batt(A)={}, SOC={}", batteryVoltage / 100f, batteryCurrent / 10f, soc);
-    }
 
-
-    private ByteBuffer getCANData(final int id) {
-        ByteBuffer frame = canData.get(id);
-
-        if (frame == null) {
-            frame = ByteBuffer.allocateDirect(16);
-            frame.order(ByteOrder.LITTLE_ENDIAN);
-            frame.putInt(id);
-            canData.put(id, frame);
-        }
-
-        frame.rewind();
-
-        return frame;
+        return frames;
     }
 
 }

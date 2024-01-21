@@ -7,8 +7,6 @@ import java.util.function.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.airepublic.bmstoinverter.core.Port;
-import com.airepublic.bmstoinverter.core.protocol.modbus.ModBus;
 import com.airepublic.bmstoinverter.core.protocol.modbus.ModBusPort;
 import com.ghgande.j2mod.modbus.facade.ModbusSerialMaster;
 import com.ghgande.j2mod.modbus.util.SerialParameters;
@@ -16,7 +14,6 @@ import com.ghgande.j2mod.modbus.util.SerialParameters;
 /**
  * The implementation of the {@link ModBusPort} using the J2Mod implementation.
  */
-@ModBus
 public class J2ModPort extends ModBusPort {
     private final static Logger LOG = LoggerFactory.getLogger(J2ModPort.class);
     private ModbusSerialMaster port;
@@ -25,14 +22,14 @@ public class J2ModPort extends ModBusPort {
     }
 
 
-    public J2ModPort(final String portname) {
-        super(portname);
-    }
-
-
-    @Override
-    protected Port create(final String portname) {
-        return new J2ModPort(portname);
+    /**
+     * Constructor.
+     *
+     * @param portname the portname
+     * @param baudrate the baudrate
+     */
+    public J2ModPort(final String portname, final int baudrate) {
+        super(portname, baudrate);
     }
 
 
