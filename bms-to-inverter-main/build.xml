@@ -3,10 +3,10 @@
 	xmlns:artifact="antlib:org.apache.maven.artifact.ant">
 
     <!-- Setup RASPBERRY PI properties -->
-	<property name="raspberrypi" value="192.168.100.42" />
+	<property name="raspberrypi" value="" />
 	<property name="raspberryfolder" value="~" />
 	<property name="username" value="" />
-	<property name="password" value="" />
+	<property name="password" value="!" />
 
 <!--	<path id="maven-ant-tasks.classpath" path="${ant.libs.dir}/maven-ant-tasks-2.1.3.jar" />-->
 
