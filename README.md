@@ -37,7 +37,7 @@ A wide range of BMS and inverters already supported (see below). Any BMS or inve
 * Growatt low voltage (12V/24V/48V) inverters (CAN)
 * Deye inverters (CAN)
 * SolArk inverters (CAN)
-* Pylontech inverters (CAN)
+* any inverter speaking the PylonTech (CAN) protocol
 
 
 ----------
@@ -65,7 +65,7 @@ The following architectures are supported:
 Download the script [`init.sh`](https://github.com/ai-republic/bms-to-inverter/tree/main/scripts/init.sh) and run the commands:
 
 ```
-sudo chmod 777 init.sh
+chmod 777 init.sh
 init.sh
 ```
 This script will first install any prerequisites like Java JDK, Git and Maven.  Then it will create a folder structure in your home directory called `bms-to-inverter`, download the application source into `~/bms-to-inverter/src`, copy all configuration file templates to `~/bms-to-inverter/config`.
@@ -196,7 +196,11 @@ mqtt.topic=energystorage
 
 #### *<ins>5. Building the application</ins>*
 
-Once your project is configured you can simply build it using the `~/bms-to-inverter/cleanrepo.sh` script.
+Once your project is configured you can simply build it using the script:
+
+```
+~/bms-to-inverter/cleanrepo.sh
+```
 
 #### *<ins>6. Start the application</ins>*
 
