@@ -8,33 +8,18 @@ import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.Port;
-import com.airepublic.bmstoinverter.core.PortType;
-import com.airepublic.bmstoinverter.core.Protocol;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
-import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
-import com.airepublic.bmstoinverter.core.protocol.can.CAN;
-
-import jakarta.inject.Inject;
 
 /**
- * The class to handle {@link CAN} messages from a Seplos {@link BMS}.
+ * The class to handle CAN messages from a Seplos {@link BMS}.
  */
-@PortType(Protocol.CAN)
 public class SeplosBmsCANProcessor extends BMS {
     private final static Logger LOG = LoggerFactory.getLogger(SeplosBmsCANProcessor.class);
-    @Inject
-    private EnergyStorage energyStorage;
 
     @Override
-    public void initialize() {
-    }
-
-
-    @Override
-    public void collectData(final int bmsNo) {
+    public void collectData(final Port port) {
         try {
-            final BatteryPack pack = energyStorage.getBatteryPack(bmsNo);
-            final Port port = pack.port;
+            final BatteryPack pack = getBatteryPack();
             final ByteBuffer frame = port.receiveFrame(null);
             final int frameId = frame.getInt();
             final byte[] bytes = new byte[8];

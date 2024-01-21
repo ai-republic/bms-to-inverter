@@ -7,7 +7,6 @@ import java.util.function.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.airepublic.bmstoinverter.core.protocol.can.CAN;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 
 import tel.schich.javacan.CanChannels;
@@ -17,7 +16,6 @@ import tel.schich.javacan.RawCanChannel;
 /**
  * The implementation of the {@link CANPort} using the javacan implementation.
  */
-@CAN
 public class JavaCANPort extends CANPort {
     private final static Logger LOG = LoggerFactory.getLogger(JavaCANPort.class);
     private RawCanChannel canChannel;
@@ -33,15 +31,10 @@ public class JavaCANPort extends CANPort {
      * Constructor.
      *
      * @param portname the portname
+     * @param baudrate the baudrate
      */
-    public JavaCANPort(final String portname) {
-        super(portname);
-    }
-
-
-    @Override
-    public JavaCANPort create(final String portname) {
-        return new JavaCANPort(portname);
+    public JavaCANPort(final String portname, final int baudrate) {
+        super(portname, baudrate);
     }
 
 

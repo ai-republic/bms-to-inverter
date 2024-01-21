@@ -34,6 +34,7 @@
 		<module>inverter-solark-can</module>
 		<module>bms-pylon-can</module>
 		<module>inverter-dummy</module>
+		<module>configurator</module>
 	</modules>
 
 	<build>

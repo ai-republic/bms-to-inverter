@@ -1,14 +1,11 @@
 package com.airepublic.bmstoinverter.core.bms.data;
 
-import java.util.List;
-
-import com.airepublic.bmstoinverter.core.Port;
 import com.google.gson.Gson;
 
 /**
  * This class holds the data of the all battery storage modules ({@link BatteryPack} of the system.
  */
-public class EnergyStorage implements AutoCloseable {
+public class EnergyStorage {
     private transient final static Gson gson = new Gson();
     private BatteryPack[] batteryPacks;
 
@@ -16,19 +13,9 @@ public class EnergyStorage implements AutoCloseable {
      * Constructor.
      * 
      * @param numBatteryPacks the number of {@link BatteryPack}s in the system.
-     * @param ports the port or ports to communicate to the {@link BatteryPack}s (can be one port
-     *        for all or one port for each BMS)
      */
-    public EnergyStorage(final int numBatteryPacks, final List<Port> ports) {
-        batteryPacks = new BatteryPack[numBatteryPacks];
-
-        if (ports == null || !(ports.size() == 1 || ports.size() == numBatteryPacks)) {
-            throw new RuntimeException("Ports are not configured correctly in config.properties. Please make sure you have either one port configured for all BMS or for each BMS!");
-        }
-
-        for (int i = 0; i < numBatteryPacks; i++) {
-            batteryPacks[i] = new BatteryPack(ports.size() == 1 ? ports.get(0) : ports.get(i));
-        }
+    public EnergyStorage(final BatteryPack[] batteryPacks) {
+        this.batteryPacks = batteryPacks;
     }
 
 
@@ -91,17 +78,6 @@ public class EnergyStorage implements AutoCloseable {
      */
     public BatteryPack fromJson(final String json) {
         return gson.fromJson(json, BatteryPack.class);
-    }
-
-
-    @Override
-    public void close() {
-        for (final BatteryPack pack : batteryPacks) {
-            try {
-                pack.close();
-            } catch (final Exception e) {
-            }
-        }
     }
 
 }

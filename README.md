@@ -3,43 +3,42 @@
 
 This application is reading data from a BMS and sending it to an inverter. This way you have no restriction on what battery brands you can use with your inverter. 
 Many inverter manufacturers only allow batteries from certain battery manufacturers and certain models.
-This project enables you to read your BMS's data (e.g. Daly BMS as reference) via different protocols, e.g. RS485 or CAN, and write the battery data to the inverter in a protocol specification that the inverter accepts.
+This project enables you to read your BMS's data via different protocols - RS485, RS232, UART, ModBus or CAN - and write the battery data to the inverter in a specification that the inverter supports - Pylontech, SMA, Growatt, Deye, SolArk, etc.
 You can monitor each of your battery packs cells and view alarm states on the included webserver or hook up via the MQTT broker on your smart home.
 Or you can just read out your BMS's data and use the optional MQTT broker or Webserver to monitor your batteries packs and cells wherever you are.
 
-The (reference) project uses a Raspberry Pi 4B with a [Waveshare RS485/CAN](https://www.waveshare.com/rs485-can-hat.htm) hat or [Waveshare 2-Channel CAN FD HAT](https://www.waveshare.com/2-ch-can-fd-hat.htm) module but you can use any CAN or RS485 module for your PI that provides ports like `can0` or `ttyS0` or similar. It will also work on older/newer PI's such as 3 or 5.
-The appplication supports _multiple_ battery packs, aggregating them and sending the data to the configurable inverter.
+The (reference) project uses a Raspberry Pi 4B with a [Waveshare RS485/CAN](https://www.waveshare.com/rs485-can-hat.htm) hat or [Waveshare 2-Channel CAN FD HAT](https://www.waveshare.com/2-ch-can-fd-hat.htm) module but you can use any CAN or RS485 module for your PI that provides ports like `can0` or `/dev/ttyS0` or similar. It will also work on older/newer PI's such as 3 or 5.
+The appplication supports _multiple_ BMS (even mixes from different manufacturers), aggregating them and sending the data to the configurable inverter.
 
 This way _you_ control what gets send to the inverter.
 
 
-Any BMS or inverter can be supported in a very short time by just mapping the manufacturers protocol specification in an own implementation of the [`PortProcessor`](https://github.com/ai-republic/bms-to-inverter/blob/main/core-api/src/main/java/com/airepublic/bmstoinverter/core/PortProcessor.java).
+A wide range of BMS and inverters already supported (see below). Any BMS or inverter can be supported in a very short time by just mapping the manufacturers protocol specification in an own implementation of the [`BMS`](https://github.com/ai-republic/bms-to-inverter/blob/main/core-api/src/main/java/com/airepublic/bmstoinverter/core/BMS.java) or [`Inverter`](https://github.com/ai-republic/bms-to-inverter/blob/main/core-api/src/main/java/com/airepublic/bmstoinverter/core/Inverter.java).
 
-**NOTE:** If you would like me to add a BMS or inverter module just let me know! Growatt inverter tests are still outstanding. I would appreciate support to test the inverter bindings on the different inverters.
+**NOTE:** If you would like me to add a BMS or inverter module just let me know! I would appreciate support to test the BMS and inverter bindings in all variations. Please let me know if you would like to support this project - Testers are very welcome! :)
 
 ----------
 
 ## Supported protocols:
-* UART / RS485
+* RS485 / UART / RS232
 * ModBus
 * CAN
 
 ----------
 
 ## Currently implemented BMS:
-* Daly BMS (RS485 or CAN)
-* JK BMS (CAN)*
-* Seplos BMS (CAN)*
-* PylonTech BMS (CAN)*
+* Daly BMS (RS485(, UART, RS232) or CAN)
+* JK BMS (CAN)
+* Seplos BMS (CAN)
+* PylonTech BMS (CAN)
 
 ## Currently implemented inverters:
 * SMA Sunny Island (CAN)
-* Growatt low voltage (12V/24V/48V) inverters (CAN)*
-* Deye inverters (CAN)*
-* SolArk inverters (CAN)*
+* Growatt low voltage (12V/24V/48V) inverters (CAN)
+* Deye inverters (CAN)
+* SolArk inverters (CAN)
+* Pylontech inverters (CAN)
 
-
-\* need testing on real hardware - testers welcome!
 
 ----------
 
@@ -71,88 +70,13 @@ init.sh
 ```
 This script will first install any prerequisites like Java JDK, Git and Maven.  Then it will create a folder structure in your home directory called `bms-to-inverter`, download the application source into `~/bms-to-inverter/src`, copy all configuration file templates to `~/bms-to-inverter/config`.
 
-#### *<ins>2. Choose your BMS and inverter with the appropriate protocol</ins>*
-In the `~/bms-to-inverter/config/pom.xml.mine` you'll need to choose which BMS, inverter and optional services to use. 
-For example: if you like to use the DALY BMS using RS485 you must uncomment the `dependency`-block for that BMS. Do the same for the inverter you want to use. If you just like to read BMS data only then choose the *Dummy Inverter*.
-In the end there must be only 1 BMS and 1 inverter dependency uncommented and any of the optional services. 
+#### *<ins>2. Choose your optional services like MQTT and Email notification</ins>*
+In the `~/bms-to-inverter/config/pom.xml.mine` you'll can choose optional services to use. 
+See the following section (comment out what you do not need):
+
 
 ```
-<!-- #################### !!!!!!!!	Choose BMS 	!!!!!!!! ###################### -->
-		
-		<!-- ####################  DALY(CAN) ################### -->
-		<dependency>
-			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>bms-daly-can</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		
-		<!-- ####################  DALY (RS485)  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>bms-daly-rs485</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
-
-		<!-- ####################  PYLONTECH (CAN)  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>bms-pylon-can</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
-
-		<!-- ####################  JK (CAN)  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>bms-jk-can</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
-
-		<!-- ####################  SEPLOS (CAN)  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>bms-seplos-can</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
-
-
-<!-- #################### !!!!!!!!	Choose Inverter 	!!!!!!!! ###################### -->
-
-		<!-- ####################  Dummy Inverter  ################### -->
-		<dependency>
-			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>inverter-dummy</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-		
-		<!-- ####################  SMA Sunny Island (CAN)  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>inverter-sma-can</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
-		
-		<!-- ####################  GROWATT (CAN)  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>inverter-growatt-can</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
-
-		<!-- ####################  DEYE (CAN)  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>inverter-deye-can</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
-
-		<!-- ####################  SOLARK (CAN)  ################### -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>inverter-solark-can</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
-
-
+...
 
 <!-- #################### !!!!!!!!	Choose optional services 	!!!!!!!! ###################### -->
 
@@ -176,8 +100,7 @@ In the end there must be only 1 BMS and 1 inverter dependency uncommented and an
 			<artifactId>email-javamail</artifactId>
 			<version>1.0.5</version>
 		</dependency>
-	</dependencies>
-
+...
 
 ```
 
@@ -194,61 +117,50 @@ Check the `~/bms-to-inverter/config/config.properties.mine` in your config folde
 ###                  System specific settings                   ###
 ###################################################################
 
-# The number of battery packs (not cells) of the system
-numBatteryPacks=1
-
-
-###################################################################
-###                 Protocol specific settings                  ###
-###################################################################
-
-# RS485 properties
-RS485.baudrate=9600
-RS485.startFlag=165
-RS485.frameLength=13
-
-
-# ModBus properties
-ModBus.baudrate=9600
-
-
 ###################################################################
 ###                       BMS settings                          ###
 ###################################################################
 
-####  Simple single port configuration ####
-# BMS port protocol (CAN/RS485/ModBus)
-#bms.portProtocol=RS485
-bms.portProtocol=CAN
+####  Configuration per BMS ('x' is incremented per BMS) ####
+# bms.x.type - can be (DALY_CAN, DALY_RS485, JK_CAN, PYLON_CAN or SEPLOS_CAN 
+# bms.x.portLocator - is the locator/device to use to communicate to the BMS, eg. can0, /dev/ttyUSB0, com3, etc.  
+# bms.x.pollIntervall - is the interval to request BMS data (in seconds)
+# bms.x.delayAfterNoBytes - is the delay after receiving no data (in ms)
+bms.0.type=DALY_CAN
+bms.0.portLocator=can0
+bms.0.pollInterval=2
+bms.0.delayAfterNoBytes=200
 
-# The port name/device to use to communicate to the BMS  
-#bms.portLocator=com3
-#bms.portLocator=/dev/ttyS0
-bms.portLocator=can0
+#bms.1.type=DALY_CAN
+#bms.1.portLocator=can0
+#bms.1.pollInterval=2
+#bms.1.delayAfterNoBytes=200
 
-#### Or for multiple BMSes connected to multiple ports #### 
-#bms.0.portProtocol=CAN
-#bms.0.portLocator=can0
-#bms.1.portProtocol=CAN
-#bms.1.portLocator=can1
-#bms.2.portProtocol=CAN
-#bms.2.portLocator=can2
-#etc...
-
-# Interval to request BMS data (in seconds) 
-bms.pollInterval=2
-# Delay after receiving no data (in ms)
-bms.delayAfterNoBytes=200
+#bms.2.type=JK_CAN
+#bms.2.portLocator=can1
+#bms.2.pollInterval=2
+#bms.2.delayAfterNoBytes=200
+#
+#...
 
 
-##### Inverter port properties #####
+###################################################################
+###                    Inverter settings                        ###
+###################################################################
+
+# The inverter type can be NONE, DEYE_CAN, GROWATT_CAN, SMA_SI_CAN, SOLARK_CAN
+inverter.type=NONE
+
 # The port name/device to use to communicate to the  inverter  
 inverter.portLocator=can1
+
 # Interval to send data to the inverter (in seconds) 
 inverter.sendInterval=1
 
 
-##### Service properties #####
+###################################################################
+###                 Optional services settings                  ###
+###################################################################
 
 ### MQTT properties
 mqtt.locator=tcp://127.0.0.1:61616

@@ -3,7 +3,6 @@ package com.airepublic.bmstoinverter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.StringTokenizer;
 import java.util.concurrent.Executors;
@@ -15,11 +14,14 @@ import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.Inverter;
+import com.airepublic.bmstoinverter.core.InverterQualifier;
+import com.airepublic.bmstoinverter.core.PortAllocator;
 import com.airepublic.bmstoinverter.core.bms.data.Alarms;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.service.IMQTTBrokerService;
 import com.airepublic.bmstoinverter.core.service.IMQTTProducerService;
+import com.airepublic.bmstoinverter.core.util.Util;
 import com.airepublic.email.api.Email;
 import com.airepublic.email.api.EmailAccount;
 import com.airepublic.email.api.EmailException;
@@ -42,8 +44,9 @@ public class BmsToInverter implements AutoCloseable {
     @Inject
     private EnergyStorage energyStorage;
     @Inject
-    private BMS bms;
+    private List<BMS> bmsList;
     @Inject
+    @InverterQualifier
     private Inverter inverter;
     private final IMQTTBrokerService mqttBroker = ServiceLoader.load(IMQTTBrokerService.class).findFirst().orElse(null);
     private final IMQTTProducerService mqttProducer = ServiceLoader.load(IMQTTProducerService.class).findFirst().orElse(null);
@@ -61,7 +64,7 @@ public class BmsToInverter implements AutoCloseable {
      */
     public static void main(final String[] args) throws IOException {
         // update all non-specified system parameters from "config.properties"
-        updateSystemProperties();
+        Util.updateSystemProperties();
 
         final SeContainerInitializer initializer = SeContainerInitializer.newInstance();
         final SeContainer container = initializer.initialize();
@@ -120,20 +123,19 @@ public class BmsToInverter implements AutoCloseable {
      * synchronized to the {@link EnergyStorage}.
      */
     public void start() {
-        final int bmsPollInterval = Integer.parseInt(System.getProperty("bms.pollInterval", "0"));
-        final int inverterSendInterval = Integer.parseInt(System.getProperty("inverter.sendInterval", "0"));
-
         try {
 
             LOG.info("Starting BMS receiver...");
-            // receive BMS data
-            executorService.scheduleWithFixedDelay(() -> bms.process(() -> receivedData()), 1, bmsPollInterval, TimeUnit.SECONDS);
+            for (final BMS bms : bmsList) {
+                // receive BMS data
+                executorService.scheduleWithFixedDelay(() -> bms.process(() -> receivedData()), 1, bms.getPollInterval(), TimeUnit.SECONDS);
+            }
 
             // send data to inverter
             if (inverter != null) {
 
                 LOG.info("Starting inverter sender...");
-                executorService.scheduleWithFixedDelay(() -> inverter.process(() -> sentData()), 3, inverterSendInterval, TimeUnit.SECONDS);
+                executorService.scheduleWithFixedDelay(() -> inverter.process(() -> sentData()), 3, inverter.getSendInterval(), TimeUnit.SECONDS);
             }
         } catch (final Throwable e) {
             LOG.error("Error occured during processing!", e);
@@ -399,7 +401,7 @@ public class BmsToInverter implements AutoCloseable {
         }
 
         try {
-            energyStorage.close();
+            PortAllocator.close();
             LOG.info("Shutting down ports...OK");
         } catch (final Throwable e) {
             LOG.info("Shutting down ports...FAILED");
@@ -425,27 +427,6 @@ public class BmsToInverter implements AutoCloseable {
         }
 
         return log.toString();
-    }
-
-
-    /**
-     * Reads the <code>config.properties</code> and adds them to the system properties.
-     */
-    private static void updateSystemProperties() {
-        final Properties props = new Properties();
-        try {
-            props.load(BmsToInverter.class.getClassLoader().getResourceAsStream("config.properties"));
-
-            for (final Object name : props.keySet()) {
-                final String key = name.toString();
-                if (System.getProperty(key) == null) {
-                    System.setProperty(key, props.getProperty(key));
-                }
-
-            }
-        } catch (final IOException e) {
-            LOG.warn("No properties file \"config.properties\" found - should then all be set via command line -D parameters");
-        }
     }
 
 }

@@ -18,25 +18,20 @@ import com.airepublic.bmstoinverter.core.NoDataAvailableException;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.TooManyInvalidFramesException;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
-import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
-import com.airepublic.bmstoinverter.core.protocol.can.CAN;
-import com.airepublic.bmstoinverter.core.protocol.rs485.RS485;
 
 import jakarta.inject.Inject;
 
 /**
- * An abstraction for the Daly {@link BMS} since the {@link RS485} and {@link CAN} communication is
- * very similar.
+ * An abstraction for the Daly {@link BMS} since the RS485 and CAN communication is very similar.
  */
 public abstract class AbstractDalyBmsProcessor extends BMS {
     private final static Logger LOG = LoggerFactory.getLogger(AbstractDalyBmsProcessor.class);
-    @Inject
-    private EnergyStorage energyStorage;
     @Inject
     private DalyMessageHandler messageHandler;
     private final byte[] requestData = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
     private final int calibrationCounter = 1;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private boolean initialRound = true;
 
     /**
      * Gets the {@link DalyMessageHandler} to process the {@link DalyMessage} converted by the
@@ -50,77 +45,75 @@ public abstract class AbstractDalyBmsProcessor extends BMS {
 
 
     @Override
-    public void initialize() {
-        try {
-            clearBuffers();
+    protected void collectData(final Port port) throws IOException, TooManyInvalidFramesException, NoDataAvailableException {
+        final int bmsNo = getBmsNo();
 
-            for (int bmsNo = 0; bmsNo < energyStorage.getBatteryPackCount(); bmsNo++) {
-                sendMessage(bmsNo, DalyCommand.READ_RATED_CAPACITY_CELL_VOLTAGE, requestData); // 0x50
-                sendMessage(bmsNo, DalyCommand.READ_BATTERY_TYPE_INFO, requestData); // 0x53
-                sendMessage(bmsNo, DalyCommand.READ_MIN_MAX_PACK_VOLTAGE, requestData); // 0x5A
-                sendMessage(bmsNo, DalyCommand.READ_MAX_PACK_DISCHARGE_CHARGE_CURRENT, requestData); // 0x5B
+        if (initialRound) {
+            try {
+                sendMessage(port, bmsNo, DalyCommand.READ_RATED_CAPACITY_CELL_VOLTAGE, requestData); // 0x50
+                sendMessage(port, bmsNo, DalyCommand.READ_BATTERY_TYPE_INFO, requestData); // 0x53
+                sendMessage(port, bmsNo, DalyCommand.READ_MIN_MAX_PACK_VOLTAGE, requestData); // 0x5A
+                sendMessage(port, bmsNo, DalyCommand.READ_MAX_PACK_DISCHARGE_CHARGE_CURRENT, requestData); // 0x5B
+
+                initialRound = false;
+            } catch (final Throwable t) {
+                LOG.error("Failed to initialize BMS!", t);
             }
-        } catch (final Throwable t) {
-            LOG.error("Failed to initialize BMS!", t);
         }
-    }
 
-
-    @Override
-    public void collectData(final int bmsNo) throws IOException, TooManyInvalidFramesException, NoDataAvailableException {
-        sendMessage(bmsNo, DalyCommand.READ_VOUT_IOUT_SOC, requestData); // 0x90
-        sendMessage(bmsNo, DalyCommand.READ_MIN_MAX_CELL_VOLTAGE, requestData); // 0x91
-        sendMessage(bmsNo, DalyCommand.READ_MIN_MAX_TEMPERATURE, requestData); // 0x92
-        sendMessage(bmsNo, DalyCommand.READ_DISCHARGE_CHARGE_MOS_STATUS, requestData); // 0x93
-        sendMessage(bmsNo, DalyCommand.READ_STATUS_INFO, requestData); // 0x94
-        sendMessage(bmsNo, DalyCommand.READ_CELL_VOLTAGES, requestData); // 0x95
-        sendMessage(bmsNo, DalyCommand.READ_CELL_TEMPERATURE, requestData); // 0x96
-        sendMessage(bmsNo, DalyCommand.READ_CELL_BALANCE_STATE, requestData); // 0x97
-        sendMessage(bmsNo, DalyCommand.READ_FAILURE_CODES, requestData); // 0x98
+        sendMessage(port, bmsNo, DalyCommand.READ_VOUT_IOUT_SOC, requestData); // 0x90
+        sendMessage(port, bmsNo, DalyCommand.READ_MIN_MAX_CELL_VOLTAGE, requestData); // 0x91
+        sendMessage(port, bmsNo, DalyCommand.READ_MIN_MAX_TEMPERATURE, requestData); // 0x92
+        sendMessage(port, bmsNo, DalyCommand.READ_DISCHARGE_CHARGE_MOS_STATUS, requestData); // 0x93
+        sendMessage(port, bmsNo, DalyCommand.READ_STATUS_INFO, requestData); // 0x94
+        sendMessage(port, bmsNo, DalyCommand.READ_CELL_VOLTAGES, requestData); // 0x95
+        sendMessage(port, bmsNo, DalyCommand.READ_CELL_TEMPERATURE, requestData); // 0x96
+        sendMessage(port, bmsNo, DalyCommand.READ_CELL_BALANCE_STATE, requestData); // 0x97
+        sendMessage(port, bmsNo, DalyCommand.READ_FAILURE_CODES, requestData); // 0x98
     }
 
 
     /**
      * Calibrate the SOC of all {@link BatteryPack} according to their maximum and minimum voltage
      * compared to the actual voltage.
+     * 
+     * @param port the {@link Port} of the {@link BMS}
      */
-    protected void autoCalibrateSOC() {
-        for (int bmsNo = 0; bmsNo < energyStorage.getBatteryPackCount(); bmsNo++) {
-            final BatteryPack battery = energyStorage.getBatteryPack(bmsNo);
-            final int calculatedSOC = (int) (((float) battery.packVoltage - battery.minPackVoltageLimit) * 100 / (battery.maxPackVoltageLimit - battery.minPackVoltageLimit) * 10);
-            final byte[] data = new byte[8];
-            final LocalDateTime date = LocalDateTime.now();
-            final String yearStr = String.valueOf(date.getYear());
-            data[0] = Integer.valueOf(yearStr.substring(yearStr.length() - 2)).byteValue();
-            data[1] = (byte) date.getMonthValue();
-            data[2] = (byte) date.getDayOfMonth();
-            data[3] = (byte) date.getHour();
-            data[4] = (byte) date.getMinute();
-            data[5] = (byte) date.getSecond();
-            data[6] = (byte) (calculatedSOC >>> 8);
-            data[7] = (byte) calculatedSOC;
+    protected void autoCalibrateSOC(final Port port) {
+        final BatteryPack battery = getBatteryPack();
+        final int calculatedSOC = (int) (((float) battery.packVoltage - battery.minPackVoltageLimit) * 100 / (battery.maxPackVoltageLimit - battery.minPackVoltageLimit) * 10);
+        final byte[] data = new byte[8];
+        final LocalDateTime date = LocalDateTime.now();
+        final String yearStr = String.valueOf(date.getYear());
+        data[0] = Integer.valueOf(yearStr.substring(yearStr.length() - 2)).byteValue();
+        data[1] = (byte) date.getMonthValue();
+        data[2] = (byte) date.getDayOfMonth();
+        data[3] = (byte) date.getHour();
+        data[4] = (byte) date.getMinute();
+        data[5] = (byte) date.getSecond();
+        data[6] = (byte) (calculatedSOC >>> 8);
+        data[7] = (byte) calculatedSOC;
 
-            boolean retry = false;
-            int retries = 0;
-            final int bmsNum = bmsNo;
-            do {
-                try {
-                    final Future<List<ByteBuffer>> future = executor.submit(() -> {
+        boolean retry = false;
+        int retries = 0;
 
-                        LOG.info("calibrate request (SOC " + calculatedSOC + "): " + HexFormat.of().withUpperCase().withDelimiter(", 0x").formatHex(data));
-                        final List<ByteBuffer> result = sendMessage(bmsNum, DalyCommand.WRITE_RTC_AND_SOC, data);
-                        LOG.info("calibrate result: " + Port.printBuffer(result.get(0)));
-                        return result;
-                    });
+        do {
+            try {
+                final Future<List<ByteBuffer>> future = executor.submit(() -> {
 
-                    future.get(500, TimeUnit.MILLISECONDS);
-                } catch (final Exception e) {
-                    LOG.warn("Auto-calibration timed out");
-                    retries++;
-                    retry = true;
-                }
-            } while (retry && retries <= 3);
-        }
+                    LOG.info("calibrate request (SOC " + calculatedSOC + "): " + HexFormat.of().withUpperCase().withDelimiter(", 0x").formatHex(data));
+                    final List<ByteBuffer> result = sendMessage(port, getBmsNo(), DalyCommand.WRITE_RTC_AND_SOC, data);
+                    LOG.info("calibrate result: " + Port.printBuffer(result.get(0)));
+                    return result;
+                });
+
+                future.get(500, TimeUnit.MILLISECONDS);
+            } catch (final Exception e) {
+                LOG.warn("Auto-calibration timed out");
+                retries++;
+                retry = true;
+            }
+        } while (retry && retries <= 3);
 
     }
 
@@ -135,7 +128,7 @@ public abstract class AbstractDalyBmsProcessor extends BMS {
      * @return
      * @throws IOException
      */
-    protected abstract List<ByteBuffer> sendMessage(final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException, NoDataAvailableException, TooManyInvalidFramesException;
+    protected abstract List<ByteBuffer> sendMessage(Port port, final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException, NoDataAvailableException, TooManyInvalidFramesException;
 
 
     /**
@@ -144,13 +137,12 @@ public abstract class AbstractDalyBmsProcessor extends BMS {
      * @param cmd the {@link DalyCommand}
      * @return the expected number of response frames
      */
-    @SuppressWarnings("resource")
     protected int getResponseFrameCount(final DalyCommand cmd) {
         switch (cmd.id) {
             case 0x21:
                 return 2;
             case 0x95:
-                return Math.round(energyStorage.getBatteryPack(0).numberOfCells / 3f + 0.5f);
+                return Math.round(getBatteryPack().numberOfCells / 3f + 0.5f);
         }
 
         return 1;

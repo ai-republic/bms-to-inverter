@@ -6,50 +6,20 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.airepublic.bmstoinverter.core.Inverter;
-import com.airepublic.bmstoinverter.core.Port;
-import com.airepublic.bmstoinverter.core.PortType;
-import com.airepublic.bmstoinverter.core.Protocol;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
-import com.airepublic.bmstoinverter.core.protocol.can.CAN;
 
 import jakarta.inject.Inject;
 
 /**
- * The class to handle {@link CAN} messages for SolArk {@link Inverter}.
+ * The class to handle CAN messages for SolArk {@link Inverter}.
  */
-@PortType(Protocol.CAN)
 public class SolArkInverterCANProcessor extends Inverter {
-    private final static Logger LOG = LoggerFactory.getLogger(SolArkInverterCANProcessor.class);
     @Inject
     private EnergyStorage energyStorage;
 
     @Override
-    public void process(final Runnable callback) {
-        try {
-            final List<ByteBuffer> canData = updateCANMessages();
-
-            for (final ByteBuffer frame : canData) {
-                LOG.debug("CAN send: {}", Port.printBuffer(frame));
-                getPort().sendFrame(frame);
-            }
-
-        } catch (final Throwable e) {
-            LOG.error("Failed to send CAN frame", e);
-        }
-
-        try {
-            callback.run();
-        } catch (final Exception e) {
-            LOG.error("Inverter process callback threw an exception!", e);
-        }
-    }
-
-
-    private List<ByteBuffer> updateCANMessages() {
+    protected List<ByteBuffer> updateCANMessages() {
         final List<ByteBuffer> frames = new ArrayList<>();
 
         frames.add(createChargeDischargeInfo()); // 0x351

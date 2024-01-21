@@ -10,16 +10,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.Port;
-import com.airepublic.bmstoinverter.core.protocol.rs485.RS485;
 import com.airepublic.bmstoinverter.core.protocol.rs485.RS485Port;
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortDataListener;
 import com.fazecast.jSerialComm.SerialPortEvent;
 
 /**
- * The implementation of the {@link RS485Port} using the JSerialComm implementation.
+ * The implementation of the RS485Port using the JSerialComm implementation.
  */
-@RS485
 public class JSerialCommPort extends RS485Port implements SerialPortDataListener {
     private final static Logger LOG = LoggerFactory.getLogger(JSerialCommPort.class);
     private SerialPort port;
@@ -36,17 +34,10 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
      * Constructor.
      * 
      * @param portname the portname
+     * @param baudrate the baudrate
      */
-    public JSerialCommPort(final String portname) {
-        super(portname);
-    }
-
-
-    @Override
-    protected Port create(final String portname) {
-        final JSerialCommPort port = new JSerialCommPort(portname);
-        port.init();
-        return port;
+    public JSerialCommPort(final String portname, final int baudrate, final int dataBits, final int stopBits, final int parity, final int startFlag, final int frameLength) {
+        super(portname, baudrate, dataBits, stopBits, parity, startFlag, frameLength);
     }
 
 
@@ -56,7 +47,7 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
             try {
                 port = SerialPort.getCommPort(getPortname());
                 // set port configuration
-                port.setComPortParameters(getBaudrate(), 8, 1, SerialPort.NO_PARITY, true);
+                port.setComPortParameters(getBaudrate(), getDataBits(), getStopBits(), getParity(), true);
                 port.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING |
                         SerialPort.TIMEOUT_WRITE_BLOCKING, 0, 0);
                 // port.setRs485ModeParameters(true, true, true, false, 100000, 100000);

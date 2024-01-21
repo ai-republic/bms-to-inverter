@@ -8,7 +8,6 @@ import jakarta.annotation.PostConstruct;
  * A {@link Port} that is used for ModBus messages. Expecting <code>config.properties</code> or
  * System properties "ModBus.baudrate" to be set.
  */
-@ModBus
 public abstract class ModBusPort extends Port {
     private int baudrate = 9600;
 
@@ -23,9 +22,10 @@ public abstract class ModBusPort extends Port {
      * Constructor.
      * 
      * @param portname the portname
+     * @param baudrate the baudrate
      */
-    public ModBusPort(final String portname) {
-        super(portname);
+    public ModBusPort(final String portname, final int baudrate) {
+        super(portname, baudrate);
     }
 
 
@@ -44,6 +44,7 @@ public abstract class ModBusPort extends Port {
      *
      * @return the baud rate
      */
+    @Override
     public int getBaudrate() {
         return baudrate;
     }
@@ -54,6 +55,7 @@ public abstract class ModBusPort extends Port {
      *
      * @param baudrate the baud rate
      */
+    @Override
     public void setBaudrate(final int baudrate) {
         this.baudrate = baudrate;
     }
