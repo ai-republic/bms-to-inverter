@@ -61,6 +61,10 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<finalName>bms-to-inverter</finalName>
+					<appendAssemblyId>false</appendAssemblyId>
+				</configuration>
 				<executions>
 					<execution>
 						<id>create-distribution</id>
@@ -94,15 +98,16 @@
 		</dependency>
 
 
-<!-- #################### !!!!!!!!	Choose BMS 	!!!!!!!! ###################### -->
-		
+		<!-- #################### !!!!!!!!	Choose BMS 	!!!!!!!!
+		###################### -->
+
 		<!-- ####################  DALY(CAN) ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>bms-daly-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<!-- ####################  DALY (RS485)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
@@ -132,7 +137,8 @@
 		</dependency>
 
 
-<!-- #################### !!!!!!!!	Choose Inverter 	!!!!!!!! ###################### -->
+		<!-- #################### !!!!!!!!	Choose Inverter 	!!!!!!!!
+		###################### -->
 
 		<!-- ####################  Dummy Inverter  ################### -->
 		<dependency>
@@ -140,14 +146,14 @@
 			<artifactId>inverter-dummy</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<!-- ####################  SMA Sunny Island (CAN)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>inverter-sma-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<!-- ####################  GROWATT (CAN)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
@@ -170,23 +176,23 @@
 		</dependency>
 
 
-
-<!-- #################### !!!!!!!!	Choose optional services 	!!!!!!!! ###################### -->
+		<!-- #################### !!!!!!!!	Choose optional services 	!!!!!!!!
+		###################### -->
 
 		<!-- optionally add MQTT services -->
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>service-mqtt-broker</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
+		<!--		<dependency>-->
+		<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
+		<!--			<artifactId>service-mqtt-broker</artifactId>-->
+		<!--			<version>${project.version}</version>-->
+		<!--		</dependency>-->
 
-<!--		<dependency>-->
-<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-<!--			<artifactId>service-mqtt-client</artifactId>-->
-<!--			<version>${project.version}</version>-->
-<!--		</dependency>-->
+		<!--		<dependency>-->
+		<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
+		<!--			<artifactId>service-mqtt-client</artifactId>-->
+		<!--			<version>${project.version}</version>-->
+		<!--		</dependency>-->
 
-		
+
 		<!-- optionally add Email service -->
 		<dependency>
 			<groupId>com.ai-republic.email</groupId>

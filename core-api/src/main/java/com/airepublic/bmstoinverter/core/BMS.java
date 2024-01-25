@@ -26,7 +26,7 @@ public abstract class BMS {
      */
     public void initialize(final BMSConfig config) {
         if (!PortAllocator.hasPort(config.getPortLocator())) {
-            final Port port = config.getBMSDescriptor().createPort(config);
+            final Port port = config.getDescriptor().createPort(config);
             PortAllocator.addPort(config.getPortLocator(), port);
         }
 
