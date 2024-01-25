@@ -1,12 +1,12 @@
 package com.airepublic.bmstoinverter.configurator;
 
-public class MenuItem {
+public class MenuItem<V> {
     private String displayName;
-    private String dependency;
+    private V value;
 
-    public MenuItem(final String displayName, final String dependency) {
+    public MenuItem(final String displayName, final V value) {
         setDisplayName(displayName);
-        setDependency(dependency);
+        setValue(value);
     }
 
 
@@ -27,18 +27,18 @@ public class MenuItem {
 
 
     /**
-     * @return the dependency
+     * @return the value
      */
-    public String getDependency() {
-        return dependency;
+    public V getValue() {
+        return value;
     }
 
 
     /**
-     * @param dependency the dependency to set
+     * @param value the value to set
      */
-    public void setDependency(final String dependency) {
-        this.dependency = dependency;
+    public void setValue(final V value) {
+        this.value = value;
     }
 
 

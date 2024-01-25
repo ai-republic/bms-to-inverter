@@ -6,6 +6,7 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.ServiceLoader;
 import java.util.Vector;
 
 import javax.swing.JButton;
@@ -13,27 +14,36 @@ import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
+import com.airepublic.bmstoinverter.core.BMSConfig;
+import com.airepublic.bmstoinverter.core.BMSDescriptor;
+
 /**
  * Dialog to enter a port locator.
  */
-public class AddBMSDialog extends JDialog {
+public class BMSDialog extends JDialog {
     private static final long serialVersionUID = 1L;
-    private final Vector<MenuItem> bmsItems;
-    private String portLocator = "";
+    private final Vector<MenuItem<BMSDescriptor>> descriptors;
+    private BMSConfig config = null;
+    private final JComboBox<MenuItem<BMSDescriptor>> bmses;
+    private final JTextField portLocatorField;
+    private JTextField pollIntervalField;
+    private final JTextField delayAfterNoBytesField;
+    private final NumberInputVerifier numberInputVerifier = new NumberInputVerifier();
 
     /**
      * Constructor.
      *
      * @param owner the owning frame
      */
-    public AddBMSDialog(final JFrame owner) {
-        super(owner, "Add port...", true);
+    public BMSDialog(final JFrame owner) {
+        super(owner, "BMS configuration...", true);
 
-        bmsItems = createBMSItems();
+        descriptors = createBMSDescriptors();
 
         setLocation(owner.getBounds().width / 2 - 175, owner.getBounds().height / 2 - 60);
         setSize(new Dimension(350, 359));
@@ -59,7 +69,7 @@ public class AddBMSDialog extends JDialog {
         bmsPanel.add(bmsLabel, gbc_bmsLabel);
 
         // BMS dropdown
-        final JComboBox<MenuItem> bmses = new JComboBox<>(bmsItems);
+        bmses = new JComboBox<>(descriptors);
         final GridBagConstraints gbc_bmses = new GridBagConstraints();
         gbc_bmses.insets = new Insets(0, 0, 5, 0);
         gbc_bmses.fill = GridBagConstraints.HORIZONTAL;
@@ -76,15 +86,16 @@ public class AddBMSDialog extends JDialog {
         gbc_portLocatorLabel.gridy = 1;
         bmsPanel.add(portLocatorLabel, gbc_portLocatorLabel);
 
-        final JTextField bmsPollIntervalField = new JTextField();
-        bmsPollIntervalField.setToolTipText("Time in seconds to read data from the BMSes");
-        final GridBagConstraints gbc_bmsPollIntervalField = new GridBagConstraints();
-        gbc_bmsPollIntervalField.insets = new Insets(0, 0, 5, 0);
-        gbc_bmsPollIntervalField.fill = GridBagConstraints.HORIZONTAL;
-        gbc_bmsPollIntervalField.gridx = 1;
-        gbc_bmsPollIntervalField.gridy = 1;
-        bmsPanel.add(bmsPollIntervalField, gbc_bmsPollIntervalField);
-        bmsPollIntervalField.setColumns(10);
+        portLocatorField = new JTextField();
+        final GridBagConstraints gbc_portLocatorField = new GridBagConstraints();
+        gbc_portLocatorField.insets = new Insets(0, 0, 5, 0);
+        gbc_portLocatorField.fill = GridBagConstraints.HORIZONTAL;
+        gbc_portLocatorField.gridx = 1;
+        gbc_portLocatorField.gridy = 1;
+        bmsPanel.add(portLocatorField, gbc_portLocatorField);
+        portLocatorField.addActionListener(e -> {
+            pollIntervalField.requestFocus();
+        });
 
         final JLabel bmsPollIntervalLabel = new JLabel("BMS poll interval (secs)");
         final GridBagConstraints gbc_bmsPollIntervalLabel = new GridBagConstraints();
@@ -94,34 +105,36 @@ public class AddBMSDialog extends JDialog {
         gbc_bmsPollIntervalLabel.gridy = 2;
         bmsPanel.add(bmsPollIntervalLabel, gbc_bmsPollIntervalLabel);
 
-        final JTextField portLocatorField = new JTextField();
-        final GridBagConstraints gbc_portLocatorField = new GridBagConstraints();
-        gbc_portLocatorField.insets = new Insets(0, 0, 5, 0);
-        gbc_portLocatorField.fill = GridBagConstraints.HORIZONTAL;
-        gbc_portLocatorField.gridx = 1;
-        gbc_portLocatorField.gridy = 2;
-        bmsPanel.add(portLocatorField, gbc_portLocatorField);
-        portLocatorField.addActionListener(e -> {
-            portLocator = portLocatorField.getText();
-            dispose();
-        });
+        pollIntervalField = new JTextField();
+        pollIntervalField.setToolTipText("Time in seconds to read data from the BMSes");
+        pollIntervalField.setColumns(10);
+        final GridBagConstraints gbc_bmsPollInvervalField = new GridBagConstraints();
+        gbc_bmsPollInvervalField.insets = new Insets(0, 0, 5, 0);
+        gbc_bmsPollInvervalField.fill = GridBagConstraints.HORIZONTAL;
+        gbc_bmsPollInvervalField.gridx = 1;
+        gbc_bmsPollInvervalField.gridy = 2;
+        bmsPanel.add(pollIntervalField, gbc_bmsPollInvervalField);
 
         final JLabel delayAfterNoBytesLabel = new JLabel("Delay after no bytes received (ms)");
         final GridBagConstraints gbc_delayAfterNoBytesLabel = new GridBagConstraints();
         gbc_delayAfterNoBytesLabel.fill = GridBagConstraints.VERTICAL;
         gbc_delayAfterNoBytesLabel.anchor = GridBagConstraints.WEST;
-        gbc_delayAfterNoBytesLabel.insets = new Insets(0, 0, 0, 5);
+        gbc_delayAfterNoBytesLabel.insets = new Insets(0, 0, 5, 5);
         gbc_delayAfterNoBytesLabel.gridx = 0;
         gbc_delayAfterNoBytesLabel.gridy = 3;
         bmsPanel.add(delayAfterNoBytesLabel, gbc_delayAfterNoBytesLabel);
 
-        final JTextField delayAfterNoBytesField = new JTextField();
+        delayAfterNoBytesField = new JTextField();
         final GridBagConstraints gbc_delayAfterNoBytesField = new GridBagConstraints();
+        gbc_delayAfterNoBytesField.insets = new Insets(0, 0, 5, 0);
         gbc_delayAfterNoBytesField.fill = GridBagConstraints.HORIZONTAL;
         gbc_delayAfterNoBytesField.gridx = 1;
         gbc_delayAfterNoBytesField.gridy = 3;
         bmsPanel.add(delayAfterNoBytesField, gbc_delayAfterNoBytesField);
         delayAfterNoBytesField.setColumns(10);
+        pollIntervalField.addActionListener(e -> {
+            delayAfterNoBytesField.requestFocus();
+        });
 
         final JPanel buttonPanel = new JPanel();
         buttonPanel.setPreferredSize(new Dimension(120, 40));
@@ -139,7 +152,23 @@ public class AddBMSDialog extends JDialog {
 
         final JButton okButton = new JButton("Ok");
         okButton.addActionListener(e -> {
-            portLocator = portLocatorField.getText();
+            final StringBuffer errors = new StringBuffer();
+            if (!verify(errors)) {
+                JOptionPane.showInternalMessageDialog(getContentPane(), errors, "Error", JOptionPane.ERROR_MESSAGE);
+                System.out.println(errors);
+                return;
+            }
+
+            final BMSDescriptor descriptor = bmses.getModel().getElementAt(bmses.getSelectedIndex()).getValue();
+            final String portLocator = portLocatorField.getText();
+            final int pollInterval = Integer.valueOf(pollIntervalField.getText());
+            final long delayAfterNoBytes = Long.valueOf(delayAfterNoBytesField.getText());
+
+            if (config == null) {
+                config = new BMSConfig(0, portLocator, pollInterval, delayAfterNoBytes, descriptor);
+            } else {
+                config.update(config.getBmsNo(), portLocator, pollInterval, delayAfterNoBytes, descriptor);
+            }
             dispose();
         });
         okButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -149,6 +178,9 @@ public class AddBMSDialog extends JDialog {
         gbc_okButton.gridx = 0;
         gbc_okButton.gridy = 0;
         buttonPanel.add(okButton, gbc_okButton);
+        delayAfterNoBytesField.addActionListener(e -> {
+            okButton.doClick();
+        });
 
         final JButton cancelButton = new JButton("Cancel");
         cancelButton.setAlignmentX(Component.CENTER_ALIGNMENT);
@@ -168,21 +200,70 @@ public class AddBMSDialog extends JDialog {
      *
      * @return the entered port locator string.
      */
-    public String getPortLocator() {
-        return portLocator;
+    public BMSConfig getBMSConfig() {
+        return config;
     }
 
 
-    Vector<MenuItem> createBMSItems() {
-        final Vector<MenuItem> items = new Vector<>();
+    /**
+     * Sets the entered port locator string.
+     *
+     * @param config the entered port locator string.
+     */
+    public void setBMSConfig(final BMSConfig config) {
+        this.config = config;
 
-        items.add(new MenuItem("DALY (CAN)", ""));
-        items.add(new MenuItem("DALY (RS485)", ""));
-        items.add(new MenuItem("JK (CAN)", ""));
-        items.add(new MenuItem("PYLONTECH (CAN)", ""));
-        items.add(new MenuItem("SEPLOS (CAN)", ""));
+        for (int i = 0; i < bmses.getItemCount(); i++) {
+            if (bmses.getItemAt(i).getValue().getName().equals(config.getDescriptor().getName())) {
+                bmses.setSelectedIndex(i);
+                break;
+            }
+        }
+
+        portLocatorField.setText(config.getPortLocator());
+        delayAfterNoBytesField.setText("" + config.getDelayAfterNoBytes());
+        pollIntervalField.setText("" + config.getPollInterval());
+    }
+
+
+    Vector<MenuItem<BMSDescriptor>> createBMSDescriptors() {
+        final Vector<MenuItem<BMSDescriptor>> items = new Vector<>();
+        ServiceLoader.load(BMSDescriptor.class).forEach(descriptor -> items.add(new MenuItem<>(descriptor.getName(), descriptor)));
 
         return items;
+    }
+
+
+    public boolean verify(final StringBuffer errors) {
+        boolean fail = false;
+
+        if (bmses.getSelectedIndex() == -1) {
+            errors.append("Missing BMS type!\r\n");
+            fail = true;
+        }
+
+        if (portLocatorField.getText().isBlank()) {
+            errors.append("Missing BMS port locator!\r\n");
+            fail = true;
+        }
+
+        if (pollIntervalField.getText().isBlank()) {
+            errors.append("Missing BMS poll interval!\r\n");
+            fail = true;
+        } else if (!numberInputVerifier.verify(pollIntervalField.getText())) {
+            errors.append("Non-numeric BMS poll interval!\r\n");
+            fail = true;
+        }
+
+        if (delayAfterNoBytesField.getText().isBlank()) {
+            errors.append("Missing BMS delay after no bytes received!\r\n");
+            fail = true;
+        } else if (!numberInputVerifier.verify(delayAfterNoBytesField.getText())) {
+            errors.append("Non-numeric BMS delay after no bytes!\r\n");
+            fail = true;
+        }
+
+        return !fail;
     }
 
 }
