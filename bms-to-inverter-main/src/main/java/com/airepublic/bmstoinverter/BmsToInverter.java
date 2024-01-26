@@ -1,6 +1,7 @@
 package com.airepublic.bmstoinverter;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
@@ -48,9 +49,9 @@ public class BmsToInverter implements AutoCloseable {
     @Inject
     @InverterQualifier
     private Inverter inverter;
-    private final IMQTTBrokerService mqttBroker = ServiceLoader.load(IMQTTBrokerService.class).findFirst().orElse(null);
-    private final IMQTTProducerService mqttProducer = ServiceLoader.load(IMQTTProducerService.class).findFirst().orElse(null);
-    private final IEmailService emailService = ServiceLoader.load(IEmailService.class).findFirst().orElse(null);
+    private IMQTTBrokerService mqttBroker;
+    private IMQTTProducerService mqttProducer;
+    private IEmailService emailService;
     private EmailAccount account;
     private final List<String> emailRecipients = new ArrayList<>();
     private List<String> lastAlarms = new ArrayList<>();
@@ -64,7 +65,7 @@ public class BmsToInverter implements AutoCloseable {
      */
     public static void main(final String[] args) throws IOException {
         // update all non-specified system parameters from "config.properties"
-        Util.updateSystemProperties();
+        Util.updateSystemProperties(Path.of(System.getProperty("configFile")));
 
         final SeContainerInitializer initializer = SeContainerInitializer.newInstance();
         final SeContainer container = initializer.initialize();
@@ -78,20 +79,43 @@ public class BmsToInverter implements AutoCloseable {
      */
     public BmsToInverter() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> close()));
+        initializeServices();
+    }
 
+
+    /**
+     * Initialize all optional configured services.
+     */
+    protected void initializeServices() {
         // check for MQTT broker service module
-        if (mqttBroker != null) {
-            final String locator = System.getProperty("mqtt.locator");
-            final String topic = System.getProperty("mqtt.topic");
+        if (System.getProperty("mqtt.broker.enabled") != null && System.getProperty("mqtt.broker.enabled").equals("true")) {
+            mqttBroker = ServiceLoader.load(IMQTTBrokerService.class).findFirst().orElse(null);
 
-            mqttBroker.start(locator);
-            mqttBroker.createTopic(topic, 1L);
+            if (mqttBroker == null) {
+                LOG.error("Error in project configuration - no MQTT Broker service implementation found!");
+            }
+
+            final String locator = System.getProperty("mqtt.broker.locator");
+            final String topic = System.getProperty("mqtt.broker.topic");
+
+            try {
+                mqttBroker.start(locator);
+                mqttBroker.createTopic(topic, 1L);
+            } catch (final Exception e) {
+                LOG.error("Could not start MQTT broker at {} on topic {}", locator, topic, e);
+            }
         }
 
         // check for MQTT producer service module
-        if (mqttProducer != null) {
-            final String locator = System.getProperty("mqtt.locator");
-            final String topic = System.getProperty("mqtt.topic");
+        if (System.getProperty("mqtt.producer.enabled") != null && System.getProperty("mqtt.producer.enabled").equals("true")) {
+            mqttProducer = ServiceLoader.load(IMQTTProducerService.class).findFirst().orElse(null);
+
+            if (mqttProducer == null) {
+                LOG.error("Error in project configuration - no MQTT producer service implementation found!");
+            }
+
+            final String locator = System.getProperty("mqtt.producer.locator");
+            final String topic = System.getProperty("mqtt.producer.topic");
 
             try {
                 mqttProducer.connect(locator, topic);
@@ -101,7 +125,13 @@ public class BmsToInverter implements AutoCloseable {
         }
 
         // check for EmailService service module
-        if (emailService != null) {
+        if (System.getProperty("mail.service.enabled") != null && System.getProperty("mail.service.enabled").equals("true")) {
+            emailService = ServiceLoader.load(IEmailService.class).findFirst().orElse(null);
+
+            if (emailService == null) {
+                LOG.error("Error in project configuration - no email provider was found be email service is activated!");
+            }
+
             account = new EmailAccount(System.getProperties());
             final String commaSeparatedList = System.getProperty("mail.recipients");
 

@@ -291,7 +291,6 @@ public class EmailServicePanel extends JPanel {
 
 
     protected void generateConfiguration(final StringBuffer config) {
-        config.append("#### Email properties ####\r\n");
         config.append("mail.out.debug=true\r\n");
         config.append("# SMTP or IMAP address of the outgoing server\r\n");
         config.append("mail.out.host=" + getOutgoingServer() + "\r\n");

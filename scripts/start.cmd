@@ -1,0 +1,1 @@
+java -jar bms-to-inverter-main-SNAPSHOT-0.0.1.jar -DconfigFile=config.properties

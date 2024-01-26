@@ -4,72 +4,168 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 
+import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.border.EmptyBorder;
 
 public class MQTTServicePanel extends JPanel {
     private static final long serialVersionUID = 1L;
-    private final JTextField mqttLocatorField;
-    private final JTextField mqttTopicField;
+    private final JTextField mqttProducerLocatorField;
+    private final JTextField mqttProducerTopicField;
+    private final JCheckBox activateMQTTBrokerCheckBox;
+    private final JCheckBox activateMQTTProducerCheckBox;
+    private final JLabel mqttBrokerLocatorLabel;
+    private final JTextField mqttBrokerLocatorField;
+    private final JLabel mqttBrokerTopicLabel;
+    private final JTextField mqttBrokerTopicField;
 
     public MQTTServicePanel() {
-        setBorder(new EmptyBorder(0, 20, 0, 20));
 
         final GridBagLayout gbl_mqttPanel = new GridBagLayout();
         gbl_mqttPanel.columnWidths = new int[] { 80, 0 };
-        gbl_mqttPanel.rowHeights = new int[] { 30, 30 };
+        gbl_mqttPanel.rowHeights = new int[] { 30, 30, 30, 30, 30, 30, 30 };
         gbl_mqttPanel.columnWeights = new double[] { 0.0, 1.0 };
-        gbl_mqttPanel.rowWeights = new double[] { 0.0, 0.0 };
+        gbl_mqttPanel.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
         setLayout(gbl_mqttPanel);
 
-        final JLabel mqttLocatorLabel = new JLabel("Locator");
-        final GridBagConstraints gbc_mqttLocatorLabel = new GridBagConstraints();
-        gbc_mqttLocatorLabel.anchor = GridBagConstraints.EAST;
-        gbc_mqttLocatorLabel.insets = new Insets(0, 0, 5, 5);
-        gbc_mqttLocatorLabel.gridx = 0;
-        gbc_mqttLocatorLabel.gridy = 0;
-        add(mqttLocatorLabel, gbc_mqttLocatorLabel);
+        activateMQTTProducerCheckBox = new JCheckBox("MQTT producer");
+        activateMQTTProducerCheckBox.setToolTipText("Activate this if you want to send BMS data to a MQTT broker, e.g. HomeAssistant");
+        final GridBagConstraints gbc_activateMQTTProducerCheckBox = new GridBagConstraints();
+        gbc_activateMQTTProducerCheckBox.anchor = GridBagConstraints.WEST;
+        gbc_activateMQTTProducerCheckBox.gridwidth = 2;
+        gbc_activateMQTTProducerCheckBox.insets = new Insets(0, 0, 5, 0);
+        gbc_activateMQTTProducerCheckBox.gridx = 0;
+        gbc_activateMQTTProducerCheckBox.gridy = 0;
+        add(activateMQTTProducerCheckBox, gbc_activateMQTTProducerCheckBox);
 
-        mqttLocatorField = new JTextField("tcp://127.0.0.1:61616");
-        mqttLocatorField.setColumns(10);
-        final GridBagConstraints gbc_mqttLocatorField = new GridBagConstraints();
-        gbc_mqttLocatorField.fill = GridBagConstraints.BOTH;
-        gbc_mqttLocatorField.insets = new Insets(0, 0, 5, 0);
-        gbc_mqttLocatorField.gridx = 1;
-        gbc_mqttLocatorField.gridy = 0;
-        add(mqttLocatorField, gbc_mqttLocatorField);
+        final JLabel mqttProducerLocatorLabel = new JLabel("Locator");
+        mqttProducerLocatorLabel.setEnabled(false);
+        final GridBagConstraints gbc_mqttProducerLocatorLabel = new GridBagConstraints();
+        gbc_mqttProducerLocatorLabel.anchor = GridBagConstraints.EAST;
+        gbc_mqttProducerLocatorLabel.insets = new Insets(0, 0, 5, 5);
+        gbc_mqttProducerLocatorLabel.gridx = 0;
+        gbc_mqttProducerLocatorLabel.gridy = 1;
+        add(mqttProducerLocatorLabel, gbc_mqttProducerLocatorLabel);
 
-        final JLabel mqttTopicLabel = new JLabel("Topic");
-        final GridBagConstraints gbc_mqttTopicLabel = new GridBagConstraints();
-        gbc_mqttTopicLabel.anchor = GridBagConstraints.EAST;
-        gbc_mqttTopicLabel.insets = new Insets(0, 0, 0, 5);
-        gbc_mqttTopicLabel.gridx = 0;
-        gbc_mqttTopicLabel.gridy = 1;
-        add(mqttTopicLabel, gbc_mqttTopicLabel);
+        mqttProducerLocatorField = new JTextField("tcp://127.0.0.1:61616");
+        mqttProducerLocatorField.setColumns(10);
+        mqttProducerLocatorField.setEnabled(false);
+        final GridBagConstraints gbc_mqttProducerLocatorField = new GridBagConstraints();
+        gbc_mqttProducerLocatorField.fill = GridBagConstraints.BOTH;
+        gbc_mqttProducerLocatorField.insets = new Insets(0, 0, 5, 0);
+        gbc_mqttProducerLocatorField.gridx = 1;
+        gbc_mqttProducerLocatorField.gridy = 1;
+        add(mqttProducerLocatorField, gbc_mqttProducerLocatorField);
 
-        mqttTopicField = new JTextField("energystorage");
-        mqttTopicField.setColumns(10);
-        final GridBagConstraints gbc_mqttTopicField = new GridBagConstraints();
-        gbc_mqttTopicField.insets = new Insets(0, 0, 5, 0);
-        gbc_mqttTopicField.fill = GridBagConstraints.BOTH;
-        gbc_mqttTopicField.gridx = 1;
-        gbc_mqttTopicField.gridy = 1;
-        add(mqttTopicField, gbc_mqttTopicField);
+        final JLabel mqttProducerTopicLabel = new JLabel("Topic");
+        mqttProducerTopicLabel.setEnabled(false);
+        final GridBagConstraints gbc_mqttProducerTopicLabel = new GridBagConstraints();
+        gbc_mqttProducerTopicLabel.anchor = GridBagConstraints.EAST;
+        gbc_mqttProducerTopicLabel.insets = new Insets(0, 0, 5, 5);
+        gbc_mqttProducerTopicLabel.gridx = 0;
+        gbc_mqttProducerTopicLabel.gridy = 2;
+        add(mqttProducerTopicLabel, gbc_mqttProducerTopicLabel);
+
+        mqttProducerTopicField = new JTextField("energystorage");
+        mqttProducerTopicField.setColumns(10);
+        mqttProducerTopicField.setEnabled(false);
+        final GridBagConstraints gbc_mqttProducerTopicField = new GridBagConstraints();
+        gbc_mqttProducerTopicField.insets = new Insets(0, 0, 5, 0);
+        gbc_mqttProducerTopicField.fill = GridBagConstraints.BOTH;
+        gbc_mqttProducerTopicField.gridx = 1;
+        gbc_mqttProducerTopicField.gridy = 2;
+        add(mqttProducerTopicField, gbc_mqttProducerTopicField);
+
+        activateMQTTBrokerCheckBox = new JCheckBox("MQTT Broker Server");
+        activateMQTTBrokerCheckBox.setToolTipText("Activate only if you want to connect other MQTT clients to your broker");
+        final GridBagConstraints gbc_activateMQTTBrokerCheckBox = new GridBagConstraints();
+        gbc_activateMQTTBrokerCheckBox.insets = new Insets(0, 0, 5, 0);
+        gbc_activateMQTTBrokerCheckBox.gridwidth = 2;
+        gbc_activateMQTTBrokerCheckBox.fill = GridBagConstraints.VERTICAL;
+        gbc_activateMQTTBrokerCheckBox.anchor = GridBagConstraints.WEST;
+        gbc_activateMQTTBrokerCheckBox.gridx = 0;
+        gbc_activateMQTTBrokerCheckBox.gridy = 3;
+        add(activateMQTTBrokerCheckBox, gbc_activateMQTTBrokerCheckBox);
+
+        mqttBrokerLocatorLabel = new JLabel("Locator");
+        mqttBrokerLocatorLabel.setEnabled(false);
+        final GridBagConstraints gbc_mqttBrokerLocatorLabel = new GridBagConstraints();
+        gbc_mqttBrokerLocatorLabel.anchor = GridBagConstraints.EAST;
+        gbc_mqttBrokerLocatorLabel.insets = new Insets(0, 0, 5, 5);
+        gbc_mqttBrokerLocatorLabel.gridx = 0;
+        gbc_mqttBrokerLocatorLabel.gridy = 4;
+        add(mqttBrokerLocatorLabel, gbc_mqttBrokerLocatorLabel);
+
+        mqttBrokerLocatorField = new JTextField("tcp://127.0.0.1:61616");
+        mqttBrokerLocatorField.setColumns(10);
+        mqttBrokerLocatorField.setEnabled(false);
+        final GridBagConstraints gbc_mqttBrokerLocatorField = new GridBagConstraints();
+        gbc_mqttBrokerLocatorField.insets = new Insets(0, 0, 5, 0);
+        gbc_mqttBrokerLocatorField.fill = GridBagConstraints.BOTH;
+        gbc_mqttBrokerLocatorField.gridx = 1;
+        gbc_mqttBrokerLocatorField.gridy = 4;
+        add(mqttBrokerLocatorField, gbc_mqttBrokerLocatorField);
+
+        mqttBrokerTopicLabel = new JLabel("Topic");
+        mqttBrokerTopicLabel.setEnabled(false);
+        final GridBagConstraints gbc_mqttBrokerTopicLabel = new GridBagConstraints();
+        gbc_mqttBrokerTopicLabel.anchor = GridBagConstraints.EAST;
+        gbc_mqttBrokerTopicLabel.insets = new Insets(0, 0, 0, 5);
+        gbc_mqttBrokerTopicLabel.gridx = 0;
+        gbc_mqttBrokerTopicLabel.gridy = 5;
+        add(mqttBrokerTopicLabel, gbc_mqttBrokerTopicLabel);
+
+        mqttBrokerTopicField = new JTextField("energystorage");
+        mqttBrokerTopicField.setColumns(10);
+        mqttBrokerTopicField.setEnabled(false);
+        final GridBagConstraints gbc_mqttBrokerTopicField = new GridBagConstraints();
+        gbc_mqttBrokerTopicField.fill = GridBagConstraints.BOTH;
+        gbc_mqttBrokerTopicField.gridx = 1;
+        gbc_mqttBrokerTopicField.gridy = 5;
+        add(mqttBrokerTopicField, gbc_mqttBrokerTopicField);
+
+        activateMQTTBrokerCheckBox.addActionListener(t -> {
+            mqttBrokerLocatorLabel.setEnabled(activateMQTTBrokerCheckBox.isSelected());
+            mqttBrokerLocatorField.setEnabled(activateMQTTBrokerCheckBox.isSelected());
+            mqttBrokerTopicLabel.setEnabled(activateMQTTBrokerCheckBox.isSelected());
+            mqttBrokerTopicField.setEnabled(activateMQTTBrokerCheckBox.isSelected());
+        });
+
+        activateMQTTProducerCheckBox.addActionListener(t -> {
+            mqttProducerLocatorLabel.setEnabled(activateMQTTProducerCheckBox.isSelected());
+            mqttProducerLocatorField.setEnabled(activateMQTTProducerCheckBox.isSelected());
+            mqttProducerTopicLabel.setEnabled(activateMQTTProducerCheckBox.isSelected());
+            mqttProducerTopicField.setEnabled(activateMQTTProducerCheckBox.isSelected());
+        });
     }
 
 
     public boolean verify(final StringBuffer errors) {
         boolean fail = false;
 
-        if (mqttLocatorField.getText().isBlank()) {
-            errors.append("Missing MQTT locator!\r\n");
-            fail = true;
+        if (activateMQTTBrokerCheckBox.isSelected()) {
+            if (mqttBrokerLocatorField.getText().isBlank()) {
+                errors.append("Missing MQTT broker locator!\r\n");
+                fail = true;
+            }
+
+            if (mqttBrokerTopicField.getText().isBlank()) {
+                errors.append("Missing MQTT broker topic!\r\n");
+                fail = true;
+            }
         }
-        if (mqttTopicField.getText().isBlank()) {
-            errors.append("Missing MQTT topic!\r\n");
-            fail = true;
+
+        if (activateMQTTProducerCheckBox.isSelected()) {
+            if (mqttProducerLocatorField.getText().isBlank()) {
+                errors.append("Missing MQTT producer locator!\r\n");
+                fail = true;
+            }
+
+            if (mqttProducerTopicField.getText().isBlank()) {
+                errors.append("Missing MQTT producer topic!\r\n");
+                fail = true;
+            }
         }
 
         return !fail;
@@ -77,11 +173,27 @@ public class MQTTServicePanel extends JPanel {
 
 
     protected void generateConfiguration(final StringBuffer config) {
-        config.append("#### MQTT properties ####\r\n"
-                + "# The URL to of the MQTT broker\r\n");
-        config.append("mqtt.locator=" + mqttLocatorField.getText() + "\r\n");
-        config.append("# The topic name on the MQTT broker\r\n");
-        config.append("mqtt.topic=" + mqttTopicField.getText() + "\r\n");
+        if (activateMQTTBrokerCheckBox.isSelected() || activateMQTTProducerCheckBox.isSelected()) {
+            config.append("#### MQTT properties ####\r\n");
+        }
+
+        if (activateMQTTBrokerCheckBox.isSelected()) {
+            config.append("# Activate the MQTT broker if you have other consumers connecting to your MQTT broker\r\n");
+            config.append("mqtt.broker.enabled=" + activateMQTTBrokerCheckBox.isSelected());
+            config.append("# The URL of the MQTT broker server for other consumers to connect to\r\n");
+            config.append("mqtt.broker.locator=" + mqttProducerLocatorField.getText() + "\r\n");
+            config.append("# The topic name on the MQTT broker to provide\r\n");
+            config.append("mqtt.broker.topic=" + mqttProducerTopicField.getText() + "\r\n");
+        }
+
+        if (activateMQTTProducerCheckBox.isSelected()) {
+            config.append("# Activate the MQTT producer if you want to send your BMS data to a MQTT broker, e.g. HomeAssistant\r\n");
+            config.append("mqtt.producer.enabled=" + activateMQTTProducerCheckBox.isSelected());
+            config.append("# The URL of the MQTT broker to send to\r\n");
+            config.append("mqtt.producer.locator=" + mqttProducerLocatorField.getText() + "\r\n");
+            config.append("# The topic name on the MQTT broker to send to\r\n");
+            config.append("mqtt.producer.topic=" + mqttProducerTopicField.getText() + "\r\n");
+        }
     }
 
 }

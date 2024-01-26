@@ -1,5 +1,6 @@
 package com.airepublic.bmstoinverter.core;
 
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -44,7 +45,7 @@ public class InverterProducer {
 
             // if no inverter is found, probably the config.properties have not been read
             if (type == null) {
-                Util.updateSystemProperties();
+                Util.updateSystemProperties(Path.of(System.getProperty("configFile")));
                 type = System.getProperty("inverter.type");
 
                 if (type == null) {

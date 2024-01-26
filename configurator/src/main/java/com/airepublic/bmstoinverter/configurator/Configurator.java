@@ -150,46 +150,53 @@ public class Configurator extends JFrame {
             System.out.println("Configuration in: " + configDirectory);
             final Path tempDirectory = installDirectory.resolve("temp");
             System.out.println("Temp directory is: " + tempDirectory);
+            final Path srcDirectory = tempDirectory.resolve("bms-to-inverter-main");
+            final Path srcZip = tempDirectory.resolve("bms-to-inverter.zip");
+            final Path mavenDirectory = tempDirectory.resolve("apache-maven-3.9.6");
+            final Path mavenZip = tempDirectory.resolve("maven.zip");
 
             // clean up previous directories
-            if (Files.exists(tempDirectory)) {
-                Files.walk(tempDirectory)
+            if (Files.exists(srcDirectory)) {
+                Files.walk(srcDirectory)
                         .sorted(Comparator.reverseOrder())
                         .map(Path::toFile)
                         .forEach(File::delete);
             }
 
-            Files.deleteIfExists(tempDirectory);
-
             // create directories
             Files.createDirectories(installDirectory);
             Files.createDirectories(tempDirectory);
 
-            System.out.print("Downloading maven...");
-            downloadFile(new URL("https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.zip"), tempDirectory.resolve("maven.zip").toFile());
-            System.out.println("done");
-            unzip(tempDirectory.resolve("maven.zip"), tempDirectory);
+            if (!Files.exists(mavenDirectory)) {
+                System.out.print("Downloading maven...");
+                downloadFile(new URL("https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.zip"), mavenZip.toFile());
+                System.out.println("done");
+                unzip(mavenZip, tempDirectory);
+                Files.delete(mavenZip);
+            }
 
             System.out.print("Downloading application...");
-            downloadFile(new URL("https://github.com/ai-republic/bms-to-inverter/archive/master.zip"), tempDirectory.resolve("bms-to-inverter.zip").toFile());
+            downloadFile(new URL("https://github.com/ai-republic/bms-to-inverter/archive/master.zip"), srcZip.toFile());
             System.out.println("done");
-            unzip(tempDirectory.resolve("bms-to-inverter.zip"), tempDirectory);
+            unzip(srcZip, tempDirectory);
 
-            // generate configuration files
-            Files.deleteIfExists(tempDirectory.resolve("bms-to-inverter-main/bms-to-inverter-main/src/main/resources/config.properties"));
-            Files.write(tempDirectory.resolve("bms-to-inverter-main/bms-to-inverter-main/src/main/resources/config.properties"), config.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+            // generate new configuration files
+            Files.deleteIfExists(srcDirectory.resolve("bms-to-inverter-main/src/main/resources/config.properties"));
+            Files.write(installDirectory.resolve("config.properties"), config.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
             System.out.print("Building application...");
-            final String command = tempDirectory.toString() + "/apache-maven-3.9.6/bin/mvn clean package -DskipTests=true";
+            final String command = mavenDirectory.toString() + "/bin/mvn clean package -DskipTests=true";
             final boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
             final ProcessBuilder builder = new ProcessBuilder();
-            builder.directory(tempDirectory.resolve("bms-to-inverter-main").toFile());
+            builder.directory(srcDirectory.toFile());
             builder.redirectErrorStream(true);
+
             if (isWindows) {
                 builder.command("cmd.exe", "/c", command);
             } else {
                 builder.command("sh", "-c", command);
             }
+
             final Process process = builder.start();
             final BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
             String line;
@@ -205,7 +212,7 @@ public class Configurator extends JFrame {
             }
 
             // unzip generated application
-            unzip(tempDirectory.resolve("bms-to-inverter-main/bms-to-inverter-main/target/bms-to-inverter.zip"), installDirectory);
+            unzip(srcDirectory.resolve("bms-to-inverter-main/target/bms-to-inverter.zip"), installDirectory);
         } catch (final Exception e) {
             System.out.println("Installation FAILED!");
             e.printStackTrace();

@@ -1,6 +1,8 @@
 package com.airepublic.bmstoinverter.core.util;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Properties;
 
 import org.slf4j.Logger;
@@ -12,10 +14,11 @@ public class Util {
     /**
      * Reads the <code>config.properties</code> and adds them to the system properties.
      */
-    public static void updateSystemProperties() {
+    public static void updateSystemProperties(final Path config) {
         final Properties props = new Properties();
         try {
-            props.load(Util.class.getClassLoader().getResourceAsStream("config.properties"));
+            // props.load(Util.class.getClassLoader().getResourceAsStream("config.properties"));
+            props.load(Files.newInputStream(config));
 
             for (final Object name : props.keySet()) {
                 final String key = name.toString();

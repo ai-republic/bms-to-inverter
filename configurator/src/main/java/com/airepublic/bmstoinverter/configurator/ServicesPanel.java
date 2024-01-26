@@ -14,7 +14,6 @@ public class ServicesPanel extends JPanel {
     private static final long serialVersionUID = 1L;
     private final JCheckBox emailCheckBox;
     private final EmailServicePanel emailPanel;
-    private final JCheckBox mqttCheckBox;
     private final MQTTServicePanel mqttPanel;
     private final JCheckBox webserverCheckBox;
     private final WebserverServicePanel webserverPanel;
@@ -23,7 +22,7 @@ public class ServicesPanel extends JPanel {
         final GridBagLayout gbl_servicesPanel = new GridBagLayout();
         gbl_servicesPanel.columnWidths = new int[] { 100, 100, 100, 100, 0 };
         gbl_servicesPanel.rowHeights = new int[] { 30, 30, 30, 0, 30, 0, 30 };
-        gbl_servicesPanel.columnWeights = new double[] { 0.0, 4.9E-324, 0.0, 0.0, Double.MIN_VALUE };
+        gbl_servicesPanel.columnWeights = new double[] { 1.0, 4.9E-324, 0.0, 0.0, Double.MIN_VALUE };
         gbl_servicesPanel.rowWeights = new double[] { 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, Double.MIN_VALUE };
         setLayout(gbl_servicesPanel);
 
@@ -54,39 +53,30 @@ public class ServicesPanel extends JPanel {
         enableComponent(emailPanel, false);
         emailCheckBox.addActionListener(t -> enableComponent(emailPanel, emailCheckBox.isSelected()));
 
-        mqttCheckBox = new JCheckBox("MQTT service");
-        final GridBagConstraints gbc_mqttCheckBox = new GridBagConstraints();
-        gbc_mqttCheckBox.anchor = GridBagConstraints.WEST;
-        gbc_mqttCheckBox.insets = new Insets(0, 0, 5, 5);
-        gbc_mqttCheckBox.gridx = 0;
-        gbc_mqttCheckBox.gridy = 2;
-        add(mqttCheckBox, gbc_mqttCheckBox);
-
         mqttPanel = new MQTTServicePanel();
         final GridBagConstraints gbc_mqttPanel = new GridBagConstraints();
         gbc_mqttPanel.fill = GridBagConstraints.BOTH;
         gbc_mqttPanel.gridwidth = 4;
         gbc_mqttPanel.insets = new Insets(0, 0, 5, 0);
         gbc_mqttPanel.gridx = 0;
-        gbc_mqttPanel.gridy = 3;
+        gbc_mqttPanel.gridy = 2;
         add(mqttPanel, gbc_mqttPanel);
-
-        enableComponent(mqttPanel, false);
-        mqttCheckBox.addActionListener(t -> enableComponent(mqttPanel, mqttCheckBox.isSelected()));
 
         webserverCheckBox = new JCheckBox("Webserver");
         final GridBagConstraints gbc_webserverCheckBox = new GridBagConstraints();
         gbc_webserverCheckBox.anchor = GridBagConstraints.WEST;
         gbc_webserverCheckBox.insets = new Insets(0, 0, 5, 5);
         gbc_webserverCheckBox.gridx = 0;
-        gbc_webserverCheckBox.gridy = 4;
+        gbc_webserverCheckBox.gridy = 3;
         add(webserverCheckBox, gbc_webserverCheckBox);
 
         webserverPanel = new WebserverServicePanel();
         final GridBagConstraints gbc_webserverPanel = new GridBagConstraints();
-        gbc_webserverPanel.fill = GridBagConstraints.BOTH;
+        gbc_webserverPanel.anchor = GridBagConstraints.WEST;
+        gbc_webserverPanel.fill = GridBagConstraints.VERTICAL;
+        gbc_webserverPanel.gridwidth = 4;
         gbc_webserverPanel.gridx = 0;
-        gbc_webserverPanel.gridy = 5;
+        gbc_webserverPanel.gridy = 4;
         add(webserverPanel, gbc_webserverPanel);
 
         enableComponent(webserverPanel, false);
@@ -110,7 +100,7 @@ public class ServicesPanel extends JPanel {
             fail = true;
         }
 
-        if (mqttCheckBox.isSelected() && !mqttPanel.verify(errors)) {
+        if (!mqttPanel.verify(errors)) {
             fail = true;
         }
 
@@ -127,15 +117,22 @@ public class ServicesPanel extends JPanel {
                 + "###                 Optional services settings                  ###\r\n"
                 + "###################################################################\r\n"
                 + "\r\n");
+        config.append("\r\n");
 
-        if (mqttCheckBox.isSelected()) {
-            mqttPanel.generateConfiguration(config);
-        }
+        mqttPanel.generateConfiguration(config);
+        config.append("\r\n");
 
         if (emailCheckBox.isSelected()) {
-            config.append("\r\n");
+            config.append("#### Email properties ####\r\n");
+            config.append("mail.service.enabled=" + emailCheckBox.isSelected() + "\r\n");
             emailPanel.generateConfiguration(config);
+            config.append("\r\n");
         }
 
+        if (webserverCheckBox.isSelected()) {
+            config.append("#### Webserver properties ####\r\n");
+            config.append("webserver.service.enabled=" + webserverCheckBox.isSelected() + "\r\n");
+            webserverPanel.generateConfiguration(config);
+        }
     }
 }

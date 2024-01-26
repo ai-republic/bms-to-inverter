@@ -60,13 +60,7 @@ public class WebserverServicePanel extends JPanel {
     }
 
 
-    protected void generateConfiguration(final String mqttLocator, final String mqttTopic) {
-        final StringBuffer config = new StringBuffer();
-        config.append("#### MQTT properties ####\r\n"
-                + "# The URL to of the MQTT broker\r\n");
-        config.append("mqtt.locator=" + mqttLocator + "\r\n");
-        config.append("# The topic name on the MQTT broker\r\n");
-        config.append("mqtt.topic=" + mqttTopic + "\r\n");
+    protected void generateConfiguration(final StringBuffer config) {
         config.append("# The webserver port");
         config.append("server.port=" + getPort());
     }
