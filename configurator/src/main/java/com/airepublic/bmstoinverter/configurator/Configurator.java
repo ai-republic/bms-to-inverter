@@ -219,8 +219,17 @@ public class Configurator extends JFrame {
             // unzip generated application
             unzip(srcDirectory.resolve("bms-to-inverter-main/target/bms-to-inverter.zip"), installDirectory);
 
+            // clean up source directory and zip
+            Files.deleteIfExists(srcZip);
+
+            if (Files.exists(srcDirectory)) {
+                Files.walk(srcDirectory)
+                        .sorted(Comparator.reverseOrder())
+                        .map(Path::toFile)
+                        .forEach(File::delete);
+            }
+
             // generate the configuration files
-            Files.deleteIfExists(srcDirectory.resolve("bms-to-inverter-main/src/main/resources/config.properties"));
             Files.write(installDirectory.resolve("config.properties"), config.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
             // generate start scripts
