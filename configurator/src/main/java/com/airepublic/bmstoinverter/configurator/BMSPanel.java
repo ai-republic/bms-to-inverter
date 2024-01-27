@@ -155,7 +155,7 @@ public class BMSPanel extends JPanel {
 
     public boolean verify(final StringBuffer errors) {
         if (bmsListModel.getSize() == 0) {
-            errors.append("Missing BMS\r\n");
+            errors.append("Missing BMS\n");
             return false;
         }
 
@@ -164,21 +164,21 @@ public class BMSPanel extends JPanel {
 
 
     protected void generateConfiguration(final StringBuffer config) {
-        config.append("###################################################################\r\n"
-                + "###                       BMS settings                          ###\r\n"
-                + "###################################################################\r\n"
-                + "\r\n"
-                + "####  Simple single port configuration ####\r\n"
-                + "# bms.x.type - can be (DALY_CAN, DALY_RS485, JK_CAN, PYLON_CAN or SEPLOS_CAN \r\n"
-                + "# bms.x.portLocator - is the locator/device to use to communicate to the BMS, eg. can0, /dev/ttyUSB0, com3, etc.  \r\n"
-                + "# bms.x.pollIntervall - is the interval to request BMS data (in seconds)\r\n"
-                + "# bms.x.delayAfterNoBytes - is the delay after receiving no data (in ms)\r\n");
+        config.append("###################################################################\n"
+                + "###                       BMS settings                          ###\n"
+                + "###################################################################\n"
+                + "\n"
+                + "####  Simple single port configuration ####\n"
+                + "# bms.x.type - can be (DALY_CAN, DALY_RS485, JK_CAN, PYLON_CAN or SEPLOS_CAN \n"
+                + "# bms.x.portLocator - is the locator/device to use to communicate to the BMS, eg. can0, /dev/ttyUSB0, com3, etc.  \n"
+                + "# bms.x.pollIntervall - is the interval to request BMS data (in seconds)\n"
+                + "# bms.x.delayAfterNoBytes - is the delay after receiving no data (in ms)\n");
         for (final BMSConfig bmsConfig : getBMSConfigList()) {
-            config.append("bms." + bmsConfig.getBmsNo() + ".type=" + bmsConfig.getDescriptor().getName() + "\r\n");
-            config.append("bms." + bmsConfig.getBmsNo() + ".portLocator=" + bmsConfig.getPortLocator() + "\r\n");
-            config.append("bms." + bmsConfig.getBmsNo() + ".pollInterval=" + bmsConfig.getPollInterval() + "\r\n");
-            config.append("bms." + bmsConfig.getBmsNo() + ".delayAfterNoBytes=" + bmsConfig.getDelayAfterNoBytes() + "\r\n");
-            config.append("\r\n");
+            config.append("bms." + bmsConfig.getBmsNo() + ".type=" + bmsConfig.getDescriptor().getName() + "\n");
+            config.append("bms." + bmsConfig.getBmsNo() + ".portLocator=" + bmsConfig.getPortLocator() + "\n");
+            config.append("bms." + bmsConfig.getBmsNo() + ".pollInterval=" + bmsConfig.getPollInterval() + "\n");
+            config.append("bms." + bmsConfig.getBmsNo() + ".delayAfterNoBytes=" + bmsConfig.getDelayAfterNoBytes() + "\n");
+            config.append("\n");
         }
     }
 }

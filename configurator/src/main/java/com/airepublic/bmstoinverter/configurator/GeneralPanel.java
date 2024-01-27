@@ -105,12 +105,12 @@ public class GeneralPanel extends JPanel {
 
     public boolean verify(final StringBuffer errors) {
         if (platformField.getSelectedIndex() == -1) {
-            errors.append("Missing OS platform\r\n");
+            errors.append("Missing OS platform\n");
             return false;
         }
 
         if (installationPathField.getText().isBlank()) {
-            errors.append("Missing installation directory\r\n");
+            errors.append("Missing installation directory\n");
             return false;
         }
 

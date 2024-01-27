@@ -80,7 +80,10 @@ public class ServicesPanel extends JPanel {
         add(webserverPanel, gbc_webserverPanel);
 
         enableComponent(webserverPanel, false);
-        webserverCheckBox.addActionListener(t -> enableComponent(webserverPanel, webserverCheckBox.isSelected()));
+        webserverCheckBox.addActionListener(t -> {
+            mqttPanel.enableMQTTBroker();
+            enableComponent(webserverPanel, webserverCheckBox.isSelected());
+        });
 
     }
 
@@ -113,26 +116,31 @@ public class ServicesPanel extends JPanel {
 
 
     protected void generateConfiguration(final StringBuffer config) {
-        config.append("###################################################################\r\n"
-                + "###                 Optional services settings                  ###\r\n"
-                + "###################################################################\r\n"
-                + "\r\n");
-        config.append("\r\n");
+        config.append("###################################################################\n"
+                + "###                 Optional services settings                  ###\n"
+                + "###################################################################\n"
+                + "\n");
+        config.append("\n");
 
         mqttPanel.generateConfiguration(config);
-        config.append("\r\n");
+        config.append("\n");
 
         if (emailCheckBox.isSelected()) {
-            config.append("#### Email properties ####\r\n");
-            config.append("mail.service.enabled=" + emailCheckBox.isSelected() + "\r\n");
+            config.append("#### Email properties ####\n");
+            config.append("mail.service.enabled=" + emailCheckBox.isSelected() + "\n");
             emailPanel.generateConfiguration(config);
-            config.append("\r\n");
+            config.append("\n");
         }
 
         if (webserverCheckBox.isSelected()) {
-            config.append("#### Webserver properties ####\r\n");
-            config.append("webserver.service.enabled=" + webserverCheckBox.isSelected() + "\r\n");
-            webserverPanel.generateConfiguration(config);
+            config.append("#### Webserver properties ####\n");
+            config.append("webserver.service.enabled=" + webserverCheckBox.isSelected() + "\n");
+            webserverPanel.generateConfiguration(mqttPanel.getMQTTBrokerLocator(), mqttPanel.getMQTTBrokerTopic(), config);
         }
+    }
+
+
+    public boolean isWebserverEnabled() {
+        return webserverCheckBox.isSelected();
     }
 }

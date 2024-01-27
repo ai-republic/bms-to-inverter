@@ -116,20 +116,20 @@ public class InverterPanel extends JPanel {
         boolean fail = false;
 
         if (inverterField.getSelectedIndex() < 0) {
-            errors.append("Missing inverter type\r\n");
+            errors.append("Missing inverter type\n");
             fail = true;
         }
 
         if (inverterPortLocatorField.getText().isBlank()) {
-            errors.append("Missing inverter port locator!\r\n");
+            errors.append("Missing inverter port locator!\n");
             fail = true;
         }
 
         if (inverterSendIntervalField.getText().isBlank()) {
-            errors.append("Missing inverter send interval!\r\n");
+            errors.append("Missing inverter send interval!\n");
             fail = true;
         } else if (!numberInputVerifier.verify(inverterSendIntervalField)) {
-            errors.append("Non-numeric inverter send interval!\r\n");
+            errors.append("Non-numeric inverter send interval!\n");
             fail = true;
         }
 
@@ -138,16 +138,16 @@ public class InverterPanel extends JPanel {
 
 
     protected void generateConfiguration(final StringBuffer config) {
-        config.append("###################################################################\r\n"
-                + "###                    Inverter settings                        ###\r\n"
-                + "###################################################################\r\n"
-                + "# The inverter type can be NONE, DEYE_CAN, GROWATT_CAN, SMA_SI_CAN, SOLARK_CAN\r\n");
-        config.append("inverter.type=" + getInverterType().getName() + "\r\n");
-        config.append("# The port name/device to use to communicate to the  inverter  \r\n");
-        config.append("inverter.portLocator=" + getPortLocator() + "\r\n");
-        config.append("# Interval to send data to the inverter (in seconds)\r\n");
-        config.append("inverter.sendInterval=" + getSendInterval() + "\r\n");
-        config.append("\r\n");
+        config.append("###################################################################\n"
+                + "###                    Inverter settings                        ###\n"
+                + "###################################################################\n"
+                + "# The inverter type can be NONE, DEYE_CAN, GROWATT_CAN, SMA_SI_CAN, SOLARK_CAN\n");
+        config.append("inverter.type=" + getInverterType().getName() + "\n");
+        config.append("# The port name/device to use to communicate to the  inverter  \n");
+        config.append("inverter.portLocator=" + getPortLocator() + "\n");
+        config.append("# Interval to send data to the inverter (in seconds)\n");
+        config.append("inverter.sendInterval=" + getSendInterval() + "\n");
+        config.append("\n");
 
     }
 }

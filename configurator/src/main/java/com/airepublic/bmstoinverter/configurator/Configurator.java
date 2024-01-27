@@ -133,17 +133,23 @@ public class Configurator extends JFrame {
         }
 
         final StringBuffer config = new StringBuffer();
-        config.append("###################################################################\r\n"
-                + "###                  System specific settings                   ###\r\n"
-                + "###################################################################\r\n"
-                + "\r\n");
+        config.append("###################################################################\n"
+                + "###                  System specific settings                   ###\n"
+                + "###################################################################\n"
+                + "\n");
         bmsPanel.generateConfiguration(config);
         inverterPanel.generateConfiguration(config);
         servicesPanel.generateConfiguration(config);
 
-        System.out.println(config.toString());
+        buildApplication(config.toString());
+    }
+
+
+    private void buildApplication(final String config) {
+        System.out.println(config);
 
         try {
+            // define paths
             final Path installDirectory = Path.of(generalPanel.getInstallationPath());
             System.out.println("Installing in: " + installDirectory);
             final Path configDirectory = installDirectory.resolve("config");
@@ -167,6 +173,7 @@ public class Configurator extends JFrame {
             Files.createDirectories(installDirectory);
             Files.createDirectories(tempDirectory);
 
+            // check if previous maven is present
             if (!Files.exists(mavenDirectory)) {
                 System.out.print("Downloading maven...");
                 downloadFile(new URL("https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.zip"), mavenZip.toFile());
@@ -175,15 +182,13 @@ public class Configurator extends JFrame {
                 Files.delete(mavenZip);
             }
 
+            // download the application source
             System.out.print("Downloading application...");
             downloadFile(new URL("https://github.com/ai-republic/bms-to-inverter/archive/master.zip"), srcZip.toFile());
             System.out.println("done");
             unzip(srcZip, tempDirectory);
 
-            // generate new configuration files
-            Files.deleteIfExists(srcDirectory.resolve("bms-to-inverter-main/src/main/resources/config.properties"));
-            Files.write(installDirectory.resolve("config.properties"), config.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-
+            // build the application
             System.out.print("Building application...");
             final String command = mavenDirectory.toString() + "/bin/mvn clean package -DskipTests=true";
             final boolean isWindows = System.getProperty("os.name").toLowerCase().startsWith("windows");
@@ -213,6 +218,28 @@ public class Configurator extends JFrame {
 
             // unzip generated application
             unzip(srcDirectory.resolve("bms-to-inverter-main/target/bms-to-inverter.zip"), installDirectory);
+
+            // generate the configuration files
+            Files.deleteIfExists(srcDirectory.resolve("bms-to-inverter-main/src/main/resources/config.properties"));
+            Files.write(installDirectory.resolve("config.properties"), config.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+
+            // generate start scripts
+            final StringBuffer commands = new StringBuffer("java -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar -DconfigFile=config.properties\n");
+
+            if (servicesPanel.isWebserverEnabled()) {
+                commands.append("java -jar lib/webserver-0.0.1-SNAPSHOT.jar --spring.config.location=file://config.properties\n");
+            }
+
+            final Path windowsStart = Path.of("start.cmd");
+            Files.deleteIfExists(windowsStart);
+            Files.createFile(windowsStart);
+            Files.write(windowsStart, commands.toString().getBytes());
+
+            final Path linuxStart = Path.of("start");
+            Files.deleteIfExists(windowsStart);
+            Files.createFile(windowsStart);
+            Files.write(linuxStart, ("#!/bin/bash\n" + commands.toString()).getBytes());
+
         } catch (final Exception e) {
             System.out.println("Installation FAILED!");
             e.printStackTrace();

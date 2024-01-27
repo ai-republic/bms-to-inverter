@@ -146,24 +146,24 @@ public class MQTTServicePanel extends JPanel {
 
         if (activateMQTTBrokerCheckBox.isSelected()) {
             if (mqttBrokerLocatorField.getText().isBlank()) {
-                errors.append("Missing MQTT broker locator!\r\n");
+                errors.append("Missing MQTT broker locator!\n");
                 fail = true;
             }
 
             if (mqttBrokerTopicField.getText().isBlank()) {
-                errors.append("Missing MQTT broker topic!\r\n");
+                errors.append("Missing MQTT broker topic!\n");
                 fail = true;
             }
         }
 
         if (activateMQTTProducerCheckBox.isSelected()) {
             if (mqttProducerLocatorField.getText().isBlank()) {
-                errors.append("Missing MQTT producer locator!\r\n");
+                errors.append("Missing MQTT producer locator!\n");
                 fail = true;
             }
 
             if (mqttProducerTopicField.getText().isBlank()) {
-                errors.append("Missing MQTT producer topic!\r\n");
+                errors.append("Missing MQTT producer topic!\n");
                 fail = true;
             }
         }
@@ -174,26 +174,41 @@ public class MQTTServicePanel extends JPanel {
 
     protected void generateConfiguration(final StringBuffer config) {
         if (activateMQTTBrokerCheckBox.isSelected() || activateMQTTProducerCheckBox.isSelected()) {
-            config.append("#### MQTT properties ####\r\n");
+            config.append("#### MQTT properties ####\n");
         }
 
         if (activateMQTTBrokerCheckBox.isSelected()) {
-            config.append("# Activate the MQTT broker if you have other consumers connecting to your MQTT broker\r\n");
+            config.append("# Activate the MQTT broker if you have other consumers connecting to your MQTT broker\n");
             config.append("mqtt.broker.enabled=" + activateMQTTBrokerCheckBox.isSelected());
-            config.append("# The URL of the MQTT broker server for other consumers to connect to\r\n");
-            config.append("mqtt.broker.locator=" + mqttProducerLocatorField.getText() + "\r\n");
-            config.append("# The topic name on the MQTT broker to provide\r\n");
-            config.append("mqtt.broker.topic=" + mqttProducerTopicField.getText() + "\r\n");
+            config.append("# The URL of the MQTT broker server for other consumers to connect to\n");
+            config.append("mqtt.broker.locator=" + mqttProducerLocatorField.getText() + "\n");
+            config.append("# The topic name on the MQTT broker to provide\n");
+            config.append("mqtt.broker.topic=" + mqttProducerTopicField.getText() + "\n");
         }
 
         if (activateMQTTProducerCheckBox.isSelected()) {
-            config.append("# Activate the MQTT producer if you want to send your BMS data to a MQTT broker, e.g. HomeAssistant\r\n");
+            config.append("# Activate the MQTT producer if you want to send your BMS data to a MQTT broker, e.g. HomeAssistant\n");
             config.append("mqtt.producer.enabled=" + activateMQTTProducerCheckBox.isSelected());
-            config.append("# The URL of the MQTT broker to send to\r\n");
-            config.append("mqtt.producer.locator=" + mqttProducerLocatorField.getText() + "\r\n");
-            config.append("# The topic name on the MQTT broker to send to\r\n");
-            config.append("mqtt.producer.topic=" + mqttProducerTopicField.getText() + "\r\n");
+            config.append("# The URL of the MQTT broker to send to\n");
+            config.append("mqtt.producer.locator=" + mqttProducerLocatorField.getText() + "\n");
+            config.append("# The topic name on the MQTT broker to send to\n");
+            config.append("mqtt.producer.topic=" + mqttProducerTopicField.getText() + "\n");
         }
+    }
+
+
+    public void enableMQTTBroker() {
+        activateMQTTBrokerCheckBox.setSelected(true);
+    }
+
+
+    public String getMQTTBrokerLocator() {
+        return mqttBrokerLocatorField.getText();
+    }
+
+
+    public String getMQTTBrokerTopic() {
+        return mqttBrokerTopicField.getText();
     }
 
 }

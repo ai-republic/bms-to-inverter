@@ -50,19 +50,22 @@ public class WebserverServicePanel extends JPanel {
 
     public boolean verify(final StringBuffer errors) {
         if (webserverPortField.getText().isBlank()) {
-            errors.append("Missing webserver port!\r\n");
+            errors.append("Missing webserver port!\n");
             return false;
         } else if (!numberInputVerifier.verify(webserverPortField.getText())) {
-            errors.append("Non-numeric webserver port!\r\n");
+            errors.append("Non-numeric webserver port!\n");
             return false;
         }
         return true;
     }
 
 
-    protected void generateConfiguration(final StringBuffer config) {
-        config.append("# The webserver port");
-        config.append("server.port=" + getPort());
+    protected void generateConfiguration(final String mqttLocator, final String mqttTopic, final StringBuffer config) {
+        config.append("# The webserver port\n");
+        config.append("server.port=" + getPort() + "\n");
+        config.append("server.mqtt.locator=" + mqttLocator + "\n");
+        config.append("server.mqtt.topic=" + mqttTopic + "\n");
+        config.append("\n");
     }
 
 }

@@ -260,30 +260,30 @@ public class EmailServicePanel extends JPanel {
         boolean fail = false;
 
         if (outgoingServerField.getText().isBlank()) {
-            errors.append("Missing outgoing server!\r\n");
+            errors.append("Missing outgoing server!\n");
             fail = true;
         }
 
         if (outgoingServerPortField.getText().isBlank()) {
-            errors.append("Missing email server port!\r\n");
+            errors.append("Missing email server port!\n");
         } else if (!numberInputVerifier.verify(outgoingServerPortField.getText())) {
-            errors.append("Non-numeric email server port!\r\n");
+            errors.append("Non-numeric email server port!\n");
         }
 
         if (sslTlsField.getSelectedIndex() == -1) {
-            errors.append("Missing email server SSL/TLS!\r\n");
+            errors.append("Missing email server SSL/TLS!\n");
         }
         if (usernameField.getText().isBlank()) {
-            errors.append("Missing email server username!\r\n");
+            errors.append("Missing email server username!\n");
         }
         if (passwordField.getPassword().length == 0) {
-            errors.append("Missing email server password!\r\n");
+            errors.append("Missing email server password!\n");
         }
         if (senderField.getText().isBlank()) {
-            errors.append("Missing email sender address!\r\n");
+            errors.append("Missing email sender address!\n");
         }
         if (recipientsField.getText().isBlank()) {
-            errors.append("Missing email recipient addresses!\r\n");
+            errors.append("Missing email recipient addresses!\n");
         }
 
         return !fail;
@@ -291,24 +291,24 @@ public class EmailServicePanel extends JPanel {
 
 
     protected void generateConfiguration(final StringBuffer config) {
-        config.append("mail.out.debug=true\r\n");
-        config.append("# SMTP or IMAP address of the outgoing server\r\n");
-        config.append("mail.out.host=" + getOutgoingServer() + "\r\n");
-        config.append("# The port of the outgoing server\r\n");
-        config.append("mail.out.port=" + getOutgoingServerPort() + "\r\n");
-        config.append("# smtp for TLS, smtps for SSL\r\n");
-        config.append("mail.out.type=" + (getSslTls().equals("SSL") ? "smtps" : "smtp") + "\r\n");
-        config.append("# User name to authenticate at the outgoing server\r\n");
-        config.append("mail.out.username=" + getUsername() + "\r\n");
-        config.append("# Password to authenticate at the outgoing server\r\n");
-        config.append("mail.out.password=" + getPassword() + "\r\n");
-        config.append("# Disable if using TLS\r\n");
-        config.append(" mail.out.sslEnable=" + (getSslTls().equals("SSL") ? "true" : "false") + "\r\n");
-        config.append("# Disable if using SSL\r\n");
-        config.append("mail.out.tlsEnable=" + (getSslTls().equals("TLS") ? "true" : "false") + "\r\n");
-        config.append("# The email address to use when sending emails\r\n");
-        config.append("mail.out.defaultEmail=" + getSender() + "\r\n");
-        config.append("# A (comma separated) list of pre-configured email recipients\r\n");
-        config.append("mail.recipients=" + getRecipients() + "\r\n");
+        config.append("mail.out.debug=true\n");
+        config.append("# SMTP or IMAP address of the outgoing server\n");
+        config.append("mail.out.host=" + getOutgoingServer() + "\n");
+        config.append("# The port of the outgoing server\n");
+        config.append("mail.out.port=" + getOutgoingServerPort() + "\n");
+        config.append("# smtp for TLS, smtps for SSL\n");
+        config.append("mail.out.type=" + (getSslTls().equals("SSL") ? "smtps" : "smtp") + "\n");
+        config.append("# User name to authenticate at the outgoing server\n");
+        config.append("mail.out.username=" + getUsername() + "\n");
+        config.append("# Password to authenticate at the outgoing server\n");
+        config.append("mail.out.password=" + getPassword() + "\n");
+        config.append("# Disable if using TLS\n");
+        config.append(" mail.out.sslEnable=" + (getSslTls().equals("SSL") ? "true" : "false") + "\n");
+        config.append("# Disable if using SSL\n");
+        config.append("mail.out.tlsEnable=" + (getSslTls().equals("TLS") ? "true" : "false") + "\n");
+        config.append("# The email address to use when sending emails\n");
+        config.append("mail.out.defaultEmail=" + getSender() + "\n");
+        config.append("# A (comma separated) list of pre-configured email recipients\n");
+        config.append("mail.recipients=" + getRecipients() + "\n");
     }
 }

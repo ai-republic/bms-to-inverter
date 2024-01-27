@@ -31,9 +31,9 @@ import jakarta.annotation.PreDestroy;
 @RestController
 public class WebserverApplication {
     private final static Logger LOG = LoggerFactory.getLogger(WebserverApplication.class);
-    @Value("${mqtt.locator}")
+    @Value("${server.mqtt.locator}")
     private String locator;
-    @Value("${mqtt.topic}")
+    @Value("${server.mqtt.topic}")
     private String topic;
     private String data = "";
     private final IMQTTConsumerService mqtt = ServiceLoader.load(IMQTTConsumerService.class).findFirst().orElse(null);
