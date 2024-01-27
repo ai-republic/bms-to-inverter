@@ -181,7 +181,7 @@ public class MQTTServicePanel extends JPanel {
 
         if (activateMQTTBrokerCheckBox.isSelected()) {
             config.append("# Activate the MQTT broker if you have other consumers connecting to your MQTT broker\n");
-            config.append("mqtt.broker.enabled=" + activateMQTTBrokerCheckBox.isSelected());
+            config.append("mqtt.broker.enabled=" + activateMQTTBrokerCheckBox.isSelected() + "\n");
             config.append("# The URL of the MQTT broker server for other consumers to connect to\n");
             config.append("mqtt.broker.locator=" + mqttProducerLocatorField.getText() + "\n");
             config.append("# The topic name on the MQTT broker to provide\n");
@@ -190,7 +190,7 @@ public class MQTTServicePanel extends JPanel {
 
         if (activateMQTTProducerCheckBox.isSelected()) {
             config.append("# Activate the MQTT producer if you want to send your BMS data to a MQTT broker, e.g. HomeAssistant\n");
-            config.append("mqtt.producer.enabled=" + activateMQTTProducerCheckBox.isSelected());
+            config.append("mqtt.producer.enabled=" + activateMQTTProducerCheckBox.isSelected() + "\n");
             config.append("# The URL of the MQTT broker to send to\n");
             config.append("mqtt.producer.locator=" + mqttProducerLocatorField.getText() + "\n");
             config.append("# The topic name on the MQTT broker to send to\n");

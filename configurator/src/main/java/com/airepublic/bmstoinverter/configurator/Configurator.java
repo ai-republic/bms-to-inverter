@@ -250,6 +250,8 @@ public class Configurator extends JFrame {
 
             // unzip generated application
             unzip(srcDirectory.resolve("bms-to-inverter-main/target/bms-to-inverter.zip"), installDirectory);
+            // add the webserver
+            Files.copy(srcDirectory.resolve("webserver/target/webserver-0.0.1-SNAPSHOT.jar"), installDirectory.resolve("lib/webserver-0.0.1-SNAPSHOT.jar"));
 
             // clean up source directory and zip
             Files.deleteIfExists(srcZip);
@@ -268,8 +270,8 @@ public class Configurator extends JFrame {
             Files.write(configDirectory.resolve("log4j2.xml"), logConfig.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
             // generate start scripts
-            final StringBuffer windowsCommands = new StringBuffer("start \"\" java -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar -DconfigFile=config/config.properties -Dlog4j2.configurationFile=config/log4j2.xml\n");
-            final StringBuffer linuxCommands = new StringBuffer("#!/bin/bash\njava -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar -DconfigFile=config/config.properties -Dlog4j2.configurationFile=config/log4j2.xml &\n");
+            final StringBuffer windowsCommands = new StringBuffer("start \"\" java -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar -DconfigFile=config/config.properties -Dlog4j2.configurationFile=file:config/log4j2.xml\n");
+            final StringBuffer linuxCommands = new StringBuffer("#!/bin/bash\njava -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar -DconfigFile=config/config.properties -Dlog4j2.configurationFile=file:config/log4j2.xml &\n");
 
             if (servicesPanel.isWebserverEnabled()) {
                 windowsCommands.append("start \"\" java -jar lib/webserver-0.0.1-SNAPSHOT.jar --spring.config.location=file:config/config.properties\n");
