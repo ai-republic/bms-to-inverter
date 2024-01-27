@@ -243,15 +243,13 @@ public class Configurator extends JFrame {
 
             final Path windowsStart = installDirectory.resolve("start.cmd");
             Files.deleteIfExists(windowsStart);
-            Files.createFile(windowsStart);
             Files.write(windowsStart, windowsCommands.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
             if (servicesPanel.isWebserverEnabled()) {
             }
 
             final Path linuxStart = installDirectory.resolve("start");
-            Files.deleteIfExists(windowsStart);
-            Files.createFile(windowsStart);
+            Files.deleteIfExists(linuxStart);
             Files.write(linuxStart, ("" + linuxCommands.toString()).getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
         } catch (final Exception e) {
