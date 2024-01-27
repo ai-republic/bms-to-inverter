@@ -28,7 +28,6 @@
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<classpathPrefix>lib/</classpathPrefix>
 							<mainClass>
 								com.airepublic.bmstoinverter.BmsToInverter</mainClass>
 						</manifest>
@@ -98,8 +97,7 @@
 		</dependency>
 
 
-		<!-- #################### !!!!!!!!	Choose BMS 	!!!!!!!!
-		###################### -->
+		<!-- #################### !!!!!!!!	BMSes 	!!!!!!!! ###################### -->
 
 		<!-- ####################  DALY(CAN) ################### -->
 		<dependency>
@@ -137,8 +135,7 @@
 		</dependency>
 
 
-		<!-- #################### !!!!!!!!	Choose Inverter 	!!!!!!!!
-		###################### -->
+		<!-- #################### !!!!!!!!	Inverters 	!!!!!!!! #################### -->
 
 		<!-- ####################  Dummy Inverter  ################### -->
 		<dependency>
@@ -176,28 +173,31 @@
 		</dependency>
 
 
-		<!-- #################### !!!!!!!!	Choose optional services 	!!!!!!!!
-		###################### -->
+		<!-- #################### !!!!!!!!	Optional service  !!!!!!!! ###################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>service-mqtt-broker</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
-		<!-- optionally add MQTT services -->
-		<!--		<dependency>-->
-		<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-		<!--			<artifactId>service-mqtt-broker</artifactId>-->
-		<!--			<version>${project.version}</version>-->
-		<!--		</dependency>-->
-
-		<!--		<dependency>-->
-		<!--			<groupId>com.ai-republic.bms-to-inverter</groupId>-->
-		<!--			<artifactId>service-mqtt-client</artifactId>-->
-		<!--			<version>${project.version}</version>-->
-		<!--		</dependency>-->
-
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>service-mqtt-client</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- optionally add Email service -->
 		<dependency>
 			<groupId>com.ai-republic.email</groupId>
 			<artifactId>email-javamail</artifactId>
 			<version>1.0.5</version>
+		</dependency>
+
+		<!-- ####################  Webserver  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>webserver</artifactId>
+			<version>${project.version}</version>
 		</dependency>
 	</dependencies>
 </project>
