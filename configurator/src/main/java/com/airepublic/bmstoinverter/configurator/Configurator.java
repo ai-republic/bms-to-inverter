@@ -36,6 +36,37 @@ public class Configurator extends JFrame {
     private final BMSPanel bmsPanel;
     private final InverterPanel inverterPanel;
     private final ServicesPanel servicesPanel;
+    private final String logConfig = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+            + "<Configuration>\n"
+            + "\n"
+            + "    <properties>\n"
+            + "        <property name=\"name\">BMS-to-Inverter</property>\n"
+            + "        <property name=\"pattern\">%d{yyyy-MM-dd HH:mm:ss.SSS} | %-5.5p | %-10.10t | %-20.20C:%-5.5L | %msg%n</property>\n"
+            + "    </properties>\n"
+            + "    \n"
+            + "    <appenders>\n"
+            + "        <Console name=\"Console\" target=\"SYSTEM_OUT\">\n"
+            + "            <PatternLayout pattern=\"${pattern}\"/>\n"
+            + "        </Console>\n"
+            + "        <RollingFile name=\"RollingFile\" fileName=\"logs/${name}.log\"\n"
+            + "                 filePattern=\"logs/$${date:yyyy-MM}/${name}-%d{yyyy-MM-dd}-%i.log.gz\">\n"
+            + "            <PatternLayout>\n"
+            + "                <pattern>${pattern}</pattern>\n"
+            + "            </PatternLayout>\n"
+            + "            <Policies>\n"
+            + "                <TimeBasedTriggeringPolicy /><!-- Rotated everyday -->\n"
+            + "                <SizeBasedTriggeringPolicy size=\"100 MB\"/> <!-- Or every 100 MB -->\n"
+            + "            </Policies>\n"
+            + "        </RollingFile>\n"
+            + "    </appenders>\n"
+            + "    <loggers>\n"
+            + "        <root level=\"debug\"> <!-- We log everything -->\n"
+            + "            <appender-ref ref=\"Console\"/> <!-- To console -->\n"
+            + "            <appender-ref ref=\"RollingFile\"/> <!-- And to a rotated file -->\n"
+            + "        </root>\n"
+            + "    </loggers>\n"
+            + "    \n"
+            + "</Configuration>";
 
     public Configurator() {
         super("BMS-to-Inverter Configurator");
@@ -171,6 +202,7 @@ public class Configurator extends JFrame {
 
             // create directories
             Files.createDirectories(installDirectory);
+            Files.createDirectories(configDirectory);
             Files.createDirectories(tempDirectory);
 
             // check if previous maven is present
@@ -230,15 +262,18 @@ public class Configurator extends JFrame {
             }
 
             // generate the configuration files
-            Files.write(installDirectory.resolve("config.properties"), config.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+            Files.deleteIfExists(configDirectory.resolve("config.properties"));
+            Files.write(configDirectory.resolve("config.properties"), config.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+            Files.deleteIfExists(configDirectory.resolve("lo4j2.xml"));
+            Files.write(configDirectory.resolve("log4j2.xml"), logConfig.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
             // generate start scripts
-            final StringBuffer windowsCommands = new StringBuffer("start java -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar -DconfigFile=config.properties\n");
-            final StringBuffer linuxCommands = new StringBuffer("#!/bin/bash\njava -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar -DconfigFile=config.properties &\n");
+            final StringBuffer windowsCommands = new StringBuffer("start \"\" java -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar -DconfigFile=config/config.properties -Dlog4j2.configurationFile=config/log4j2.xml\n");
+            final StringBuffer linuxCommands = new StringBuffer("#!/bin/bash\njava -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar -DconfigFile=config/config.properties -Dlog4j2.configurationFile=config/log4j2.xml &\n");
 
             if (servicesPanel.isWebserverEnabled()) {
-                windowsCommands.append("start java -jar lib/webserver-0.0.1-SNAPSHOT.jar --spring.config.location=file://config.properties\n");
-                linuxCommands.append("java -jar lib/webserver-0.0.1-SNAPSHOT.jar --spring.config.location=file://config.properties &\n");
+                windowsCommands.append("start \"\" java -jar lib/webserver-0.0.1-SNAPSHOT.jar --spring.config.location=file:config/config.properties\n");
+                linuxCommands.append("java -jar lib/webserver-0.0.1-SNAPSHOT.jar --spring.config.location=file:config/config.properties &\n");
             }
 
             final Path windowsStart = installDirectory.resolve("start.cmd");
