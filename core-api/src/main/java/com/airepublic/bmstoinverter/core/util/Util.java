@@ -18,6 +18,7 @@ public class Util {
         final Properties props = new Properties();
         try {
             // props.load(Util.class.getClassLoader().getResourceAsStream("config.properties"));
+            LOG.info("Loading config.properties from: " + config);
             props.load(Files.newInputStream(config));
 
             for (final Object name : props.keySet()) {
