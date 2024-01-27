@@ -81,7 +81,7 @@ public class ServicesPanel extends JPanel {
 
         enableComponent(webserverPanel, false);
         webserverCheckBox.addActionListener(t -> {
-            mqttPanel.enableMQTTBroker();
+            mqttPanel.enableMQTT();
             enableComponent(webserverPanel, webserverCheckBox.isSelected());
         });
 

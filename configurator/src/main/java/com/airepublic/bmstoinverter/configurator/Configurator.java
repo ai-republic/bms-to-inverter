@@ -224,21 +224,26 @@ public class Configurator extends JFrame {
             Files.write(installDirectory.resolve("config.properties"), config.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
             // generate start scripts
-            final StringBuffer commands = new StringBuffer("java -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar -DconfigFile=config.properties\n");
+            final StringBuffer windowsCommands = new StringBuffer("start java -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar -DconfigFile=config.properties\n");
+            final StringBuffer linuxCommands = new StringBuffer("#!/bin/bash\njava -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar -DconfigFile=config.properties &\n");
 
             if (servicesPanel.isWebserverEnabled()) {
-                commands.append("java -jar lib/webserver-0.0.1-SNAPSHOT.jar --spring.config.location=file://config.properties\n");
+                windowsCommands.append("start java -jar lib/webserver-0.0.1-SNAPSHOT.jar --spring.config.location=file://config.properties\n");
+                linuxCommands.append("java -jar lib/webserver-0.0.1-SNAPSHOT.jar --spring.config.location=file://config.properties &\n");
             }
 
-            final Path windowsStart = Path.of("start.cmd");
+            final Path windowsStart = installDirectory.resolve("start.cmd");
             Files.deleteIfExists(windowsStart);
             Files.createFile(windowsStart);
-            Files.write(windowsStart, commands.toString().getBytes());
+            Files.write(windowsStart, windowsCommands.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
-            final Path linuxStart = Path.of("start");
+            if (servicesPanel.isWebserverEnabled()) {
+            }
+
+            final Path linuxStart = installDirectory.resolve("start");
             Files.deleteIfExists(windowsStart);
             Files.createFile(windowsStart);
-            Files.write(linuxStart, ("#!/bin/bash\n" + commands.toString()).getBytes());
+            Files.write(linuxStart, ("" + linuxCommands.toString()).getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
         } catch (final Exception e) {
             System.out.println("Installation FAILED!");

@@ -11,7 +11,9 @@ import javax.swing.JTextField;
 
 public class MQTTServicePanel extends JPanel {
     private static final long serialVersionUID = 1L;
+    private final JLabel mqttProducerLocatorLabel;
     private final JTextField mqttProducerLocatorField;
+    private final JLabel mqttProducerTopicLabel;
     private final JTextField mqttProducerTopicField;
     private final JCheckBox activateMQTTBrokerCheckBox;
     private final JCheckBox activateMQTTProducerCheckBox;
@@ -39,7 +41,7 @@ public class MQTTServicePanel extends JPanel {
         gbc_activateMQTTProducerCheckBox.gridy = 0;
         add(activateMQTTProducerCheckBox, gbc_activateMQTTProducerCheckBox);
 
-        final JLabel mqttProducerLocatorLabel = new JLabel("Locator");
+        mqttProducerLocatorLabel = new JLabel("Locator");
         mqttProducerLocatorLabel.setEnabled(false);
         final GridBagConstraints gbc_mqttProducerLocatorLabel = new GridBagConstraints();
         gbc_mqttProducerLocatorLabel.anchor = GridBagConstraints.EAST;
@@ -58,7 +60,7 @@ public class MQTTServicePanel extends JPanel {
         gbc_mqttProducerLocatorField.gridy = 1;
         add(mqttProducerLocatorField, gbc_mqttProducerLocatorField);
 
-        final JLabel mqttProducerTopicLabel = new JLabel("Topic");
+        mqttProducerTopicLabel = new JLabel("Topic");
         mqttProducerTopicLabel.setEnabled(false);
         final GridBagConstraints gbc_mqttProducerTopicLabel = new GridBagConstraints();
         gbc_mqttProducerTopicLabel.anchor = GridBagConstraints.EAST;
@@ -197,8 +199,18 @@ public class MQTTServicePanel extends JPanel {
     }
 
 
-    public void enableMQTTBroker() {
+    public void enableMQTT() {
         activateMQTTBrokerCheckBox.setSelected(true);
+        mqttBrokerLocatorLabel.setEnabled(activateMQTTBrokerCheckBox.isSelected());
+        mqttBrokerLocatorField.setEnabled(activateMQTTBrokerCheckBox.isSelected());
+        mqttBrokerTopicLabel.setEnabled(activateMQTTBrokerCheckBox.isSelected());
+        mqttBrokerTopicField.setEnabled(activateMQTTBrokerCheckBox.isSelected());
+
+        activateMQTTProducerCheckBox.setSelected(true);
+        mqttProducerLocatorLabel.setEnabled(activateMQTTProducerCheckBox.isSelected());
+        mqttProducerLocatorField.setEnabled(activateMQTTProducerCheckBox.isSelected());
+        mqttProducerTopicLabel.setEnabled(activateMQTTProducerCheckBox.isSelected());
+        mqttProducerTopicField.setEnabled(activateMQTTProducerCheckBox.isSelected());
     }
 
 
