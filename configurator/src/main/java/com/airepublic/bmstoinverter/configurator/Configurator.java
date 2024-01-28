@@ -223,7 +223,7 @@ public class Configurator extends JFrame {
         final Path installDirectory = Path.of(generalPanel.getInstallationPath());
         out.append("Installing in: " + installDirectory + "\n");
         final Path configDirectory = installDirectory.resolve("config");
-        System.out.println("Configuration in: " + configDirectory);
+        out.append("Configuration in: " + configDirectory + "\n");
         final Path tempDirectory = installDirectory.resolve("temp");
         out.append("Temp directory is: " + tempDirectory + "\n");
         final Path srcDirectory = tempDirectory.resolve("bms-to-inverter-main");

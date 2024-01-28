@@ -16,12 +16,116 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>2.4.3</version>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>com.airepublic.bmstoinverter.configurator.Configurator</mainClass>
+								</transformer>
+							</transformers>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+
 	<dependencies>
 		<dependency>
+			<groupId>com.ai-republic.email</groupId>
+			<artifactId>email-javamail</artifactId>
+			<version>1.0.5</version>
+		</dependency>
+
+		<!-- #################### !!!!!!!!	BMSes 	!!!!!!!! ###################### -->
+
+		<!-- ####################  DALY(CAN) ################### -->
+		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>bms-to-inverter-main</artifactId>
+			<artifactId>bms-daly-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
+		<!-- ####################  DALY (RS485)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-daly-rs485</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- ####################  PYLONTECH (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-pylon-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- ####################  JK (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-jk-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- ####################  SEPLOS (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-seplos-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+
+		<!-- #################### !!!!!!!!	Inverters 	!!!!!!!!
+		#################### -->
+
+		<!-- ####################  Dummy Inverter  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-dummy</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- ####################  SMA Sunny Island (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-sma-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- ####################  GROWATT (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-growatt-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- ####################  DEYE (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-deye-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- ####################  SOLARK (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-solark-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 	</dependencies>
 
 </project>
