@@ -370,13 +370,29 @@ public class Configurator extends JFrame {
         final Path windowsStart = installDirectory.resolve("start.cmd");
         Files.deleteIfExists(windowsStart);
         Files.write(windowsStart, windowsCommands.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-
-        if (servicesPanel.isWebserverEnabled()) {
-        }
+        setFilePermissions(windowsStart, true, true, true);
 
         final Path linuxStart = installDirectory.resolve("start");
         Files.deleteIfExists(linuxStart);
         Files.write(linuxStart, ("" + linuxCommands.toString()).getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        setFilePermissions(linuxStart, true, true, true);
+
+        final Path windowsConfigStart = installDirectory.resolve("configurator.cmd");
+        final Path linuxConfigStart = installDirectory.resolve("configurator");
+        Files.deleteIfExists(windowsConfigStart);
+        Files.deleteIfExists(linuxConfigStart);
+        Files.write(windowsConfigStart, "java -jar lib/configurator-0.0.1-SNAPSHOT.jar".getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        Files.write(linuxConfigStart, "#!/bin/bash\njava -jar lib/configurator-0.0.1-SNAPSHOT.jar".getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        setFilePermissions(windowsConfigStart, true, true, true);
+        setFilePermissions(linuxConfigStart, true, true, true);
+    }
+
+
+    private void setFilePermissions(final Path path, final boolean read, final boolean write, final boolean execute) {
+        final File file = path.toFile();
+        file.setWritable(read);
+        file.setReadable(write);
+        file.setExecutable(execute);
     }
 
 
