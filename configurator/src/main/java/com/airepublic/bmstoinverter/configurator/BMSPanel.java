@@ -4,7 +4,11 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.ServiceLoader;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -17,6 +21,7 @@ import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 
 import com.airepublic.bmstoinverter.core.BMSConfig;
+import com.airepublic.bmstoinverter.core.BMSDescriptor;
 
 public class BMSPanel extends JPanel {
     private static final long serialVersionUID = 1L;
@@ -179,6 +184,26 @@ public class BMSPanel extends JPanel {
             config.append("bms." + bmsConfig.getBmsNo() + ".pollInterval=" + bmsConfig.getPollInterval() + "\n");
             config.append("bms." + bmsConfig.getBmsNo() + ".delayAfterNoBytes=" + bmsConfig.getDelayAfterNoBytes() + "\n");
             config.append("\n");
+        }
+    }
+
+
+    public void setConfiguration(final Properties config) {
+
+        int bmsNo = 0;
+        String bmsType;
+        final Map<String, BMSDescriptor> descriptors = new HashMap<>();
+        ServiceLoader.load(BMSDescriptor.class).forEach(descriptor -> descriptors.put(descriptor.getName(), descriptor));
+        bmsListModel.clear();
+
+        while ((bmsType = config.getProperty("bms." + bmsNo + ".type")) != null) {
+            final String portLocator = config.getProperty("bms." + bmsNo + ".portLocator");
+            final int pollInterval = Integer.parseInt(config.getProperty("bms." + bmsNo + ".pollInterval"));
+            final long delayAfterNoBytes = Long.parseLong(config.getProperty("bms." + bmsNo + ".delayAfterNoBytes"));
+            final BMSConfig bmsConfig = new BMSConfig(bmsNo, portLocator, pollInterval, delayAfterNoBytes, descriptors.get(bmsType));
+            bmsListModel.add(bmsNo, new MenuItem<>(createBMSDisplayName(bmsConfig), bmsConfig));
+
+            bmsNo++;
         }
     }
 }

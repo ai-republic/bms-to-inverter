@@ -3,6 +3,7 @@ package com.airepublic.bmstoinverter.configurator;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.Properties;
 import java.util.stream.Stream;
 
 import javax.swing.JCheckBox;
@@ -81,7 +82,8 @@ public class ServicesPanel extends JPanel {
 
         enableComponent(webserverPanel, false);
         webserverCheckBox.addActionListener(t -> {
-            mqttPanel.enableMQTT();
+            mqttPanel.enableMQTTBroker();
+            mqttPanel.enableMQTTProducer();
             enableComponent(webserverPanel, webserverCheckBox.isSelected());
         });
 
@@ -126,15 +128,11 @@ public class ServicesPanel extends JPanel {
         config.append("\n");
 
         if (emailCheckBox.isSelected()) {
-            config.append("#### Email properties ####\n");
-            config.append("mail.service.enabled=" + emailCheckBox.isSelected() + "\n");
             emailPanel.generateConfiguration(config);
             config.append("\n");
         }
 
         if (webserverCheckBox.isSelected()) {
-            config.append("#### Webserver properties ####\n");
-            config.append("webserver.service.enabled=" + webserverCheckBox.isSelected() + "\n");
             webserverPanel.generateConfiguration(mqttPanel.getMQTTBrokerLocator(), mqttPanel.getMQTTBrokerTopic(), config);
         }
     }
@@ -142,5 +140,26 @@ public class ServicesPanel extends JPanel {
 
     public boolean isWebserverEnabled() {
         return webserverCheckBox.isSelected();
+    }
+
+
+    void setConfiguration(final Properties config) {
+        if (config.containsKey("mail.service.enabled")) {
+            emailCheckBox.setSelected(true);
+            emailPanel.setConfiguration(config);
+            enableComponent(emailPanel, true);
+        } else {
+            enableComponent(emailPanel, false);
+        }
+
+        mqttPanel.setConfiguration(config);
+
+        if (config.containsKey("webserver.service.enabled")) {
+            webserverCheckBox.setSelected(true);
+            webserverPanel.setConfiguration(config);
+            enableComponent(webserverPanel, true);
+        } else {
+            enableComponent(webserverPanel, false);
+        }
     }
 }

@@ -205,8 +205,9 @@ public class EmailServicePanel extends JPanel {
 
         try {
             emailService.sendEmail(email, account);
+            JOptionPane.showMessageDialog(this, "Email test successful!", "Information", JOptionPane.INFORMATION_MESSAGE);
         } catch (final EmailException e) {
-            JOptionPane.showMessageDialog(this, "Email test failed!" + e.getMessage());
+            JOptionPane.showMessageDialog(this, "Email test failed!" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         return true;
@@ -291,6 +292,8 @@ public class EmailServicePanel extends JPanel {
 
 
     protected void generateConfiguration(final StringBuffer config) {
+        config.append("#### Email properties ####\n");
+        config.append("mail.service.enabled=true\n");
         config.append("mail.out.debug=true\n");
         config.append("# SMTP or IMAP address of the outgoing server\n");
         config.append("mail.out.host=" + getOutgoingServer() + "\n");
@@ -310,5 +313,18 @@ public class EmailServicePanel extends JPanel {
         config.append("mail.out.defaultEmail=" + getSender() + "\n");
         config.append("# A (comma separated) list of pre-configured email recipients\n");
         config.append("mail.recipients=" + getRecipients() + "\n");
+    }
+
+
+    void setConfiguration(final Properties config) {
+        if (config.containsKey("mail.service.enabled")) {
+            outgoingServerField.setText(config.getProperty("mail.out.host"));
+            outgoingServerPortField.setText(config.getProperty("mail.out.port"));
+            sslTlsField.setSelectedItem(config.getProperty("mail.out.type").equals("smtps") ? "SSL" : "TLS");
+            usernameField.setText(config.getProperty("mail.out.username"));
+            passwordField.setText(config.getProperty("mail.out.password"));
+            senderField.setText(config.getProperty("mail.out.defaultEmail"));
+            recipientsField.setText(config.getProperty("mail.out.recipients"));
+        }
     }
 }

@@ -4,6 +4,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.io.File;
+import java.util.Properties;
 import java.util.Vector;
 
 import javax.swing.JButton;
@@ -16,60 +17,44 @@ import javax.swing.border.EmptyBorder;
 
 public class GeneralPanel extends JPanel {
     private static final long serialVersionUID = 1L;
+    private final JTextField installationPathField;
     private final Vector<String> platformItems = createPlatformItems();
     private final JComboBox<String> platformField;
-    private final JTextField installationPathField;
+    private final Vector<MenuItem<String>> logLevelItems = createLogLevelItems();
+    private final JComboBox<MenuItem<String>> logLevelComboBox;
 
-    public GeneralPanel() {
+    public GeneralPanel(final Configurator configurator) {
         setBorder(new EmptyBorder(10, 10, 0, 10));
         final GridBagLayout gridBagLayout = new GridBagLayout();
         gridBagLayout.columnWidths = new int[] { 100, 150, 100 };
-        gridBagLayout.rowHeights = new int[] { 30, 30, 30 };
+        gridBagLayout.rowHeights = new int[] { 30, 30, 0, 30 };
         gridBagLayout.columnWeights = new double[] { 0.0, 1.0, 0.0 };
-        gridBagLayout.rowWeights = new double[] { 0.0, 0.0, Double.MIN_VALUE };
+        gridBagLayout.rowWeights = new double[] { 0.0, 0.0, 0.0, Double.MIN_VALUE };
         setLayout(gridBagLayout);
-
-        final JLabel platformLabel = new JLabel("OS Platform");
-        platformLabel.setToolTipText("OS platform");
-        final GridBagConstraints gbc_platformLabel = new GridBagConstraints();
-        gbc_platformLabel.anchor = GridBagConstraints.WEST;
-        gbc_platformLabel.insets = new Insets(0, 0, 0, 5);
-        gbc_platformLabel.gridx = 0;
-        gbc_platformLabel.gridy = 0;
-        add(platformLabel, gbc_platformLabel);
-
-        platformField = new JComboBox<>(platformItems);
-        platformField.setToolTipText("OS platform");
-        final GridBagConstraints gbc_platformField = new GridBagConstraints();
-        gbc_platformField.insets = new Insets(0, 0, 5, 5);
-        gbc_platformField.fill = GridBagConstraints.BOTH;
-        gbc_platformField.gridx = 1;
-        gbc_platformField.gridy = 0;
-        add(platformField, gbc_platformField);
 
         final JLabel installationPathLabel = new JLabel("Installation path");
         installationPathLabel.setToolTipText("Path where the application will be installed");
         final GridBagConstraints gbc_installationPathLabel = new GridBagConstraints();
-        gbc_installationPathLabel.anchor = GridBagConstraints.WEST;
-        gbc_installationPathLabel.insets = new Insets(0, 0, 0, 5);
+        gbc_installationPathLabel.anchor = GridBagConstraints.EAST;
+        gbc_installationPathLabel.insets = new Insets(0, 0, 5, 5);
         gbc_installationPathLabel.gridx = 0;
-        gbc_installationPathLabel.gridy = 1;
+        gbc_installationPathLabel.gridy = 0;
         add(installationPathLabel, gbc_installationPathLabel);
 
         installationPathField = new JTextField();
         final GridBagConstraints gbc_installationPathField = new GridBagConstraints();
-        gbc_installationPathField.insets = new Insets(0, 0, 0, 5);
+        gbc_installationPathField.insets = new Insets(0, 0, 5, 5);
         gbc_installationPathField.fill = GridBagConstraints.BOTH;
         gbc_installationPathField.gridx = 1;
-        gbc_installationPathField.gridy = 1;
+        gbc_installationPathField.gridy = 0;
         add(installationPathField, gbc_installationPathField);
         installationPathField.setColumns(10);
 
         final JButton chooseInstallationPathButton = new JButton("Choose");
         final GridBagConstraints gbc_chooseInstallationPathButton = new GridBagConstraints();
-        gbc_chooseInstallationPathButton.insets = new Insets(0, 0, 0, 0);
+        gbc_chooseInstallationPathButton.insets = new Insets(0, 0, 5, 0);
         gbc_chooseInstallationPathButton.gridx = 2;
-        gbc_chooseInstallationPathButton.gridy = 1;
+        gbc_chooseInstallationPathButton.gridy = 0;
         add(chooseInstallationPathButton, gbc_chooseInstallationPathButton);
         chooseInstallationPathButton.addActionListener(e -> {
             final JFileChooser fileChooser = new JFileChooser(System.getProperty("user.home", "~"));
@@ -80,8 +65,44 @@ public class GeneralPanel extends JPanel {
             if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 final File file = fileChooser.getSelectedFile();
                 installationPathField.setText(file.getAbsolutePath());
+
+                configurator.loadConfiguration(file.toPath());
             }
         });
+
+        final JLabel platformLabel = new JLabel("OS Platform");
+        platformLabel.setToolTipText("OS platform");
+        final GridBagConstraints gbc_platformLabel = new GridBagConstraints();
+        gbc_platformLabel.insets = new Insets(0, 0, 5, 5);
+        gbc_platformLabel.anchor = GridBagConstraints.EAST;
+        gbc_platformLabel.gridx = 0;
+        gbc_platformLabel.gridy = 1;
+        add(platformLabel, gbc_platformLabel);
+
+        platformField = new JComboBox<>(platformItems);
+        platformField.setToolTipText("OS platform");
+        final GridBagConstraints gbc_platformField = new GridBagConstraints();
+        gbc_platformField.insets = new Insets(0, 0, 5, 5);
+        gbc_platformField.fill = GridBagConstraints.BOTH;
+        gbc_platformField.gridx = 1;
+        gbc_platformField.gridy = 1;
+        add(platformField, gbc_platformField);
+
+        final JLabel logLevelLabel = new JLabel("Log level");
+        final GridBagConstraints gbc_logLevelLabel = new GridBagConstraints();
+        gbc_logLevelLabel.anchor = GridBagConstraints.EAST;
+        gbc_logLevelLabel.insets = new Insets(0, 0, 0, 5);
+        gbc_logLevelLabel.gridx = 0;
+        gbc_logLevelLabel.gridy = 2;
+        add(logLevelLabel, gbc_logLevelLabel);
+
+        logLevelComboBox = new JComboBox<>(logLevelItems);
+        final GridBagConstraints gbc_logLevelComboBox = new GridBagConstraints();
+        gbc_logLevelComboBox.insets = new Insets(0, 0, 0, 5);
+        gbc_logLevelComboBox.fill = GridBagConstraints.BOTH;
+        gbc_logLevelComboBox.gridx = 1;
+        gbc_logLevelComboBox.gridy = 2;
+        add(logLevelComboBox, gbc_logLevelComboBox);
     }
 
 
@@ -103,6 +124,16 @@ public class GeneralPanel extends JPanel {
     }
 
 
+    private Vector<MenuItem<String>> createLogLevelItems() {
+        final Vector<MenuItem<String>> items = new Vector<>();
+        items.add(new MenuItem<>("Info", "info"));
+        items.add(new MenuItem<>("Debug", "debug"));
+        items.add(new MenuItem<>("Warning", "warn"));
+        items.add(new MenuItem<>("Error", "error"));
+        return items;
+    }
+
+
     public boolean verify(final StringBuffer errors) {
         if (platformField.getSelectedIndex() == -1) {
             errors.append("Missing OS platform\n");
@@ -114,6 +145,10 @@ public class GeneralPanel extends JPanel {
             return false;
         }
 
+        if (logLevelComboBox.getSelectedIndex() == -1) {
+            errors.append("Missing log level\n");
+        }
+
         return true;
     }
 
@@ -122,4 +157,27 @@ public class GeneralPanel extends JPanel {
         return installationPathField.getText();
     }
 
+
+    public String getPlatform() {
+        return (String) platformField.getSelectedItem();
+    }
+
+
+    public void setConfiguration(final Properties config) {
+    }
+
+
+    public String getLogLevel() {
+        return logLevelComboBox.getModel().getElementAt(logLevelComboBox.getSelectedIndex()).getValue();
+    }
+
+
+    public void setLogLevel(final String logLevel) {
+        for (int i = 0; i < logLevelComboBox.getModel().getSize(); i++) {
+            if (logLevelComboBox.getModel().getElementAt(i).getValue().equals(logLevel)) {
+                logLevelComboBox.setSelectedIndex(i);
+                break;
+            }
+        }
+    }
 }

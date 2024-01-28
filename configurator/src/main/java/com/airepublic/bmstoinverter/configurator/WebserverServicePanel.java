@@ -3,6 +3,7 @@ package com.airepublic.bmstoinverter.configurator;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.Properties;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -61,11 +62,19 @@ public class WebserverServicePanel extends JPanel {
 
 
     protected void generateConfiguration(final String mqttLocator, final String mqttTopic, final StringBuffer config) {
+        config.append("#### Webserver properties ####\n");
+        config.append("webserver.service.enabled=true\n");
         config.append("# The webserver port\n");
         config.append("server.port=" + getPort() + "\n");
+        config.append("# The webserver MQTT server to connect to\n");
         config.append("server.mqtt.locator=" + mqttLocator + "\n");
+        config.append("# The webserver MQTT topic to connect to\n");
         config.append("server.mqtt.topic=" + mqttTopic + "\n");
-        config.append("\n");
+    }
+
+
+    void setConfiguration(final Properties config) {
+
     }
 
 }

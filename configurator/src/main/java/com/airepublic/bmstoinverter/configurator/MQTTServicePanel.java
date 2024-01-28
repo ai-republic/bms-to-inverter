@@ -3,6 +3,7 @@ package com.airepublic.bmstoinverter.configurator;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.Properties;
 
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
@@ -127,19 +128,27 @@ public class MQTTServicePanel extends JPanel {
         gbc_mqttBrokerTopicField.gridy = 5;
         add(mqttBrokerTopicField, gbc_mqttBrokerTopicField);
 
-        activateMQTTBrokerCheckBox.addActionListener(t -> {
-            mqttBrokerLocatorLabel.setEnabled(activateMQTTBrokerCheckBox.isSelected());
-            mqttBrokerLocatorField.setEnabled(activateMQTTBrokerCheckBox.isSelected());
-            mqttBrokerTopicLabel.setEnabled(activateMQTTBrokerCheckBox.isSelected());
-            mqttBrokerTopicField.setEnabled(activateMQTTBrokerCheckBox.isSelected());
-        });
+        activateMQTTBrokerCheckBox.addActionListener(t -> enableMQTTBroker());
 
-        activateMQTTProducerCheckBox.addActionListener(t -> {
-            mqttProducerLocatorLabel.setEnabled(activateMQTTProducerCheckBox.isSelected());
-            mqttProducerLocatorField.setEnabled(activateMQTTProducerCheckBox.isSelected());
-            mqttProducerTopicLabel.setEnabled(activateMQTTProducerCheckBox.isSelected());
-            mqttProducerTopicField.setEnabled(activateMQTTProducerCheckBox.isSelected());
-        });
+        activateMQTTProducerCheckBox.addActionListener(t -> enableMQTTProducer());
+    }
+
+
+    void enableMQTTBroker() {
+        activateMQTTBrokerCheckBox.setSelected(true);
+        mqttBrokerLocatorLabel.setEnabled(activateMQTTBrokerCheckBox.isSelected());
+        mqttBrokerLocatorField.setEnabled(activateMQTTBrokerCheckBox.isSelected());
+        mqttBrokerTopicLabel.setEnabled(activateMQTTBrokerCheckBox.isSelected());
+        mqttBrokerTopicField.setEnabled(activateMQTTBrokerCheckBox.isSelected());
+    }
+
+
+    void enableMQTTProducer() {
+        activateMQTTProducerCheckBox.setSelected(true);
+        mqttProducerLocatorLabel.setEnabled(activateMQTTProducerCheckBox.isSelected());
+        mqttProducerLocatorField.setEnabled(activateMQTTProducerCheckBox.isSelected());
+        mqttProducerTopicLabel.setEnabled(activateMQTTProducerCheckBox.isSelected());
+        mqttProducerTopicField.setEnabled(activateMQTTProducerCheckBox.isSelected());
     }
 
 
@@ -199,21 +208,6 @@ public class MQTTServicePanel extends JPanel {
     }
 
 
-    public void enableMQTT() {
-        activateMQTTBrokerCheckBox.setSelected(true);
-        mqttBrokerLocatorLabel.setEnabled(activateMQTTBrokerCheckBox.isSelected());
-        mqttBrokerLocatorField.setEnabled(activateMQTTBrokerCheckBox.isSelected());
-        mqttBrokerTopicLabel.setEnabled(activateMQTTBrokerCheckBox.isSelected());
-        mqttBrokerTopicField.setEnabled(activateMQTTBrokerCheckBox.isSelected());
-
-        activateMQTTProducerCheckBox.setSelected(true);
-        mqttProducerLocatorLabel.setEnabled(activateMQTTProducerCheckBox.isSelected());
-        mqttProducerLocatorField.setEnabled(activateMQTTProducerCheckBox.isSelected());
-        mqttProducerTopicLabel.setEnabled(activateMQTTProducerCheckBox.isSelected());
-        mqttProducerTopicField.setEnabled(activateMQTTProducerCheckBox.isSelected());
-    }
-
-
     public String getMQTTBrokerLocator() {
         return mqttBrokerLocatorField.getText();
     }
@@ -221,6 +215,22 @@ public class MQTTServicePanel extends JPanel {
 
     public String getMQTTBrokerTopic() {
         return mqttBrokerTopicField.getText();
+    }
+
+
+    void setConfiguration(final Properties config) {
+        if (config.containsKey("mqtt.broker.enabled")) {
+            mqttBrokerLocatorField.setText(config.getProperty("mqtt.broker.locator"));
+            mqttBrokerTopicField.setText(config.getProperty("mqtt.broker.topic"));
+            enableMQTTBroker();
+        }
+
+        if (config.containsKey("mqtt.producer.enabled")) {
+            mqttProducerLocatorField.setText(config.getProperty("mqtt.producer.locator"));
+            mqttProducerTopicField.setText(config.getProperty("mqtt.producer.topic"));
+            enableMQTTProducer();
+        }
+
     }
 
 }

@@ -3,6 +3,7 @@ package com.airepublic.bmstoinverter.configurator;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.Vector;
 
@@ -149,5 +150,22 @@ public class InverterPanel extends JPanel {
         config.append("inverter.sendInterval=" + getSendInterval() + "\n");
         config.append("\n");
 
+    }
+
+
+    void setConfiguration(final Properties config) {
+        final String inverterType = config.getProperty("inverter.type");
+        final String portLocator = config.getProperty("inverter.portLocator");
+        final int sendInterval = Integer.parseInt(config.getProperty("inverter.sendInterval"));
+
+        for (int i = 0; i < inverterItems.size(); i++) {
+            if (inverterItems.get(i).getDisplayName().equals(inverterType)) {
+                inverterField.setSelectedIndex(i);
+                break;
+            }
+        }
+
+        inverterPortLocatorField.setText(portLocator);
+        inverterSendIntervalField.setText("" + sendInterval);
     }
 }
