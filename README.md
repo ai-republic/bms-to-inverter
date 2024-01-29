@@ -66,7 +66,8 @@ See the Wiki page [How to use](https://github.com/ai-republic/bms-to-inverter/wi
 ----------
 
 ## Notes
-I will be doing a lot of updates to the documentation and current code and structure but if you have questions or need support feel free to contact me or raise an issue.
+If you have questions or need support feel free to contact me or raise an issue or discussion.<br/>
+If you like to support me testing the application on all different BMSes and inverters please contact me!
 
 
-*I do not take any responsiblity for any damages that might occur by using this software!*
+_**--> Finally, if you like this project and like to support my work please consider sponsoring this project Sponsor button on the right :)**_
