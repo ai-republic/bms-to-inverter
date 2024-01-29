@@ -119,6 +119,7 @@ public class GeneralPanel extends JPanel {
         items.add("RISCV v64");
         items.add("X86 32bit (UNIX)");
         items.add("X86 64bit (UNIX)");
+        items.add("Windows");
 
         return items;
     }

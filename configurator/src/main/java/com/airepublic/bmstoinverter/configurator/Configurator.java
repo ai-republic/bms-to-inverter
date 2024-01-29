@@ -260,7 +260,7 @@ public class Configurator extends JFrame {
         unzip(srcZip, tempDirectory);
 
         // copy platform specific CAN library
-        String canLibFolder;
+        String canLibFolder = null;
         switch (generalPanel.getPlatform()) {
             case "AARCH64":
                 canLibFolder = "aarch64";
@@ -292,8 +292,10 @@ public class Configurator extends JFrame {
             case "X86 64bit (UNIX)":
                 canLibFolder = "x86_64";
             break;
+            case "Windows":
+                canLibFolder = "x86_64";
+            break;
             default:
-                canLibFolder = "aarch64";
             break;
         }
 
