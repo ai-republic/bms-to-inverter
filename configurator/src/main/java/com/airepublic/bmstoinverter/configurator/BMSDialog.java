@@ -105,7 +105,7 @@ public class BMSDialog extends JDialog {
         gbc_bmsPollIntervalLabel.gridy = 2;
         bmsPanel.add(bmsPollIntervalLabel, gbc_bmsPollIntervalLabel);
 
-        pollIntervalField = new JTextField();
+        pollIntervalField = new JTextField("1");
         pollIntervalField.setToolTipText("Time in seconds to read data from the BMSes");
         pollIntervalField.setColumns(10);
         final GridBagConstraints gbc_bmsPollInvervalField = new GridBagConstraints();
@@ -124,7 +124,7 @@ public class BMSDialog extends JDialog {
         gbc_delayAfterNoBytesLabel.gridy = 3;
         bmsPanel.add(delayAfterNoBytesLabel, gbc_delayAfterNoBytesLabel);
 
-        delayAfterNoBytesField = new JTextField();
+        delayAfterNoBytesField = new JTextField("200");
         final GridBagConstraints gbc_delayAfterNoBytesField = new GridBagConstraints();
         gbc_delayAfterNoBytesField.insets = new Insets(0, 0, 5, 0);
         gbc_delayAfterNoBytesField.fill = GridBagConstraints.HORIZONTAL;

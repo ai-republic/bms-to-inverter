@@ -73,7 +73,7 @@ public class InverterPanel extends JPanel {
         gbc_inverterSendIntervalLabel.gridy = 2;
         add(inverterSendIntervalLabel, gbc_inverterSendIntervalLabel);
 
-        inverterSendIntervalField = new JTextField();
+        inverterSendIntervalField = new JTextField("1");
         inverterSendIntervalField.setToolTipText("Time in seconds to send data to the inverter");
         inverterSendIntervalField.setColumns(10);
         inverterSendIntervalField.setInputVerifier(numberInputVerifier);
