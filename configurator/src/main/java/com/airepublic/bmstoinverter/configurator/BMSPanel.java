@@ -39,7 +39,7 @@ public class BMSPanel extends JPanel {
 
         final JLabel bmsesLabel = new JLabel("BMS(s)");
         final GridBagConstraints gbc_bmsesLabel = new GridBagConstraints();
-        gbc_bmsesLabel.anchor = GridBagConstraints.WEST;
+        gbc_bmsesLabel.anchor = GridBagConstraints.EAST;
         gbc_bmsesLabel.insets = new Insets(0, 0, 5, 5);
         gbc_bmsesLabel.gridx = 0;
         gbc_bmsesLabel.gridy = 0;

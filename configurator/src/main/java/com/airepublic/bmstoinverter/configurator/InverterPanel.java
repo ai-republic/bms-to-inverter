@@ -34,7 +34,7 @@ public class InverterPanel extends JPanel {
 
         final JLabel inverterLabel = new JLabel("Inverter");
         final GridBagConstraints gbc_inverterLabel = new GridBagConstraints();
-        gbc_inverterLabel.anchor = GridBagConstraints.WEST;
+        gbc_inverterLabel.anchor = GridBagConstraints.EAST;
         gbc_inverterLabel.insets = new Insets(0, 0, 5, 5);
         gbc_inverterLabel.gridx = 0;
         gbc_inverterLabel.gridy = 0;
@@ -48,9 +48,9 @@ public class InverterPanel extends JPanel {
         gbc_inverters.gridy = 0;
         add(inverterField, gbc_inverters);
 
-        final JLabel inverterPortLocatorLabel = new JLabel("Inverter port locator");
+        final JLabel inverterPortLocatorLabel = new JLabel("Port");
         final GridBagConstraints gbc_inverterPortLocatorLabel = new GridBagConstraints();
-        gbc_inverterPortLocatorLabel.anchor = GridBagConstraints.WEST;
+        gbc_inverterPortLocatorLabel.anchor = GridBagConstraints.EAST;
         gbc_inverterPortLocatorLabel.insets = new Insets(0, 0, 5, 5);
         gbc_inverterPortLocatorLabel.gridx = 0;
         gbc_inverterPortLocatorLabel.gridy = 1;
@@ -65,10 +65,10 @@ public class InverterPanel extends JPanel {
         add(inverterPortLocatorField, gbc_inverterPortField);
         inverterPortLocatorField.setColumns(10);
 
-        final JLabel inverterSendIntervalLabel = new JLabel("Inverter send interval");
+        final JLabel inverterSendIntervalLabel = new JLabel("Send interval");
         final GridBagConstraints gbc_inverterSendIntervalLabel = new GridBagConstraints();
         gbc_inverterSendIntervalLabel.insets = new Insets(0, 0, 5, 5);
-        gbc_inverterSendIntervalLabel.anchor = GridBagConstraints.WEST;
+        gbc_inverterSendIntervalLabel.anchor = GridBagConstraints.EAST;
         gbc_inverterSendIntervalLabel.gridx = 0;
         gbc_inverterSendIntervalLabel.gridy = 2;
         add(inverterSendIntervalLabel, gbc_inverterSendIntervalLabel);

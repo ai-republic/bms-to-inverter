@@ -62,7 +62,7 @@ public class BMSDialog extends JDialog {
 
         final JLabel bmsLabel = new JLabel("BMS");
         final GridBagConstraints gbc_bmsLabel = new GridBagConstraints();
-        gbc_bmsLabel.anchor = GridBagConstraints.WEST;
+        gbc_bmsLabel.anchor = GridBagConstraints.EAST;
         gbc_bmsLabel.insets = new Insets(0, 0, 5, 5);
         gbc_bmsLabel.gridx = 0;
         gbc_bmsLabel.gridy = 0;
@@ -77,11 +77,11 @@ public class BMSDialog extends JDialog {
         gbc_bmses.gridy = 0;
         bmsPanel.add(bmses, gbc_bmses);
 
-        final JLabel portLocatorLabel = new JLabel("Port locator");
+        final JLabel portLocatorLabel = new JLabel("Port");
         portLocatorLabel.setToolTipText("The qualified name of the port, e.g. /dev/ttyS0 or can0 or com3");
         final GridBagConstraints gbc_portLocatorLabel = new GridBagConstraints();
         gbc_portLocatorLabel.insets = new Insets(0, 0, 5, 5);
-        gbc_portLocatorLabel.anchor = GridBagConstraints.WEST;
+        gbc_portLocatorLabel.anchor = GridBagConstraints.EAST;
         gbc_portLocatorLabel.gridx = 0;
         gbc_portLocatorLabel.gridy = 1;
         bmsPanel.add(portLocatorLabel, gbc_portLocatorLabel);
@@ -99,7 +99,7 @@ public class BMSDialog extends JDialog {
 
         final JLabel bmsPollIntervalLabel = new JLabel("BMS poll interval (secs)");
         final GridBagConstraints gbc_bmsPollIntervalLabel = new GridBagConstraints();
-        gbc_bmsPollIntervalLabel.anchor = GridBagConstraints.BELOW_BASELINE_LEADING;
+        gbc_bmsPollIntervalLabel.anchor = GridBagConstraints.BELOW_BASELINE_TRAILING;
         gbc_bmsPollIntervalLabel.insets = new Insets(0, 0, 5, 5);
         gbc_bmsPollIntervalLabel.gridx = 0;
         gbc_bmsPollIntervalLabel.gridy = 2;
@@ -115,10 +115,10 @@ public class BMSDialog extends JDialog {
         gbc_bmsPollInvervalField.gridy = 2;
         bmsPanel.add(pollIntervalField, gbc_bmsPollInvervalField);
 
-        final JLabel delayAfterNoBytesLabel = new JLabel("Delay after no bytes received (ms)");
+        final JLabel delayAfterNoBytesLabel = new JLabel("Delay after no bytes (ms)");
         final GridBagConstraints gbc_delayAfterNoBytesLabel = new GridBagConstraints();
         gbc_delayAfterNoBytesLabel.fill = GridBagConstraints.VERTICAL;
-        gbc_delayAfterNoBytesLabel.anchor = GridBagConstraints.WEST;
+        gbc_delayAfterNoBytesLabel.anchor = GridBagConstraints.EAST;
         gbc_delayAfterNoBytesLabel.insets = new Insets(0, 0, 5, 5);
         gbc_delayAfterNoBytesLabel.gridx = 0;
         gbc_delayAfterNoBytesLabel.gridy = 3;
