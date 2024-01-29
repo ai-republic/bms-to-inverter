@@ -28,7 +28,6 @@
 					<archive>
 						<manifest>
 							<addClasspath>true</addClasspath>
-							<classpathPrefix>lib/</classpathPrefix>
 							<mainClass>
 								com.airepublic.bmstoinverter.BmsToInverter</mainClass>
 						</manifest>
@@ -61,6 +60,10 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<finalName>bms-to-inverter</finalName>
+					<appendAssemblyId>false</appendAssemblyId>
+				</configuration>
 				<executions>
 					<execution>
 						<id>create-distribution</id>
@@ -93,16 +96,22 @@
 			<version>1.0.5</version>
 		</dependency>
 
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>configurator</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
-<!-- #################### !!!!!!!!	Choose BMS 	!!!!!!!! ###################### -->
-		
+
+		<!-- #################### !!!!!!!!	BMSes 	!!!!!!!! ###################### -->
+
 		<!-- ####################  DALY(CAN) ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>bms-daly-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<!-- ####################  DALY (RS485)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
@@ -132,7 +141,7 @@
 		</dependency>
 
 
-<!-- #################### !!!!!!!!	Choose Inverter 	!!!!!!!! ###################### -->
+		<!-- #################### !!!!!!!!	Inverters 	!!!!!!!! #################### -->
 
 		<!-- ####################  Dummy Inverter  ################### -->
 		<dependency>
@@ -140,14 +149,14 @@
 			<artifactId>inverter-dummy</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<!-- ####################  SMA Sunny Island (CAN)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>inverter-sma-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<!-- ####################  GROWATT (CAN)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
@@ -170,9 +179,7 @@
 		</dependency>
 
 
-<!-- #################### !!!!!!!!	Choose optional services 	!!!!!!!! ###################### -->
-
-		<!-- optionally add MQTT services -->
+		<!-- #################### !!!!!!!!	Optional service  !!!!!!!! ###################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>service-mqtt-broker</artifactId>
@@ -185,12 +192,12 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		
 		<!-- optionally add Email service -->
-<!--		<dependency> -->
-<!--			<groupId>com.ai-republic.email</groupId> -->
-<!--			<artifactId>email-javamail</artifactId> -->
-<!--			<version>1.0.5</version> -->
-<!--		</dependency> -->
+		<dependency>
+			<groupId>com.ai-republic.email</groupId>
+			<artifactId>email-javamail</artifactId>
+			<version>1.0.5</version>
+		</dependency>
+
 	</dependencies>
 </project>

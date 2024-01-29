@@ -10,7 +10,6 @@ git pull
 
 ### overwrite the project files with the configured resource files
 echo Updating the application with your configuration files...
-cp ~/bms-to-inverter/config/pom.xml.mine ~/bms-to-inverter/src/bms-to-inverter/bms-to-inverter-main/pom.xml
 cp ~/bms-to-inverter/config/config.properties.mine ~/bms-to-inverter/src/bms-to-inverter/bms-to-inverter-main/src/main/resources/config.properties
 cp ~/bms-to-inverter/config/log4j2.xml.mine ~/bms-to-inverter/src/bms-to-inverter/bms-to-inverter-main/src/main/resources/log4j2.xml
 cp ~/bms-to-inverter/config/libjavacan-core.so.mine ~/bms-to-inverter/src/bms-to-inverter/protocol-can/src/main/resources/native/libjavacan-core.so
