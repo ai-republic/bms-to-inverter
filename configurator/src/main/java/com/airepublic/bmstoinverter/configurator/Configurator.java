@@ -251,6 +251,9 @@ public class Configurator extends JFrame {
             out.append("done\n");
             unzip(mavenZip, tempDirectory);
             Files.delete(mavenZip);
+            final File mvnFile = mavenDirectory.resolve("bin/mvn").toFile();
+            mvnFile.setExecutable(true);
+            mvnFile.setReadable(true);
         }
 
         // download the application source
