@@ -76,7 +76,7 @@ mail.out.tlsEnable=true
 # The email address to use when sending emails
 mail.out.defaultEmail=your@mail.com
 # A (comma separated) list of pre-configured email recipients
-mail.recipients=some@mail.com
+mail.out.recipients=some@mail.com
 
 #### Webserver properties ####
 webserver.service.enabled=true
