@@ -312,7 +312,7 @@ public class EmailServicePanel extends JPanel {
         config.append("# The email address to use when sending emails\n");
         config.append("mail.out.defaultEmail=" + getSender() + "\n");
         config.append("# A (comma separated) list of pre-configured email recipients\n");
-        config.append("mail.recipients=" + getRecipients() + "\n");
+        config.append("mail.out.recipients=" + getRecipients() + "\n");
     }
 
 

@@ -133,10 +133,10 @@ public class BmsToInverter implements AutoCloseable {
             }
 
             account = new EmailAccount(System.getProperties());
-            final String commaSeparatedList = System.getProperty("mail.recipients");
+            final String commaSeparatedList = System.getProperty("mail.out.recipients");
 
             if (commaSeparatedList == null) {
-                throw new IllegalArgumentException("EmailService is activated but the property 'mail.recipients' could not be found!");
+                throw new IllegalArgumentException("EmailService is activated but the property 'mail.out.recipients' could not be found!");
             }
 
             final StringTokenizer tokenizer = new StringTokenizer(commaSeparatedList, ",");
