@@ -14,7 +14,7 @@ import com.fazecast.jSerialComm.SerialPort;
 public class JKBmsRS485Descriptor implements BMSDescriptor {
     @Override
     public String getName() {
-        return "JK_CAN";
+        return "JK_RS485";
     }
 
 
