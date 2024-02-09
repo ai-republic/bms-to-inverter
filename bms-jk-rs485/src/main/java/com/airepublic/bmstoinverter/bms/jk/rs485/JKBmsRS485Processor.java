@@ -1,4 +1,4 @@
-package com.airepublic.bmstoinverter.bms.jk.can;
+package com.airepublic.bmstoinverter.bms.jk.rs485;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -13,8 +13,8 @@ import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 /**
  * The class to handle CAN messages from a JK {@link BMS}.
  */
-public class JKBmsCANProcessor extends BMS {
-    private final static Logger LOG = LoggerFactory.getLogger(JKBmsCANProcessor.class);
+public class JKBmsRS485Processor extends BMS {
+    private final static Logger LOG = LoggerFactory.getLogger(JKBmsRS485Processor.class);
 
     @Override
     protected void collectData(final Port port) {

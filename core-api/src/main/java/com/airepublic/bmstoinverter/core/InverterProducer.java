@@ -45,7 +45,7 @@ public class InverterProducer {
 
             // if no inverter is found, probably the config.properties have not been read
             if (type == null) {
-                Util.updateSystemProperties(Path.of(System.getProperty("configFile")));
+                Util.updateSystemProperties(Path.of(System.getProperty("configFile", "config.properties")));
                 type = System.getProperty("inverter.type");
 
                 if (type == null) {

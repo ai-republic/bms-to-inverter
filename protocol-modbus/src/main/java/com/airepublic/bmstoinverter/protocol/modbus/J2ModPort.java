@@ -2,7 +2,6 @@ package com.airepublic.bmstoinverter.protocol.modbus;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +63,7 @@ public class J2ModPort extends ModBusPort {
 
 
     @Override
-    public ByteBuffer receiveFrame(final Predicate<byte[]> validator) throws IOException {
+    public ByteBuffer receiveFrame() throws IOException {
         final byte[] frame = new byte[0];
         return ByteBuffer.wrap(frame);
     }

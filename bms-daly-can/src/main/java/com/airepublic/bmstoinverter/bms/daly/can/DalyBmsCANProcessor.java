@@ -39,7 +39,7 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
             skip--;
 
             for (int i = 0; i < frameCount; i++) {
-                final ByteBuffer receiveFrame = port.receiveFrame(t -> true);
+                final ByteBuffer receiveFrame = port.receiveFrame();
 
                 LOG.debug("RECEIVED: {}", Port.printBuffer(receiveFrame));
 

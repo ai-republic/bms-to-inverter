@@ -2,7 +2,7 @@ package com.airepublic.bmstoinverter.protocol.can;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.function.Predicate;
+import java.time.Duration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,6 +11,7 @@ import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.CanFrame;
+import tel.schich.javacan.CanSocketOptions;
 import tel.schich.javacan.RawCanChannel;
 
 /**
@@ -40,12 +41,15 @@ public class JavaCANPort extends CANPort {
 
     @Override
     public void open() throws Exception {
-        // close old channel first
-        if (canChannel != null) {
-            close();
-        }
+        if (!isOpen()) {
+            // close old channel first
+            if (canChannel != null) {
+                close();
+            }
 
-        canChannel = CanChannels.newRawChannel(getPortname());
+            canChannel = CanChannels.newRawChannel(getPortname());
+            canChannel.setOption(CanSocketOptions.SO_RCVTIMEO, Duration.ofMillis(200));
+        }
     }
 
 
@@ -56,7 +60,7 @@ public class JavaCANPort extends CANPort {
 
 
     @Override
-    public ByteBuffer receiveFrame(final Predicate<byte[]> validator) throws IOException {
+    public ByteBuffer receiveFrame() throws IOException {
         ensureOpen();
 
         LOG.debug("CAN frame read...");
@@ -102,7 +106,7 @@ public class JavaCANPort extends CANPort {
     @Override
     public void close() {
         // close old channel first
-        if (canChannel != null) {
+        if (isOpen() && canChannel != null) {
             try {
                 canChannel.close();
                 LOG.info("Shutting down port '{}'...OK", getPortname());

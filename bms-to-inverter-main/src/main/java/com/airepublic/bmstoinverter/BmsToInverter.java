@@ -65,7 +65,7 @@ public class BmsToInverter implements AutoCloseable {
      */
     public static void main(final String[] args) throws IOException {
         // update all non-specified system parameters from "config.properties"
-        Util.updateSystemProperties(Path.of(System.getProperty("configFile", "config/config.properties")));
+        Util.updateSystemProperties(Path.of(System.getProperty("configFile", "config.properties")));
 
         final SeContainerInitializer initializer = SeContainerInitializer.newInstance();
         final SeContainer container = initializer.initialize();

@@ -2,7 +2,6 @@ package com.airepublic.bmstoinverter.core;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,22 +107,17 @@ public abstract class Port implements AutoCloseable {
             }
         }
 
-        if (isOpen()) {
-            return true;
-        }
-
-        return false;
+        return isOpen();
     }
 
 
     /**
      * Receives a frame from the ports stream.
      * 
-     * @param validator an optional validator to check e.g. the checksum
      * @return the {@link ByteBuffer} that was read
      * @throws IOException if an exception occurs
      */
-    public abstract ByteBuffer receiveFrame(Predicate<byte[]> validator) throws IOException;
+    public abstract ByteBuffer receiveFrame() throws IOException;
 
 
     /**

@@ -20,7 +20,7 @@ public class PylonBmsCANProcessor extends BMS {
     public void collectData(final Port port) {
         try {
             final BatteryPack pack = getBatteryPack();
-            final ByteBuffer frame = port.receiveFrame(null);
+            final ByteBuffer frame = port.receiveFrame();
             final int frameId = frame.getInt();
             final byte[] bytes = new byte[8];
             frame.get(bytes);

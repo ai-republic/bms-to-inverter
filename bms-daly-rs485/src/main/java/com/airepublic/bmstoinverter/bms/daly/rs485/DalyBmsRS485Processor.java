@@ -16,7 +16,6 @@ import com.airepublic.bmstoinverter.bms.daly.common.DalyMessage;
 import com.airepublic.bmstoinverter.core.NoDataAvailableException;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.TooManyInvalidFramesException;
-import com.airepublic.bmstoinverter.core.protocol.rs485.RS485Port;
 
 /**
  * The class to handle RS485 messages from a Daly BMS.
@@ -24,13 +23,20 @@ import com.airepublic.bmstoinverter.core.protocol.rs485.RS485Port;
 public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
     private final static Logger LOG = LoggerFactory.getLogger(AbstractDalyBmsProcessor.class);
     private final ByteBuffer sendFrame = ByteBuffer.allocate(13);
-    private final Predicate<byte[]> validator = bytes -> {
-        int checksum = 0;
-        for (int i = 0; i < bytes.length - 1; i++) {
-            checksum += (byte) Byte.toUnsignedInt(bytes[i]);
+    private final Predicate<ByteBuffer> validator = buffer -> {
+        // check if null
+        if (buffer == null) {
+            return false;
         }
 
-        return bytes[12] == (byte) checksum;
+        // calculate checksum
+        int checksum = 0;
+        for (int i = 0; i < buffer.capacity() - 1; i++) {
+            checksum += (byte) Byte.toUnsignedInt(buffer.get(i));
+        }
+
+        // compare the checksum
+        return buffer.get(12) == (byte) checksum;
     };
 
     @Override
@@ -51,63 +57,69 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
             LOG.debug("SEND: {}", Port.printBuffer(sendBuffer));
 
             try {
-                Thread.sleep(50);
+                Thread.sleep(92);
             } catch (final InterruptedException e) {
             }
 
             // read the expected response frame(s)
             for (int i = 0; i < frameCount; i++) {
-                final ByteBuffer receiveBuffer = port.receiveFrame(validator);
+                boolean valid = false;
+                final ByteBuffer receiveBuffer = port.receiveFrame();
 
-                // check if a valid frame was received or no bytes
-                if (receiveBuffer == null || receiveBuffer.capacity() < ((RS485Port) port).getFrameLength()) {
+                valid = validator.test(receiveBuffer);
 
-                    // did we receive an invalid frame length
-                    if (receiveBuffer != null && receiveBuffer.capacity() < ((RS485Port) port).getFrameLength()) {
-                        // keep track of how often invalid frames were received
-                        failureCount++;
-                        LOG.debug("Wrong number of bytes received! {}", Port.printBuffer(receiveBuffer));
+                if (valid) {
+                    LOG.debug("RECEIVED: {}", Port.printBuffer(receiveBuffer));
 
-                        if (failureCount >= 10) {
-                            throw new TooManyInvalidFramesException();
+                    // check if its the correct requested response
+                    if (receiveBuffer.get(1) == (byte) (address - 0x40 + 1) && receiveBuffer.get(2) == (byte) cmd.id) {
+                        framesToBeReceived--;
+                        readBuffers.add(receiveBuffer);
+
+                        final DalyMessage dalyMsg = convertReceiveFrameToDalyMessage(receiveBuffer);
+
+                        if (dalyMsg != null) {
+                            getMessageHandler().handleMessage(this, dalyMsg);
+                        } else {
+                            LOG.warn("Message could not be interpreted " + Port.printBuffer(receiveBuffer));
+                            valid = false;
                         }
-                    } else { // we received no bytes at all
-                        // keep track of how often no bytes could be read
-                        noDataReceived++;
-                        LOG.warn("No bytes received: " + noDataReceived + " times!");
+                    } else { // we received something but not the requested frame
+                        valid = false;
+                    }
+                } else if (receiveBuffer == null) { // received nothing
+                    // keep track of how often no bytes could be read
+                    noDataReceived++;
+                    LOG.debug("No bytes received: " + noDataReceived + " times!");
 
-                        // if we received no bytes more than 10 times we stop and notify the handler
-                        // to re-open the port
-                        if (noDataReceived >= 10) {
-                            throw new NoDataAvailableException();
-                        }
+                    // if we received no bytes more than 10 times we stop and notify the handler
+                    // to re-open the port
+                    if (noDataReceived >= 10) {
+                        throw new NoDataAvailableException();
+                    }
 
-                        // try and wait for the next message to arrive
-                        try {
-                            LOG.debug("Waiting for messages to arrive....");
-                            Thread.sleep(getDelayAfterNoBytes());
-                        } catch (final InterruptedException e) {
-                        }
+                    // try and wait for the next message to arrive
+                    try {
+                        LOG.debug("Waiting for messages to arrive....");
+                        Thread.sleep(getDelayAfterNoBytes());
+                    } catch (final InterruptedException e) {
+                    }
+
+                    // try to receive the response again
+                    valid = false;
+                }
+
+                if (!valid) { // we received an invalid frame
+                    // keep track of how often invalid frames were received
+                    failureCount++;
+                    LOG.debug("Invalid frame received! {}", Port.printBuffer(receiveBuffer));
+
+                    if (failureCount >= 10) {
+                        throw new TooManyInvalidFramesException();
                     }
 
                     // try to receive the response again
                     i--;
-                } else {
-                    LOG.debug("RECEIVED: {}", Port.printBuffer(receiveBuffer));
-
-                    if (receiveBuffer.get(1) == (byte) (address - 0x40 + 1) && receiveBuffer.get(2) == (byte) cmd.id) {
-                        framesToBeReceived--;
-                        readBuffers.add(receiveBuffer);
-                    }
-
-                    final DalyMessage dalyMsg = convertReceiveFrameToDalyMessage(receiveBuffer);
-
-                    if (dalyMsg != null) {
-                        getMessageHandler().handleMessage(this, dalyMsg);
-                    } else {
-                        LOG.warn("Message could not be interpreted " + Port.printBuffer(receiveBuffer));
-                        return readBuffers;
-                    }
                 }
             }
         } while (framesToBeReceived > 0);

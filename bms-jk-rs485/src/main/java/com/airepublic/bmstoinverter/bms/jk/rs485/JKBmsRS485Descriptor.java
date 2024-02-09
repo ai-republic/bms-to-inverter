@@ -1,4 +1,4 @@
-package com.airepublic.bmstoinverter.bms.daly.rs485;
+package com.airepublic.bmstoinverter.bms.jk.rs485;
 
 import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.BMSConfig;
@@ -11,22 +11,22 @@ import com.fazecast.jSerialComm.SerialPort;
 /**
  * The {@link BMSDescriptor} for the Daly BMS using the CAN protocol.
  */
-public class DalyBmsRS485Descriptor implements BMSDescriptor {
+public class JKBmsRS485Descriptor implements BMSDescriptor {
     @Override
     public String getName() {
-        return "DALY_RS485";
+        return "JK_CAN";
     }
 
 
     @Override
     public Class<? extends BMS> getBMSClass() {
-        return DalyBmsRS485Processor.class;
+        return JKBmsRS485Processor.class;
     }
 
 
     @Override
     public Port createPort(final BMSConfig config) {
-        final Port port = new JSerialCommPort(config.getPortLocator(), 9600, 8, 1, SerialPort.NO_PARITY, new byte[] { (byte) 165 }, FrameDefinition.create("SACLDV"));
+        final Port port = new JSerialCommPort(config.getPortLocator(), 115000, 8, 1, SerialPort.NO_PARITY, new byte[] { 78 }, FrameDefinition.create(""));
         return port;
     }
 

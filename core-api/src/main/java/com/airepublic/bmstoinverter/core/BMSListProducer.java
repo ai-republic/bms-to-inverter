@@ -47,7 +47,7 @@ public class BMSListProducer {
 
             // if no bms is found, probably the config.properties have not been read
             if (type == null) {
-                Util.updateSystemProperties(Path.of(System.getProperty("configFile")));
+                Util.updateSystemProperties(Path.of(System.getProperty("configFile", "config.properties")));
                 type = System.getProperty("bms.0.type");
 
                 if (type == null) {

@@ -2,7 +2,6 @@ package com.airepublic.bmstoinverter.inverter.dummy;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.function.Predicate;
 
 import com.airepublic.bmstoinverter.core.Port;
 
@@ -23,7 +22,7 @@ public class DummyPort extends Port {
 
 
     @Override
-    public ByteBuffer receiveFrame(final Predicate<byte[]> validator) throws IOException {
+    public ByteBuffer receiveFrame() throws IOException {
         return null;
     }
 

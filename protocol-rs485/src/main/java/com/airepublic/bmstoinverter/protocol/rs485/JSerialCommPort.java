@@ -1,10 +1,9 @@
 package com.airepublic.bmstoinverter.protocol.rs485;
 
 import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
 import java.nio.ByteBuffer;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,12 +20,20 @@ import com.fazecast.jSerialComm.SerialPortEvent;
 public class JSerialCommPort extends RS485Port implements SerialPortDataListener {
     private final static Logger LOG = LoggerFactory.getLogger(JSerialCommPort.class);
     private SerialPort port;
-    private final ConcurrentLinkedQueue<byte[]> queue = new ConcurrentLinkedQueue<>();
+    private final PipedInputStream inputStream = new PipedInputStream();
+    private final PipedOutputStream outputStream = new PipedOutputStream();
+    private FrameDefinition frameDefinition;
 
     /**
      * Constructor.
      */
     public JSerialCommPort() {
+        try {
+            inputStream.connect(outputStream);
+        } catch (final IOException e) {
+            LOG.error("Could not create pipe streams!", e);
+        }
+
     }
 
 
@@ -36,8 +43,16 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
      * @param portname the portname
      * @param baudrate the baudrate
      */
-    public JSerialCommPort(final String portname, final int baudrate, final int dataBits, final int stopBits, final int parity, final int startFlag, final int frameLength) {
-        super(portname, baudrate, dataBits, stopBits, parity, startFlag, frameLength);
+    public JSerialCommPort(final String portname, final int baudrate, final int dataBits, final int stopBits, final int parity, final byte[] startFlag, final FrameDefinition frameDefinition) {
+        super(portname, baudrate, dataBits, stopBits, parity, startFlag);
+        this.frameDefinition = frameDefinition;
+
+        try {
+            inputStream.connect(outputStream);
+        } catch (final IOException e) {
+            LOG.error("Could not create pipe streams!", e);
+        }
+
     }
 
 
@@ -94,30 +109,10 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
 
 
     @Override
-    public ByteBuffer receiveFrame(final Predicate<byte[]> validator) throws IOException {
-        ensureOpen();
-
-        LOG.debug("RX queue: {}", queue);
-        final byte[] bytes = queue.poll();
-        // int failureCount = 0;
-        //
-        // while (bytes == null && failureCount < 10) {
-        // failureCount++;
-        // // if the queue is empty we have to wait for the next bytes
-        // try {
-        // synchronized (queue) {
-        // queue.wait(500);
-        // }
-        // } catch (final InterruptedException e) {
-        // }
-        //
-        // bytes = queue.poll();
-        // }
-
-        if (bytes == null) {
-            return null;
-        }
-        return ByteBuffer.wrap(bytes);
+    public ByteBuffer receiveFrame() throws IOException {
+        final ByteBuffer frame = getNextFrame();
+        LOG.debug("Next frame: {}", Port.printBuffer(frame));
+        return frame;
     }
 
 
@@ -145,26 +140,12 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
     }
 
 
-    /**
-     * Gets the queue of frames.
-     *
-     * @return queue of frames
-     */
-    public Queue<byte[]> getQueue() {
-        return queue;
-    }
-
-
     @Override
     public void clearBuffers() {
-        synchronized (queue) {
-            LOG.debug("Clearing RX buffers");
-            queue.clear();
-            getFrameBuffer().clear();
+        LOG.debug("Clearing RX buffers");
 
-            if (isOpen()) {
-                port.flushIOBuffers();
-            }
+        if (isOpen()) {
+            port.flushIOBuffers();
         }
     }
 
@@ -183,94 +164,81 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
             LOG.debug("Received: {}", Port.printBytes(bytes));
 
             if (bytes != null) {
-                final ByteBuffer frameBuffer = getFrameBuffer();
+                try {
+                    outputStream.write(bytes);
+                } catch (final IOException e) {
+                    LOG.error("Error writing bytes to pipe", e);
+                }
+            }
+        }
+    }
 
-                synchronized (frameBuffer) {
-                    // check if the bytes still fit into the framebuffer
-                    if (bytes.length <= frameBuffer.remaining()) {
-                        frameBuffer.put(bytes);
 
-                        // check if the framebuffer is full
-                        if (frameBuffer.remaining() == 0) {
-                            // add the frame to the queue
-                            addFrameBufferToQueue();
-                        }
-                    } else {
-                        int idx = 0;
+    public ByteBuffer getNextFrame() throws IOException {
+        boolean foundStartFlag = false;
+        // check for startflag
+        byte[] bytes = new byte[getStartFlag().length];
+        inputStream.read(bytes);
 
-                        // first fill up the current framebuffer
-                        if (frameBuffer.remaining() != 0) {
-                            idx += frameBuffer.remaining();
-                            frameBuffer.put(bytes, 0, frameBuffer.remaining());
-
-                            addFrameBufferToQueue();
-                        }
-
-                        // then add all complete frames
-                        while (bytes.length - idx >= getFrameLength()) {
-                            // put a complete frame into the framebuffer
-                            frameBuffer.put(bytes, idx, getFrameLength());
-
-                            idx += getFrameLength();
-
-                            // add the frame to the queue
-                            addFrameBufferToQueue();
-                        }
-
-                        // if bytes are left over put them in the framebuffer
-                        if (idx < bytes.length) {
-                            // check if the bytes fit into the remaining buffer (could happen if
-                            // startflag was not at first position)
-                            if (bytes.length - idx > frameBuffer.remaining()) {
-                                final int remaining = frameBuffer.remaining();
-                                frameBuffer.put(bytes, idx, frameBuffer.remaining());
-                                idx += remaining;
-
-                                // add the frame to the queue
-                                addFrameBufferToQueue();
-                            }
-
-                            if (idx < bytes.length) {
-                                // add the remaining bytes
-                                frameBuffer.put(bytes, idx, bytes.length - idx);
-                            }
-                        }
-                    }
+        while (!foundStartFlag) {
+            for (int startFlagIndex = 0; startFlagIndex < getStartFlag().length; startFlagIndex++) {
+                if (bytes[startFlagIndex] != getStartFlag()[startFlagIndex]) {
+                    foundStartFlag = false;
+                    break;
+                } else {
+                    foundStartFlag = true;
                 }
             }
 
-        } else {
-            LOG.debug("Error unknown serial event: " + event);
+            // if the start flag was not found
+            if (!foundStartFlag) {
+                // read the next byte
+                final int nextByte = (byte) inputStream.read();
+
+                // check if end of stream was reached
+                if (nextByte == -1) {
+                    // then no full frame exists
+                    return null;
+                }
+
+                // and shift all bytes over by 1 byte
+                for (int i = 0; i < bytes.length; i++) {
+                    if (i + 1 == bytes.length) {
+                        bytes[i] = (byte) nextByte;
+                    } else {
+                        bytes[i] = bytes[i + 1];
+                    }
+                }
+            }
         }
+
+        // try to parse next frame
+        boolean needMoreBytes = true;
+
+        while (needMoreBytes) {
+            try {
+                frameDefinition.parse(bytes);
+
+                needMoreBytes = false;
+            } catch (final IndexOutOfBoundsException e) {
+                // the byte array hold not enough bytes - need to add the next from the pipe
+                final int nextByte = inputStream.read();
+
+                // check if end of stream was reached
+                if (nextByte == -1) {
+                    // then no full frame exists
+                    return null;
+                }
+
+                // grow the byte array add the next byte
+                final byte[] swap = new byte[bytes.length + 1];
+                System.arraycopy(bytes, 0, swap, 0, bytes.length);
+                swap[swap.length - 1] = (byte) nextByte;
+                bytes = swap;
+            }
+        }
+
+        return ByteBuffer.wrap(bytes);
     }
 
-
-    private void addFrameBufferToQueue() {
-        synchronized (getFrameBuffer()) {
-            int start = 0;
-            while (start < getFrameLength() && Byte.toUnsignedInt(getFrameBuffer().get(start)) != getStartFlag()) {
-                start++;
-            }
-
-            if (start > 0) {
-                final byte[] tmp = new byte[getFrameLength() - start];
-                System.arraycopy(getFrameBuffer().array(), start, tmp, 0, tmp.length);
-                System.arraycopy(tmp, 0, getFrameBuffer().array(), 0, tmp.length);
-                getFrameBuffer().position(tmp.length);
-                return;
-            }
-
-            final byte[] frame = new byte[getFrameLength()];
-            System.arraycopy(getFrameBuffer().array(), 0, frame, 0, getFrameLength());
-
-            LOG.debug("Adding frame to TX queue: {}", printBytes(frame));
-            synchronized (queue) {
-                queue.add(frame);
-                queue.notify();
-            }
-
-            // clear the framebuffer
-            getFrameBuffer().clear();
-        }
-    }
 }

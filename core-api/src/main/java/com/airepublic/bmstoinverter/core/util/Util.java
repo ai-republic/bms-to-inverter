@@ -16,20 +16,26 @@ public class Util {
      */
     public static void updateSystemProperties(final Path config) {
         final Properties props = new Properties();
+
+        // try to load from configured path
         try {
-            // props.load(Util.class.getClassLoader().getResourceAsStream("config.properties"));
             LOG.info("Loading config.properties from: " + config);
             props.load(Files.newInputStream(config));
-
-            for (final Object name : props.keySet()) {
-                final String key = name.toString();
-                if (System.getProperty(key) == null) {
-                    System.setProperty(key, props.getProperty(key));
-                }
-
-            }
         } catch (final IOException e) {
-            LOG.warn("No properties file \"config.properties\" found - should then all be set via command line -D parameters");
+            // try to load from resource path
+            try {
+                props.load(Util.class.getClassLoader().getResourceAsStream("config.properties"));
+            } catch (final IOException e1) {
+                LOG.warn("No properties file \"config.properties\" found - should then all be set via command line -D parameters");
+            }
+        }
+
+        // set all as system properties
+        for (final Object name : props.keySet()) {
+            final String key = name.toString();
+            if (System.getProperty(key) == null) {
+                System.setProperty(key, props.getProperty(key));
+            }
         }
     }
 }

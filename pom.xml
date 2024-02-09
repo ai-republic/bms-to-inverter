@@ -35,6 +35,7 @@
 		<module>bms-pylon-can</module>
 		<module>inverter-dummy</module>
 		<module>configurator</module>
+		<module>bms-jk-rs485</module>
 	</modules>
 
 	<build>
