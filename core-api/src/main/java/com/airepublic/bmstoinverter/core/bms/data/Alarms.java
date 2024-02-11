@@ -58,7 +58,7 @@ public class Alarms {
     public Alarm failureOfEEPROMStorageModule = new Alarm("failureOfEEPROMStorageModule", false);
     public Alarm failureOfRealtimeClockModule = new Alarm("failureOfRealtimeClockModule", false);
     public Alarm failureOfPrechargeModule = new Alarm("failureOfPrechargeModule", false);
-    public Alarm failureOfVehicleCommunicationModule = new Alarm("failureOfVehicleCommunicationModule", false);
+    public Alarm failureOfInternalCommunicationModule = new Alarm("failureOfInternalCommunicationModule", false);
     public Alarm failureOfIntranetCommunicationModule = new Alarm("failureOfIntranetCommunicationModule", false);
 
     /* 0x06 */

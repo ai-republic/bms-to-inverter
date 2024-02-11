@@ -165,7 +165,7 @@ public class JKBmsCANProcessor extends BMS {
 
         // external communication failure
         bits = read2Bits(value, 2);
-        pack.alarms.failureOfVehicleCommunicationModule.value = bits != 0;
+        pack.alarms.failureOfInternalCommunicationModule.value = bits != 0;
 
         // internal communication failure
         bits = read2Bits(value, 4);

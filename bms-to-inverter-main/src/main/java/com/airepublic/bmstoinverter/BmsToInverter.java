@@ -380,8 +380,8 @@ public class BmsToInverter implements AutoCloseable {
         if (alarms.failureOfPrechargeModule.value == true) {
             activeAlarms.add(alarms.failureOfPrechargeModule.key);
         }
-        if (alarms.failureOfVehicleCommunicationModule.value == true) {
-            activeAlarms.add(alarms.failureOfVehicleCommunicationModule.key);
+        if (alarms.failureOfInternalCommunicationModule.value == true) {
+            activeAlarms.add(alarms.failureOfInternalCommunicationModule.key);
         }
         if (alarms.failureOfIntranetCommunicationModule.value == true) {
             activeAlarms.add(alarms.failureOfIntranetCommunicationModule.key);

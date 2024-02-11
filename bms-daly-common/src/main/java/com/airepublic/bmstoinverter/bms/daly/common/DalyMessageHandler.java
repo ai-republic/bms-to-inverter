@@ -366,7 +366,7 @@ public class DalyMessageHandler {
     private void getFailureCodes(final DalyMessage msg, final BMS bms) throws IOException // 0x98
     {
         final BatteryPack battery = bms.getBatteryPack();
-        byte byteValue = msg.data.get();
+        byte byteValue = msg.data.get(0);
         /* 0x00 */
         battery.alarms.levelOneCellVoltageTooHigh.value = bitRead(byteValue, 0);
         battery.alarms.levelTwoCellVoltageTooHigh.value = bitRead(byteValue, 1);
@@ -425,7 +425,7 @@ public class DalyMessageHandler {
         battery.alarms.failureOfEEPROMStorageModule.value = bitRead(byteValue, 3);
         battery.alarms.failureOfRealtimeClockModule.value = bitRead(byteValue, 4);
         battery.alarms.failureOfPrechargeModule.value = bitRead(byteValue, 5);
-        battery.alarms.failureOfVehicleCommunicationModule.value = bitRead(byteValue, 6);
+        battery.alarms.failureOfInternalCommunicationModule.value = bitRead(byteValue, 6);
         battery.alarms.failureOfIntranetCommunicationModule.value = bitRead(byteValue, 7);
 
         /* 0x06 */

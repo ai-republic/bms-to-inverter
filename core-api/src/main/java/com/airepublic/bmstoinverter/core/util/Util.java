@@ -38,4 +38,30 @@ public class Util {
             }
         }
     }
+
+
+    /**
+     * Reads the bit at the specified index of the value.
+     *
+     * @param value the value
+     * @param index the index of the bit
+     * @return true if the bit is 1, otherwise false
+     */
+    public static boolean bit(final int value, final int index) {
+        return (value >> index & 1) == 1;
+    }
+
+
+    /**
+     * Reads the specified number of bits starting at the specified index.
+     *
+     * @param value the value to read from
+     * @param index the index of the first bit to read in the value
+     * @param length the number of bits to read
+     * @return the value represented by the returned bits
+     */
+    public static int bits(final int value, final int index, final int length) {
+        return value >> index & (1 << length) - 1;
+    }
+
 }

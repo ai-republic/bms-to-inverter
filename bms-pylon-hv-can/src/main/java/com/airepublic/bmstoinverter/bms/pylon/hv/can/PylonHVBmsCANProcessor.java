@@ -15,6 +15,7 @@ import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
+import com.airepublic.bmstoinverter.core.util.Util;
 
 import jakarta.inject.Inject;
 
@@ -189,57 +190,85 @@ public class PylonHVBmsCANProcessor extends BMS {
 
     private void readAlarms(final BatteryPack pack, final ByteBuffer data) {
         // Basic status
-        data.get();
+        final byte status = data.get();
+
+        switch (Util.bits(status, 0, 3)) {
+            case 0:
+                pack.chargeDischargeStatus = "Sleep";
+            break;
+            case 1:
+                pack.chargeDischargeStatus = "Charge";
+            break;
+            case 2:
+                pack.chargeDischargeStatus = "Discharge";
+            break;
+            case 3:
+                pack.chargeDischargeStatus = "Idle";
+            break;
+            default:
+                pack.chargeDischargeStatus = null;
+        }
+
+        pack.forceCharge = Util.bit(status, 3);
+        pack.cellBalanceActive = Util.bit(status, 4);
+
         // Cycle period
         data.getShort();
+
         // Error
-        final byte error = data.get();
+        final byte fault = data.get();
+        pack.alarms.failureOfVoltageSensorModule.value = Util.bit(fault, 0);
+        pack.alarms.failureOfTemperatureSensorModule.value = Util.bit(fault, 1);
+        pack.alarms.failureOfInternalCommunicationModule.value = Util.bit(fault, 2);
+        pack.alarms.failureOfMainVoltageSensorModule.value = Util.bit(fault, 3);
+        pack.alarms.failureOfAFEAcquisitionModule.value = Util.bit(fault, 4);
+        pack.alarms.failureOfChargeFETTBreaker.value = Util.bit(fault, 5);
+
         // Alarm
         final short alarms = data.getShort();
+        pack.alarms.levelOneCellVoltageTooLow.value = Util.bit(alarms, 0);
+        pack.alarms.levelOneCellVoltageTooHigh.value = Util.bit(alarms, 1);
+        pack.alarms.levelOneStateOfChargeTooLow.value = Util.bit(alarms, 2);
+        pack.alarms.levelOneStateOfChargeTooHigh.value = Util.bit(alarms, 3);
+        pack.alarms.levelOneChargeTempTooLow.value = Util.bit(alarms, 4);
+        pack.alarms.levelOneChargeTempTooHigh.value = Util.bit(alarms, 5);
+        pack.alarms.levelOneDischargeTempTooLow.value = Util.bit(alarms, 6);
+        pack.alarms.levelOneDischargeTempTooHigh.value = Util.bit(alarms, 7);
+        pack.alarms.levelOneChargeCurrentTooHigh.value = Util.bit(alarms, 8);
+        pack.alarms.levelOneDischargeCurrentTooHigh.value = Util.bit(alarms, 9);
+        pack.alarms.levelOnePackVoltageTooLow.value = Util.bit(alarms, 10);
+        pack.alarms.levelOnePackVoltageTooHigh.value = Util.bit(alarms, 11);
+
         // Protection
         final short protection = data.getShort();
-
+        pack.alarms.levelTwoCellVoltageTooLow.value = Util.bit(alarms, 0);
+        pack.alarms.levelTwoCellVoltageTooHigh.value = Util.bit(alarms, 1);
+        pack.alarms.levelTwoStateOfChargeTooLow.value = Util.bit(alarms, 2);
+        pack.alarms.levelTwoStateOfChargeTooHigh.value = Util.bit(alarms, 3);
+        pack.alarms.levelTwoChargeTempTooLow.value = Util.bit(alarms, 4);
+        pack.alarms.levelTwoChargeTempTooHigh.value = Util.bit(alarms, 5);
+        pack.alarms.levelTwoDischargeTempTooLow.value = Util.bit(alarms, 6);
+        pack.alarms.levelTwoDischargeTempTooHigh.value = Util.bit(alarms, 7);
+        pack.alarms.levelTwoChargeCurrentTooHigh.value = Util.bit(alarms, 8);
+        pack.alarms.levelTwoDischargeCurrentTooHigh.value = Util.bit(alarms, 9);
+        pack.alarms.levelTwoPackVoltageTooLow.value = Util.bit(alarms, 10);
+        pack.alarms.levelTwoPackVoltageTooHigh.value = Util.bit(alarms, 11);
     }
 
 
     private void readModuleVoltage(final BatteryPack pack, final ByteBuffer data) {
+        // maximum module voltage (0.001V)
+        energyStorage.maxModulemV = data.getShort();
+        // minimum module voltage (0.001V)
+        energyStorage.minModulemV = data.getShort();
+        // pack number with maximum module voltage
+        energyStorage.maxModulemVNum = data.getShort();
+        // pack number with minimum module voltage
+        energyStorage.minModulemVNum = data.getShort();
     }
 
 
     private void readModuleTemperature(final BatteryPack pack, final ByteBuffer data) {
-    }
-
-
-    private static int read2Bits(final byte value, final int index) {
-        String str = Integer.toBinaryString(value);
-        System.out.println("Str to parse: " + str);
-
-        // remove leading bits
-        if (str.length() > 8) {
-            str = str.substring(str.length() - 8);
-        }
-
-        // pad leading 0's
-        while (str.length() < 8) {
-            str = "0" + str;
-        }
-
-        System.out.println("Padded str: " + str);
-        final String bits = str.substring(index, 2);
-        System.out.println("Read 2bits: " + bits);
-
-        switch (bits) {
-            case "00":
-                return 0;
-            case "01":
-                return 1;
-            case "10":
-                return 2;
-            case "11":
-                return 3;
-        }
-
-        return 0;
     }
 
 }

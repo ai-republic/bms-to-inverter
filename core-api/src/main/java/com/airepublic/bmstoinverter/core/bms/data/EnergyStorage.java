@@ -8,6 +8,14 @@ import com.google.gson.Gson;
 public class EnergyStorage {
     private transient final static Gson gson = new Gson();
     private BatteryPack[] batteryPacks;
+    /** The maximum module voltage (0.001V) of a pack */
+    public short maxModulemV;
+    /** The minimum module voltage (0.001V) of a pack */
+    public short minModulemV;
+    /** The number of the pack with the maximum voltage */
+    public short maxModulemVNum;
+    /** The number of the pack with the minimum voltage */
+    public short minModulemVNum;
 
     /**
      * Constructor.

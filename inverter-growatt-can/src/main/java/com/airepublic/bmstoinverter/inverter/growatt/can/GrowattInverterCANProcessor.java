@@ -135,7 +135,7 @@ public class GrowattInverterCANProcessor extends Inverter {
                 || alarms.failureOfPrechargeModule.value
                 || alarms.failureOfRealtimeClockModule.value
                 || alarms.failureOfTemperatureSensorModule.value
-                || alarms.failureOfVehicleCommunicationModule.value
+                || alarms.failureOfInternalCommunicationModule.value
                 || alarms.failureOfVoltageSensorModule.value);
 
         // protection alarms

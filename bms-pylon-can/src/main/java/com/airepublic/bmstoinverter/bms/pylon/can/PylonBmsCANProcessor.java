@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
+import com.airepublic.bmstoinverter.core.util.Util;
 
 /**
  * The class to handle CAN messages from a Pylon {@link BMS}.
@@ -96,19 +97,19 @@ public class PylonBmsCANProcessor extends BMS {
     private void requestChargeDischargeConfigChange(final BatteryPack pack, final ByteBuffer data) {
         final byte bits = data.get();
 
-        if (bitRead(bits, 4)) {
+        if (Util.bit(bits, 4)) {
             // request force-charge II
         }
 
-        if (bitRead(bits, 5)) {
+        if (Util.bit(bits, 5)) {
             // request force-charge I
         }
 
-        if (bitRead(bits, 6)) {
+        if (Util.bit(bits, 6)) {
             // request discharge enable
         }
 
-        if (bitRead(bits, 7)) {
+        if (Util.bit(bits, 7)) {
             // request charge enable
         }
     }
@@ -155,22 +156,22 @@ public class PylonBmsCANProcessor extends BMS {
         int value = data.getInt();
 
         // protection alarms
-        pack.alarms.levelTwoCellVoltageTooHigh.value = bitRead(value, 1);
-        pack.alarms.levelTwoCellVoltageTooLow.value = bitRead(value, 2);
-        pack.alarms.levelTwoDischargeTempTooHigh.value = bitRead(value, 3);
-        pack.alarms.levelTwoDischargeTempTooLow.value = bitRead(value, 4);
-        pack.alarms.levelTwoDischargeCurrentTooHigh.value = bitRead(value, 7);
-        pack.alarms.levelTwoChargeCurrentTooHigh.value = bitRead(value, 8);
+        pack.alarms.levelTwoCellVoltageTooHigh.value = Util.bit(value, 1);
+        pack.alarms.levelTwoCellVoltageTooLow.value = Util.bit(value, 2);
+        pack.alarms.levelTwoDischargeTempTooHigh.value = Util.bit(value, 3);
+        pack.alarms.levelTwoDischargeTempTooLow.value = Util.bit(value, 4);
+        pack.alarms.levelTwoDischargeCurrentTooHigh.value = Util.bit(value, 7);
+        pack.alarms.levelTwoChargeCurrentTooHigh.value = Util.bit(value, 8);
 
         // warning alarms
-        pack.alarms.levelOneCellVoltageTooHigh.value = bitRead(value, 17);
-        pack.alarms.levelOneCellVoltageTooLow.value = bitRead(value, 18);
-        pack.alarms.levelOneChargeTempTooHigh.value = bitRead(value, 19);
-        pack.alarms.levelOneChargeTempTooLow.value = bitRead(value, 20);
-        pack.alarms.levelOneDischargeCurrentTooHigh.value = bitRead(value, 23);
-        pack.alarms.levelOneChargeCurrentTooHigh.value = bitRead(value, 24);
-        pack.alarms.failureOfIntranetCommunicationModule.value = bitRead(value, 27);
-        pack.alarms.levelTwoCellVoltageDifferenceTooHigh.value = bitRead(value, 28);
+        pack.alarms.levelOneCellVoltageTooHigh.value = Util.bit(value, 17);
+        pack.alarms.levelOneCellVoltageTooLow.value = Util.bit(value, 18);
+        pack.alarms.levelOneChargeTempTooHigh.value = Util.bit(value, 19);
+        pack.alarms.levelOneChargeTempTooLow.value = Util.bit(value, 20);
+        pack.alarms.levelOneDischargeCurrentTooHigh.value = Util.bit(value, 23);
+        pack.alarms.levelOneChargeCurrentTooHigh.value = Util.bit(value, 24);
+        pack.alarms.failureOfIntranetCommunicationModule.value = Util.bit(value, 27);
+        pack.alarms.levelTwoCellVoltageDifferenceTooHigh.value = Util.bit(value, 28);
 
         pack.numberOfCells = data.get();
 
@@ -182,11 +183,6 @@ public class PylonBmsCANProcessor extends BMS {
         final int packNo = value >> 4;
         final int cellNo = value & 0x0F;
 
-    }
-
-
-    private boolean bitRead(final int value, final int index) {
-        return (value >> index & 1) == 1;
     }
 
 }
