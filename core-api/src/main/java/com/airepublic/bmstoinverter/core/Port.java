@@ -146,21 +146,21 @@ public abstract class Port implements AutoCloseable {
      * @return the buffer as HEX and INT string
      */
     public static String printBuffer(final ByteBuffer buffer) {
-        final StringBuffer hex = new StringBuffer("RX Buffer (HEX): [");
-        final StringBuffer dec = new StringBuffer("RX Buffer:(INT) [");
+        final StringBuffer hex = new StringBuffer("Buffer (HEX): [");
+        // final StringBuffer dec = new StringBuffer("Buffer:(INT) [");
 
         for (int i = 0; i < buffer.capacity(); i++) {
             hex.append("0x" + String.format("%02X", buffer.get(i)));
-            dec.append(Byte.toUnsignedInt(buffer.get(i)));
+            // dec.append(Byte.toUnsignedInt(buffer.get(i)));
 
             if (i < buffer.capacity() - 1) {
                 hex.append(", ");
-                dec.append(", ");
+                // dec.append(", ");
             }
         }
 
         hex.append("]\n");
-        dec.append("]\n");
+        // dec.append("]\n");
 
         return hex.toString();// + dec.toString();
     }
@@ -173,21 +173,21 @@ public abstract class Port implements AutoCloseable {
      * @return the buffer as HEX and INT string
      */
     public static String printBytes(final byte[] bytes) {
-        final StringBuffer hex = new StringBuffer("RX Buffer (HEX): [");
-        final StringBuffer dec = new StringBuffer("RX Buffer:(INT) [");
+        final StringBuffer hex = new StringBuffer("Buffer (HEX): [");
+        // final StringBuffer dec = new StringBuffer("RX Buffer:(INT) [");
 
         for (int i = 0; i < bytes.length; i++) {
             hex.append("0x" + String.format("%02X", bytes[i]));
-            dec.append(Byte.toUnsignedInt(bytes[i]));
+            // dec.append(Byte.toUnsignedInt(bytes[i]));
 
             if (i < bytes.length - 1) {
                 hex.append(", ");
-                dec.append(", ");
+                // dec.append(", ");
             }
         }
 
         hex.append("]\n");
-        dec.append("]\n");
+        // dec.append("]\n");
 
         return hex.toString();// + dec.toString();
     }

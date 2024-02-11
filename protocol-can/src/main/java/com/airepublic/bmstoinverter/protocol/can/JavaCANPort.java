@@ -2,7 +2,6 @@ package com.airepublic.bmstoinverter.protocol.can;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.time.Duration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,7 +10,6 @@ import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.CanFrame;
-import tel.schich.javacan.CanSocketOptions;
 import tel.schich.javacan.RawCanChannel;
 
 /**
@@ -48,7 +46,7 @@ public class JavaCANPort extends CANPort {
             }
 
             canChannel = CanChannels.newRawChannel(getPortname());
-            canChannel.setOption(CanSocketOptions.SO_RCVTIMEO, Duration.ofMillis(200));
+            // canChannel.setOption(CanSocketOptions.SO_RCVTIMEO, Duration.ofMillis(200));
         }
     }
 
@@ -65,11 +63,11 @@ public class JavaCANPort extends CANPort {
 
         LOG.debug("CAN frame read...");
         final CanFrame frame = canChannel.read();
-        LOG.debug("CAN read frame {}", printBuffer(frame.getBuffer()));
         final ByteBuffer buffer = frame.getBuffer();
         buffer.rewind();
         buffer.putInt(frame.getId());
         buffer.rewind();
+        LOG.debug("CAN read frame {}", printBuffer(frame.getBuffer()));
         return buffer;
     }
 
@@ -86,6 +84,9 @@ public class JavaCANPort extends CANPort {
     @Override
     public void sendExtendedFrame(final ByteBuffer frame) throws IOException {
         ensureOpen();
+
+        frame.rewind();
+
         /**
          * Frame bytes 0-3 frame-id as int, 4 data length, 5 flags for FD frames, 6 ?, 7 - 15 data
          * bytes
@@ -97,9 +98,9 @@ public class JavaCANPort extends CANPort {
         final byte[] data = new byte[length];
         frame.get(data); // last 8 bytes data
 
+        LOG.debug("CAN frame sending: {}", printBuffer(frame));
         final CanFrame sendFrame = CanFrame.createExtended(frameId, flags, data, 0, length);
         canChannel.write(sendFrame);
-        LOG.debug("CAN frame sent: {}", printBuffer(sendFrame.getBuffer()));
     }
 
 

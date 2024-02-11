@@ -104,4 +104,9 @@ public class BatteryPack {
     /** The manufacturer code */
     public String manufacturerCode;
 
+    /** The cell with the maximum temperature */
+    public int tempMaxCellNum;
+    /** The cell with the minimum temperature */
+    public int tempMinCellNum;
+
 }

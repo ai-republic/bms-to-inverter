@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.airepublic.bmstoinverter.bms.daly.common.AbstractDalyBmsProcessor;
 import com.airepublic.bmstoinverter.bms.daly.common.DalyCommand;
 import com.airepublic.bmstoinverter.bms.daly.common.DalyMessage;
+import com.airepublic.bmstoinverter.core.NoDataAvailableException;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 
@@ -24,12 +25,13 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
     private final ByteBuffer sendFrame = ByteBuffer.allocateDirect(16).order(ByteOrder.LITTLE_ENDIAN);
 
     @Override
-    protected List<ByteBuffer> sendMessage(final Port port, final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException {
+    protected List<ByteBuffer> sendMessage(final Port port, final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException, NoDataAvailableException {
         final ByteBuffer sendFrame = prepareSendFrame(bmsNo + 1, cmd, data);
         int framesToBeReceived = getResponseFrameCount(cmd);
         final int frameCount = framesToBeReceived;
         int skip = 20;
         final List<ByteBuffer> readBuffers = new ArrayList<>();
+        int noDataReceived = 0;
 
         LOG.debug("SEND: {}", Port.printBuffer(sendFrame));
         ((CANPort) port).sendExtendedFrame(sendFrame);
@@ -41,23 +43,46 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
             for (int i = 0; i < frameCount; i++) {
                 final ByteBuffer receiveFrame = port.receiveFrame();
 
-                LOG.debug("RECEIVED: {}", Port.printBuffer(receiveFrame));
+                if (receiveFrame == null) {
+                    // keep track of how often no bytes could be read
+                    noDataReceived++;
+                    LOG.debug("No bytes received: " + noDataReceived + " times!");
 
-                final byte receiver = (byte) (receiveFrame.getInt(0) >> 8 & 0x000000FF);
-                final byte command = (byte) (receiveFrame.getInt(0) >> 16 & 0x000000FF);
+                    // if we received no bytes more than 10 times we stop and notify the handler
+                    // to re-open the port
+                    if (noDataReceived >= 10) {
+                        throw new NoDataAvailableException();
+                    }
 
-                if (receiver == (byte) 0x40 && command == (byte) cmd.id) {
-                    readBuffers.add(receiveFrame);
-                    framesToBeReceived--;
-                }
-
-                final DalyMessage dalyMsg = convertReceiveFrameToDalyMessage(receiveFrame);
-
-                if (dalyMsg != null) {
-                    getMessageHandler().handleMessage(this, dalyMsg);
+                    // try and wait for the next message to arrive
+                    try {
+                        LOG.debug("Waiting for messages to arrive....");
+                        Thread.sleep(getDelayAfterNoBytes());
+                    } catch (final InterruptedException e) {
+                    }
                 } else {
-                    LOG.warn("Message could not be interpreted " + Port.printBuffer(receiveFrame));
-                    return readBuffers;
+
+                    LOG.debug("RECEIVED: {}", Port.printBuffer(receiveFrame));
+
+                    final byte receiver = (byte) (receiveFrame.getInt(0) >> 8 & 0x000000FF);
+                    final byte command = (byte) (receiveFrame.getInt(0) >> 16 & 0x000000FF);
+
+                    if (receiver == (byte) 0x40 && command == (byte) cmd.id) {
+                        readBuffers.add(receiveFrame);
+                        framesToBeReceived--;
+
+                        final DalyMessage dalyMsg = convertReceiveFrameToDalyMessage(receiveFrame);
+
+                        if (dalyMsg != null) {
+                            getMessageHandler().handleMessage(this, dalyMsg);
+                        } else {
+                            LOG.warn("Message could not be interpreted " + Port.printBuffer(receiveFrame));
+                            return readBuffers;
+                        }
+                    } else {
+                        LOG.warn("Message has wrong address and command id: " + Port.printBuffer(receiveFrame));
+                        return readBuffers;
+                    }
                 }
             }
         } while (framesToBeReceived > 0 & skip > 0);
@@ -71,21 +96,10 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
     protected ByteBuffer prepareSendFrame(final int address, final DalyCommand cmd, final byte[] data) {
         sendFrame.rewind();
 
-        // frame id
-        long frameId = 0L;
-        frameId = 0x18;
-        frameId = frameId << 8;
-        frameId += (byte) cmd.id;
-        frameId = frameId << 8;
-        frameId += (byte) address;
-        frameId = frameId << 8;
-        frameId += 0x40;
-        sendFrame.putInt((int) frameId);
-
-        // sendFrame.put((byte) 0x40);
-        // sendFrame.put((byte) address);
-        // sendFrame.put((byte) cmd.id);
-        // sendFrame.put((byte) 0x18);
+        sendFrame.put((byte) 0x40);
+        sendFrame.put((byte) address);
+        sendFrame.put((byte) cmd.id);
+        sendFrame.put((byte) 0x18);
 
         // header
         sendFrame.put((byte) 0x08) // data length
