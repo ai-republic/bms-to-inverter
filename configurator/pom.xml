@@ -88,10 +88,24 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- ####################  PYLONTECH HV (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-pylon-hv-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- ####################  JK (CAN)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>bms-jk-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- ####################  JK (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-jk-rs485</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
