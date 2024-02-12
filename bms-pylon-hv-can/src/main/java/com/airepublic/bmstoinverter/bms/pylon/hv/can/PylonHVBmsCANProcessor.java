@@ -31,8 +31,10 @@ public class PylonHVBmsCANProcessor extends BMS {
     @Override
     protected void collectData(final Port port) {
         try {
-            // first broadcast ensemble information
+            // broadcast ensemble information
             sendMessage(port, 0x00004200, (byte) 0);
+            // broadcast system equipment information
+            sendMessage(port, 0x00004200, (byte) 2);
         } catch (final Throwable t) {
 
         }
@@ -104,6 +106,20 @@ public class PylonHVBmsCANProcessor extends BMS {
                 case 0x4270:
                     readModuleTemperature(pack, data);
                 break;
+                case 0x4280:
+                    readChargeForbiddenMarks(pack, data);
+                break;
+                case 0x7310:
+                    readHardwareSoftwareVersion(pack, data);
+                break;
+                case 0x7320:
+                    readBatteryCabinetInfo(pack, data);
+                break;
+                case 0x7330:
+                case 0x7340:
+                    readManufacturer(pack, data);
+                break;
+
             }
 
         } catch (final Throwable e) {
@@ -113,8 +129,7 @@ public class PylonHVBmsCANProcessor extends BMS {
 
 
     private int getResponseFrameCount(final ByteBuffer sendFrame2) {
-        // TODO Auto-generated method stub
-        return 0;
+        return 1;
     }
 
 
@@ -269,6 +284,77 @@ public class PylonHVBmsCANProcessor extends BMS {
 
 
     private void readModuleTemperature(final BatteryPack pack, final ByteBuffer data) {
+        // maximum module temperature (0.1C)
+        energyStorage.maxModuleTemp = data.getShort();
+        // minimum module temperature (0.1C)
+        energyStorage.minModuleTemp = data.getShort();
+        // pack number with maximum module temperature
+        energyStorage.maxModuleTempNum = data.getShort();
+        // pack number with minimum module temperature
+        energyStorage.minModuleTempNum = data.getShort();
+    }
+
+
+    private void readChargeForbiddenMarks(final BatteryPack pack, final ByteBuffer data) {
+        // flag if charging is forbidden
+        pack.chargeForbidden = data.get() == 0xAA;
+        // flag if discharging is forbidden
+        pack.dischargeForbidden = data.get() == 0xAA;
+    }
+
+
+    private void readHardwareSoftwareVersion(final BatteryPack pack, final ByteBuffer data) {
+        // hardware version
+        final byte hwType = data.get();
+        data.get(); // skip
+        // hardware version V 0x02
+        final byte hwV = data.get();
+        // hardware version R 0x01
+        final byte hwR = data.get();
+        // software version V major 0x01
+        final byte swV = data.get();
+        // software version R minor 0x02
+        final byte swR = data.get();
+        // software version
+        final byte swX = data.get();
+        // software version
+        final byte swY = data.get();
+
+        switch (hwType) {
+            case 0:
+                pack.hardwareVersion = "";
+            break;
+            case 1:
+                pack.hardwareVersion = "A";
+            break;
+            case 2:
+                pack.hardwareVersion = "B";
+            break;
+            default:
+                pack.hardwareVersion = "";
+        }
+
+        pack.hardwareVersion += Byte.toUnsignedInt(hwV) + "." + Byte.toUnsignedInt(hwR);
+        pack.softwareVersion = Byte.toUnsignedInt(swV) + "." + Byte.toUnsignedInt(swR) + "." + Byte.toUnsignedInt(swX) + "." + Byte.toUnsignedInt(swY);
+    }
+
+
+    private void readBatteryCabinetInfo(final BatteryPack pack, final ByteBuffer data) {
+        // battery module quantity
+        data.getShort();
+        // battery modules in series
+        data.get();
+        // cell quantity in battery module
+        pack.numberOfCells = data.get(3);
+        // battery cabinet voltage level (1A)
+        data.getShort();
+        // battery cabinet AH (1AH)
+        data.getShort();
+    }
+
+
+    private void readManufacturer(final BatteryPack pack, final ByteBuffer data) {
+        pack.manufacturerCode = "PYLONTECH";
     }
 
 }

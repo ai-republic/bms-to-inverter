@@ -66,6 +66,10 @@ public class BatteryPack {
     public boolean disChargeMOSState;
     /** force charging */
     public boolean forceCharge;
+    /** The flag if charging is forbidden */
+    public boolean chargeForbidden;
+    /** The flag if discharging is forbidden */
+    public boolean dischargeForbidden;
 
     /** BMS life (0~255 cycles)? */
     public int bmsHeartBeat;
@@ -106,6 +110,10 @@ public class BatteryPack {
     //
     /** The manufacturer code */
     public String manufacturerCode;
+    /** The hardware version */
+    public String hardwareVersion;
+    /** The software version */
+    public String softwareVersion;
 
     /** The cell with the maximum temperature */
     public int tempMaxCellNum;
