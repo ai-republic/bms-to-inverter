@@ -273,25 +273,25 @@ public class PylonHVBmsCANProcessor extends BMS {
 
     private void readModuleVoltage(final BatteryPack pack, final ByteBuffer data) {
         // maximum module voltage (0.001V)
-        energyStorage.maxModulemV = data.getShort();
+        pack.maxModulemV = data.getShort();
         // minimum module voltage (0.001V)
-        energyStorage.minModulemV = data.getShort();
+        pack.minModulemV = data.getShort();
         // pack number with maximum module voltage
-        energyStorage.maxModulemVNum = data.getShort();
+        pack.maxModulemVNum = data.getShort();
         // pack number with minimum module voltage
-        energyStorage.minModulemVNum = data.getShort();
+        pack.minModulemVNum = data.getShort();
     }
 
 
     private void readModuleTemperature(final BatteryPack pack, final ByteBuffer data) {
         // maximum module temperature (0.1C)
-        energyStorage.maxModuleTemp = data.getShort();
+        pack.maxModuleTemp = data.getShort();
         // minimum module temperature (0.1C)
-        energyStorage.minModuleTemp = data.getShort();
+        pack.minModuleTemp = data.getShort();
         // pack number with maximum module temperature
-        energyStorage.maxModuleTempNum = data.getShort();
+        pack.maxModuleTempNum = data.getShort();
         // pack number with minimum module temperature
-        energyStorage.minModuleTempNum = data.getShort();
+        pack.minModuleTempNum = data.getShort();
     }
 
 
