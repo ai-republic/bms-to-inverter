@@ -146,6 +146,12 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
 
         if (isOpen()) {
             port.flushIOBuffers();
+
+            try {
+                outputStream.flush();
+                inputStream.readAllBytes();
+            } catch (final IOException e) {
+            }
         }
     }
 

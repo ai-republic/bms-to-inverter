@@ -132,6 +132,7 @@ public abstract class BMS {
 
             try {
                 port.ensureOpen();
+                port.clearBuffers();
                 collectData(port);
             } catch (final NoDataAvailableException e) {
                 LOG.error("Received no bytes too many times - trying to close and re-open port!");

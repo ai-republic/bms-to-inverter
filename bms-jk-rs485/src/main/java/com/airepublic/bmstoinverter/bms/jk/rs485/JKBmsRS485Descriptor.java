@@ -26,7 +26,7 @@ public class JKBmsRS485Descriptor implements BMSDescriptor {
 
     @Override
     public Port createPort(final BMSConfig config) {
-        final Port port = new JSerialCommPort(config.getPortLocator(), 115000, 8, 1, SerialPort.NO_PARITY, new byte[] { 78 }, FrameDefinition.create(""));
+        final Port port = new JSerialCommPort(config.getPortLocator(), 115200, 8, 1, SerialPort.NO_PARITY, new byte[] { 78, 87 }, FrameDefinition.create("SSLLAAAACAODOOOOOVVVV"));
         return port;
     }
 
