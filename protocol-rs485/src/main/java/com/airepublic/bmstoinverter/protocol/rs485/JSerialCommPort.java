@@ -20,20 +20,14 @@ import com.fazecast.jSerialComm.SerialPortEvent;
 public class JSerialCommPort extends RS485Port implements SerialPortDataListener {
     private final static Logger LOG = LoggerFactory.getLogger(JSerialCommPort.class);
     private SerialPort port;
-    private final PipedInputStream inputStream = new PipedInputStream();
-    private final PipedOutputStream outputStream = new PipedOutputStream();
+    private PipedInputStream inputStream;
+    private PipedOutputStream outputStream;
     private FrameDefinition frameDefinition;
 
     /**
      * Constructor.
      */
     public JSerialCommPort() {
-        try {
-            inputStream.connect(outputStream);
-        } catch (final IOException e) {
-            LOG.error("Could not create pipe streams!", e);
-        }
-
     }
 
 
@@ -46,13 +40,6 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
     public JSerialCommPort(final String portname, final int baudrate, final int dataBits, final int stopBits, final int parity, final byte[] startFlag, final FrameDefinition frameDefinition) {
         super(portname, baudrate, dataBits, stopBits, parity, startFlag);
         this.frameDefinition = frameDefinition;
-
-        try {
-            inputStream.connect(outputStream);
-        } catch (final IOException e) {
-            LOG.error("Could not create pipe streams!", e);
-        }
-
     }
 
 
@@ -60,6 +47,10 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
     public synchronized void open() throws IOException {
         if (!isOpen()) {
             try {
+                inputStream = new PipedInputStream();
+                outputStream = new PipedOutputStream();
+                inputStream.connect(outputStream);
+
                 port = SerialPort.getCommPort(getPortname());
                 // set port configuration
                 port.setComPortParameters(getBaudrate(), getDataBits(), getStopBits(), getParity(), true);
@@ -98,6 +89,12 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
             try {
                 port.removeDataListener();
                 port.closePort();
+
+                inputStream.close();
+                outputStream.close();
+                inputStream = null;
+                outputStream = null;
+
                 LOG.info("Shutting down port '{}'...OK", getPortname());
             } catch (final Throwable e) {
                 LOG.error("Shutting down port '{}'...FAILED", getPortname(), e);
@@ -148,9 +145,11 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
             port.flushIOBuffers();
 
             try {
-                outputStream.flush();
-                inputStream.readAllBytes();
+                inputStream = new PipedInputStream();
+                outputStream = new PipedOutputStream();
+                inputStream.connect(outputStream);
             } catch (final IOException e) {
+                LOG.error("Could not create pipe streams!", e);
             }
         }
     }
