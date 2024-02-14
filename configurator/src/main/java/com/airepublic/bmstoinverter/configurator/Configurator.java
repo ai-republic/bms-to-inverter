@@ -364,8 +364,8 @@ public class Configurator extends JFrame {
         }
 
         // generate start scripts
-        final StringBuffer windowsCommands = new StringBuffer("start \"\" java -jar -DconfigFile=config/config.properties -Dlog4j2.configurationFile=file:config/log4j2.xml lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar\n");
-        final StringBuffer linuxCommands = new StringBuffer("#!/bin/bash\njava -jar -DconfigFile=config/config.properties -Dlog4j2.configurationFile=file:config/log4j2.xml lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar &\n");
+        final StringBuffer windowsCommands = new StringBuffer("start \"\" java -DconfigFile=config/config.properties -Dlog4j2.configurationFile=file:config/log4j2.xml -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar\n");
+        final StringBuffer linuxCommands = new StringBuffer("#!/bin/bash\njava -DconfigFile=config/config.properties -Dlog4j2.configurationFile=file:config/log4j2.xml -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar &\n");
 
         if (servicesPanel.isWebserverEnabled()) {
             windowsCommands.append("start \"\" java -jar lib/webserver-0.0.1-SNAPSHOT.jar --spring.config.location=file:config/config.properties\n");
