@@ -128,7 +128,6 @@ public abstract class BMS {
             LOG.info("---------------------------------> Thread " + Thread.currentThread().getId());
 
             final Port port = PortAllocator.allocate(getPortLocator());
-            clearBuffers(port);
 
             try {
                 port.ensureOpen();
@@ -168,13 +167,5 @@ public abstract class BMS {
      * @throws NoDataAvailableException when no data was received too many times
      */
     protected abstract void collectData(Port port) throws IOException, TooManyInvalidFramesException, NoDataAvailableException;
-
-
-    /**
-     * Clears any buffers or queues on the associated port to restart communication.
-     */
-    protected void clearBuffers(final Port port) {
-        port.clearBuffers();
-    }
 
 }
