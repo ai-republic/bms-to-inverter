@@ -54,9 +54,8 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
                 port = SerialPort.getCommPort(getPortname());
                 // set port configuration
                 port.setComPortParameters(getBaudrate(), getDataBits(), getStopBits(), getParity(), true);
-                port.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING |
-                        SerialPort.TIMEOUT_WRITE_BLOCKING, 0, 0);
-                // port.setRs485ModeParameters(true, true, true, false, 100000, 100000);
+                port.setComPortTimeouts(SerialPort.TIMEOUT_NONBLOCKING | SerialPort.TIMEOUT_READ_BLOCKING | SerialPort.TIMEOUT_READ_SEMI_BLOCKING | SerialPort.TIMEOUT_WRITE_BLOCKING, 300, 300);
+                port.setRs485ModeParameters(true, true, true, false, 10000, 1000);
                 // port.setFlowControl(SerialPort.FLOW_CONTROL_RTS_ENABLED |
                 // SerialPort.FLOW_CONTROL_CTS_ENABLED);
                 // open port
