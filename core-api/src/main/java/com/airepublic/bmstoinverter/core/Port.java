@@ -149,13 +149,17 @@ public abstract class Port implements AutoCloseable {
         final StringBuffer hex = new StringBuffer("Buffer (HEX): [");
         // final StringBuffer dec = new StringBuffer("Buffer:(INT) [");
 
-        for (int i = 0; i < buffer.capacity(); i++) {
-            hex.append("0x" + String.format("%02X", buffer.get(i)));
-            // dec.append(Byte.toUnsignedInt(buffer.get(i)));
+        if (buffer == null) {
+            hex.append("null");
+        } else {
+            for (int i = 0; i < buffer.capacity(); i++) {
+                hex.append("0x" + String.format("%02X", buffer.get(i)));
+                // dec.append(Byte.toUnsignedInt(buffer.get(i)));
 
-            if (i < buffer.capacity() - 1) {
-                hex.append(", ");
-                // dec.append(", ");
+                if (i < buffer.capacity() - 1) {
+                    hex.append(", ");
+                    // dec.append(", ");
+                }
             }
         }
 
@@ -176,13 +180,17 @@ public abstract class Port implements AutoCloseable {
         final StringBuffer hex = new StringBuffer("Buffer (HEX): [");
         // final StringBuffer dec = new StringBuffer("RX Buffer:(INT) [");
 
-        for (int i = 0; i < bytes.length; i++) {
-            hex.append("0x" + String.format("%02X", bytes[i]));
-            // dec.append(Byte.toUnsignedInt(bytes[i]));
+        if (bytes == null) {
+            hex.append("null");
+        } else {
+            for (int i = 0; i < bytes.length; i++) {
+                hex.append("0x" + String.format("%02X", bytes[i]));
+                // dec.append(Byte.toUnsignedInt(bytes[i]));
 
-            if (i < bytes.length - 1) {
-                hex.append(", ");
-                // dec.append(", ");
+                if (i < bytes.length - 1) {
+                    hex.append(", ");
+                    // dec.append(", ");
+                }
             }
         }
 

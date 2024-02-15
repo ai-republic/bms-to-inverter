@@ -75,8 +75,10 @@ public class FrameDefinition implements Iterable<FrameDefinitionPart> {
      * @return the {@link ByteBuffer} containing a frame
      * @throws IndexOutOfBoundsException if the provided bytes do not contain enough bytes for a
      *         whole frame
+     * @throws IllegalArgumentException if the bytes for the data length definition contains a value
+     *         below 1
      */
-    public ByteBuffer parse(final byte[] bytes) throws IndexOutOfBoundsException {
+    public ByteBuffer parse(final byte[] bytes) throws IndexOutOfBoundsException, IllegalArgumentException {
         int dataLength = -1;
         int bytesIndex = 0;
 
@@ -118,6 +120,10 @@ public class FrameDefinition implements Iterable<FrameDefinitionPart> {
 
             // increase the index according to the parts byte count
             bytesIndex += part.getByteCount();
+        }
+
+        if (bytesIndex <= 0) {
+            throw new IndexOutOfBoundsException();
         }
 
         // now that the total length has been determined we can create the frame byte buffer

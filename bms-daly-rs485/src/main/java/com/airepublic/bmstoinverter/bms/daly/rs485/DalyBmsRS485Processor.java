@@ -64,48 +64,54 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
             // read the expected response frame(s)
             for (int i = 0; i < frameCount; i++) {
                 boolean valid = false;
-                final ByteBuffer receiveBuffer = port.receiveFrame();
+                ByteBuffer receiveBuffer = null;
 
-                valid = validator.test(receiveBuffer);
+                try {
+                    receiveBuffer = port.receiveFrame();
 
-                if (valid) {
-                    LOG.debug("RECEIVED: {}", Port.printBuffer(receiveBuffer));
+                    valid = validator.test(receiveBuffer);
 
-                    // check if its the correct requested response
-                    if (receiveBuffer.get(1) == (byte) (address - 0x40 + 1) && receiveBuffer.get(2) == (byte) cmd.id) {
-                        framesToBeReceived--;
-                        readBuffers.add(receiveBuffer);
+                    if (valid) {
+                        LOG.debug("RECEIVED: {}", Port.printBuffer(receiveBuffer));
 
-                        final DalyMessage dalyMsg = convertReceiveFrameToDalyMessage(receiveBuffer);
+                        // check if its the correct requested response
+                        if (receiveBuffer.get(1) == (byte) (address - 0x40 + 1) && receiveBuffer.get(2) == (byte) cmd.id) {
+                            framesToBeReceived--;
+                            readBuffers.add(receiveBuffer);
 
-                        if (dalyMsg != null) {
-                            getMessageHandler().handleMessage(this, dalyMsg);
-                        } else {
-                            LOG.warn("Message could not be interpreted " + Port.printBuffer(receiveBuffer));
+                            final DalyMessage dalyMsg = convertReceiveFrameToDalyMessage(receiveBuffer);
+
+                            if (dalyMsg != null) {
+                                getMessageHandler().handleMessage(this, dalyMsg);
+                            } else {
+                                LOG.warn("Message could not be interpreted " + Port.printBuffer(receiveBuffer));
+                                valid = false;
+                            }
+                        } else { // we received something but not the requested frame
                             valid = false;
                         }
-                    } else { // we received something but not the requested frame
+                    } else if (receiveBuffer == null) { // received nothing
+                        // keep track of how often no bytes could be read
+                        noDataReceived++;
+                        LOG.debug("No bytes received: " + noDataReceived + " times!");
+
+                        // if we received no bytes more than 10 times we stop and notify the handler
+                        // to re-open the port
+                        if (noDataReceived >= 10) {
+                            throw new NoDataAvailableException();
+                        }
+
+                        // try and wait for the next message to arrive
+                        try {
+                            LOG.debug("Waiting for messages to arrive....");
+                            Thread.sleep(getDelayAfterNoBytes());
+                        } catch (final InterruptedException e) {
+                        }
+
+                        // try to receive the response again
                         valid = false;
                     }
-                } else if (receiveBuffer == null) { // received nothing
-                    // keep track of how often no bytes could be read
-                    noDataReceived++;
-                    LOG.debug("No bytes received: " + noDataReceived + " times!");
-
-                    // if we received no bytes more than 10 times we stop and notify the handler
-                    // to re-open the port
-                    if (noDataReceived >= 10) {
-                        throw new NoDataAvailableException();
-                    }
-
-                    // try and wait for the next message to arrive
-                    try {
-                        LOG.debug("Waiting for messages to arrive....");
-                        Thread.sleep(getDelayAfterNoBytes());
-                    } catch (final InterruptedException e) {
-                    }
-
-                    // try to receive the response again
+                } catch (IllegalArgumentException | IndexOutOfBoundsException e) {
                     valid = false;
                 }
 
