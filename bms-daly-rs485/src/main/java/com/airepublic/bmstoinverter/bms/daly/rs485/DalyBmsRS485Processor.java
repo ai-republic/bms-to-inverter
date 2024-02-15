@@ -78,16 +78,14 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
                         if (receiveBuffer.get(1) == (byte) (address - 0x40 + 1) && receiveBuffer.get(2) == (byte) cmd.id) {
                             framesToBeReceived--;
                             readBuffers.add(receiveBuffer);
+                        }
 
-                            final DalyMessage dalyMsg = convertReceiveFrameToDalyMessage(receiveBuffer);
+                        final DalyMessage dalyMsg = convertReceiveFrameToDalyMessage(receiveBuffer);
 
-                            if (dalyMsg != null) {
-                                getMessageHandler().handleMessage(this, dalyMsg);
-                            } else {
-                                LOG.warn("Message could not be interpreted " + Port.printBuffer(receiveBuffer));
-                                valid = false;
-                            }
-                        } else { // we received something but not the requested frame
+                        if (dalyMsg != null) {
+                            getMessageHandler().handleMessage(this, dalyMsg);
+                        } else {
+                            LOG.warn("Message could not be interpreted " + Port.printBuffer(receiveBuffer));
                             valid = false;
                         }
                     } else if (receiveBuffer == null) { // received nothing

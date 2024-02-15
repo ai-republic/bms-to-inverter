@@ -165,7 +165,6 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
 
 
     public ByteBuffer getNextFrame() throws IOException {
-
         boolean foundStartFlag = false;
         // check for startflag
         byte[] bytes = new byte[getStartFlag().length];
