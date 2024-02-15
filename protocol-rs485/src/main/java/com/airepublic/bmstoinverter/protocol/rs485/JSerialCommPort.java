@@ -1,8 +1,6 @@
 package com.airepublic.bmstoinverter.protocol.rs485;
 
 import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
 import java.nio.ByteBuffer;
 
 import org.slf4j.Logger;
@@ -10,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.protocol.rs485.RS485Port;
+import com.airepublic.bmstoinverter.core.util.ByteReaderWriter;
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortDataListener;
 import com.fazecast.jSerialComm.SerialPortEvent;
@@ -20,8 +19,7 @@ import com.fazecast.jSerialComm.SerialPortEvent;
 public class JSerialCommPort extends RS485Port implements SerialPortDataListener {
     private final static Logger LOG = LoggerFactory.getLogger(JSerialCommPort.class);
     private SerialPort port;
-    private PipedInputStream inputStream;
-    private PipedOutputStream outputStream;
+    private final ByteReaderWriter queue = new ByteReaderWriter();
     private FrameDefinition frameDefinition;
 
     /**
@@ -47,10 +45,6 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
     public synchronized void open() throws IOException {
         if (!isOpen()) {
             try {
-                inputStream = new PipedInputStream();
-                outputStream = new PipedOutputStream();
-                inputStream.connect(outputStream);
-
                 port = SerialPort.getCommPort(getPortname());
                 // set port configuration
                 port.setComPortParameters(getBaudrate(), getDataBits(), getStopBits(), getParity(), true);
@@ -89,10 +83,7 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
                 port.removeDataListener();
                 port.closePort();
 
-                inputStream.close();
-                outputStream.close();
-                inputStream = null;
-                outputStream = null;
+                queue.close();
 
                 LOG.info("Shutting down port '{}'...OK", getPortname());
             } catch (final Throwable e) {
@@ -105,8 +96,14 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
 
 
     @Override
-    public ByteBuffer receiveFrame() throws IOException {
-        final ByteBuffer frame = getNextFrame();
+    public ByteBuffer receiveFrame() {
+        ByteBuffer frame = null;
+
+        try {
+            frame = getNextFrame();
+        } catch (final IOException e) {
+        }
+
         LOG.debug("Next frame: {}", Port.printBuffer(frame));
         return frame;
     }
@@ -142,14 +139,7 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
 
         if (isOpen()) {
             port.flushIOBuffers();
-
-            try {
-                inputStream = new PipedInputStream();
-                outputStream = new PipedOutputStream();
-                inputStream.connect(outputStream);
-            } catch (final IOException e) {
-                LOG.error("Could not create pipe streams!", e);
-            }
+            queue.clear();
         }
     }
 
@@ -168,21 +158,18 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
             LOG.debug("Received: {}", Port.printBytes(bytes));
 
             if (bytes != null) {
-                try {
-                    outputStream.write(bytes);
-                } catch (final IOException e) {
-                    LOG.error("Error writing bytes to pipe", e);
-                }
+                queue.write(bytes);
             }
         }
     }
 
 
     public ByteBuffer getNextFrame() throws IOException {
+
         boolean foundStartFlag = false;
         // check for startflag
         byte[] bytes = new byte[getStartFlag().length];
-        inputStream.read(bytes);
+        queue.read(bytes);
 
         while (!foundStartFlag) {
             for (int startFlagIndex = 0; startFlagIndex < getStartFlag().length; startFlagIndex++) {
@@ -197,7 +184,7 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
             // if the start flag was not found
             if (!foundStartFlag) {
                 // read the next byte
-                final int nextByte = (byte) inputStream.read();
+                final int nextByte = (byte) queue.read();
 
                 // check if end of stream was reached
                 if (nextByte == -1) {
@@ -225,12 +212,13 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
 
                 needMoreBytes = false;
             } catch (final IndexOutOfBoundsException e) {
-                // the byte array hold not enough bytes - need to add the next from the pipe
-                final int nextByte = inputStream.read();
+                // the byte array holds not enough bytes - need to add the next from the pipe
+                int nextByte = 0;
 
-                // check if end of stream was reached
-                if (nextByte == -1) {
-                    // then no full frame exists
+                try {
+                    nextByte = queue.read();
+                } catch (final IOException e1) {
+                    // check if no full frame exists
                     return null;
                 }
 
