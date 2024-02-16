@@ -208,7 +208,7 @@ public class Configurator extends JFrame {
         Files.deleteIfExists(configDirectory.resolve("config.properties"));
         Files.write(configDirectory.resolve("config.properties"), config.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         Files.deleteIfExists(configDirectory.resolve("lo4j2.xml"));
-        Files.write(configDirectory.resolve("log4j2.xml"), logConfig.toString().replaceAll("<root level=\"info\">", "<root level=\"" + generalPanel.getLogLevel() + "\">").getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        Files.write(configDirectory.resolve("log4j2.xml"), logConfig.toString().replace("<root level=\"info\">", "<root level=\"" + generalPanel.getLogLevel() + "\">").getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
     }
 
