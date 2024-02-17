@@ -10,8 +10,8 @@ import java.nio.ByteBuffer;
 
 import org.junit.jupiter.api.Test;
 
-import com.airepublic.bmstoinverter.protocol.rs485.FrameDefinition;
-import com.airepublic.bmstoinverter.protocol.rs485.FrameDefinitionPartType;
+import com.airepublic.bmstoinverter.core.protocol.rs485.FrameDefinition;
+import com.airepublic.bmstoinverter.core.protocol.rs485.FrameDefinitionPartType;
 import com.airepublic.bmstoinverter.protocol.rs485.JSerialCommPort;
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortEvent;
@@ -78,6 +78,7 @@ public class TestFrameDefinition {
     }
 
 
+    @SuppressWarnings("resource")
     @Test
     public void testCorrectSingleFrame() throws IOException {
         final JSerialCommPort port = new JSerialCommPort("", 9600, 8, 1, SerialPort.NO_PARITY, new byte[] { (byte) 0xA5 }, FrameDefinition.create("SACLOODVV"));
@@ -89,6 +90,7 @@ public class TestFrameDefinition {
     }
 
 
+    @SuppressWarnings("resource")
     @Test
     public void testCorrectMultipleFrames() throws IOException {
         final JSerialCommPort port = new JSerialCommPort("", 9600, 8, 1, SerialPort.NO_PARITY, new byte[] { (byte) 0xA5 }, FrameDefinition.create("SACLOODVV"));
@@ -103,6 +105,7 @@ public class TestFrameDefinition {
     }
 
 
+    @SuppressWarnings("resource")
     @Test
     public void testCorrectMultipleFramesWithRubbishInBetween() throws IOException {
         final JSerialCommPort port = new JSerialCommPort("", 9600, 8, 1, SerialPort.NO_PARITY, new byte[] { (byte) 0xA5 }, FrameDefinition.create("SACLOODVV"));
@@ -117,6 +120,7 @@ public class TestFrameDefinition {
     }
 
 
+    @SuppressWarnings("resource")
     @Test
     public void testCorrectMultipleFramesWithRubbishInBetweenAndStart() throws IOException {
         final JSerialCommPort port = new JSerialCommPort("", 9600, 8, 1, SerialPort.NO_PARITY, new byte[] { (byte) 0xA5 }, FrameDefinition.create("SACLOODVV"));
@@ -130,4 +134,15 @@ public class TestFrameDefinition {
         assertArrayEquals(new byte[] { Integer.valueOf(0xA5).byteValue(), 0x0C, 0x0D, 0x02, 0x00, 0x00, (byte) 0xAA, (byte) 0xFF, 0x00, 0x00 }, frame.array());
     }
 
+
+    @SuppressWarnings("resource")
+    @Test
+    public void testCorrectFramesWithAdjustment() throws IOException {
+        final JSerialCommPort port = new JSerialCommPort("", 9600, 8, 1, SerialPort.NO_PARITY, new byte[] { (byte) 0xA5 }, FrameDefinition.create("SACLL(-2)D"));
+        port.serialEvent(new SerialPortEvent(getPort(), SerialPort.LISTENING_EVENT_DATA_RECEIVED, new byte[] { 0x01, 0x02, 0x03, Integer.valueOf(0xA5).byteValue(), 0x01, 0x02, 0x00, 0x13, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x11, 0x00, 0x01, 0x02 }));
+
+        final ByteBuffer frame = port.getNextFrame();
+        assertNotNull(frame);
+        assertArrayEquals(new byte[] { Integer.valueOf(0xA5).byteValue(), 0x01, 0x02, 0x00, 0x13, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F, 0x11, 0x00 }, frame.array());
+    }
 }

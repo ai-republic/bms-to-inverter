@@ -1,4 +1,4 @@
-package com.airepublic.bmstoinverter.protocol.rs485;
+package com.airepublic.bmstoinverter.core.protocol.rs485;
 
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -40,25 +40,39 @@ public class FrameDefinition implements Iterable<FrameDefinitionPart> {
     public static FrameDefinition create(final String definition) throws IllegalArgumentException {
         final ArrayList<FrameDefinitionPart> parts = new ArrayList<>();
         FrameDefinitionPart current = null;
+        boolean bracketOpen = false;
+        String adjustment = "";
 
         for (int i = 0; i < definition.length(); i++) {
-            // resolve the frame definition character to the type
-            final FrameDefinitionPartType type = FrameDefinitionPartType.valueOf(definition.charAt(i));
-
-            // check if the frame definition character could be resolved
-            if (type == null) {
-                // if not throw an exception
-                throw new IllegalArgumentException("Illegal frame definition character: " + definition.charAt(i));
-            }
-
-            // if it's the same type
-            if (current != null && current.getType().equals(type)) {
-                // increment the number of bytes for that part
-                current.setByteCount(current.getByteCount() + 1);
+            // check for adjustments in brackets
+            if (bracketOpen && definition.charAt(i) != ')') {
+                adjustment += definition.charAt(i);
+            } else if (definition.charAt(i) == '(') {
+                bracketOpen = true;
+            } else if (definition.charAt(i) == ')') {
+                bracketOpen = false;
+                current.setValueAdjustment(Integer.parseInt(adjustment));
+                adjustment = "";
             } else {
-                // otherwise its the first or different type
-                current = new FrameDefinitionPart(type, 1);
-                parts.add(current);
+
+                // resolve the frame definition character to the type
+                final FrameDefinitionPartType type = FrameDefinitionPartType.valueOf(definition.charAt(i));
+
+                // check if the frame definition character could be resolved
+                if (type == null) {
+                    // if not throw an exception
+                    throw new IllegalArgumentException("Illegal frame definition character: " + definition.charAt(i));
+                }
+
+                // if it's the same type
+                if (current != null && current.getType().equals(type)) {
+                    // increment the number of bytes for that part
+                    current.setByteCount(current.getByteCount() + 1);
+                } else {
+                    // otherwise its the first or different type
+                    current = new FrameDefinitionPart(type, 1);
+                    parts.add(current);
+                }
             }
         }
 
@@ -85,41 +99,32 @@ public class FrameDefinition implements Iterable<FrameDefinitionPart> {
         // iterate through all parts to find the data length definition and adjust the byte count of
         // the data definition to the actual length found in the received bytes
         for (final FrameDefinitionPart part : parts) {
-            switch (part.getType()) {
-                // if we found the data length definition, set the data length variable according to
+            // if we found the data length definition, set the data length variable according to
+            if (part.getType().equals(FrameDefinitionPartType.LENGTH)) {
                 // how many bytes are defined for the length
-                case LENGTH: {
-                    switch (part.getByteCount()) {
-                        case 1:
-                            dataLength = bytes[bytesIndex];
-                        break;
-                        case 2:
-                            final byte[] shortValue = new byte[] { bytes[bytesIndex], bytes[bytesIndex + 1] };
-                            dataLength = ByteBuffer.wrap(shortValue).getShort();
-                        break;
-                        case 4:
-                            final byte[] intValue = new byte[] { bytes[bytesIndex], bytes[bytesIndex + 1], bytes[bytesIndex + 2], bytes[bytesIndex + 3] };
-                            dataLength = ByteBuffer.wrap(intValue).getInt();
-                        break;
-                        default:
-                        break;
-                    }
+                switch (part.getByteCount()) {
+                    case 1:
+                        dataLength = bytes[bytesIndex] + part.getValueAdjustment();
+                    break;
+                    case 2:
+                        final byte[] shortValue = new byte[] { bytes[bytesIndex], bytes[bytesIndex + 1] };
+                        dataLength = ByteBuffer.wrap(shortValue).getShort() + part.getValueAdjustment();
+                    break;
+                    case 4:
+                        final byte[] intValue = new byte[] { bytes[bytesIndex], bytes[bytesIndex + 1], bytes[bytesIndex + 2], bytes[bytesIndex + 3] };
+                        dataLength = ByteBuffer.wrap(intValue).getInt() + part.getValueAdjustment();
+                    break;
+                    default:
+                    break;
                 }
-                break;
-
-                case DATA: {
-                    // check if a length part was defined
-                    if (dataLength != -1) {
-                        // set the previously read data length
-                        part.setByteCount(dataLength);
-                    }
-                }
-                break;
-                default:
             }
 
-            // increase the index according to the parts byte count
-            bytesIndex += part.getByteCount();
+            // increase the index according to the parts byte count unless its the data part and a
+            // data length was already set before. Otherwise it could be a fixed data length
+            // definition without data length part
+            if (!part.getType().equals(FrameDefinitionPartType.DATA) || dataLength == -1) {
+                bytesIndex += part.getByteCount();
+            }
         }
 
         if (bytesIndex <= 0) {
@@ -127,7 +132,29 @@ public class FrameDefinition implements Iterable<FrameDefinitionPart> {
         }
 
         // now that the total length has been determined we can create the frame byte buffer
-        return ByteBuffer.allocate(bytesIndex).put(bytes, 0, bytesIndex);
+        return ByteBuffer.allocate(bytesIndex + dataLength).put(bytes, 0, bytesIndex + dataLength);
+    }
+
+
+    /**
+     * Gets the position of the specified {@link FrameDefinitionPartType} from the start index.
+     * NOTE: This required
+     *
+     * @param type
+     * @param start
+     * @return
+     */
+    public int getPartPosition(final FrameDefinitionPartType type, final int start) {
+        int index = 0;
+
+        for (final FrameDefinitionPart part : getParts()) {
+            if (part.getType().equals(type) && index >= start) {
+                return index;
+            } else {
+                index += part.getByteCount();
+            }
+        }
+        return -1;
     }
 
 

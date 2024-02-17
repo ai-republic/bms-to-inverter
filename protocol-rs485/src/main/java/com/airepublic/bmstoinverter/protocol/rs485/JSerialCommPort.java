@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.Port;
+import com.airepublic.bmstoinverter.core.protocol.rs485.FrameDefinition;
 import com.airepublic.bmstoinverter.core.protocol.rs485.RS485Port;
 import com.airepublic.bmstoinverter.core.util.ByteReaderWriter;
 import com.fazecast.jSerialComm.SerialPort;
@@ -20,7 +21,6 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
     private final static Logger LOG = LoggerFactory.getLogger(JSerialCommPort.class);
     private SerialPort port;
     private final ByteReaderWriter queue = new ByteReaderWriter();
-    private FrameDefinition frameDefinition;
 
     /**
      * Constructor.
@@ -36,8 +36,7 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
      * @param baudrate the baudrate
      */
     public JSerialCommPort(final String portname, final int baudrate, final int dataBits, final int stopBits, final int parity, final byte[] startFlag, final FrameDefinition frameDefinition) {
-        super(portname, baudrate, dataBits, stopBits, parity, startFlag);
-        this.frameDefinition = frameDefinition;
+        super(portname, baudrate, dataBits, stopBits, parity, startFlag, frameDefinition);
     }
 
 
@@ -207,7 +206,7 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
 
         while (needMoreBytes) {
             try {
-                frameDefinition.parse(bytes);
+                getFrameDefinition().parse(bytes);
 
                 needMoreBytes = false;
             } catch (final IndexOutOfBoundsException e) {
@@ -215,6 +214,9 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
                 int nextByte = 0;
 
                 try {
+                    // TODO optimize: find length part and read the length plus size of all other
+                    // parts
+
                     nextByte = queue.read();
                 } catch (final IOException e1) {
                     // check if no full frame exists

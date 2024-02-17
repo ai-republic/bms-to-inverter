@@ -10,6 +10,7 @@ public abstract class RS485Port extends Port {
     private int dataBits;
     private int stopBits;
     private int parity;
+    private FrameDefinition frameDefinition;
     private byte[] startFlag;
 
     /**
@@ -25,12 +26,13 @@ public abstract class RS485Port extends Port {
      * @param portname the portname
      * @param baudrate the baudrate
      */
-    public RS485Port(final String portname, final int baudrate, final int dataBits, final int stopBits, final int parity, final byte[] startFlag) {
+    public RS485Port(final String portname, final int baudrate, final int dataBits, final int stopBits, final int parity, final byte[] startFlag, final FrameDefinition frameDefinition) {
         super(portname, baudrate);
         this.dataBits = dataBits;
         this.stopBits = stopBits;
         this.parity = parity;
         this.startFlag = startFlag;
+        this.frameDefinition = frameDefinition;
 
     }
 
@@ -100,6 +102,16 @@ public abstract class RS485Port extends Port {
      */
     public void setStartFlag(final byte[] startFlag) {
         this.startFlag = startFlag;
+    }
+
+
+    /**
+     * Gets the {@link FrameDefinition} for this {@link Port}.
+     *
+     * @return the {@link FrameDefinition}
+     */
+    public FrameDefinition getFrameDefinition() {
+        return frameDefinition;
     }
 
 }

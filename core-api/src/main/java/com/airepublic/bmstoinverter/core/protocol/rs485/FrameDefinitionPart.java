@@ -1,4 +1,4 @@
-package com.airepublic.bmstoinverter.protocol.rs485;
+package com.airepublic.bmstoinverter.core.protocol.rs485;
 
 /**
  * Defines a part of a communication protocol frame.
@@ -6,6 +6,7 @@ package com.airepublic.bmstoinverter.protocol.rs485;
 public class FrameDefinitionPart {
     private final FrameDefinitionPartType type;
     private int byteCount;
+    private int valueAdjustment = 0;
 
     public FrameDefinitionPart(final FrameDefinitionPartType type, final int byteCount) {
         this.type = type;
@@ -45,6 +46,26 @@ public class FrameDefinitionPart {
         }
 
         this.byteCount = byteCount;
+    }
+
+
+    /**
+     * Gets the value adjustment value to modify the value when parsed.
+     *
+     * @return the valueAdjustment the value adjustment
+     */
+    public int getValueAdjustment() {
+        return valueAdjustment;
+    }
+
+
+    /**
+     * Sets the value adjustment value to modify the value when parsed
+     *
+     * @param valueAdjustment the value adjustment
+     */
+    public void setValueAdjustment(final int valueAdjustment) {
+        this.valueAdjustment = valueAdjustment;
     }
 
 }

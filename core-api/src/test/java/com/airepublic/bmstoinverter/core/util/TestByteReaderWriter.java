@@ -9,6 +9,7 @@ import java.io.IOException;
 import org.junit.jupiter.api.Test;
 
 public class TestByteReaderWriter {
+    @SuppressWarnings("resource")
     @Test
     public void testWriteCorrect() throws IOException {
         final ByteReaderWriter test = new ByteReaderWriter();
@@ -20,6 +21,7 @@ public class TestByteReaderWriter {
     }
 
 
+    @SuppressWarnings("resource")
     @Test
     public void testWriteNull() throws IOException {
         // GIVEN an empty instance
@@ -34,6 +36,7 @@ public class TestByteReaderWriter {
     }
 
 
+    @SuppressWarnings("resource")
     @Test
     public void testWriteEmptyArray() throws IOException {
         // GIVEN an empty instance
@@ -48,6 +51,7 @@ public class TestByteReaderWriter {
     }
 
 
+    @SuppressWarnings("resource")
     @Test
     public void testReadCorrect() throws IOException {
         // GIVEN an instance with an array of 3 bytes
@@ -66,6 +70,7 @@ public class TestByteReaderWriter {
     }
 
 
+    @SuppressWarnings("resource")
     @Test
     public void testReadTooLargeArray() throws IOException {
         // GIVEN an instance with 3 bytes
@@ -79,6 +84,7 @@ public class TestByteReaderWriter {
     }
 
 
+    @SuppressWarnings("resource")
     @Test
     public void testReadFromMultipleElementsArray() throws IOException {
         // GIVEN an instance with 3 bytes

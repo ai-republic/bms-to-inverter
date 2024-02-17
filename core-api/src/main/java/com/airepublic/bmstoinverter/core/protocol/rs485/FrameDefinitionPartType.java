@@ -1,4 +1,4 @@
-package com.airepublic.bmstoinverter.protocol.rs485;
+package com.airepublic.bmstoinverter.core.protocol.rs485;
 
 public enum FrameDefinitionPartType {
     START_FLAG('S'),

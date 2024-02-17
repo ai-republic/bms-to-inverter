@@ -2,6 +2,7 @@ package com.airepublic.bmstoinverter.bms.jk.rs485;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,192 +19,70 @@ public class JKBmsRS485Processor extends BMS {
 
     @Override
     protected void collectData(final Port port) {
+        final ByteBuffer sendFrame = prepareSendFrame((byte) 0x85); // SOC
+
         try {
-            final BatteryPack pack = getBatteryPack();
-            final ByteBuffer frame = port.receiveFrame();
-            final int frameId = frame.getInt();
-            final byte[] bytes = new byte[8];
-            frame.get(bytes);
-            final ByteBuffer data = ByteBuffer.wrap(bytes);
+            port.sendFrame(sendFrame);
 
-            switch (frameId) {
-                case 0x2F4:
-                    readBatteryStatus(pack, data);
-                break;
-                case 0x4F4:
-                    readCellVoltage(pack, data);
-                break;
-                case 0x5F4:
-                    readCellTemperature(pack, data);
-                break;
-                case 0x7F4:
-                    readAlarms(pack, data);
-                break;
+            try {
+                final ByteBuffer frame = port.receiveFrame();
+                final BatteryPack pack = getBatteryPack();
+                final int dataLength = frame.getShort(2) - 1; // -1 because of command id byte is
+                                                              // first data byte
+                final int commandId = frame.get(11);
+                final byte[] bytes = new byte[dataLength];
+                frame.position(12);
+                frame.get(bytes);
+                final ByteBuffer data = ByteBuffer.wrap(bytes);
+
+                switch (commandId) {
+                    case 0x85:
+                        readBatterySOC(pack, data);
+                    break;
+                }
+
+            } catch (final IOException e) {
+                LOG.error("Error receiving frame!", e);
             }
-
         } catch (final IOException e) {
-            LOG.error("Error receiving frame!", e);
+            LOG.error("Error sending frame: " + Port.printBuffer(sendFrame));
         }
     }
 
 
-    private void readBatteryStatus(final BatteryPack pack, final ByteBuffer data) {
-        // frame id is already read, so start at the first data byte
-        // Battery voltage (0.1V)
-        pack.packVoltage = data.getShort();
-        // Battery current (0.1A) offset 4000
-        pack.packCurrent = data.getShort() - 4000;
+    ByteBuffer prepareSendFrame(final byte commandId) {
+        final ByteBuffer sendFrame = ByteBuffer.allocateDirect(21).order(ByteOrder.LITTLE_ENDIAN);
+        sendFrame.put((byte) 0x4E); // start flag 2 bytes
+        sendFrame.put((byte) 0x57);
+        sendFrame.put((byte) 0x00); // frame length including this 2 bytes
+        sendFrame.put((byte) 0x13);
+        sendFrame.put((byte) 0x00); // terminal number 4 bytes
+        sendFrame.put((byte) 0x00);
+        sendFrame.put((byte) 0x00);
+        sendFrame.put((byte) 0x00);
+        sendFrame.put((byte) 0x03); // command id (0x01 - activation instruction, 0x02 - write
+                                    // instruction, 0x03 - read identifier data, 0x05 - pair code,
+                                    // 0x06 - read all data
+        sendFrame.put((byte) 0x03); // frame source id (0x00 - BMS, 0x01- BT, 0x02-GPS, 0x03 - PC)
+        sendFrame.put((byte) 0x00); // transport type (0x00 - request, 0x01 - response)
+        sendFrame.put(commandId);
+        sendFrame.putInt(0x00000000); // record number - 4 bytes (1st random, 2-4 recorde number)
+        sendFrame.put((byte) 0x68); // end flag
+
+        int crc = 0;
+
+        for (int i = 2; i < sendFrame.capacity() - 4; i++) {
+            crc += sendFrame.get(i);
+        }
+        sendFrame.putInt(crc); // CRC 4 byts
+
+        return sendFrame;
+    }
+
+
+    private void readBatterySOC(final BatteryPack pack, final ByteBuffer data) {
         // Battery SOC (1%)
         pack.packSOC = data.get();
-        // skip 1 byte
-        data.get();
-        // discharge time, e.g. 100h (not mapped)
-        data.getShort();
-    }
-
-
-    private void readCellVoltage(final BatteryPack pack, final ByteBuffer data) {
-        // frame id is already read, so start at the first data byte
-        // Maximum cell voltage (1mV)
-        pack.maxCellmV = data.getShort();
-        // Maximum cell voltage cell number
-        pack.maxCellVNum = data.get();
-        // Minimum cell voltage (1mV)
-        pack.minCellmV = data.getShort();
-        // Minimum cell voltage cell number
-        pack.minCellVNum = data.get();
-    }
-
-
-    private void readCellTemperature(final BatteryPack pack, final ByteBuffer data) {
-        // frame id is already read, so start at the first data byte
-        // Maximum cell temperature (C) offset -50
-        pack.tempMax = data.get();
-        // Maximum cell temperature cell number
-        data.get();
-        // Minimum cell temperature (C) offset -50
-        pack.tempMin = data.get();
-        // Minimum cell temperature cell number
-        data.get();
-        // Average cell temperature (C) offset -50
-        pack.tempAverage = data.get();
-    }
-
-
-    private void readAlarms(final BatteryPack pack, final ByteBuffer data) {
-        // read first 8 bits
-        byte value = data.get();
-
-        // unit overvoltage
-        int bits = read2Bits(value, 0);
-        pack.alarms.levelOneCellVoltageTooHigh.value = bits == 1;
-        pack.alarms.levelTwoCellVoltageTooHigh.value = bits >= 2;
-
-        // unit undervoltage
-        bits = read2Bits(value, 2);
-        pack.alarms.levelOneCellVoltageTooLow.value = bits == 1;
-        pack.alarms.levelTwoCellVoltageTooLow.value = bits >= 2;
-
-        // total voltage overvoltage
-        bits = read2Bits(value, 4);
-        pack.alarms.levelOnePackVoltageTooHigh.value = bits == 1;
-        pack.alarms.levelTwoPackVoltageTooHigh.value = bits >= 2;
-
-        // total voltage undervoltage
-        bits = read2Bits(value, 6);
-        pack.alarms.levelOnePackVoltageTooLow.value = bits == 1;
-        pack.alarms.levelTwoPackVoltageTooLow.value = bits >= 2;
-
-        // read next 8 bits
-        value = data.get();
-
-        // Large pressure difference in cell (not mapped)
-        bits = read2Bits(value, 0);
-
-        // discharge overcurrent
-        bits = read2Bits(value, 2);
-        pack.alarms.levelOneDischargeCurrentTooHigh.value = bits == 1;
-        pack.alarms.levelTwoDischargeCurrentTooHigh.value = bits >= 2;
-
-        // charge overcurrent
-        bits = read2Bits(value, 4);
-        pack.alarms.levelOneChargeCurrentTooHigh.value = bits == 1;
-        pack.alarms.levelTwoChargeCurrentTooHigh.value = bits >= 2;
-
-        // temperature too high
-        bits = read2Bits(value, 6);
-        pack.alarms.levelOneChargeTempTooHigh.value = bits == 1;
-        pack.alarms.levelTwoChargeTempTooHigh.value = bits >= 2;
-
-        // read next 8 bits
-        value = data.get();
-
-        // temperature too low
-        bits = read2Bits(value, 0);
-        pack.alarms.levelOneChargeTempTooLow.value = bits == 1;
-        pack.alarms.levelTwoChargeTempTooLow.value = bits >= 2;
-
-        // excessive temperature difference
-        bits = read2Bits(value, 2);
-        pack.alarms.levelOneTempSensorDifferenceTooHigh.value = bits == 1;
-        pack.alarms.levelTwoTempSensorDifferenceTooHigh.value = bits >= 2;
-
-        // SOC too low
-        bits = read2Bits(value, 4);
-        pack.alarms.levelOneStateOfChargeTooLow.value = bits == 1;
-        pack.alarms.levelTwoStateOfChargeTooLow.value = bits >= 2;
-
-        // insulation too low (not mapped)
-        bits = read2Bits(value, 6);
-
-        // read next 8 bits
-        value = data.get();
-
-        // high voltage interlock fault
-        bits = read2Bits(value, 0);
-        pack.alarms.failureOfVoltageSensorModule.value = bits != 0;
-
-        // external communication failure
-        bits = read2Bits(value, 2);
-        pack.alarms.failureOfInternalCommunicationModule.value = bits != 0;
-
-        // internal communication failure
-        bits = read2Bits(value, 4);
-        pack.alarms.failureOfIntranetCommunicationModule.value = bits != 0;
-
-    }
-
-
-    private static int read2Bits(final byte value, final int index) {
-        String str = Integer.toBinaryString(value);
-        System.out.println("Str to parse: " + str);
-
-        // remove leading bits
-        if (str.length() > 8) {
-            str = str.substring(str.length() - 8);
-        }
-
-        // pad leading 0's
-        while (str.length() < 8) {
-            str = "0" + str;
-        }
-
-        System.out.println("Padded str: " + str);
-        final String bits = str.substring(index, 2);
-        System.out.println("Read 2bits: " + bits);
-
-        switch (bits) {
-            case "00":
-                return 0;
-            case "01":
-                return 1;
-            case "10":
-                return 2;
-            case "11":
-                return 3;
-        }
-
-        return 0;
     }
 
 }
