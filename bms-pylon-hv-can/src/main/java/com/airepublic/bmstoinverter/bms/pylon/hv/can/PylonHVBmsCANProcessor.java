@@ -256,18 +256,18 @@ public class PylonHVBmsCANProcessor extends BMS {
 
         // Protection
         final short protection = data.getShort();
-        pack.alarms.levelTwoCellVoltageTooLow.value = Util.bit(alarms, 0);
-        pack.alarms.levelTwoCellVoltageTooHigh.value = Util.bit(alarms, 1);
-        pack.alarms.levelTwoStateOfChargeTooLow.value = Util.bit(alarms, 2);
-        pack.alarms.levelTwoStateOfChargeTooHigh.value = Util.bit(alarms, 3);
-        pack.alarms.levelTwoChargeTempTooLow.value = Util.bit(alarms, 4);
-        pack.alarms.levelTwoChargeTempTooHigh.value = Util.bit(alarms, 5);
-        pack.alarms.levelTwoDischargeTempTooLow.value = Util.bit(alarms, 6);
-        pack.alarms.levelTwoDischargeTempTooHigh.value = Util.bit(alarms, 7);
-        pack.alarms.levelTwoChargeCurrentTooHigh.value = Util.bit(alarms, 8);
-        pack.alarms.levelTwoDischargeCurrentTooHigh.value = Util.bit(alarms, 9);
-        pack.alarms.levelTwoPackVoltageTooLow.value = Util.bit(alarms, 10);
-        pack.alarms.levelTwoPackVoltageTooHigh.value = Util.bit(alarms, 11);
+        pack.alarms.levelTwoCellVoltageTooLow.value = Util.bit(protection, 0);
+        pack.alarms.levelTwoCellVoltageTooHigh.value = Util.bit(protection, 1);
+        pack.alarms.levelTwoStateOfChargeTooLow.value = Util.bit(protection, 2);
+        pack.alarms.levelTwoStateOfChargeTooHigh.value = Util.bit(protection, 3);
+        pack.alarms.levelTwoChargeTempTooLow.value = Util.bit(protection, 4);
+        pack.alarms.levelTwoChargeTempTooHigh.value = Util.bit(protection, 5);
+        pack.alarms.levelTwoDischargeTempTooLow.value = Util.bit(protection, 6);
+        pack.alarms.levelTwoDischargeTempTooHigh.value = Util.bit(protection, 7);
+        pack.alarms.levelTwoChargeCurrentTooHigh.value = Util.bit(protection, 8);
+        pack.alarms.levelTwoDischargeCurrentTooHigh.value = Util.bit(protection, 9);
+        pack.alarms.levelTwoPackVoltageTooLow.value = Util.bit(protection, 10);
+        pack.alarms.levelTwoPackVoltageTooHigh.value = Util.bit(protection, 11);
     }
 
 
