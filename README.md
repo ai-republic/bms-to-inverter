@@ -27,10 +27,11 @@ A wide range of BMS and inverters already supported (see below). Any BMS or inve
 ----------
 
 ## Currently implemented BMS:
-* Daly BMS (RS485(, UART, RS232) or CAN)
-* JK BMS (CAN)
+* Daly BMS (CAN / RS485 (& UART / RS232))
+* JK BMS (CAN / RS485 (& UART / RS232))
 * Seplos BMS (CAN)
-* PylonTech BMS (CAN)
+* PylonTech low voltage BMS (CAN)
+* PylonTech high voltage BMS (CAN)
 
 ## Currently implemented inverters:
 * SMA Sunny Island (CAN)
@@ -39,6 +40,8 @@ A wide range of BMS and inverters already supported (see below). Any BMS or inve
 * SolArk inverters (CAN)
 * any inverter speaking the PylonTech (CAN) protocol
 
+
+**NOTE:** **If your BMS or inverter is not in the list just open an issue!**
 
 ----------
 
