@@ -1,12 +1,15 @@
 package com.airepublic.bmstoinverter.inverter.solark.can;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 import java.util.stream.Stream;
 
 import com.airepublic.bmstoinverter.core.Inverter;
+import com.airepublic.bmstoinverter.core.Port;
+import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 
 import jakarta.inject.Inject;
@@ -35,11 +38,7 @@ public class SolArkInverterCANProcessor extends Inverter {
     // 0x351
     private ByteBuffer createChargeDischargeInfo() {
         final int bmsNo = 0; // read the limits from the first BMS
-        final ByteBuffer frame = ByteBuffer.allocateDirect(16);
-        frame.putInt(0x0351)
-                .put((byte) 8)
-                .put((byte) 0) // flags
-                .putShort((short) 0); // skip 2 bytes
+        final ByteBuffer frame = prepareFrame(0x351);
 
         // Battery charge voltage (0.1V) - uint_16
         frame.putChar((char) energyStorage.getBatteryPack(bmsNo).maxPackVoltageLimit);
@@ -60,11 +59,7 @@ public class SolArkInverterCANProcessor extends Inverter {
         final int aggregatedSOC = (int) Stream.of(energyStorage.getBatteryPacks()).mapToInt(pack -> pack.packSOC).average().orElse(50);
         final int aggregatedSOH = (int) Stream.of(energyStorage.getBatteryPacks()).mapToInt(pack -> pack.packSOH).average().orElse(50);
 
-        final ByteBuffer frame = ByteBuffer.allocateDirect(16);
-        frame.putInt(0x0355)
-                .put((byte) 8)
-                .put((byte) 0) // flags
-                .putShort((short) 0); // skip 2 bytes
+        final ByteBuffer frame = prepareFrame(0x355);
 
         // SOC (1%) - uint_16
         frame.putChar((char) aggregatedSOC);
@@ -81,11 +76,7 @@ public class SolArkInverterCANProcessor extends Inverter {
         final int aggregatedPackCurrent = Stream.of(energyStorage.getBatteryPacks()).mapToInt(pack -> pack.packCurrent).sum();
         final int aggregatedPackTemperature = (int) Stream.of(energyStorage.getBatteryPacks()).mapToInt(pack -> pack.tempMax).average().orElse(35) * 10;
 
-        final ByteBuffer frame = ByteBuffer.allocateDirect(16);
-        frame.putInt(0x0356)
-                .put((byte) 8)
-                .put((byte) 0) // flags
-                .putShort((short) 0); // skip 2 bytes
+        final ByteBuffer frame = prepareFrame(0x356);
 
         // Battery voltage (0.01V) - uint_16
         frame.putShort((short) aggregatedPackVoltage);
@@ -101,11 +92,7 @@ public class SolArkInverterCANProcessor extends Inverter {
     // 0x35E
     private ByteBuffer createManufacturer() {
         final int bmsNo = 0; // take the manufacturer from the first BMS
-        final ByteBuffer frame = ByteBuffer.allocateDirect(16);
-        frame.putInt(0x035E)
-                .put((byte) 8)
-                .put((byte) 0) // flags
-                .putShort((short) 0); // skip 2 bytes
+        final ByteBuffer frame = prepareFrame(0x35E);
 
         frame.putChar(energyStorage.getBatteryPack(bmsNo).manufacturerCode.charAt(0));
         frame.putChar(energyStorage.getBatteryPack(bmsNo).manufacturerCode.charAt(1));
@@ -133,11 +120,7 @@ public class SolArkInverterCANProcessor extends Inverter {
         final boolean aggregatedLevelTwoCellVoltageDifferenceTooHigh = Stream.of(energyStorage.getBatteryPacks()).map(pack -> pack.alarms.levelTwoCellVoltageDifferenceTooHigh).anyMatch(b -> true);
 
         final BitSet bits = new BitSet(32);
-        final ByteBuffer frame = ByteBuffer.allocateDirect(16);
-        frame.putInt(0x0359)
-                .put((byte) 8)
-                .put((byte) 0) // flags
-                .putShort((short) 0); // skip 2 bytes
+        final ByteBuffer frame = prepareFrame(0x359);
 
         // protection alarms
         bits.set(1, aggregatedLevelTwoCellVoltageTooHigh);
@@ -158,6 +141,33 @@ public class SolArkInverterCANProcessor extends Inverter {
         bits.set(28, aggregatedLevelTwoCellVoltageDifferenceTooHigh);
 
         return frame;
+    }
+
+
+    private ByteBuffer prepareFrame(final int cmd) {
+        final ByteBuffer frame = ByteBuffer.allocateDirect(16).order(ByteOrder.LITTLE_ENDIAN);
+        frame.putInt(cmd)
+                .put((byte) 8)
+                .put((byte) 0) // flags
+                .putShort((short) 0); // skip 2 bytes
+        return frame;
+    }
+
+
+    public static void main(final String[] args) {
+        final BatteryPack pack = new BatteryPack();
+        pack.packVoltage = 535;
+        pack.packCurrent = 15;
+        pack.packSOC = 94;
+        pack.packSOH = 100;
+        pack.tempMax = 22;
+        final EnergyStorage es = new EnergyStorage(new BatteryPack[] { pack });
+
+        final SolArkInverterCANProcessor processor = new SolArkInverterCANProcessor();
+        processor.energyStorage = es;
+        final ByteBuffer frame = processor.createSOC();
+
+        System.out.println(Port.printBuffer(frame));
     }
 
 }

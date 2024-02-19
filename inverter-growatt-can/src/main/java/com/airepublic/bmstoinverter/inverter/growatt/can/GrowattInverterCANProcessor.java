@@ -1,6 +1,7 @@
 package com.airepublic.bmstoinverter.inverter.growatt.can;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -8,6 +9,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import com.airepublic.bmstoinverter.core.Inverter;
+import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 
@@ -326,7 +328,7 @@ public class GrowattInverterCANProcessor extends Inverter {
 
 
     private ByteBuffer prepareFrame(final int cmd) {
-        final ByteBuffer frame = ByteBuffer.allocateDirect(16);
+        final ByteBuffer frame = ByteBuffer.allocateDirect(16).order(ByteOrder.LITTLE_ENDIAN);
         frame.putInt(cmd)
                 .put((byte) 8)
                 .put((byte) 0) // flags
@@ -397,4 +399,20 @@ public class GrowattInverterCANProcessor extends Inverter {
         return (value >> index & 1) == 1;
     }
 
+
+    public static void main(final String[] args) {
+        final BatteryPack pack = new BatteryPack();
+        pack.packVoltage = 535;
+        pack.packCurrent = 15;
+        pack.packSOC = 940;
+        pack.packSOH = 1000;
+        pack.tempMax = 22;
+        final EnergyStorage es = new EnergyStorage(new BatteryPack[] { pack });
+
+        final GrowattInverterCANProcessor processor = new GrowattInverterCANProcessor();
+        processor.energyStorage = es;
+        final ByteBuffer frame = processor.createBatteryVoltage();
+
+        System.out.println(Port.printBuffer(frame));
+    }
 }
