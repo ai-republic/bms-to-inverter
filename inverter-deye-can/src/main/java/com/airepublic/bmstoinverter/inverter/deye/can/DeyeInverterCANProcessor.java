@@ -4,16 +4,17 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
-import java.util.stream.Stream;
 
 import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 /**
  * The class to handle CAN messages for Deye {@link Inverter}.
  */
+@ApplicationScoped
 public class DeyeInverterCANProcessor extends Inverter {
     @Inject
     private EnergyStorage energyStorage;
@@ -57,8 +58,8 @@ public class DeyeInverterCANProcessor extends Inverter {
 
     // 0x355
     private ByteBuffer createSOC() {
-        final int aggregatedSOC = (int) Stream.of(energyStorage.getBatteryPacks()).mapToInt(pack -> pack.packSOC).average().orElse(50);
-        final int aggregatedSOH = (int) Stream.of(energyStorage.getBatteryPacks()).mapToInt(pack -> pack.packSOH).average().orElse(50);
+        final int aggregatedSOC = (int) energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.packSOC).average().orElse(50);
+        final int aggregatedSOH = (int) energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.packSOH).average().orElse(50);
 
         final ByteBuffer frame = ByteBuffer.allocateDirect(16);
         frame.putInt(0x0355)
@@ -77,9 +78,9 @@ public class DeyeInverterCANProcessor extends Inverter {
 
     // 0x356
     private ByteBuffer createBatteryVoltage() {
-        final int aggregatedPackVoltage = (int) Stream.of(energyStorage.getBatteryPacks()).mapToInt(pack -> pack.packVoltage).average().orElse(500) * 10;
-        final int aggregatedPackCurrent = Stream.of(energyStorage.getBatteryPacks()).mapToInt(pack -> pack.packCurrent).sum();
-        final int aggregatedPackTemperature = (int) Stream.of(energyStorage.getBatteryPacks()).mapToInt(pack -> pack.tempMax).average().orElse(35) * 10;
+        final int aggregatedPackVoltage = (int) energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.packVoltage).average().orElse(500) * 10;
+        final int aggregatedPackCurrent = energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.packCurrent).sum();
+        final int aggregatedPackTemperature = (int) energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.tempMax).average().orElse(35) * 10;
 
         final ByteBuffer frame = ByteBuffer.allocateDirect(16);
         frame.putInt(0x0356)
@@ -116,21 +117,21 @@ public class DeyeInverterCANProcessor extends Inverter {
 
     // 0x359
     private ByteBuffer createAlarms() {
-        final boolean aggregatedLevelTwoCellVoltageTooHigh = Stream.of(energyStorage.getBatteryPacks()).map(pack -> pack.alarms.levelTwoCellVoltageTooHigh).anyMatch(b -> true);
-        final boolean aggregatedLevelTwoCellVoltageTooLow = Stream.of(energyStorage.getBatteryPacks()).map(pack -> pack.alarms.levelTwoCellVoltageTooLow).anyMatch(b -> true);
-        final boolean aggregatedLevelTwoDischargeTempTooHigh = Stream.of(energyStorage.getBatteryPacks()).map(pack -> pack.alarms.levelTwoDischargeTempTooHigh).anyMatch(b -> true);
-        final boolean aggregatedLevelTwoDischargeTempTooLow = Stream.of(energyStorage.getBatteryPacks()).map(pack -> pack.alarms.levelTwoDischargeTempTooLow).anyMatch(b -> true);
-        final boolean aggregatedLevelTwoDischargeCurrentTooHigh = Stream.of(energyStorage.getBatteryPacks()).map(pack -> pack.alarms.levelTwoDischargeCurrentTooHigh).anyMatch(b -> true);
-        final boolean aggregatedLevelTwoChargeCurrentTooHigh = Stream.of(energyStorage.getBatteryPacks()).map(pack -> pack.alarms.levelTwoChargeCurrentTooHigh).anyMatch(b -> true);
+        final boolean aggregatedLevelTwoCellVoltageTooHigh = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelTwoCellVoltageTooHigh).anyMatch(b -> true);
+        final boolean aggregatedLevelTwoCellVoltageTooLow = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelTwoCellVoltageTooLow).anyMatch(b -> true);
+        final boolean aggregatedLevelTwoDischargeTempTooHigh = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelTwoDischargeTempTooHigh).anyMatch(b -> true);
+        final boolean aggregatedLevelTwoDischargeTempTooLow = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelTwoDischargeTempTooLow).anyMatch(b -> true);
+        final boolean aggregatedLevelTwoDischargeCurrentTooHigh = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelTwoDischargeCurrentTooHigh).anyMatch(b -> true);
+        final boolean aggregatedLevelTwoChargeCurrentTooHigh = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelTwoChargeCurrentTooHigh).anyMatch(b -> true);
 
-        final boolean aggregatedLevelOneCellVoltageTooHigh = Stream.of(energyStorage.getBatteryPacks()).map(pack -> pack.alarms.levelOneCellVoltageTooHigh).anyMatch(b -> true);
-        final boolean aggregatedLevelOneCellVoltageTooLow = Stream.of(energyStorage.getBatteryPacks()).map(pack -> pack.alarms.levelOneCellVoltageTooLow).anyMatch(b -> true);
-        final boolean aggregatedLevelOneChargeTempTooHigh = Stream.of(energyStorage.getBatteryPacks()).map(pack -> pack.alarms.levelOneChargeTempTooHigh).anyMatch(b -> true);
-        final boolean aggregatedLevelOneChargeTempTooLow = Stream.of(energyStorage.getBatteryPacks()).map(pack -> pack.alarms.levelOneChargeTempTooLow).anyMatch(b -> true);
-        final boolean aggregatedLevelOneDischargeCurrentTooHigh = Stream.of(energyStorage.getBatteryPacks()).map(pack -> pack.alarms.levelOneDischargeCurrentTooHigh).anyMatch(b -> true);
-        final boolean aggregatedLevelOneChargeCurrentTooHigh = Stream.of(energyStorage.getBatteryPacks()).map(pack -> pack.alarms.levelOneChargeCurrentTooHigh).anyMatch(b -> true);
-        final boolean aggregatedFailureOfIntranetCommunicationModule = Stream.of(energyStorage.getBatteryPacks()).map(pack -> pack.alarms.failureOfIntranetCommunicationModule).anyMatch(b -> true);
-        final boolean aggregatedLevelTwoCellVoltageDifferenceTooHigh = Stream.of(energyStorage.getBatteryPacks()).map(pack -> pack.alarms.levelTwoCellVoltageDifferenceTooHigh).anyMatch(b -> true);
+        final boolean aggregatedLevelOneCellVoltageTooHigh = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelOneCellVoltageTooHigh).anyMatch(b -> true);
+        final boolean aggregatedLevelOneCellVoltageTooLow = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelOneCellVoltageTooLow).anyMatch(b -> true);
+        final boolean aggregatedLevelOneChargeTempTooHigh = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelOneChargeTempTooHigh).anyMatch(b -> true);
+        final boolean aggregatedLevelOneChargeTempTooLow = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelOneChargeTempTooLow).anyMatch(b -> true);
+        final boolean aggregatedLevelOneDischargeCurrentTooHigh = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelOneDischargeCurrentTooHigh).anyMatch(b -> true);
+        final boolean aggregatedLevelOneChargeCurrentTooHigh = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelOneChargeCurrentTooHigh).anyMatch(b -> true);
+        final boolean aggregatedFailureOfIntranetCommunicationModule = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.failureOfIntranetCommunicationModule).anyMatch(b -> true);
+        final boolean aggregatedLevelTwoCellVoltageDifferenceTooHigh = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelTwoCellVoltageDifferenceTooHigh).anyMatch(b -> true);
 
         final BitSet bits = new BitSet(32);
         final ByteBuffer frame = ByteBuffer.allocateDirect(16);

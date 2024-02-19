@@ -2,6 +2,7 @@ package com.airepublic.bmstoinverter.protocol.can;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.time.Duration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +11,7 @@ import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 
 import tel.schich.javacan.CanChannels;
 import tel.schich.javacan.CanFrame;
+import tel.schich.javacan.CanSocketOptions;
 import tel.schich.javacan.RawCanChannel;
 
 /**
@@ -46,7 +48,7 @@ public class JavaCANPort extends CANPort {
             }
 
             canChannel = CanChannels.newRawChannel(getPortname());
-            // canChannel.setOption(CanSocketOptions.SO_RCVTIMEO, Duration.ofMillis(200));
+            canChannel.setOption(CanSocketOptions.SO_RCVTIMEO, Duration.ofMillis(1000));
         }
     }
 

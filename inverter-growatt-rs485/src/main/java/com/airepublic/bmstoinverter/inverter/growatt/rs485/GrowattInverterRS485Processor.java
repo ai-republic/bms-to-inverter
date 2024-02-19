@@ -7,11 +7,13 @@ import java.util.List;
 import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 /**
  * The class to handle RS485 messages for a Growatt low voltage (12V/24V/48V) {@link Inverter}.
  */
+@ApplicationScoped
 public class GrowattInverterRS485Processor extends Inverter {
     @Inject
     private EnergyStorage energyStorage;

@@ -10,9 +10,11 @@ import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.util.Util;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.enterprise.inject.spi.CDI;
 
+@ApplicationScoped
 public class InverterProducer {
     private final static Logger LOG = LoggerFactory.getLogger(InverterProducer.class);
     private static Inverter inverter = null;

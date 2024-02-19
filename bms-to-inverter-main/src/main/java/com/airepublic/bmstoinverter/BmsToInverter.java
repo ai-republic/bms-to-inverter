@@ -212,7 +212,7 @@ public class BmsToInverter implements AutoCloseable {
         final StringBuffer alarmContent = new StringBuffer();
         Email email = null;
 
-        for (int i = 0; i < energyStorage.getBatteryPacks().length; i++) {
+        for (int i = 0; i < energyStorage.getBatteryPacks().size(); i++) {
             for (final String key : getAlarmState(energyStorage.getBatteryPack(i))) {
                 currentAlarms.add("BMS #" + (i + 1) + ":" + key);
                 alarmContent.append("\tBMS #" + (i + 1) + ":\t" + key + "\r\n");

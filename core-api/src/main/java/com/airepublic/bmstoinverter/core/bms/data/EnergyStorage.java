@@ -1,5 +1,8 @@
 package com.airepublic.bmstoinverter.core.bms.data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.gson.Gson;
 
 /**
@@ -7,15 +10,12 @@ import com.google.gson.Gson;
  */
 public class EnergyStorage {
     private transient final static Gson gson = new Gson();
-    private BatteryPack[] batteryPacks;
+    private List<BatteryPack> batteryPacks = new ArrayList<>();
 
     /**
      * Constructor.
-     * 
-     * @param numBatteryPacks the number of {@link BatteryPack}s in the system.
      */
-    public EnergyStorage(final BatteryPack[] batteryPacks) {
-        this.batteryPacks = batteryPacks;
+    public EnergyStorage() {
     }
 
 
@@ -24,7 +24,7 @@ public class EnergyStorage {
      *
      * @return the battery packs
      */
-    public BatteryPack[] getBatteryPacks() {
+    public List<BatteryPack> getBatteryPacks() {
         return batteryPacks;
     }
 
@@ -34,7 +34,7 @@ public class EnergyStorage {
      *
      * @param batteryPacks the battery packs to set
      */
-    public void setBatteryPacks(final BatteryPack[] batteryPacks) {
+    public void setBatteryPacks(final List<BatteryPack> batteryPacks) {
         this.batteryPacks = batteryPacks;
     }
 
@@ -46,7 +46,7 @@ public class EnergyStorage {
      * @return the {@link BatteryPack}
      */
     public BatteryPack getBatteryPack(final int bmsNo) {
-        return batteryPacks[bmsNo];
+        return batteryPacks.get(bmsNo);
     }
 
 
@@ -56,7 +56,7 @@ public class EnergyStorage {
      * @return the number of {@link BatteryPack}s in the system
      */
     public int getBatteryPackCount() {
-        return batteryPacks.length;
+        return batteryPacks.size();
     }
 
 

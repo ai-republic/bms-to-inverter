@@ -10,13 +10,17 @@ import java.util.ServiceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.util.Util;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
 import jakarta.enterprise.inject.spi.CDI;
 
+@ApplicationScoped
 public class BMSListProducer {
     private final static Logger LOG = LoggerFactory.getLogger(BMSListProducer.class);
+    private static EnergyStorage energyStorage = new EnergyStorage();
     private static List<BMS> bmsList = null;
     private final Map<String, BMSDescriptor> bmsDescriptors = new HashMap<>();
 
@@ -29,13 +33,13 @@ public class BMSListProducer {
 
 
     /**
-     * Gets the {@link BMSDescriptor} for the specified name.
+     * Provides the application wide {@link EnergyStorage} object.
      *
-     * @param name the name for the {@link BMSDescriptor}
-     * @return the {@link BMSDescriptor}
+     * @return the application wide {@link EnergyStorage} object
      */
-    public BMSDescriptor getBMSDescriptor(final String name) {
-        return bmsDescriptors.get(name);
+    @Produces
+    public EnergyStorage getEnergyStorage() {
+        return energyStorage;
     }
 
 
@@ -73,13 +77,26 @@ public class BMSListProducer {
     private BMS createBMS(final int bmsNo, final String name) {
         final BMSDescriptor bmsDescriptor = getBMSDescriptor(name);
         final BMS bms = CDI.current().select(bmsDescriptor.getBMSClass()).get();
+        energyStorage.getBatteryPacks().add(bms.getBatteryPack());
         final String portLocator = System.getProperty("bms." + bmsNo + ".portLocator");
         final int pollInverval = Integer.valueOf(System.getProperty("bms." + bmsNo + ".pollInterval"));
         final int delayAfterNoBytes = Integer.valueOf(System.getProperty("bms." + bmsNo + ".delayAfterNoBytes"));
         final BMSConfig config = new BMSConfig(bmsNo, portLocator, pollInverval, delayAfterNoBytes, bmsDescriptor);
         bms.initialize(config);
 
+        LOG.info("Intialized BMS #" + config.getBmsNo() + "[" + config.getDescriptor().getName() + "] on port " + portLocator);
+
         return bms;
     }
 
+
+    /**
+     * Gets the {@link BMSDescriptor} for the specified name.
+     *
+     * @param name the name for the {@link BMSDescriptor}
+     * @return the {@link BMSDescriptor}
+     */
+    public BMSDescriptor getBMSDescriptor(final String name) {
+        return bmsDescriptors.get(name);
+    }
 }

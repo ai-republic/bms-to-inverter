@@ -4,7 +4,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,11 +11,13 @@ import org.slf4j.LoggerFactory;
 import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 /**
  * The class to handle CAN messages for a SMA {@link Inverter}.
  */
+@ApplicationScoped
 public class SMAInverterCANProcessor extends Inverter {
     private final static Logger LOG = LoggerFactory.getLogger(SMAInverterCANProcessor.class);
     @Inject
@@ -54,7 +55,7 @@ public class SMAInverterCANProcessor extends Inverter {
                 .putShort((short) 0); // skip 2 bytes
 
         // get the minimim SOC of all the packs
-        final int soc = Stream.of(energyStorage.getBatteryPacks()).map(pack -> pack.packSOC).filter(packSoc -> packSoc != 0).min((s1, s2) -> s1.compareTo(s2)).orElse(50);
+        final int soc = energyStorage.getBatteryPacks().stream().map(pack -> pack.packSOC).filter(packSoc -> packSoc != 0).min((s1, s2) -> s1.compareTo(s2)).orElse(50);
         // SOC (1%) - u_int_16
         frame.asCharBuffer().put((char) soc)
                 // SOH (1%) - u_int_16
@@ -71,9 +72,9 @@ public class SMAInverterCANProcessor extends Inverter {
                 .put((byte) 0) // flags
                 .putShort((short) 0); // skip 2 bytes
 
-        final short batteryVoltage = (short) (Stream.of(energyStorage.getBatteryPacks()).map(pack -> pack.packVoltage).filter(volt -> volt != 0).min((v1, v2) -> v1.compareTo(v2)).orElse(520) * 10);
-        final short batteryCurrent = (short) Stream.of(energyStorage.getBatteryPacks()).mapToInt(b -> b.packCurrent).sum();
-        final short batteryTemperature = (short) (Stream.of(energyStorage.getBatteryPacks()).mapToInt(b -> b.tempAverage).average().orElseGet(() -> 35d) * 10); // 35degC
+        final short batteryVoltage = (short) (energyStorage.getBatteryPacks().stream().map(pack -> pack.packVoltage).filter(volt -> volt != 0).min((v1, v2) -> v1.compareTo(v2)).orElse(520) * 10);
+        final short batteryCurrent = (short) energyStorage.getBatteryPacks().stream().mapToInt(b -> b.packCurrent).sum();
+        final short batteryTemperature = (short) (energyStorage.getBatteryPacks().stream().mapToInt(b -> b.tempAverage).average().orElseGet(() -> 35d) * 10); // 35degC
 
         // battery voltage (0.01V) - s_int_16
         frame.putShort(batteryVoltage)

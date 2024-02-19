@@ -82,7 +82,7 @@ public class PylonHVBmsCANProcessor extends BMS {
             final byte[] dataBytes = new byte[receiveFrame.get(4)];
             receiveFrame.get(8, dataBytes);
 
-            final ByteBuffer data = ByteBuffer.wrap(dataBytes);
+            final ByteBuffer data = ByteBuffer.wrap(dataBytes).order(ByteOrder.LITTLE_ENDIAN);
 
             switch (frameId) {
                 case 0x4210:
@@ -159,9 +159,9 @@ public class PylonHVBmsCANProcessor extends BMS {
         // second level temperature (0.1 Celcius) offset -100
         pack.tempAverage = data.getShort() - 1000;
         // Battery SOC (1%)
-        pack.packSOC = data.get();
+        pack.packSOC = data.get() * 10;
         // Battery SOH (1%)
-        pack.packSOH = data.get();
+        pack.packSOH = data.get() * 10;
     }
 
 
