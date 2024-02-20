@@ -130,11 +130,11 @@ public class BatteryPack {
     public short minModulemVNum;
     /** The maximum module temperature (0.1C) */
     public short maxModuleTemp;
-    /* The minimum module temperature (0.1C) */
+    /** The minimum module temperature (0.1C) */
     public short minModuleTemp;
-    /* The pack number with maximum module temperature */
+    /** The pack number with maximum module temperature */
     public short maxModuleTempNum;
-    /* The pack number with minimum module temperature */
+    /** The pack number with minimum module temperature */
     public short minModuleTempNum;
 
 }

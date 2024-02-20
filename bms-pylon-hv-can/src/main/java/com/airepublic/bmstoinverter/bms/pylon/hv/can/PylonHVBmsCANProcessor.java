@@ -43,7 +43,7 @@ public class PylonHVBmsCANProcessor extends BMS {
 
     private List<ByteBuffer> sendMessage(final Port port, final int frameId, final byte cmd) throws IOException {
         final ByteBuffer sendFrame = prepareSendFrame(frameId, cmd);
-        int framesToBeReceived = getResponseFrameCount(sendFrame);
+        int framesToBeReceived = getResponseFrameCount(frameId);
         final int frameCount = framesToBeReceived;
         int skip = 20;
         final List<ByteBuffer> readBuffers = new ArrayList<>();
@@ -128,7 +128,11 @@ public class PylonHVBmsCANProcessor extends BMS {
     }
 
 
-    private int getResponseFrameCount(final ByteBuffer sendFrame2) {
+    private int getResponseFrameCount(final int frameId) {
+        switch (frameId) {
+            case 0x00004200:
+                return 10;
+        }
         return 1;
     }
 
@@ -162,6 +166,8 @@ public class PylonHVBmsCANProcessor extends BMS {
         pack.packSOC = data.get() * 10;
         // Battery SOH (1%)
         pack.packSOH = data.get() * 10;
+
+        LOG.debug("Pack V\tPack A\tTempAvg\tPack SOC\tPack SOH\n{}V\t{}A\t{}C\t{}%\t{}%", pack.packVoltage / 10, pack.packCurrent / 10, pack.tempAverage, pack.packSOC / 10, pack.packSOH / 10);
     }
 
 
@@ -174,6 +180,8 @@ public class PylonHVBmsCANProcessor extends BMS {
         pack.maxPackChargeCurrent = data.getShort() - 30000;
         // Max discharge current (0.1A) offset -3000A
         pack.maxPackDischargeCurrent = data.getShort() - 30000;
+
+        LOG.debug("MaxLimit V\tMinLimit V\tMaxCharge A\tMaxDischarge\n{}V\t{}V\t{}A\t{}A", pack.maxPackVoltageLimit / 10, pack.minPackVoltageLimit / 10, 30000 - pack.maxPackChargeCurrent / 10, 30000 - pack.maxPackDischargeCurrent / 10);
     }
 
 
@@ -187,6 +195,8 @@ public class PylonHVBmsCANProcessor extends BMS {
         pack.maxCellVNum = data.getShort();
         // Minimum cell voltage cell number
         pack.minCellVNum = data.getShort();
+
+        LOG.debug("MaxCell V\tMinCell V\n{}\t{}", pack.maxCellmV / 1000 + "V (#" + pack.maxCellVNum + ")", pack.minCellmV / 1000 + " V(#" + pack.minCellVNum + ")");
     }
 
 
@@ -200,6 +210,8 @@ public class PylonHVBmsCANProcessor extends BMS {
         pack.tempMaxCellNum = data.getShort();
         // Minimum cell temperature cell number
         pack.tempMinCellNum = data.getShort();
+
+        LOG.debug("MaxCell V\tMinCell V\n{}\t{}", pack.tempMax + "C (#" + pack.tempMaxCellNum + ")", pack.tempMin + "C (#" + pack.tempMinCellNum + ")");
     }
 
 
@@ -280,6 +292,8 @@ public class PylonHVBmsCANProcessor extends BMS {
         pack.maxModulemVNum = data.getShort();
         // pack number with minimum module voltage
         pack.minModulemVNum = data.getShort();
+
+        LOG.debug("MaxModule V\tMinModule V\n{}\t{}", pack.maxModulemV / 1000 + "V (#" + pack.maxModulemVNum + ")", pack.minModulemV / 1000 + "V (#" + pack.minModulemVNum + ")");
     }
 
 
@@ -292,6 +306,8 @@ public class PylonHVBmsCANProcessor extends BMS {
         pack.maxModuleTempNum = data.getShort();
         // pack number with minimum module temperature
         pack.minModuleTempNum = data.getShort();
+
+        LOG.debug("MaxModule C\tMinModule C\n{}\t{}", pack.maxModuleTemp / 10 + "C (#" + pack.maxModuleTempNum + ")", pack.minModuleTemp / 10 + "C (#" + pack.minModuleTempNum + ")");
     }
 
 
@@ -300,6 +316,8 @@ public class PylonHVBmsCANProcessor extends BMS {
         pack.chargeForbidden = data.get() == 0xAA;
         // flag if discharging is forbidden
         pack.dischargeForbidden = data.get() == 0xAA;
+
+        LOG.debug("Charge Forbidden\tDischarge Forbidden\n\t{}\t\t{}", pack.chargeForbidden, pack.dischargeForbidden);
     }
 
 
@@ -336,6 +354,8 @@ public class PylonHVBmsCANProcessor extends BMS {
 
         pack.hardwareVersion += Byte.toUnsignedInt(hwV) + "." + Byte.toUnsignedInt(hwR);
         pack.softwareVersion = Byte.toUnsignedInt(swV) + "." + Byte.toUnsignedInt(swR) + "." + Byte.toUnsignedInt(swX) + "." + Byte.toUnsignedInt(swY);
+
+        LOG.debug("HW version\tSW version\n{}\t{}", pack.hardwareVersion, pack.softwareVersion);
     }
 
 
@@ -350,11 +370,15 @@ public class PylonHVBmsCANProcessor extends BMS {
         data.getShort();
         // battery cabinet AH (1AH)
         data.getShort();
+
+        LOG.debug("No of cells\n{}", pack.numberOfCells);
     }
 
 
     private void readManufacturer(final BatteryPack pack, final ByteBuffer data) {
         pack.manufacturerCode = "PYLONTECH";
+
+        LOG.debug("Manufacturer", pack.manufacturerCode);
     }
 
 }
