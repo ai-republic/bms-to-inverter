@@ -29,7 +29,7 @@ public class SolArkInverterCANProcessor extends Inverter {
         frames.add(createChargeDischargeInfo()); // 0x351
         frames.add(createSOC()); // 0x355
         frames.add(createBatteryVoltage()); // 0x356
-        frames.add(createManufacturer()); // 0x35E
+        // frames.add(createManufacturer()); // 0x35E
         frames.add(createAlarms()); // 0x359
 
         return frames;
