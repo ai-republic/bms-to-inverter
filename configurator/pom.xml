@@ -141,7 +141,7 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<!-- ####################  DEYE (CAN)  ################### -->
+		<!-- ####################  PYLON HV (CAN)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>inverter-pylon-hv-can</artifactId>
