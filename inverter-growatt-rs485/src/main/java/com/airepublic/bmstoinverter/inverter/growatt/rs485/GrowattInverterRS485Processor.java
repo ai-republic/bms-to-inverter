@@ -1,10 +1,12 @@
 package com.airepublic.bmstoinverter.inverter.growatt.rs485;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.airepublic.bmstoinverter.core.Inverter;
+import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -19,7 +21,7 @@ public class GrowattInverterRS485Processor extends Inverter {
     private EnergyStorage energyStorage;
 
     @Override
-    protected List<ByteBuffer> updateCANMessages() {
+    protected List<ByteBuffer> createSendFrames() {
 
         final List<ByteBuffer> frames = new ArrayList<>();
         final int slaveAddress = 11;
@@ -31,6 +33,12 @@ public class GrowattInverterRS485Processor extends Inverter {
         final int crc = 0;
 
         return frames;
+    }
+
+
+    @Override
+    protected void sendFrame(final Port port, final ByteBuffer frame) throws IOException {
+        port.sendFrame(frame);
     }
 
 }

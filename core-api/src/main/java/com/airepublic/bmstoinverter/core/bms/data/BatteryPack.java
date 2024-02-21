@@ -54,7 +54,7 @@ public class BatteryPack {
     public int tempMax;
     /** Minimum temperature sensor reading (1C) */
     public int tempMin;
-    /** Average of temp sensors */
+    /** Average of temp sensors (1C) */
     public int tempAverage;
 
     // data from 0x93

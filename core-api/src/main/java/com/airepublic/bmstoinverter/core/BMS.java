@@ -1,11 +1,16 @@
 package com.airepublic.bmstoinverter.core;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
+import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
+
+import jakarta.inject.Inject;
 
 /**
  * The abstract class to identify a BMS.
@@ -14,9 +19,11 @@ public abstract class BMS {
     private final static Logger LOG = LoggerFactory.getLogger(BMS.class);
     private int bmsNo;
     private String portLocator;
-    private final BatteryPack batteryPack = new BatteryPack();
+    private final List<BatteryPack> batteryPacks = new ArrayList<>();
     private int pollInterval;
     private long delayAfterNoBytes;
+    @Inject
+    private transient EnergyStorage energyStorage;
 
     /**
      * Initializes the BMS with the specified {@link BMSConfig}, initializing the port parameters
@@ -68,12 +75,31 @@ public abstract class BMS {
 
 
     /**
-     * Gets the battery pack associated with this {@link BMS}.
+     * Gets the {@link BatteryPack}s associated with this {@link BMS}.
      *
-     * @return the battery pack associated with this {@link BMS}
+     * @return the {@link BatteryPack}s associated with this {@link BMS}
      */
-    public BatteryPack getBatteryPack() {
-        return batteryPack;
+    public List<BatteryPack> getBatteryPacks() {
+        return batteryPacks;
+    }
+
+
+    /**
+     * Gets the {@link BatteryPack} at the specified index associated with this {@link BMS}. If the
+     * number is greater than already known, then the pack size will increase until it has the
+     * number specified.
+     *
+     * @return the {@link BatteryPack} at the specified index associated with this {@link BMS}
+     */
+    public BatteryPack getBatteryPack(final int bmsNo) {
+        // TODO find a better solution and also change energystorage and webserver
+        while (getBatteryPacks().size() <= bmsNo) {
+            final BatteryPack pack = new BatteryPack();
+            batteryPacks.add(pack);
+            energyStorage.getBatteryPacks().add(pack);
+        }
+
+        return batteryPacks.get(bmsNo);
     }
 
 

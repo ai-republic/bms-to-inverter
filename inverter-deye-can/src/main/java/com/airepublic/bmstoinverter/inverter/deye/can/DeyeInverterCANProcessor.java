@@ -1,12 +1,15 @@
 package com.airepublic.bmstoinverter.inverter.deye.can;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
 import com.airepublic.bmstoinverter.core.Inverter;
+import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
+import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -20,7 +23,7 @@ public class DeyeInverterCANProcessor extends Inverter {
     private EnergyStorage energyStorage;
 
     @Override
-    protected List<ByteBuffer> updateCANMessages() {
+    protected List<ByteBuffer> createSendFrames() {
         final List<ByteBuffer> frames = new ArrayList<>();
 
         frames.add(createChargeDischargeInfo()); // 0x351
@@ -30,6 +33,12 @@ public class DeyeInverterCANProcessor extends Inverter {
         frames.add(createAlarms()); // 0x359
 
         return frames;
+    }
+
+
+    @Override
+    protected void sendFrame(final Port port, final ByteBuffer frame) throws IOException {
+        ((CANPort) port).sendExtendedFrame(frame);
     }
 
 

@@ -80,7 +80,8 @@ public abstract class AbstractDalyBmsProcessor extends BMS {
      * @param port the {@link Port} of the {@link BMS}
      */
     protected void autoCalibrateSOC(final Port port) {
-        final BatteryPack battery = getBatteryPack();
+        final int bmsNo = 0;
+        final BatteryPack battery = getBatteryPack(bmsNo);
         final int calculatedSOC = (int) (((float) battery.packVoltage - battery.minPackVoltageLimit) * 100 / (battery.maxPackVoltageLimit - battery.minPackVoltageLimit) * 10);
         final byte[] data = new byte[8];
         final LocalDateTime date = LocalDateTime.now();
@@ -138,11 +139,13 @@ public abstract class AbstractDalyBmsProcessor extends BMS {
      * @return the expected number of response frames
      */
     protected int getResponseFrameCount(final DalyCommand cmd) {
+        final int bmsNo = 0;
+
         switch (cmd.id) {
             case 0x21:
                 return 2;
             case 0x95:
-                return Math.round(getBatteryPack().numberOfCells / 3f + 0.5f);
+                return Math.round(getBatteryPack(bmsNo).numberOfCells / 3f + 0.5f);
         }
 
         return 1;

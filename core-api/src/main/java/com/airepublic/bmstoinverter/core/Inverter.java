@@ -1,5 +1,6 @@
 package com.airepublic.bmstoinverter.core;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 
@@ -58,12 +59,12 @@ public abstract class Inverter {
      */
     public void process(final Runnable callback) {
         try {
-            final List<ByteBuffer> canData = updateCANMessages();
+            final List<ByteBuffer> sendFrames = createSendFrames();
             final Port port = PortAllocator.allocate(getPortLocator());
 
-            for (final ByteBuffer frame : canData) {
-                LOG.debug("CAN send: {}", Port.printBuffer(frame));
-                port.sendFrame(frame);
+            for (final ByteBuffer frame : sendFrames) {
+                LOG.debug("Inverter send: {}", Port.printBuffer(frame));
+                sendFrame(port, frame);
             }
         } catch (final Throwable e) {
             LOG.error("Failed to send CAN frame", e);
@@ -78,10 +79,20 @@ public abstract class Inverter {
 
 
     /**
+     * Implementations must send the frame depending on its protocol.
+     *
+     * @param port the {@link Port}
+     * @param frame the complete frame
+     * @throws IOException if the frame could not be sent
+     */
+    protected abstract void sendFrame(Port port, ByteBuffer frame) throws IOException;
+
+
+    /**
      * Aggregate all {@link BatteryPack}s of the {@link EnergyStorage} and create CAN messages to be
      * sent to the inverter.
      *
      * @return the CAN messages to be sent to the inverter
      */
-    protected abstract List<ByteBuffer> updateCANMessages();
+    protected abstract List<ByteBuffer> createSendFrames();
 }

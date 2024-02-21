@@ -92,7 +92,8 @@ public class DalyMessageHandler {
 
 
     private void getBatteryTypeInfo(final DalyMessage msg, final BMS bms) {
-        final BatteryPack battery = bms.getBatteryPack();
+        final int bmsNo = 0;
+        final BatteryPack battery = bms.getBatteryPack(bmsNo);
 
         battery.type = msg.data.get();
 
@@ -101,7 +102,8 @@ public class DalyMessageHandler {
 
 
     private void getRatedCapacityAndCellVoltage(final DalyMessage msg, final BMS bms) {
-        final BatteryPack battery = bms.getBatteryPack();
+        final int bmsNo = 0;
+        final BatteryPack battery = bms.getBatteryPack(bmsNo);
 
         battery.ratedCellmV = msg.data.getInt(); // in mV
         battery.ratedCapacitymAh = msg.data.getInt(); // in mAh
@@ -111,7 +113,8 @@ public class DalyMessageHandler {
 
 
     private void getPackDischargeChargeLimits(final DalyMessage msg, final BMS bms) {
-        final BatteryPack battery = bms.getBatteryPack();
+        final int bmsNo = 0;
+        final BatteryPack battery = bms.getBatteryPack(bmsNo);
 
         battery.maxPackDischargeCurrent = 30000 - msg.data.getShort(); // 30000 offset
         // skip the next 2 bytes because only reading level 1
@@ -124,7 +127,8 @@ public class DalyMessageHandler {
 
 
     private void getPackVoltageLimits(final DalyMessage msg, final BMS bms) {
-        final BatteryPack battery = bms.getBatteryPack();
+        final int bmsNo = 0;
+        final BatteryPack battery = bms.getBatteryPack(bmsNo);
 
         battery.maxPackVoltageLimit = msg.data.getShort();
         // skip the next 2 bytes because only reading level 1
@@ -134,7 +138,8 @@ public class DalyMessageHandler {
 
 
     private void getPackMeasurements(final DalyMessage msg, final BMS bms) throws IOException { // 0x90
-        final BatteryPack battery = bms.getBatteryPack();
+        final int bmsNo = 0;
+        final BatteryPack battery = bms.getBatteryPack(bmsNo);
 
         // data bytes 0-1 pack voltage
         battery.packVoltage = msg.data.getShort();
@@ -155,7 +160,8 @@ public class DalyMessageHandler {
 
 
     private void getMinMaxCellVoltage(final DalyMessage msg, final BMS bms) throws IOException { // 0x91
-        final BatteryPack battery = bms.getBatteryPack();
+        final int bmsNo = 0;
+        final BatteryPack battery = bms.getBatteryPack(bmsNo);
 
         // data byte 0-1 maximum cell voltage in mV
         battery.maxCellmV = msg.data.getShort();
@@ -178,7 +184,8 @@ public class DalyMessageHandler {
 
 
     private void getPackTemp(final DalyMessage msg, final BMS bms) throws IOException { // 0x92
-        final BatteryPack battery = bms.getBatteryPack();
+        final int bmsNo = 0;
+        final BatteryPack battery = bms.getBatteryPack(bmsNo);
 
         // byte 0 maximum temperature with offset of 40
         battery.tempMax = msg.data.get(0) - 40;
@@ -197,7 +204,8 @@ public class DalyMessageHandler {
 
 
     private void getDischargeChargeMosStatus(final DalyMessage msg, final BMS bms) throws IOException { // 0x93
-        final BatteryPack battery = bms.getBatteryPack();
+        final int bmsNo = 0;
+        final BatteryPack battery = bms.getBatteryPack(bmsNo);
 
         // read data byte 0 MOS status
         switch (msg.data.get()) {
@@ -234,7 +242,8 @@ public class DalyMessageHandler {
 
 
     private void getStatusInfo(final DalyMessage msg, final BMS bms) throws IOException { // 0x94
-        final BatteryPack battery = bms.getBatteryPack();
+        final int bmsNo = 0;
+        final BatteryPack battery = bms.getBatteryPack(bmsNo);
 
         // data byte 0 number of cells
         battery.numberOfCells = msg.data.get();
@@ -257,7 +266,8 @@ public class DalyMessageHandler {
 
 
     private void getCellVoltages(final DalyMessage msg, final BMS bms) throws IOException { // 0x95
-        final BatteryPack battery = bms.getBatteryPack();
+        final int bmsNo = 0;
+        final BatteryPack battery = bms.getBatteryPack(bmsNo);
 
         // Check to make sure we have a valid number of cells
         if (battery.numberOfCells < MIN_NUMBER_CELLS && battery.numberOfCells >= MAX_NUMBER_CELLS) {
@@ -295,7 +305,8 @@ public class DalyMessageHandler {
 
     private void getCellTemperature(final DalyMessage msg, final BMS bms) throws IOException { // 0x96
         int sensorNo = 0;
-        final BatteryPack battery = bms.getBatteryPack();
+        final int bmsNo = 0;
+        final BatteryPack battery = bms.getBatteryPack(bmsNo);
 
         // Check to make sure we have a valid number of temp sensors
         if (battery.numOfTempSensors < MIN_NUMBER_TEMP_SENSORS && battery.numOfTempSensors >= MAX_NUMBER_TEMP_SENSORS) {
@@ -323,7 +334,8 @@ public class DalyMessageHandler {
     private void getCellBalanceState(final DalyMessage msg, final BMS bms) throws IOException { // 0x97
         boolean cellBalanceActive = false;
         int cellNo = 0;
-        final BatteryPack battery = bms.getBatteryPack();
+        final int bmsNo = 0;
+        final BatteryPack battery = bms.getBatteryPack(bmsNo);
 
         // Check to make sure we have a valid number of cells
         if (battery.numberOfCells < MIN_NUMBER_CELLS && battery.numberOfCells >= MAX_NUMBER_CELLS) {
@@ -365,7 +377,8 @@ public class DalyMessageHandler {
 
     private void getFailureCodes(final DalyMessage msg, final BMS bms) throws IOException // 0x98
     {
-        final BatteryPack battery = bms.getBatteryPack();
+        final int bmsNo = 0;
+        final BatteryPack battery = bms.getBatteryPack(bmsNo);
         byte byteValue = msg.data.get(0);
         /* 0x00 */
         battery.alarms.levelOneCellVoltageTooHigh.value = bitRead(byteValue, 0);

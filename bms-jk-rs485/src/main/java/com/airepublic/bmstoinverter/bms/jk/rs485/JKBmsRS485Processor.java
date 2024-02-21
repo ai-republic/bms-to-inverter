@@ -26,7 +26,7 @@ public class JKBmsRS485Processor extends BMS {
 
             try {
                 final ByteBuffer frame = port.receiveFrame();
-                final BatteryPack pack = getBatteryPack();
+                final BatteryPack pack = getBatteryPacks().get(0);
                 final int dataLength = frame.getShort(2) - 1; // -1 because of command id byte is
                                                               // first data byte
                 final int commandId = frame.get(11);

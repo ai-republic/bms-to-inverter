@@ -77,7 +77,7 @@ public class BMSListProducer {
     private BMS createBMS(final int bmsNo, final String name) {
         final BMSDescriptor bmsDescriptor = getBMSDescriptor(name);
         final BMS bms = CDI.current().select(bmsDescriptor.getBMSClass()).get();
-        energyStorage.getBatteryPacks().add(bms.getBatteryPack());
+        energyStorage.getBatteryPacks().addAll(bms.getBatteryPacks());
         final String portLocator = System.getProperty("bms." + bmsNo + ".portLocator");
         final int pollInverval = Integer.valueOf(System.getProperty("bms." + bmsNo + ".pollInterval"));
         final int delayAfterNoBytes = Integer.valueOf(System.getProperty("bms." + bmsNo + ".delayAfterNoBytes"));

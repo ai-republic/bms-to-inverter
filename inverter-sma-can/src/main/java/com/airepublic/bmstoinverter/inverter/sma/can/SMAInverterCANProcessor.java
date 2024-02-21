@@ -1,5 +1,6 @@
 package com.airepublic.bmstoinverter.inverter.sma.can;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -9,7 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.Inverter;
+import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
+import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -24,7 +27,7 @@ public class SMAInverterCANProcessor extends Inverter {
     private EnergyStorage energyStorage;
 
     @Override
-    protected List<ByteBuffer> updateCANMessages() {
+    protected List<ByteBuffer> createSendFrames() {
         final List<ByteBuffer> frames = new ArrayList<>();
         final byte length = (byte) 8;
         // 0x0351 charge voltage, charge amp limit, discharge amp limit, discharge voltage limit
@@ -106,6 +109,12 @@ public class SMAInverterCANProcessor extends Inverter {
         LOG.info("Sending SMA frame: Batt(V)={}, Batt(A)={}, SOC={}", batteryVoltage / 100f, batteryCurrent / 10f, soc);
 
         return frames;
+    }
+
+
+    @Override
+    protected void sendFrame(final Port port, final ByteBuffer frame) throws IOException {
+        ((CANPort) port).sendExtendedFrame(frame);
     }
 
 }

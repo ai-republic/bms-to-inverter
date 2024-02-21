@@ -19,7 +19,8 @@ public class JKBmsCANProcessor extends BMS {
     @Override
     protected void collectData(final Port port) {
         try {
-            final BatteryPack pack = getBatteryPack();
+            final int bmsNo = 0;
+            final BatteryPack pack = getBatteryPack(bmsNo);
             final ByteBuffer frame = port.receiveFrame();
             final int frameId = frame.getInt();
             final byte[] bytes = new byte[8];

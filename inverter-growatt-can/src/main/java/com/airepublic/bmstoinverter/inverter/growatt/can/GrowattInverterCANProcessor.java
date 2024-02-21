@@ -1,5 +1,6 @@
 package com.airepublic.bmstoinverter.inverter.growatt.can;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.time.LocalDateTime;
@@ -12,6 +13,7 @@ import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
+import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -25,7 +27,7 @@ public class GrowattInverterCANProcessor extends Inverter {
     private EnergyStorage energyStorage;
 
     @Override
-    protected List<ByteBuffer> updateCANMessages() {
+    protected List<ByteBuffer> createSendFrames() {
         final List<ByteBuffer> frames = new ArrayList<>();
 
         frames.add(createChargeDischargeInfo()); // 0x311
@@ -36,6 +38,12 @@ public class GrowattInverterCANProcessor extends Inverter {
         frames.add(createBMSInfo()); // 0x320
 
         return frames;
+    }
+
+
+    @Override
+    protected void sendFrame(final Port port, final ByteBuffer frame) throws IOException {
+        ((CANPort) port).sendExtendedFrame(frame);
     }
 
 

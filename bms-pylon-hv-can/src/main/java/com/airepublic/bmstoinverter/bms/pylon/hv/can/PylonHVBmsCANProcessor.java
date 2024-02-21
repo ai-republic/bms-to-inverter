@@ -78,7 +78,7 @@ public class PylonHVBmsCANProcessor extends BMS {
         try {
             final int frameId = receiveFrame.getInt();
             final int bmsNo = frameId & 0x0000000F;
-            final BatteryPack pack = energyStorage.getBatteryPack(bmsNo);
+            final BatteryPack pack = getBatteryPack(bmsNo);
             final byte[] dataBytes = new byte[receiveFrame.get(4)];
             receiveFrame.get(8, dataBytes);
 
@@ -161,7 +161,7 @@ public class PylonHVBmsCANProcessor extends BMS {
         // Battery current (0.1A) offset -3000A
         pack.packCurrent = data.getShort() - 30000;
         // second level temperature (0.1 Celcius) offset -100
-        pack.tempAverage = data.getShort() - 1000;
+        pack.tempAverage = (data.getShort() - 1000) / 10;
         // Battery SOC (1%)
         pack.packSOC = data.get() * 10;
         // Battery SOH (1%)
@@ -177,11 +177,11 @@ public class PylonHVBmsCANProcessor extends BMS {
         // Discharge cutoff voltage (0.1V)
         pack.minPackVoltageLimit = data.getShort();
         // Max charge current (0.1A) offset -3000A
-        pack.maxPackChargeCurrent = data.getShort() - 30000;
+        pack.maxPackChargeCurrent = 3000 - data.getShort();
         // Max discharge current (0.1A) offset -3000A
-        pack.maxPackDischargeCurrent = data.getShort() - 30000;
+        pack.maxPackDischargeCurrent = 3000 - data.getShort();
 
-        LOG.debug("MaxLimit V\tMinLimit V\tMaxCharge A\tMaxDischarge\n{}V\t{}V\t{}A\t{}A", pack.maxPackVoltageLimit / 10, pack.minPackVoltageLimit / 10, 30000 - pack.maxPackChargeCurrent / 10, 30000 - pack.maxPackDischargeCurrent / 10);
+        LOG.debug("MaxLimit V\tMinLimit V\tMaxCharge A\tMaxDischarge\n{}V\t{}V\t{}A\t{}A", pack.maxPackVoltageLimit / 10, pack.minPackVoltageLimit / 10, (pack.maxPackChargeCurrent + 3000) / 10, (pack.maxPackDischargeCurrent + 3000) / 10);
     }
 
 
