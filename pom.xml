@@ -37,6 +37,7 @@
 		<module>configurator</module>
 		<module>bms-jk-rs485</module>
 		<module>bms-pylon-hv-can</module>
+		<module>inverter-pylon-hv-can</module>
 	</modules>
 
 	<build>

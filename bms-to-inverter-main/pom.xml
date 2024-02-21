@@ -185,6 +185,13 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- ####################  PYLONTECH HV (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-pylon-hv-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- ####################  SOLARK (CAN)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
