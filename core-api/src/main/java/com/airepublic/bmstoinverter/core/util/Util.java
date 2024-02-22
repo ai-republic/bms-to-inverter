@@ -8,6 +8,9 @@ import java.util.Properties;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Utility for general purpose methods.
+ */
 public class Util {
     private final static Logger LOG = LoggerFactory.getLogger(Util.class);
 
@@ -41,7 +44,7 @@ public class Util {
 
 
     /**
-     * Reads the bit at the specified index of the value.
+     * Gets the bit at the specified index of the value.
      *
      * @param value the value
      * @param index the index of the bit
@@ -53,7 +56,7 @@ public class Util {
 
 
     /**
-     * Reads the specified number of bits starting at the specified index.
+     * Gets the specified number of bits starting at the specified index.
      *
      * @param value the value to read from
      * @param index the index of the first bit to read in the value
@@ -62,6 +65,70 @@ public class Util {
      */
     public static int bits(final int value, final int index, final int length) {
         return value >> index & (1 << length) - 1;
+    }
+
+
+    /**
+     * Sets the bit in the value at the specified index to on or off.
+     *
+     * @param value the byte value
+     * @param index the index
+     * @param on the flag whether to set the bit to 1 (on) or 0 (off)
+     */
+    public static void setBit(byte value, final int index, final boolean on) {
+        if (on) {
+            value |= 1 << index;
+        } else {
+            value &= ~(1 << index);
+        }
+    }
+
+
+    /**
+     * Sets the bit in the value at the specified index to on or off.
+     *
+     * @param value the short value
+     * @param index the index
+     * @param on the flag whether to set the bit to 1 (on) or 0 (off)
+     */
+    public static void setBit(short value, final int index, final boolean on) {
+        if (on) {
+            value |= 1 << index;
+        } else {
+            value &= ~(1 << index);
+        }
+    }
+
+
+    /**
+     * Sets the bit in the value at the specified index to on or off.
+     *
+     * @param value the integer value
+     * @param index the index
+     * @param on the flag whether to set the bit to 1 (on) or 0 (off)
+     */
+    public static void setBit(int value, final int index, final boolean on) {
+        if (on) {
+            value |= 1 << index;
+        } else {
+            value &= ~(1 << index);
+        }
+    }
+
+
+    /**
+     * Sets the bit in the value at the specified index to on or off.
+     *
+     * @param value the long value
+     * @param index the index
+     * @param on the flag whether to set the bit to 1 (on) or 0 (off)
+     */
+    public static void setBit(long value, final int index, final boolean on) {
+        if (on) {
+            value |= 1 << index;
+        } else {
+            value &= ~(1 << index);
+        }
     }
 
 }

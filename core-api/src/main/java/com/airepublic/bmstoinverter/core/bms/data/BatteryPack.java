@@ -136,5 +136,13 @@ public class BatteryPack {
     public short maxModuleTempNum;
     /** The pack number with minimum module temperature */
     public short minModuleTempNum;
+    /** The number of battery modules in series */
+    public byte modulesInSeries;
+    /** The number of cells in a module */
+    public byte moduleNumberOfCells;
+    /** The module voltage (1V) */
+    public short moduleVoltage;
+    /** The rated capacity of the module (1Ah) */
+    public short moduleRatedCapacityAh;
 
 }
