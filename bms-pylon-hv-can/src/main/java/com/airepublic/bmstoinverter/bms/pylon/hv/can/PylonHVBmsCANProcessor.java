@@ -79,7 +79,7 @@ public class PylonHVBmsCANProcessor extends BMS {
 
             final ByteBuffer data = ByteBuffer.wrap(dataBytes).order(ByteOrder.LITTLE_ENDIAN);
 
-            switch (frameId) {
+            switch (frameId & 0xFFFFFFF0) {
                 case 0x4210:
                     readBatteryStatus(pack, data);
                 break;
@@ -103,6 +103,11 @@ public class PylonHVBmsCANProcessor extends BMS {
                 break;
                 case 0x4280:
                     readChargeForbiddenMarks(pack, data);
+                break;
+                case 0x42B0: // ???
+                case 0x42C0:
+                case 0x42D0:
+                case 0x42E0:
                 break;
                 case 0x7310:
                     readHardwareSoftwareVersion(pack, data);
