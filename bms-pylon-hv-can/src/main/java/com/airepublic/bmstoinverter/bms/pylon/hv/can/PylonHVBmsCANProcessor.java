@@ -161,14 +161,14 @@ public class PylonHVBmsCANProcessor extends BMS {
         pack.packVoltage = data.getShort();
         // Battery current (0.1A) offset -3000A
         pack.packCurrent = data.getShort() - 30000;
-        // second level temperature (0.1 Celcius) offset -100
-        pack.tempAverage = data.getShort() / 10 - 100;
+        // second level temperature (0.1 Celcius) offset -100C
+        pack.tempAverage = data.getShort() - 1000;
         // Battery SOC (1%)
         pack.packSOC = data.get() * 10;
         // Battery SOH (1%)
         pack.packSOH = data.get() * 10;
 
-        LOG.debug("\nPack V\tPack A\tTempAvg\tPack SOC\tPack SOH\n{}V\t{}A\t{}C\t{}%\t{}%", pack.packVoltage / 10f, pack.packCurrent / 10f, pack.tempAverage, pack.packSOC / 10f, pack.packSOH / 10f);
+        LOG.debug("\nPack V\tPack A\tTempAvg\tPack SOC\tPack SOH\n{}V\t{}A\t{}C\t\t{}%\t{}%", pack.packVoltage / 10f, pack.packCurrent / 10f, pack.tempAverage, pack.packSOC / 10f, pack.packSOH / 10f);
     }
 
 
@@ -179,11 +179,11 @@ public class PylonHVBmsCANProcessor extends BMS {
         // Discharge cutoff voltage (0.1V)
         pack.minPackVoltageLimit = data.getShort();
         // Max charge current (0.1A) offset -3000A
-        pack.maxPackChargeCurrent = 30000 - data.getShort();
+        pack.maxPackChargeCurrent = data.getShort() - 30000;
         // Max discharge current (0.1A) offset -3000A
-        pack.maxPackDischargeCurrent = 30000 - data.getShort();
+        pack.maxPackDischargeCurrent = data.getShort() - 30000;
 
-        LOG.debug("\nMaxLimit V\tMinLimit V\tMaxCharge A\tMaxDischarge\n{}V\t{}V\t{}A\t{}A", pack.maxPackVoltageLimit / 10f, pack.minPackVoltageLimit / 10f, (pack.maxPackChargeCurrent + 3000) / 10f, (pack.maxPackDischargeCurrent + 3000) / 10);
+        LOG.debug("\nMaxLimit V\tMinLimit V\tMaxCharge A\tMaxDischarge\n{}V\t\t{}V\t\t{}A\t\t\t{}A", pack.maxPackVoltageLimit / 10f, pack.minPackVoltageLimit / 10f, pack.maxPackChargeCurrent / 10f, pack.maxPackDischargeCurrent / 10);
     }
 
 
@@ -207,9 +207,9 @@ public class PylonHVBmsCANProcessor extends BMS {
     private void readCellTemperature(final BatteryPack pack, final ByteBuffer data) {
         // frame id is already read, so start at the first data byte
         // Maximum cell temperature (0.1C) offset -100C
-        pack.tempMax = (data.getShort() - 1000) / 10;
+        pack.tempMax = data.getShort() - 1000;
         // Minimum cell temperature (0.1C) offset -100C
-        pack.tempMin = (data.getShort() - 1000) / 10;
+        pack.tempMin = data.getShort() - 1000;
         // Maximum cell temperature cell number
         pack.tempMaxCellNum = data.getShort();
         // Minimum cell temperature cell number
@@ -305,10 +305,10 @@ public class PylonHVBmsCANProcessor extends BMS {
 
     // 0x4270
     private void readModuleTemperature(final BatteryPack pack, final ByteBuffer data) {
-        // maximum module temperature (0.1C)
-        pack.maxModuleTemp = data.getShort();
-        // minimum module temperature (0.1C)
-        pack.minModuleTemp = data.getShort();
+        // maximum module temperature (0.1C) offset -100C
+        pack.maxModuleTemp = data.getShort() - 1000;
+        // minimum module temperature (0.1C) offset -100C
+        pack.minModuleTemp = data.getShort() - 1000;
         // pack number with maximum module temperature
         pack.maxModuleTempNum = data.getShort();
         // pack number with minimum module temperature
@@ -374,13 +374,13 @@ public class PylonHVBmsCANProcessor extends BMS {
         // battery modules in series
         pack.modulesInSeries = data.get();
         // cell quantity in battery module
-        pack.moduleNumberOfCells = data.get(3);
+        pack.moduleNumberOfCells = data.get();
         // battery cabinet voltage level (1V)
         pack.moduleVoltage = data.getShort();
         // battery cabinet AH (1AH)
         pack.moduleRatedCapacityAh = data.getShort();
 
-        LOG.debug("\nNo of cells\n{}", pack.numberOfCells);
+        LOG.debug("\nNo of cells\tModules in Series\tModule No of Cells\tModule V\tModule Capacity Ah\n{}\t\t\t{}\t\t\t{}\t\t\t{}\t\t{}", pack.numberOfCells, pack.modulesInSeries, pack.moduleNumberOfCells, pack.moduleVoltage, pack.moduleRatedCapacityAh);
     }
 
 
@@ -396,7 +396,7 @@ public class PylonHVBmsCANProcessor extends BMS {
             }
         } while (chr != 0x00 && data.position() < data.capacity());
 
-        LOG.debug("Manufacturer", pack.manufacturerCode);
+        LOG.debug("\nManufacturer\n{}", pack.manufacturerCode);
     }
 
 }

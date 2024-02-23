@@ -50,11 +50,11 @@ public class BatteryPack {
     public int cellDiffmV;
 
     // data from 0x92
-    /** Maximum temperature sensor reading (1C) */
+    /** Maximum temperature sensor reading (0.1C) */
     public int tempMax;
-    /** Minimum temperature sensor reading (1C) */
+    /** Minimum temperature sensor reading (0.1C) */
     public int tempMin;
-    /** Average of temp sensors (1C) */
+    /** Average of temp sensors (0.1C) */
     public int tempAverage;
 
     // data from 0x93
@@ -121,28 +121,28 @@ public class BatteryPack {
     public int tempMinCellNum;
 
     /** The maximum module voltage (0.001V) of a pack */
-    public short maxModulemV;
+    public int maxModulemV;
     /** The minimum module voltage (0.001V) of a pack */
-    public short minModulemV;
+    public int minModulemV;
     /** The number of the pack with the maximum voltage */
-    public short maxModulemVNum;
+    public int maxModulemVNum;
     /** The number of the pack with the minimum voltage */
-    public short minModulemVNum;
+    public int minModulemVNum;
     /** The maximum module temperature (0.1C) */
-    public short maxModuleTemp;
+    public int maxModuleTemp;
     /** The minimum module temperature (0.1C) */
-    public short minModuleTemp;
+    public int minModuleTemp;
     /** The pack number with maximum module temperature */
-    public short maxModuleTempNum;
+    public int maxModuleTempNum;
     /** The pack number with minimum module temperature */
-    public short minModuleTempNum;
+    public int minModuleTempNum;
     /** The number of battery modules in series */
     public byte modulesInSeries;
     /** The number of cells in a module */
     public byte moduleNumberOfCells;
     /** The module voltage (1V) */
-    public short moduleVoltage;
+    public int moduleVoltage;
     /** The rated capacity of the module (1Ah) */
-    public short moduleRatedCapacityAh;
+    public int moduleRatedCapacityAh;
 
 }

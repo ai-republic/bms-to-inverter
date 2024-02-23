@@ -89,7 +89,7 @@ public class DeyeInverterCANProcessor extends Inverter {
     private ByteBuffer createBatteryVoltage() {
         final int aggregatedPackVoltage = (int) energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.packVoltage).average().orElse(500) * 10;
         final int aggregatedPackCurrent = energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.packCurrent).sum();
-        final int aggregatedPackTemperature = (int) energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.tempMax).average().orElse(35) * 10;
+        final int aggregatedPackTemperature = (int) energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.tempMax).average().orElse(300);
 
         final ByteBuffer frame = ByteBuffer.allocateDirect(16);
         frame.putInt(0x0356)

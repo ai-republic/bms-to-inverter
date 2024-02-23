@@ -77,7 +77,7 @@ public class SMAInverterCANProcessor extends Inverter {
 
         final short batteryVoltage = (short) (energyStorage.getBatteryPacks().stream().map(pack -> pack.packVoltage).filter(volt -> volt != 0).min((v1, v2) -> v1.compareTo(v2)).orElse(520) * 10);
         final short batteryCurrent = (short) energyStorage.getBatteryPacks().stream().mapToInt(b -> b.packCurrent).sum();
-        final short batteryTemperature = (short) (energyStorage.getBatteryPacks().stream().mapToInt(b -> b.tempAverage).average().orElseGet(() -> 35d) * 10); // 35degC
+        final short batteryTemperature = (short) energyStorage.getBatteryPacks().stream().mapToInt(b -> b.tempAverage).average().orElseGet(() -> 350d); // 35degC
 
         // battery voltage (0.01V) - s_int_16
         frame.putShort(batteryVoltage)

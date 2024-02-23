@@ -141,8 +141,8 @@ public class PylonHVInverterCANProcessor extends Inverter {
         frame.putShort((short) pack.packVoltage);
         // Battery current (0.1A) offset -3000A
         frame.putShort((short) (pack.packCurrent + 30000));
-        // second level temperature (0.1 Celcius) offset -100
-        frame.putShort((short) ((pack.tempAverage - 100) * 10));
+        // second level temperature (0.1 Celcius) offset -100C
+        frame.putShort((short) (pack.tempAverage + 1000));
         // Battery SOC (1%)
         frame.put((byte) (pack.packSOC / 10));
         // Battery SOH (1%)
@@ -197,9 +197,9 @@ public class PylonHVInverterCANProcessor extends Inverter {
         final ByteBuffer frame = prepareSendFrame(0x00004240 | bmsNo);
 
         // Maximum cell temperature (0.1C) offset -100C
-        frame.putShort((short) ((pack.tempMax + 100) * 10));
-        // Minimum cell temperature (0.1C) offset -100
-        frame.putShort((short) ((pack.tempMin + 100) * 10));
+        frame.putShort((short) (pack.tempMax + 1000));
+        // Minimum cell temperature (0.1C) offset -100C
+        frame.putShort((short) (pack.tempMin + 1000));
         // Maximum cell temperature cell number
         frame.putShort((short) pack.tempMaxCellNum);
         // Minimum cell temperature cell number
@@ -304,13 +304,13 @@ public class PylonHVInverterCANProcessor extends Inverter {
         final ByteBuffer frame = prepareSendFrame(0x00004260 | bmsNo);
 
         // maximum module voltage (0.001V)
-        frame.putShort(pack.maxModulemV);
+        frame.putShort((short) pack.maxModulemV);
         // minimum module voltage (0.001V)
-        frame.putShort(pack.minModulemV);
+        frame.putShort((short) pack.minModulemV);
         // pack number with maximum module voltage
-        frame.putShort(pack.maxModulemVNum);
+        frame.putShort((short) pack.maxModulemVNum);
         // pack number with minimum module voltage
-        frame.putShort(pack.minModulemVNum);
+        frame.putShort((short) pack.minModulemVNum);
 
         LOG.debug("Sending max/min module V: {}", Port.printBuffer(frame));
         sendFrame(port, frame);
@@ -322,14 +322,14 @@ public class PylonHVInverterCANProcessor extends Inverter {
         final BatteryPack pack = energyStorage.getBatteryPack(bmsNo);
         final ByteBuffer frame = prepareSendFrame(0x00004270 | bmsNo);
 
-        // maximum module temperature (0.1C)
-        frame.putShort(pack.maxModuleTemp);
-        // minimum module temperature (0.1C)
-        frame.putShort(pack.minModuleTemp);
+        // maximum module temperature (0.1C) offset -100C
+        frame.putShort((short) (pack.maxModuleTemp + 1000));
+        // minimum module temperature (0.1C) offset -100C
+        frame.putShort((short) (pack.minModuleTemp + 1000));
         // pack number with maximum module temperature
-        frame.putShort(pack.maxModuleTempNum);
+        frame.putShort((short) pack.maxModuleTempNum);
         // pack number with minimum module temperature
-        frame.putShort(pack.minModuleTempNum);
+        frame.putShort((short) pack.minModuleTempNum);
 
         LOG.debug("Sending max/min module C: {}", Port.printBuffer(frame));
         sendFrame(port, frame);
@@ -420,9 +420,9 @@ public class PylonHVInverterCANProcessor extends Inverter {
         // cell quantity in battery module
         frame.put(pack.moduleNumberOfCells);
         // battery cabinet voltage level (1V)
-        frame.putShort(pack.moduleVoltage);
+        frame.putShort((short) pack.moduleVoltage);
         // battery cabinet AH (1AH)
-        frame.putShort(pack.moduleRatedCapacityAh);
+        frame.putShort((short) pack.moduleRatedCapacityAh);
 
         LOG.debug("Sending battery module info: {}", Port.printBuffer(frame));
         sendFrame(port, frame);

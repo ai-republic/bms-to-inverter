@@ -78,16 +78,16 @@ public class JKBmsCANProcessor extends BMS {
 
     private void readCellTemperature(final BatteryPack pack, final ByteBuffer data) {
         // frame id is already read, so start at the first data byte
-        // Maximum cell temperature (C) offset -50
-        pack.tempMax = data.get();
+        // Maximum cell temperature (1C) offset -50
+        pack.tempMax = (data.get() - 50) * 10;
         // Maximum cell temperature cell number
         data.get();
-        // Minimum cell temperature (C) offset -50
-        pack.tempMin = data.get();
+        // Minimum cell temperature (1C) offset -50
+        pack.tempMin = (data.get() - 50) * 10;
         // Minimum cell temperature cell number
         data.get();
-        // Average cell temperature (C) offset -50
-        pack.tempAverage = data.get();
+        // Average cell temperature (1C) offset -50
+        pack.tempAverage = (data.get() - 50) * 10;
     }
 
 

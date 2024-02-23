@@ -242,7 +242,7 @@ public class GrowattInverterCANProcessor extends Inverter {
     private ByteBuffer createBatteryVoltage() {
         final int aggregatedPackVoltage = (int) energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.packVoltage).average().orElse(500) * 10;
         final int aggregatedPackCurrent = energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.packCurrent).sum();
-        final int aggregatedPackTemperature = (int) energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.tempMax).average().orElse(35) * 10;
+        final int aggregatedPackTemperature = (int) energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.tempMax).average().orElse(300);
         final byte aggregatedSOC = (byte) (energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.packSOC).average().orElse(500) / 10);
         final byte aggregatedSOH = (byte) (energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.packSOH).average().orElse(500) / 10);
 
@@ -416,7 +416,7 @@ public class GrowattInverterCANProcessor extends Inverter {
         pack.packCurrent = 15;
         pack.packSOC = 940;
         pack.packSOH = 1000;
-        pack.tempMax = 22;
+        pack.tempMax = 220;
         final EnergyStorage es = new EnergyStorage();
         es.getBatteryPacks().add(pack);
 

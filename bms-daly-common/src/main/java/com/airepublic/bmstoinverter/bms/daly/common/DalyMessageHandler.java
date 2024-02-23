@@ -187,10 +187,11 @@ public class DalyMessageHandler {
         final int bmsNo = 0;
         final BatteryPack battery = bms.getBatteryPack(bmsNo);
 
-        // byte 0 maximum temperature with offset of 40
-        battery.tempMax = msg.data.get(0) - 40;
-        // byte 2 minimum temperature with offset of 40
-        battery.tempMin = msg.data.get(2) - 40;
+        // maximum temperature (1C)with offset of 40
+        battery.tempMax = (msg.data.get(0) - 40) * 10;
+        // minimum temperature (1C)with offset of 40
+        battery.tempMin = (msg.data.get(2) - 40) * 10;
+        // calculate average temperature
         battery.tempAverage = (battery.tempMax + battery.tempMin) / 2;
 
         if (LOG.isDebugEnabled()) {

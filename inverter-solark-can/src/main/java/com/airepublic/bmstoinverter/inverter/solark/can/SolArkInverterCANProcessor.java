@@ -83,7 +83,7 @@ public class SolArkInverterCANProcessor extends Inverter {
     private ByteBuffer createBatteryVoltage() {
         final int aggregatedPackVoltage = (int) energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.packVoltage).average().orElse(500) * 10;
         final int aggregatedPackCurrent = energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.packCurrent).sum();
-        final int aggregatedPackTemperature = (int) energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.tempMax).average().orElse(35) * 10;
+        final int aggregatedPackTemperature = (int) energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.tempMax).average().orElse(300);
 
         final ByteBuffer frame = prepareFrame(0x356);
 
@@ -169,7 +169,7 @@ public class SolArkInverterCANProcessor extends Inverter {
         pack.packCurrent = 15;
         pack.packSOC = 94;
         pack.packSOH = 100;
-        pack.tempMax = 22;
+        pack.tempMax = 220;
         final EnergyStorage es = new EnergyStorage();
         es.getBatteryPacks().add(pack);
 

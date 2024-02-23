@@ -144,10 +144,18 @@ public class PylonBmsCANProcessor extends BMS {
 
     // 0x35E
     private void readManufacturer(final BatteryPack pack, final ByteBuffer data) {
-        final char first = (char) data.get();
-        final char second = (char) data.get();
+        pack.manufacturerCode = "";
+        byte chr;
 
-        pack.manufacturerCode = "" + first + second;
+        do {
+            chr = data.get();
+
+            if (chr != 0x00) {
+                pack.manufacturerCode += (char) chr;
+            }
+        } while (chr != 0x00 && data.position() < data.capacity());
+
+        LOG.debug("Manufacturer", pack.manufacturerCode);
     }
 
 
