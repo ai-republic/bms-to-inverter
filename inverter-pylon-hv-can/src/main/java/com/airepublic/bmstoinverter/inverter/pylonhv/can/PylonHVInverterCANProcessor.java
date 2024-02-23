@@ -68,23 +68,25 @@ public class PylonHVInverterCANProcessor extends Inverter {
         final int length = frame.get();
         final byte[] data = new byte[length];
         frame.get(8, data);
-        final int bmsNo = frameId & 0x0000000F;
 
-        try {
-            switch (frameId) {
-                case 0x00004200:
-                    switch (data[0]) {
-                        case 0x00:
-                            sendEnsembleInformation(port, bmsNo);
-                        break;
-                        case 0x02:
-                            sendEquipmentInformation(port, bmsNo);
-                        break;
-                    }
-                break;
+        // send data from all battery modules
+        for (int bmsNo = 0; bmsNo < energyStorage.getBatteryPacks().size(); bmsNo++) {
+            try {
+                switch (frameId) {
+                    case 0x00004200:
+                        switch (data[0]) {
+                            case 0x00:
+                                sendEnsembleInformation(port, bmsNo);
+                            break;
+                            case 0x02:
+                                sendEquipmentInformation(port, bmsNo);
+                            break;
+                        }
+                    break;
+                }
+            } catch (final IOException e) {
+                LOG.error("Error sending responses for request: " + Port.printBuffer(frame), e);
             }
-        } catch (final IOException e) {
-            LOG.error("Error sending responses for request: " + Port.printBuffer(frame));
         }
     }
 
@@ -220,7 +222,9 @@ public class PylonHVInverterCANProcessor extends Inverter {
 
         switch (pack.chargeDischargeStatus) {
             case "Sleep":
-                Util.setBit(status, 3, false);
+                Util.setBit(status, 0, false);
+                Util.setBit(status, 1, false);
+                Util.setBit(status, 2, false);
             break;
             case "Charge":
                 Util.setBit(status, 0, true);

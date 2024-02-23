@@ -116,8 +116,10 @@ public class PylonHVBmsCANProcessor extends BMS {
                     readBatterModuleInfo(pack, data);
                 break;
                 case 0x7330:
+                    readManufacturerPart1(pack, data);
+                break;
                 case 0x7340:
-                    readManufacturer(pack, data);
+                    readManufacturerPart2(pack, data);
                 break;
 
             }
@@ -199,7 +201,7 @@ public class PylonHVBmsCANProcessor extends BMS {
         // Minimum cell voltage cell number
         pack.minCellVNum = data.getShort();
 
-        LOG.debug("\nMaxCell V\tMinCell V\n{}\t{}", pack.maxCellmV / 1000f + "V (#" + pack.maxCellVNum + ")", pack.minCellmV / 1000f + " V(#" + pack.minCellVNum + ")");
+        LOG.debug("\nMaxCell V\tMinCell V\n{} (#{})\t{} (#{})", pack.maxCellmV / 1000f, pack.maxCellVNum, pack.minCellmV / 1000f, pack.minCellVNum);
     }
 
 
@@ -215,7 +217,7 @@ public class PylonHVBmsCANProcessor extends BMS {
         // Minimum cell temperature cell number
         pack.tempMinCellNum = data.getShort();
 
-        LOG.debug("\nMaxCell C\tMinCell C\n{}\t{}", pack.tempMax + "C (#" + pack.tempMaxCellNum + ")", pack.tempMin + "C (#" + pack.tempMinCellNum + ")");
+        LOG.debug("\nMaxCell C\tMinCell C\n{}C (#{})\t{}C (#{})", pack.tempMax / 10f, pack.tempMaxCellNum, pack.tempMin / 10f, pack.tempMinCellNum);
     }
 
 
@@ -299,7 +301,7 @@ public class PylonHVBmsCANProcessor extends BMS {
         // pack number with minimum module voltage
         pack.minModulemVNum = data.getShort();
 
-        LOG.debug("\nMaxModule V\tMinModule V\n{}\t{}", pack.maxModulemV / 1000 + "V (#" + pack.maxModulemVNum + ")", pack.minModulemV / 1000 + "V (#" + pack.minModulemVNum + ")");
+        LOG.debug("\nMaxModule V\tMinModule V\n{}V (#{})\t{}V (#{})", pack.maxModulemV / 1000f, pack.maxModulemVNum, pack.minModulemV / 1000f, pack.minModulemVNum);
     }
 
 
@@ -314,7 +316,7 @@ public class PylonHVBmsCANProcessor extends BMS {
         // pack number with minimum module temperature
         pack.minModuleTempNum = data.getShort();
 
-        LOG.debug("\nMaxModule C\tMinModule C\n{}\t{}", pack.maxModuleTemp / 10 + "C (#" + pack.maxModuleTempNum + ")", pack.minModuleTemp / 10 + "C (#" + pack.minModuleTempNum + ")");
+        LOG.debug("\nMaxModule C\tMinModule C\n{}C (#{})\t{}C (#{})", pack.maxModuleTemp / 10f, pack.maxModuleTempNum, pack.minModuleTemp / 10f, pack.minModuleTempNum);
     }
 
 
@@ -368,6 +370,7 @@ public class PylonHVBmsCANProcessor extends BMS {
     }
 
 
+    // 0x7320
     private void readBatterModuleInfo(final BatteryPack pack, final ByteBuffer data) {
         // battery module quantity
         pack.numberOfCells = data.getShort();
@@ -380,11 +383,12 @@ public class PylonHVBmsCANProcessor extends BMS {
         // battery cabinet AH (1AH)
         pack.moduleRatedCapacityAh = data.getShort();
 
-        LOG.debug("\nNo of cells\tModules in Series\tModule No of Cells\tModule V\tModule Capacity Ah\n{}\t\t\t{}\t\t\t{}\t\t\t{}\t\t{}", pack.numberOfCells, pack.modulesInSeries, pack.moduleNumberOfCells, pack.moduleVoltage, pack.moduleRatedCapacityAh);
+        LOG.debug("\nNo of cells\tModules in Series\tModule No of Cells\tModule V\tModule Capacity Ah\n{}\t\t\t\t{}\t\t\t\t{}\t\t\t\t{}\t\t{}", pack.numberOfCells, pack.modulesInSeries, pack.moduleNumberOfCells, pack.moduleVoltage, pack.moduleRatedCapacityAh);
     }
 
 
-    private void readManufacturer(final BatteryPack pack, final ByteBuffer data) {
+    // 0x7330
+    private void readManufacturerPart1(final BatteryPack pack, final ByteBuffer data) {
         pack.manufacturerCode = "";
         byte chr;
 
@@ -399,4 +403,33 @@ public class PylonHVBmsCANProcessor extends BMS {
         LOG.debug("\nManufacturer\n{}", pack.manufacturerCode);
     }
 
+
+    // 0x7340
+    private void readManufacturerPart2(final BatteryPack pack, final ByteBuffer data) {
+        byte chr;
+
+        do {
+            chr = data.get();
+
+            if (chr != 0x00) {
+                pack.manufacturerCode += (char) chr;
+            }
+        } while (chr != 0x00 && data.position() < data.capacity());
+
+        LOG.debug("\nManufacturer\n{}", pack.manufacturerCode);
+    }
+
+
+    public static void main(final String[] args) {
+        final PylonHVBmsCANProcessor p = new PylonHVBmsCANProcessor();
+        final BatteryPack pack = new BatteryPack();
+        final ByteBuffer data = ByteBuffer.allocate(8).put(new byte[] { 0x1E, (byte) 0xC3, 0x1B, (byte) 0xC3, 0x02, 0x00, 0x00, 0x00 }).order(ByteOrder.LITTLE_ENDIAN).rewind();
+        System.out.println(data.getShort());
+        data.rewind();
+
+        p.readModuleVoltage(pack, data);
+
+        System.out.println(pack.maxModulemV + ", " + pack.minModulemV);
+
+    }
 }

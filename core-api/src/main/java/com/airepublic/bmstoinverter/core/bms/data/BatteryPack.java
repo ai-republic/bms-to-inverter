@@ -59,7 +59,7 @@ public class BatteryPack {
 
     // data from 0x93
     /** charge/discharge status (0 stationary, 1 charge, 2 discharge) */
-    public String chargeDischargeStatus;
+    public String chargeDischargeStatus = "";
     /** charging MOSFET status */
     public boolean chargeMOSState;
     /** discharge MOSFET state */
@@ -109,11 +109,11 @@ public class BatteryPack {
     public Alarms alarms = new Alarms();
     //
     /** The manufacturer code */
-    public String manufacturerCode;
+    public String manufacturerCode = "";
     /** The hardware version */
-    public String hardwareVersion;
+    public String hardwareVersion = "";
     /** The software version */
-    public String softwareVersion;
+    public String softwareVersion = "";
 
     /** The cell with the maximum temperature */
     public int tempMaxCellNum;
