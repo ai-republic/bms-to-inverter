@@ -170,7 +170,7 @@ public class PylonHVBmsCANProcessor extends BMS {
         // Battery SOH (1%)
         pack.packSOH = data.get() * 10;
 
-        LOG.debug("\nPack V\tPack A\tTempAvg\tPack SOC\tPack SOH\n{}V\t{}A\t{}C\t\t{}%\t{}%", pack.packVoltage / 10f, pack.packCurrent / 10f, pack.tempAverage, pack.packSOC / 10f, pack.packSOH / 10f);
+        LOG.debug("\nPack V\tPack A\tTempAvg\tPack SOC\tPack SOH\n{}V\t{}A\t{}C\t\t{}%\t{}%", pack.packVoltage / 10f, pack.packCurrent / 10f, pack.tempAverage / 10f, pack.packSOC / 10f, pack.packSOH / 10f);
     }
 
 
