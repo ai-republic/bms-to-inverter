@@ -55,7 +55,7 @@ public class BmsToInverter implements AutoCloseable {
     private EmailAccount account;
     private final List<String> emailRecipients = new ArrayList<>();
     private List<String> lastAlarms = new ArrayList<>();
-    final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(1);
+    final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
 
     /**
      * The main method to start the application.
