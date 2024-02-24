@@ -441,11 +441,26 @@ public class PylonHVInverterCANProcessor extends Inverter {
     // 0x7330
     private void sendManufacturer(final Port port, final int bmsNo) throws IOException {
         final BatteryPack pack = energyStorage.getBatteryPack(bmsNo);
-        final ByteBuffer frame = prepareSendFrame(0x00007320 | bmsNo);
+        ByteBuffer frame = prepareSendFrame(0x00007320 | bmsNo);
+        final byte[] bytes = pack.manufacturerCode.getBytes();
 
-        frame.asCharBuffer().append(pack.manufacturerCode);
+        if (bytes.length <= 8) {
+            frame.put(bytes);
 
-        LOG.debug("Sending manufacturer: {}", Port.printBuffer(frame));
-        sendFrame(port, frame);
+            LOG.debug("Sending manufacturer: {}", Port.printBuffer(frame));
+            sendFrame(port, frame);
+        } else {
+            frame.put(bytes, 0, 8);
+
+            LOG.debug("Sending manufacturer: {}", Port.printBuffer(frame));
+            sendFrame(port, frame);
+
+            frame = prepareSendFrame(0x00007330 | bmsNo);
+            frame.put(bytes, 8, bytes.length > 16 ? 8 : bytes.length - 8);
+
+            LOG.debug("Sending manufacturer: {}", Port.printBuffer(frame));
+            sendFrame(port, frame);
+
+        }
     }
 }
