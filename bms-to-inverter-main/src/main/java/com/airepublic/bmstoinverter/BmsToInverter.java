@@ -8,7 +8,6 @@ import java.util.ServiceLoader;
 import java.util.StringTokenizer;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -156,10 +155,24 @@ public class BmsToInverter implements AutoCloseable {
         try {
 
             LOG.info("Starting BMS receiver...");
-            for (final BMS bms : bmsList) {
-                // receive BMS data
-                executorService.scheduleWithFixedDelay(() -> bms.process(() -> receivedData()), 1, bms.getPollInterval(), TimeUnit.SECONDS);
-            }
+
+            new Thread(() -> {
+                do {
+                    for (final BMS bms : bmsList) {
+                        try {
+                            LOG.info("Reading BMS #" + bms.getBmsNo() + bms.getName() + " on " + bms.getPortLocator() + "...");
+                            bms.process(() -> receivedData());
+                            // TODO set poll intverall for all bms together not each
+                            Thread.sleep(bms.getPollInterval() * 1000);
+                        } catch (final Throwable e) {
+                        }
+                    }
+
+                } while (true);
+            }).start();
+
+            // executorService.scheduleWithFixedDelay(() -> bms.process(() -> receivedData()),
+            // 1, bms.getPollInterval(), TimeUnit.SECONDS);
 
             // wait for the first data to be received
             synchronized (this) {
@@ -170,9 +183,22 @@ public class BmsToInverter implements AutoCloseable {
             if (inverter != null) {
 
                 LOG.info("Starting inverter sender...");
-                executorService.scheduleWithFixedDelay(() -> inverter.process(() -> sentData()), 1, inverter.getSendInterval(), TimeUnit.SECONDS);
+                new Thread(() -> {
+                    do {
+                        try {
+                            LOG.info("Sending to inverter " + inverter.getName() + " on " + inverter.getPortLocator() + "...");
+                            inverter.process(() -> sentData());
+                            Thread.sleep(inverter.getSendInterval() * 1000);
+                        } catch (final Throwable e) {
+                        }
+                    } while (true);
+                }).start();
+                // executorService.scheduleWithFixedDelay(() -> inverter.process(() -> sentData()),
+                // 1, inverter.getSendInterval(), TimeUnit.SECONDS);
             }
-        } catch (final Throwable e) {
+        } catch (
+
+        final Throwable e) {
             LOG.error("Error occured during processing!", e);
         }
     }

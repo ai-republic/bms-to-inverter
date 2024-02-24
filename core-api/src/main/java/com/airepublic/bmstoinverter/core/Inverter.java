@@ -15,8 +15,7 @@ import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
  */
 public abstract class Inverter {
     private final static Logger LOG = LoggerFactory.getLogger(Inverter.class);
-    private String portLocator;
-    private int sendInterval;
+    private InverterConfig config;
 
     /**
      * Initializes the {@link Inverter} with the specified {@link InverterConfig}, initializing the
@@ -26,9 +25,17 @@ public abstract class Inverter {
         if (!PortAllocator.hasPort(config.getPortLocator())) {
             PortAllocator.addPort(config.getPortLocator(), config.getDescriptor().createPort(config));
         }
+        this.config = config;
+    }
 
-        portLocator = config.getPortLocator();
-        sendInterval = config.getSendInterval();
+
+    /**
+     * Gets the name of the {@link InverterDescriptor}.
+     *
+     * @return the name
+     */
+    public String getName() {
+        return config.getDescriptor().getName();
     }
 
 
@@ -38,7 +45,7 @@ public abstract class Inverter {
      * @return the interval the data is sent to the inverter
      */
     public int getSendInterval() {
-        return sendInterval;
+        return config.getSendInterval();
     }
 
 
@@ -48,7 +55,7 @@ public abstract class Inverter {
      * @return the assigned {@link Port}s locator
      */
     public String getPortLocator() {
-        return portLocator;
+        return config.getPortLocator();
     }
 
 

@@ -17,11 +17,8 @@ import jakarta.inject.Inject;
  */
 public abstract class BMS {
     private final static Logger LOG = LoggerFactory.getLogger(BMS.class);
-    private int bmsNo;
-    private String portLocator;
     private final List<BatteryPack> batteryPacks = new ArrayList<>();
-    private int pollInterval;
-    private long delayAfterNoBytes;
+    private BMSConfig config;
     @Inject
     private transient EnergyStorage energyStorage;
 
@@ -36,11 +33,17 @@ public abstract class BMS {
             final Port port = config.getDescriptor().createPort(config);
             PortAllocator.addPort(config.getPortLocator(), port);
         }
+        this.config = config;
+    }
 
-        bmsNo = config.getBmsNo();
-        portLocator = config.getPortLocator();
-        setPollInterval(config.getPollInterval());
-        setDelayAfterNoBytes(config.getDelayAfterNoBytes());
+
+    /**
+     * Gets the name of the {@link BMSDescriptor}.
+     *
+     * @return the name
+     */
+    public String getName() {
+        return config.getDescriptor().getName();
     }
 
 
@@ -50,17 +53,7 @@ public abstract class BMS {
      * @return the assigned BMS number
      */
     public int getBmsNo() {
-        return bmsNo;
-    }
-
-
-    /**
-     * Sets the assigned BMS number.
-     *
-     * @param bmsNo the assigned BMS number
-     */
-    public void setBmsNo(final int bmsNo) {
-        this.bmsNo = bmsNo;
+        return config.getBmsNo();
     }
 
 
@@ -70,7 +63,7 @@ public abstract class BMS {
      * @return the assigned {@link Port}s locator
      */
     public String getPortLocator() {
-        return portLocator;
+        return config.getPortLocator();
     }
 
 
@@ -109,17 +102,7 @@ public abstract class BMS {
      * @return the polling interval in seconds
      */
     public int getPollInterval() {
-        return pollInterval;
-    }
-
-
-    /**
-     * Sets the polling interval in seconds
-     *
-     * @param pollInterval the polling interval in seconds
-     */
-    public void setPollInterval(final int pollInterval) {
-        this.pollInterval = pollInterval;
+        return config.getPollInterval();
     }
 
 
@@ -129,17 +112,7 @@ public abstract class BMS {
      * @return the delay after no bytes were received in milliseconds
      */
     public long getDelayAfterNoBytes() {
-        return delayAfterNoBytes;
-    }
-
-
-    /**
-     * Sets the delay after no bytes were received in milliseconds.
-     *
-     * @param delayAfterNoBytes the delay after no bytes were received in milliseconds
-     */
-    public void setDelayAfterNoBytes(final long delayAfterNoBytes) {
-        this.delayAfterNoBytes = delayAfterNoBytes;
+        return config.getDelayAfterNoBytes();
     }
 
 
