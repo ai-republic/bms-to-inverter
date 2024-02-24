@@ -161,11 +161,16 @@ public class BmsToInverter implements AutoCloseable {
                 executorService.scheduleWithFixedDelay(() -> bms.process(() -> receivedData()), 1, bms.getPollInterval(), TimeUnit.SECONDS);
             }
 
+            // wait for the first data to be received
+            synchronized (this) {
+                this.wait();
+            }
+
             // send data to inverter
             if (inverter != null) {
 
                 LOG.info("Starting inverter sender...");
-                executorService.scheduleWithFixedDelay(() -> inverter.process(() -> sentData()), 3, inverter.getSendInterval(), TimeUnit.SECONDS);
+                executorService.scheduleWithFixedDelay(() -> inverter.process(() -> sentData()), 1, inverter.getSendInterval(), TimeUnit.SECONDS);
             }
         } catch (final Throwable e) {
             LOG.error("Error occured during processing!", e);
@@ -178,6 +183,10 @@ public class BmsToInverter implements AutoCloseable {
      */
     private void receivedData() {
         try {
+            synchronized (this) {
+                notify();
+            }
+
             LOG.info(createBatteryOverview());
 
             if (mqttProducer != null) {

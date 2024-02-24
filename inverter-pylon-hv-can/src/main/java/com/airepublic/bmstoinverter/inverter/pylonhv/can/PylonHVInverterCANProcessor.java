@@ -36,7 +36,7 @@ public class PylonHVInverterCANProcessor extends Inverter {
             // listen for inverter requests
             final ByteBuffer requestFrame = port.receiveFrame();
             handleRequest(port, requestFrame);
-        } catch (final IOException e) {
+        } catch (final Throwable e) {
             LOG.error("Error communicating to inverter!", e);
         }
 
@@ -71,21 +71,26 @@ public class PylonHVInverterCANProcessor extends Inverter {
 
         // send data from all battery modules
         for (int bmsNo = 0; bmsNo < energyStorage.getBatteryPacks().size(); bmsNo++) {
-            try {
-                switch (frameId) {
-                    case 0x00004200:
-                        switch (data[0]) {
-                            case 0x00:
-                                sendEnsembleInformation(port, bmsNo);
-                            break;
-                            case 0x02:
-                                sendEquipmentInformation(port, bmsNo);
-                            break;
-                        }
-                    break;
+            final BatteryPack pack = energyStorage.getBatteryPack(bmsNo);
+
+            // TODO do not allow invalid bms ids to populate energy storage
+            if (pack.packSOC != -1) {
+                try {
+                    switch (frameId) {
+                        case 0x00004200:
+                            switch (data[0]) {
+                                case 0x00:
+                                    sendEnsembleInformation(port, bmsNo);
+                                break;
+                                case 0x02:
+                                    sendEquipmentInformation(port, bmsNo);
+                                break;
+                            }
+                        break;
+                    }
+                } catch (final IOException e) {
+                    LOG.error("Error sending responses for request: " + Port.printBuffer(frame), e);
                 }
-            } catch (final IOException e) {
-                LOG.error("Error sending responses for request: " + Port.printBuffer(frame), e);
             }
         }
     }

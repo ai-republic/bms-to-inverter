@@ -33,7 +33,7 @@ public class BatteryPack {
     /** Current in (+) or out (-) of pack (0.1 A) */
     public int packCurrent;
     /** State Of Charge (0.1%) */
-    public int packSOC;
+    public int packSOC = -1;
     /** State of Health (0.1%) */
     public int packSOH;
 
