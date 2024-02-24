@@ -48,12 +48,12 @@ public abstract class BMS {
 
 
     /**
-     * Gets the assigned BMS number.
+     * Gets the id of the BMS.
      * 
-     * @return the assigned BMS number
+     * @return the id of the BMS
      */
-    public int getBmsNo() {
-        return config.getBmsNo();
+    public int getBmsId() {
+        return config.getBmsId();
     }
 
 

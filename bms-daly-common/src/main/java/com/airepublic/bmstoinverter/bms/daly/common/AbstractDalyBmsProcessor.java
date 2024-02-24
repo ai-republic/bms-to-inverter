@@ -46,14 +46,14 @@ public abstract class AbstractDalyBmsProcessor extends BMS {
 
     @Override
     protected void collectData(final Port port) throws IOException, TooManyInvalidFramesException, NoDataAvailableException {
-        final int bmsNo = getBmsNo();
+        final int bmsId = getBmsId();
 
         if (initialRound) {
             try {
-                sendMessage(port, bmsNo, DalyCommand.READ_RATED_CAPACITY_CELL_VOLTAGE, requestData); // 0x50
-                sendMessage(port, bmsNo, DalyCommand.READ_BATTERY_TYPE_INFO, requestData); // 0x53
-                sendMessage(port, bmsNo, DalyCommand.READ_MIN_MAX_PACK_VOLTAGE, requestData); // 0x5A
-                sendMessage(port, bmsNo, DalyCommand.READ_MAX_PACK_DISCHARGE_CHARGE_CURRENT, requestData); // 0x5B
+                sendMessage(port, bmsId, DalyCommand.READ_RATED_CAPACITY_CELL_VOLTAGE, requestData); // 0x50
+                sendMessage(port, bmsId, DalyCommand.READ_BATTERY_TYPE_INFO, requestData); // 0x53
+                sendMessage(port, bmsId, DalyCommand.READ_MIN_MAX_PACK_VOLTAGE, requestData); // 0x5A
+                sendMessage(port, bmsId, DalyCommand.READ_MAX_PACK_DISCHARGE_CHARGE_CURRENT, requestData); // 0x5B
 
                 initialRound = false;
             } catch (final Throwable t) {
@@ -61,15 +61,15 @@ public abstract class AbstractDalyBmsProcessor extends BMS {
             }
         }
 
-        sendMessage(port, bmsNo, DalyCommand.READ_VOUT_IOUT_SOC, requestData); // 0x90
-        sendMessage(port, bmsNo, DalyCommand.READ_MIN_MAX_CELL_VOLTAGE, requestData); // 0x91
-        sendMessage(port, bmsNo, DalyCommand.READ_MIN_MAX_TEMPERATURE, requestData); // 0x92
-        sendMessage(port, bmsNo, DalyCommand.READ_DISCHARGE_CHARGE_MOS_STATUS, requestData); // 0x93
-        sendMessage(port, bmsNo, DalyCommand.READ_STATUS_INFO, requestData); // 0x94
-        sendMessage(port, bmsNo, DalyCommand.READ_CELL_VOLTAGES, requestData); // 0x95
-        sendMessage(port, bmsNo, DalyCommand.READ_CELL_TEMPERATURE, requestData); // 0x96
-        sendMessage(port, bmsNo, DalyCommand.READ_CELL_BALANCE_STATE, requestData); // 0x97
-        sendMessage(port, bmsNo, DalyCommand.READ_FAILURE_CODES, requestData); // 0x98
+        sendMessage(port, bmsId, DalyCommand.READ_VOUT_IOUT_SOC, requestData); // 0x90
+        sendMessage(port, bmsId, DalyCommand.READ_MIN_MAX_CELL_VOLTAGE, requestData); // 0x91
+        sendMessage(port, bmsId, DalyCommand.READ_MIN_MAX_TEMPERATURE, requestData); // 0x92
+        sendMessage(port, bmsId, DalyCommand.READ_DISCHARGE_CHARGE_MOS_STATUS, requestData); // 0x93
+        sendMessage(port, bmsId, DalyCommand.READ_STATUS_INFO, requestData); // 0x94
+        sendMessage(port, bmsId, DalyCommand.READ_CELL_VOLTAGES, requestData); // 0x95
+        sendMessage(port, bmsId, DalyCommand.READ_CELL_TEMPERATURE, requestData); // 0x96
+        sendMessage(port, bmsId, DalyCommand.READ_CELL_BALANCE_STATE, requestData); // 0x97
+        sendMessage(port, bmsId, DalyCommand.READ_FAILURE_CODES, requestData); // 0x98
     }
 
 
@@ -80,8 +80,8 @@ public abstract class AbstractDalyBmsProcessor extends BMS {
      * @param port the {@link Port} of the {@link BMS}
      */
     protected void autoCalibrateSOC(final Port port) {
-        final int bmsNo = 0;
-        final BatteryPack battery = getBatteryPack(bmsNo);
+        final int bmsId = 0;
+        final BatteryPack battery = getBatteryPack(bmsId);
         final int calculatedSOC = (int) (((float) battery.packVoltage - battery.minPackVoltageLimit) * 100 / (battery.maxPackVoltageLimit - battery.minPackVoltageLimit) * 10);
         final byte[] data = new byte[8];
         final LocalDateTime date = LocalDateTime.now();
@@ -103,7 +103,7 @@ public abstract class AbstractDalyBmsProcessor extends BMS {
                 final Future<List<ByteBuffer>> future = executor.submit(() -> {
 
                     LOG.info("calibrate request (SOC " + calculatedSOC + "): " + HexFormat.of().withUpperCase().withDelimiter(", 0x").formatHex(data));
-                    final List<ByteBuffer> result = sendMessage(port, getBmsNo(), DalyCommand.WRITE_RTC_AND_SOC, data);
+                    final List<ByteBuffer> result = sendMessage(port, getBmsId(), DalyCommand.WRITE_RTC_AND_SOC, data);
                     LOG.info("calibrate result: " + Port.printBuffer(result.get(0)));
                     return result;
                 });
@@ -123,13 +123,13 @@ public abstract class AbstractDalyBmsProcessor extends BMS {
      * Sends the specified {@link DalyCommand} and frame data to the specified BMS.
      *
      * @param port the {@link Port} to use
-     * @param bmsNo the bms to send to
+     * @param bmsId the bms to send to
      * @param cmd the {@link DalyCommand}
      * @param data the frame data
      * @return
      * @throws IOException
      */
-    protected abstract List<ByteBuffer> sendMessage(Port port, final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException, NoDataAvailableException, TooManyInvalidFramesException;
+    protected abstract List<ByteBuffer> sendMessage(Port port, final int bmsId, final DalyCommand cmd, final byte[] data) throws IOException, NoDataAvailableException, TooManyInvalidFramesException;
 
 
     /**
@@ -139,13 +139,13 @@ public abstract class AbstractDalyBmsProcessor extends BMS {
      * @return the expected number of response frames
      */
     protected int getResponseFrameCount(final DalyCommand cmd) {
-        final int bmsNo = 0;
+        final int bmsId = 0;
 
         switch (cmd.id) {
             case 0x21:
                 return 2;
             case 0x95:
-                return Math.round(getBatteryPack(bmsNo).numberOfCells / 3f + 0.5f);
+                return Math.round(getBatteryPack(bmsId).numberOfCells / 3f + 0.5f);
         }
 
         return 1;

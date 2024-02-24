@@ -167,7 +167,7 @@ public class BMSDialog extends JDialog {
             if (config == null) {
                 config = new BMSConfig(0, portLocator, pollInterval, delayAfterNoBytes, descriptor);
             } else {
-                config.update(config.getBmsNo(), portLocator, pollInterval, delayAfterNoBytes, descriptor);
+                config.update(config.getBmsId(), portLocator, pollInterval, delayAfterNoBytes, descriptor);
             }
             dispose();
         });

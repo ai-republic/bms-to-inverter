@@ -35,7 +35,7 @@ public class DalyMessageHandler {
     public void handleMessage(final BMS bms, final DalyMessage msg) {
         final int batteryNo = msg.address - 1;
 
-        if (batteryNo != bms.getBmsNo()) {
+        if (batteryNo != bms.getBmsId()) {
             LOG.error("Found invalid battery identifier: #{}", msg.address);
             return;
         }
@@ -178,7 +178,7 @@ public class DalyMessageHandler {
                     + "\tMax Voltage: Cell {}({}mV)\n"
                     + "\tMin Voltage: Cell {}({}mV)\n"
                     + "\tDifference: {}mV",
-                    bms.getBmsNo() + 1, battery.maxCellVNum, battery.maxCellmV, battery.minCellVNum, battery.minCellmV, battery.cellDiffmV);
+                    bms.getBmsId() + 1, battery.maxCellVNum, battery.maxCellmV, battery.minCellVNum, battery.minCellmV, battery.cellDiffmV);
         }
     }
 
@@ -199,7 +199,7 @@ public class DalyMessageHandler {
                     + "\tMax: {}C\n"
                     + "\tMin: {}C\n"
                     + "\tAvg: {}C",
-                    bms.getBmsNo() + 1, battery.tempMax, battery.tempMin, battery.tempAverage);
+                    bms.getBmsId() + 1, battery.tempMax, battery.tempMin, battery.tempAverage);
         }
     }
 
@@ -237,7 +237,7 @@ public class DalyMessageHandler {
                     + "\tChargeMOS-State: {}\n"
                     + "\tDisChargeMOS-State: {}\n"
                     + "\tBMSHeartBeat: {}",
-                    bms.getBmsNo() + 1, battery.chargeDischargeStatus, battery.chargeMOSState, battery.disChargeMOSState, battery.bmsHeartBeat);
+                    bms.getBmsId() + 1, battery.chargeDischargeStatus, battery.chargeMOSState, battery.disChargeMOSState, battery.bmsHeartBeat);
         }
     }
 
@@ -284,7 +284,7 @@ public class DalyMessageHandler {
             LOG.debug("BMS #{}, Frame No.: {}, Cell No: {}. {}mV", msg.address, frameNo, cellNo + 1, volt);
 
             if (cellNo + 1 < MIN_NUMBER_CELLS || cellNo + 1 > MAX_NUMBER_CELLS) {
-                LOG.debug("Invalid cell number " + (cellNo + 1) + " for battery pack #" + (bms.getBmsNo() + 1) + "(" + battery.numberOfCells + "cells)");
+                LOG.debug("Invalid cell number " + (cellNo + 1) + " for battery pack #" + (bms.getBmsId() + 1) + "(" + battery.numberOfCells + "cells)");
                 break;
             }
 
@@ -293,7 +293,7 @@ public class DalyMessageHandler {
         }
 
         if (LOG.isDebugEnabled() && frameNo * 3 + cellNo >= battery.numberOfCells) {
-            final StringBuilder buf = new StringBuilder("Battery #" + (bms.getBmsNo() + 1) + " voltages:\n");
+            final StringBuilder buf = new StringBuilder("Battery #" + (bms.getBmsId() + 1) + " voltages:\n");
 
             for (int i = 0; i < battery.numberOfCells; i++) {
                 buf.append("\t#" + (i + 1) + ": " + battery.cellVmV[i] / 1000f + "V\n");

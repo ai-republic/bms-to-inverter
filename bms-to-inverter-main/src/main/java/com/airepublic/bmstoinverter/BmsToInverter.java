@@ -160,7 +160,7 @@ public class BmsToInverter implements AutoCloseable {
                 do {
                     for (final BMS bms : bmsList) {
                         try {
-                            LOG.info("Reading BMS #" + bms.getBmsNo() + bms.getName() + " on " + bms.getPortLocator() + "...");
+                            LOG.info("Reading BMS #" + bms.getBmsId() + " " + bms.getName() + " on " + bms.getPortLocator() + "...");
                             bms.process(() -> receivedData());
                             // TODO set poll intverall for all bms together not each
                             Thread.sleep(bms.getPollInterval() * 1000);

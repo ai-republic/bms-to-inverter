@@ -66,7 +66,7 @@ public class BMSPanel extends JPanel {
             final BMSConfig config = dlg.getBMSConfig();
 
             if (config != null) {
-                config.setBmsNo(bmsListModel.getSize());
+                config.setBmsId(bmsListModel.getSize());
                 bmsListModel.addElement(new MenuItem<>(createBMSDisplayName(config), config));
             }
         });
@@ -131,14 +131,14 @@ public class BMSPanel extends JPanel {
 
 
     private String createBMSDisplayName(final BMSConfig config) {
-        return "#" + (config.getBmsNo() + 1) + ": " + config.getDescriptor().getName() + " on " + config.getPortLocator();
+        return "#" + (config.getBmsId() + 1) + ": " + config.getDescriptor().getName() + " on " + config.getPortLocator();
     }
 
 
     private void reindexBMSList() {
         for (int i = 0; i < bmsListModel.getSize(); i++) {
             final MenuItem<BMSConfig> item = bmsListModel.get(i);
-            item.getValue().setBmsNo(i);
+            item.getValue().setBmsId(i);
             item.setDisplayName(createBMSDisplayName(item.getValue()));
         }
 
@@ -179,10 +179,10 @@ public class BMSPanel extends JPanel {
                 + "# bms.x.pollIntervall - is the interval to request BMS data (in seconds)\n"
                 + "# bms.x.delayAfterNoBytes - is the delay after receiving no data (in ms)\n");
         for (final BMSConfig bmsConfig : getBMSConfigList()) {
-            config.append("bms." + bmsConfig.getBmsNo() + ".type=" + bmsConfig.getDescriptor().getName() + "\n");
-            config.append("bms." + bmsConfig.getBmsNo() + ".portLocator=" + bmsConfig.getPortLocator() + "\n");
-            config.append("bms." + bmsConfig.getBmsNo() + ".pollInterval=" + bmsConfig.getPollInterval() + "\n");
-            config.append("bms." + bmsConfig.getBmsNo() + ".delayAfterNoBytes=" + bmsConfig.getDelayAfterNoBytes() + "\n");
+            config.append("bms." + bmsConfig.getBmsId() + ".type=" + bmsConfig.getDescriptor().getName() + "\n");
+            config.append("bms." + bmsConfig.getBmsId() + ".portLocator=" + bmsConfig.getPortLocator() + "\n");
+            config.append("bms." + bmsConfig.getBmsId() + ".pollInterval=" + bmsConfig.getPollInterval() + "\n");
+            config.append("bms." + bmsConfig.getBmsId() + ".delayAfterNoBytes=" + bmsConfig.getDelayAfterNoBytes() + "\n");
             config.append("\n");
         }
     }

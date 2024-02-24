@@ -4,7 +4,7 @@ package com.airepublic.bmstoinverter.core;
  * Configuration read from the confg.properties for each {@link BMS}.
  */
 public class BMSConfig {
-    private int bmsNo;
+    private int bmsId;
     private String portLocator;
     private int pollInterval;
     private long delayAfterNoBytes;
@@ -13,15 +13,15 @@ public class BMSConfig {
     /**
      * Constructor.
      *
-     * @param bmsNo the number of the BMS
+     * @param bmsId the id of the BMS
      * @param portLocator the port locator
      * @param pollInterval the polling interval in seconds
      * @param delayAfterNoBytes the delay after no bytes were received in milliseconds
      * @param descriptor the {@link BMSDescriptor} of the {@link BMS} to use
      */
-    public BMSConfig(final int bmsNo, final String portLocator, final int pollInterval, final long delayAfterNoBytes, final BMSDescriptor descriptor) {
+    public BMSConfig(final int bmsId, final String portLocator, final int pollInterval, final long delayAfterNoBytes, final BMSDescriptor descriptor) {
         super();
-        this.bmsNo = bmsNo;
+        this.bmsId = bmsId;
         this.portLocator = portLocator;
         this.pollInterval = pollInterval;
         this.delayAfterNoBytes = delayAfterNoBytes;
@@ -32,14 +32,14 @@ public class BMSConfig {
     /**
      * Updates this configuration.
      *
-     * @param bmsNo the number of the BMS
+     * @param bmsId the id of the BMS
      * @param portLocator the port locator
      * @param pollInterval the polling interval in seconds
      * @param delayAfterNoBytes the delay after no bytes were received in milliseconds
      * @param bmsDescriptor the {@link BMSDescriptor} of the {@link BMS} to use
      */
-    public void update(final int bmsNo, final String portLocator, final int pollInterval, final long delayAfterNoBytes, final BMSDescriptor bmsDescriptor) {
-        this.bmsNo = bmsNo;
+    public void update(final int bmsId, final String portLocator, final int pollInterval, final long delayAfterNoBytes, final BMSDescriptor bmsDescriptor) {
+        this.bmsId = bmsId;
         this.portLocator = portLocator;
         this.pollInterval = pollInterval;
         this.delayAfterNoBytes = delayAfterNoBytes;
@@ -52,8 +52,8 @@ public class BMSConfig {
      *
      * @return the bmsNo the number of the BMS
      */
-    public int getBmsNo() {
-        return bmsNo;
+    public int getBmsId() {
+        return bmsId;
     }
 
 
@@ -62,8 +62,8 @@ public class BMSConfig {
      *
      * @param bmsNo the bmsNo the number of the BMS
      */
-    public void setBmsNo(final int bmsNo) {
-        this.bmsNo = bmsNo;
+    public void setBmsId(final int bmsNo) {
+        bmsId = bmsNo;
     }
 
 

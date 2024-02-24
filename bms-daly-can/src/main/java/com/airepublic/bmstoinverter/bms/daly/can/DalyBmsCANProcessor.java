@@ -25,8 +25,8 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
     private final ByteBuffer sendFrame = ByteBuffer.allocateDirect(16).order(ByteOrder.LITTLE_ENDIAN);
 
     @Override
-    protected List<ByteBuffer> sendMessage(final Port port, final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException, NoDataAvailableException {
-        final ByteBuffer sendFrame = prepareSendFrame(bmsNo + 1, cmd, data);
+    protected List<ByteBuffer> sendMessage(final Port port, final int bmsId, final DalyCommand cmd, final byte[] data) throws IOException, NoDataAvailableException {
+        final ByteBuffer sendFrame = prepareSendFrame(bmsId - 1, cmd, data);
         int framesToBeReceived = getResponseFrameCount(cmd);
         final int frameCount = framesToBeReceived;
         int skip = 20;
@@ -87,17 +87,17 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
             }
         } while (framesToBeReceived > 0 & skip > 0);
 
-        LOG.debug("Command 0x{} to BMS {} successfully sent and received!", HexFormat.of().toHexDigits(cmd.id), bmsNo + 1);
+        LOG.debug("Command 0x{} to BMS {} successfully sent and received!", HexFormat.of().toHexDigits(cmd.id), bmsId);
         return readBuffers;
     }
 
 
     @Override
-    protected ByteBuffer prepareSendFrame(final int address, final DalyCommand cmd, final byte[] data) {
+    protected ByteBuffer prepareSendFrame(final int bmsId, final DalyCommand cmd, final byte[] data) {
         sendFrame.rewind();
 
         sendFrame.put((byte) 0x40);
-        sendFrame.put((byte) address);
+        sendFrame.put((byte) bmsId);
         sendFrame.put((byte) cmd.id);
         sendFrame.put((byte) 0x18);
 

@@ -84,7 +84,7 @@ public class BMSListProducer {
         final BMSConfig config = new BMSConfig(bmsNo, portLocator, pollInverval, delayAfterNoBytes, bmsDescriptor);
         bms.initialize(config);
 
-        LOG.info("Intialized BMS #" + config.getBmsNo() + "[" + config.getDescriptor().getName() + "] on port " + portLocator);
+        LOG.info("Intialized BMS #" + config.getBmsId() + "[" + config.getDescriptor().getName() + "] on port " + portLocator);
 
         return bms;
     }
