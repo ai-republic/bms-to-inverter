@@ -128,7 +128,7 @@ public class BMSPanel extends JPanel {
         add(pollIntervalLabel, gbc_pollIntervalLabel);
 
         pollIntervalField = new JTextField();
-        pollIntervalField.setText("0");
+        pollIntervalField.setText("1");
         final GridBagConstraints gbc_pollIntervalField = new GridBagConstraints();
         gbc_pollIntervalField.insets = new Insets(0, 0, 0, 5);
         gbc_pollIntervalField.fill = GridBagConstraints.HORIZONTAL;
