@@ -54,7 +54,7 @@ public class PylonHVBmsCANProcessor extends BMS {
                 final ByteBuffer receiveFrame = port.receiveFrame();
 
                 if (receiveFrame != null) {
-                    LOG.debug("RECEIVED: {}", Port.printBuffer(receiveFrame));
+                    LOG.debug("BMS RECEIVED: {}", Port.printBuffer(receiveFrame));
                     handleMessage(receiveFrame);
                     framesToBeReceived--;
                 } else {
@@ -72,8 +72,8 @@ public class PylonHVBmsCANProcessor extends BMS {
     private void handleMessage(final ByteBuffer receiveFrame) {
         try {
             final int frameId = receiveFrame.getInt();
-            final int bmsNo = frameId & 0x0000000F;
-            final BatteryPack pack = getBatteryPack(bmsNo);
+            final int batteryNo = frameId & 0x0000000F;
+            final BatteryPack pack = getBatteryPack(batteryNo);
             final byte[] dataBytes = new byte[receiveFrame.get(4)];
             receiveFrame.get(8, dataBytes);
 

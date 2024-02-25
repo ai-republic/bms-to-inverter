@@ -126,6 +126,9 @@ public class PylonHVInverterCANProcessor extends Inverter {
         sendMaxMinModuleTemperatures(port, bmsNo);
         // 0x4280
         sendChargeForbiddenMarks(port, bmsNo);
+
+        // 0x42B0
+        sendBatteyVoltageSOCSOH(port, bmsNo);
     }
 
 
@@ -356,6 +359,27 @@ public class PylonHVInverterCANProcessor extends Inverter {
         frame.put(pack.dischargeForbidden ? (byte) 0xAA : (byte) 0x00);
 
         LOG.debug("Sending dis-/charge forbidden marks: {}", Port.printBuffer(frame));
+        sendFrame(port, frame);
+    }
+
+
+    // 0x42B0
+    private void sendBatteyVoltageSOCSOH(final Port port, final int bmsNo) throws IOException {
+        final BatteryPack pack = energyStorage.getBatteryPack(bmsNo);
+        final ByteBuffer frame = prepareSendFrame(0x00004210 | bmsNo);
+
+        // Battery voltage (0.1V)
+        frame.putShort((short) pack.packVoltage);
+
+        // fill 4 0x00 bytes
+        frame.put((byte) 0).put((byte) 0).put((byte) 0).put((byte) 0);
+
+        // Battery SOC (1%)
+        frame.put((byte) (pack.packSOC / 10));
+        // Battery SOH (1%)
+        frame.put((byte) (pack.packSOH / 10));
+
+        LOG.debug("Sending battery status: {}", Port.printBuffer(frame));
         sendFrame(port, frame);
     }
 
