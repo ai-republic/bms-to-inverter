@@ -313,9 +313,9 @@ public class PylonHVInverterCANProcessor extends Inverter {
         final ByteBuffer frame = prepareSendFrame(0x00004260 | bmsNo);
 
         // maximum module voltage (0.001V)
-        frame.putShort((short) pack.maxModulemV);
+        frame.putChar((char) pack.maxModulemV);
         // minimum module voltage (0.001V)
-        frame.putShort((short) pack.minModulemV);
+        frame.putChar((char) pack.minModulemV);
         // pack number with maximum module voltage
         frame.putShort((short) pack.maxModulemVNum);
         // pack number with minimum module voltage

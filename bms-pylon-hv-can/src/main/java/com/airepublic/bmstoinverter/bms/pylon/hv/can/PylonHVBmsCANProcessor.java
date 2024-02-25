@@ -293,9 +293,9 @@ public class PylonHVBmsCANProcessor extends BMS {
     // 0x4260
     private void readModuleVoltage(final BatteryPack pack, final ByteBuffer data) {
         // maximum module voltage (0.001V)
-        pack.maxModulemV = data.getShort();
+        pack.maxModulemV = data.getChar();
         // minimum module voltage (0.001V)
-        pack.minModulemV = data.getShort();
+        pack.minModulemV = data.getChar();
         // pack number with maximum module voltage
         pack.maxModulemVNum = data.getShort();
         // pack number with minimum module voltage
