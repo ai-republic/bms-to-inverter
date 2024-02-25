@@ -33,10 +33,8 @@ public class DalyMessageHandler {
      * @param msg the {@link DalyMessage}
      */
     public void handleMessage(final BMS bms, final DalyMessage msg) {
-        final int batteryNo = msg.address - 1;
-
-        if (batteryNo != bms.getBmsId()) {
-            LOG.error("Found invalid battery identifier: #{}", msg.address);
+        if (msg.bmsId != bms.getBmsId()) {
+            LOG.error("Found invalid battery identifier: #{}", msg.bmsId);
             return;
         }
 
@@ -154,7 +152,7 @@ public class DalyMessageHandler {
         msg.data.rewind();
 
         if (LOG.isDebugEnabled()) {
-            LOG.info("BMS #{}: {}V, {}A, {}SOC", msg.address, battery.packVoltage / 10f, battery.packCurrent / 10f, battery.packSOC / 10f);
+            LOG.info("BMS #{}: {}V, {}A, {}SOC", msg.bmsId, battery.packVoltage / 10f, battery.packCurrent / 10f, battery.packSOC / 10f);
         }
     }
 
@@ -199,7 +197,7 @@ public class DalyMessageHandler {
                     + "\tMax: {}C\n"
                     + "\tMin: {}C\n"
                     + "\tAvg: {}C",
-                    bms.getBmsId() + 1, battery.tempMax, battery.tempMin, battery.tempAverage);
+                    bms.getBmsId() + 1, battery.tempMax / 10f, battery.tempMin / 10f, battery.tempAverage / 10f);
         }
     }
 
@@ -281,7 +279,7 @@ public class DalyMessageHandler {
 
         for (int i = 0; i < 3; i++) {
             final int volt = msg.data.getShort();
-            LOG.debug("BMS #{}, Frame No.: {}, Cell No: {}. {}mV", msg.address, frameNo, cellNo + 1, volt);
+            LOG.debug("BMS #{}, Frame No.: {}, Cell No: {}. {}mV", msg.bmsId, frameNo, cellNo + 1, volt);
 
             if (cellNo + 1 < MIN_NUMBER_CELLS || cellNo + 1 > MAX_NUMBER_CELLS) {
                 LOG.debug("Invalid cell number " + (cellNo + 1) + " for battery pack #" + (bms.getBmsId() + 1) + "(" + battery.numberOfCells + "cells)");
@@ -319,7 +317,7 @@ public class DalyMessageHandler {
             for (int i = 0; i < 7; i++) {
 
                 if (LOG.isDebugEnabled()) {
-                    LOG.info("BMS #" + msg.address + ", Frame No.: " + msg.data.get(0) + ", Sensor No: " + (sensorNo + 1) + ". " + (msg.data.get(1 + i) - 40) + "�C");
+                    LOG.info("BMS #" + msg.bmsId + ", Frame No.: " + msg.data.get(0) + ", Sensor No: " + (sensorNo + 1) + ". " + (msg.data.get(1 + i) - 40) + "�C");
                 }
 
                 battery.cellTemperature[sensorNo] = msg.data.get(1 + i) - 40;
@@ -362,7 +360,7 @@ public class DalyMessageHandler {
         battery.cellBalanceActive = cellBalanceActive;
 
         if (LOG.isDebugEnabled()) {
-            final StringBuffer buf = new StringBuffer("BMS #" + msg.address + ", Cell Balance State: \n");
+            final StringBuffer buf = new StringBuffer("BMS #" + msg.bmsId + ", Cell Balance State: \n");
 
             for (int i = 0; i < battery.numberOfCells; i++) {
                 buf.append("\t#" + (i + 1) + ": " + battery.cellBalanceState[i] + "\n");

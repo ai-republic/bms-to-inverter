@@ -25,8 +25,8 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
     private final ByteBuffer sendFrame = ByteBuffer.allocateDirect(16).order(ByteOrder.LITTLE_ENDIAN);
 
     @Override
-    protected List<ByteBuffer> sendMessage(final Port port, final int bmsId, final DalyCommand cmd, final byte[] data) throws IOException, NoDataAvailableException {
-        final ByteBuffer sendFrame = prepareSendFrame(bmsId - 1, cmd, data);
+    protected List<ByteBuffer> sendMessage(final Port port, final DalyCommand cmd, final byte[] data) throws IOException, NoDataAvailableException {
+        final ByteBuffer sendFrame = prepareSendFrame(getBmsId(), cmd, data);
         int framesToBeReceived = getResponseFrameCount(cmd);
         final int frameCount = framesToBeReceived;
         int skip = 20;
@@ -77,17 +77,19 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
                             getMessageHandler().handleMessage(this, dalyMsg);
                         } else {
                             LOG.warn("Message could not be interpreted " + Port.printBuffer(receiveFrame));
+                            port.clearBuffers();
                             return readBuffers;
                         }
                     } else {
                         LOG.warn("Message has wrong address and command id: " + Port.printBuffer(receiveFrame));
+                        port.clearBuffers();
                         return readBuffers;
                     }
                 }
             }
         } while (framesToBeReceived > 0 & skip > 0);
 
-        LOG.debug("Command 0x{} to BMS {} successfully sent and received!", HexFormat.of().toHexDigits(cmd.id), bmsId);
+        LOG.debug("Command 0x{} to BMS {} successfully sent and received!", HexFormat.of().toHexDigits(cmd.id), getBmsId());
         return readBuffers;
     }
 
@@ -123,7 +125,7 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
 
         final DalyMessage msg = new DalyMessage();
         final int frameId = buffer.getInt(0);
-        msg.address = (byte) (frameId & 0x000000FF);
+        msg.bmsId = (byte) (frameId & 0x000000FF);
         msg.cmd = DalyCommand.valueOf(frameId >> 16 & 0x000000FF);
 
         if (msg.cmd == null) {
@@ -137,7 +139,7 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
 
         if (LOG.isDebugEnabled()) {
             LOG.info("DALY Message: frameId= " + Integer.toHexString(frameId)
-                    + ", address=" + HexFormat.of().toHexDigits(msg.address)
+                    + ", address=" + HexFormat.of().toHexDigits(msg.bmsId)
                     + ", dataId=" + HexFormat.of().toHexDigits(msg.cmd.id)
                     + ", data=" + HexFormat.of().formatHex(dataBytes));
         }

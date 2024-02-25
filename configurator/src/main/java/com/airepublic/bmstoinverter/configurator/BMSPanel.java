@@ -17,6 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
 
@@ -27,14 +28,16 @@ public class BMSPanel extends JPanel {
     private static final long serialVersionUID = 1L;
     private final JList<MenuItem<BMSConfig>> bmsList;
     private final DefaultListModel<MenuItem<BMSConfig>> bmsListModel = new DefaultListModel<>();
+    private final JTextField pollIntervalField;
+    private final NumberInputVerifier numberInputVerifier = new NumberInputVerifier();
 
     public BMSPanel(final JFrame frame) {
         setBorder(new EmptyBorder(10, 10, 10, 10));
         final GridBagLayout gbl_bmsPanel = new GridBagLayout();
         gbl_bmsPanel.columnWidths = new int[] { 100, 300, 70, 70 };
-        gbl_bmsPanel.rowHeights = new int[] { 30, 250 };
+        gbl_bmsPanel.rowHeights = new int[] { 30, 250, 0 };
         gbl_bmsPanel.columnWeights = new double[] { 0.0, 1.0, 0.0, 0.0 };
-        gbl_bmsPanel.rowWeights = new double[] { 0.0, 1.0 };
+        gbl_bmsPanel.rowWeights = new double[] { 0.0, 1.0, 0.0 };
         setLayout(gbl_bmsPanel);
 
         final JLabel bmsesLabel = new JLabel("BMS(s)");
@@ -115,12 +118,30 @@ public class BMSPanel extends JPanel {
         gbc_duplicateBMSButton.gridx = 3;
         gbc_duplicateBMSButton.gridy = 1;
         add(duplicateBMSButton, gbc_duplicateBMSButton);
+
+        final JLabel pollIntervalLabel = new JLabel("Poll interval");
+        final GridBagConstraints gbc_pollIntervalLabel = new GridBagConstraints();
+        gbc_pollIntervalLabel.insets = new Insets(0, 0, 0, 5);
+        gbc_pollIntervalLabel.anchor = GridBagConstraints.EAST;
+        gbc_pollIntervalLabel.gridx = 0;
+        gbc_pollIntervalLabel.gridy = 2;
+        add(pollIntervalLabel, gbc_pollIntervalLabel);
+
+        pollIntervalField = new JTextField();
+        pollIntervalField.setText("0");
+        final GridBagConstraints gbc_pollIntervalField = new GridBagConstraints();
+        gbc_pollIntervalField.insets = new Insets(0, 0, 0, 5);
+        gbc_pollIntervalField.fill = GridBagConstraints.HORIZONTAL;
+        gbc_pollIntervalField.gridx = 1;
+        gbc_pollIntervalField.gridy = 2;
+        add(pollIntervalField, gbc_pollIntervalField);
+        pollIntervalField.setColumns(10);
         duplicateBMSButton.addActionListener(e -> {
             final MenuItem<BMSConfig> item = bmsList.getSelectedValue();
 
             if (item != null) {
                 final BMSConfig config = item.getValue();
-                final BMSConfig duplicate = new BMSConfig(bmsListModel.getSize(), config.getPortLocator(), config.getPollInterval(), config.getDelayAfterNoBytes(), config.getDescriptor());
+                final BMSConfig duplicate = new BMSConfig(config.getBmsId() + 1, config.getPortLocator(), config.getDelayAfterNoBytes(), config.getDescriptor());
 
                 if (item != null) {
                     bmsListModel.addElement(new MenuItem<>(createBMSDisplayName(duplicate), duplicate));
@@ -131,7 +152,7 @@ public class BMSPanel extends JPanel {
 
 
     private String createBMSDisplayName(final BMSConfig config) {
-        return "#" + (config.getBmsId() + 1) + ": " + config.getDescriptor().getName() + " on " + config.getPortLocator();
+        return config.getDescriptor().getName() + "(ID: " + config.getBmsId() + ") on " + config.getPortLocator();
     }
 
 
@@ -164,6 +185,13 @@ public class BMSPanel extends JPanel {
             return false;
         }
 
+        if (pollIntervalField.getText() == null || pollIntervalField.getText().isBlank()) {
+            errors.append("Missing BMS poll interval!\r\n");
+            return false;
+        } else if (!numberInputVerifier.verify(pollIntervalField.getText())) {
+            errors.append("Non-numeric BMS poll interval!\r\n");
+            return false;
+        }
         return true;
     }
 
@@ -174,36 +202,38 @@ public class BMSPanel extends JPanel {
                 + "###################################################################\n"
                 + "\n"
                 + "####  Simple single port configuration ####\n"
+                + "# bms.pollIntervall - is the interval to request BMS data (in seconds)\n"
                 + "# bms.x.type - can be (DALY_CAN, DALY_RS485, JK_CAN, PYLON_CAN or SEPLOS_CAN \n"
                 + "# bms.x.portLocator - is the locator/device to use to communicate to the BMS, eg. can0, /dev/ttyUSB0, com3, etc.  \n"
-                + "# bms.x.pollIntervall - is the interval to request BMS data (in seconds)\n"
                 + "# bms.x.delayAfterNoBytes - is the delay after receiving no data (in ms)\n");
-        for (final BMSConfig bmsConfig : getBMSConfigList()) {
-            config.append("bms." + bmsConfig.getBmsId() + ".type=" + bmsConfig.getDescriptor().getName() + "\n");
-            config.append("bms." + bmsConfig.getBmsId() + ".portLocator=" + bmsConfig.getPortLocator() + "\n");
-            config.append("bms." + bmsConfig.getBmsId() + ".pollInterval=" + bmsConfig.getPollInterval() + "\n");
-            config.append("bms." + bmsConfig.getBmsId() + ".delayAfterNoBytes=" + bmsConfig.getDelayAfterNoBytes() + "\n");
+        config.append("bms.pollInterval=" + pollIntervalField.getText() + "\n\n");
+
+        for (int index = 1; index <= getBMSConfigList().size(); index++) {
+            final BMSConfig bmsConfig = getBMSConfigList().get(index - 1);
+            config.append("bms." + index + ".type=" + bmsConfig.getDescriptor().getName() + "\n");
+            config.append("bms." + index + ".id=" + bmsConfig.getBmsId() + "\n");
+            config.append("bms." + index + ".portLocator=" + bmsConfig.getPortLocator() + "\n");
+            config.append("bms." + index + ".delayAfterNoBytes=" + bmsConfig.getDelayAfterNoBytes() + "\n");
             config.append("\n");
         }
     }
 
 
     public void setConfiguration(final Properties config) {
-
-        int bmsNo = 0;
+        int index = 1;
         String bmsType;
         final Map<String, BMSDescriptor> descriptors = new HashMap<>();
         ServiceLoader.load(BMSDescriptor.class).forEach(descriptor -> descriptors.put(descriptor.getName(), descriptor));
         bmsListModel.clear();
 
-        while ((bmsType = config.getProperty("bms." + bmsNo + ".type")) != null) {
-            final String portLocator = config.getProperty("bms." + bmsNo + ".portLocator");
-            final int pollInterval = Integer.parseInt(config.getProperty("bms." + bmsNo + ".pollInterval"));
-            final long delayAfterNoBytes = Long.parseLong(config.getProperty("bms." + bmsNo + ".delayAfterNoBytes"));
-            final BMSConfig bmsConfig = new BMSConfig(bmsNo, portLocator, pollInterval, delayAfterNoBytes, descriptors.get(bmsType));
-            bmsListModel.add(bmsNo, new MenuItem<>(createBMSDisplayName(bmsConfig), bmsConfig));
+        while ((bmsType = config.getProperty("bms." + index + ".type")) != null) {
+            final String portLocator = config.getProperty("bms." + index + ".portLocator");
+            final int bmsId = Integer.parseInt(config.getProperty("bms." + index + ".id", "" + index));
+            final long delayAfterNoBytes = Long.parseLong(config.getProperty("bms." + index + ".delayAfterNoBytes"));
+            final BMSConfig bmsConfig = new BMSConfig(bmsId, portLocator, delayAfterNoBytes, descriptors.get(bmsType));
+            bmsListModel.add(index - 1, new MenuItem<>(createBMSDisplayName(bmsConfig), bmsConfig));
 
-            bmsNo++;
+            index++;
         }
     }
 }

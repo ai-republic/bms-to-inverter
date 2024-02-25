@@ -155,6 +155,7 @@ public class BmsToInverter implements AutoCloseable {
         try {
 
             LOG.info("Starting BMS receiver...");
+            final int pollInterval = Integer.parseInt(System.getProperty("bms.pollInterval", "1"));
 
             new Thread(() -> {
                 do {
@@ -162,12 +163,14 @@ public class BmsToInverter implements AutoCloseable {
                         try {
                             LOG.info("Reading BMS #" + bms.getBmsId() + " " + bms.getName() + " on " + bms.getPortLocator() + "...");
                             bms.process(() -> receivedData());
-                            // TODO set poll intverall for all bms together not each
-                            Thread.sleep(bms.getPollInterval() * 1000);
                         } catch (final Throwable e) {
                         }
                     }
 
+                    try {
+                        Thread.sleep(pollInterval * 1000);
+                    } catch (final InterruptedException e) {
+                    }
                 } while (true);
             }).start();
 

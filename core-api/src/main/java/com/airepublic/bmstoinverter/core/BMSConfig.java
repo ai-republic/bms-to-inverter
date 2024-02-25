@@ -6,7 +6,6 @@ package com.airepublic.bmstoinverter.core;
 public class BMSConfig {
     private int bmsId;
     private String portLocator;
-    private int pollInterval;
     private long delayAfterNoBytes;
     private BMSDescriptor descriptor;
 
@@ -15,15 +14,13 @@ public class BMSConfig {
      *
      * @param bmsId the id of the BMS
      * @param portLocator the port locator
-     * @param pollInterval the polling interval in seconds
      * @param delayAfterNoBytes the delay after no bytes were received in milliseconds
      * @param descriptor the {@link BMSDescriptor} of the {@link BMS} to use
      */
-    public BMSConfig(final int bmsId, final String portLocator, final int pollInterval, final long delayAfterNoBytes, final BMSDescriptor descriptor) {
+    public BMSConfig(final int bmsId, final String portLocator, final long delayAfterNoBytes, final BMSDescriptor descriptor) {
         super();
         this.bmsId = bmsId;
         this.portLocator = portLocator;
-        this.pollInterval = pollInterval;
         this.delayAfterNoBytes = delayAfterNoBytes;
         this.descriptor = descriptor;
     }
@@ -34,14 +31,12 @@ public class BMSConfig {
      *
      * @param bmsId the id of the BMS
      * @param portLocator the port locator
-     * @param pollInterval the polling interval in seconds
      * @param delayAfterNoBytes the delay after no bytes were received in milliseconds
      * @param bmsDescriptor the {@link BMSDescriptor} of the {@link BMS} to use
      */
-    public void update(final int bmsId, final String portLocator, final int pollInterval, final long delayAfterNoBytes, final BMSDescriptor bmsDescriptor) {
+    public void update(final int bmsId, final String portLocator, final long delayAfterNoBytes, final BMSDescriptor bmsDescriptor) {
         this.bmsId = bmsId;
         this.portLocator = portLocator;
-        this.pollInterval = pollInterval;
         this.delayAfterNoBytes = delayAfterNoBytes;
         descriptor = bmsDescriptor;
     }
@@ -74,16 +69,6 @@ public class BMSConfig {
      */
     public String getPortLocator() {
         return portLocator;
-    }
-
-
-    /**
-     * Gets the polling interval in seconds.
-     *
-     * @return the polling interval in seconds
-     */
-    public int getPollInterval() {
-        return pollInterval;
     }
 
 

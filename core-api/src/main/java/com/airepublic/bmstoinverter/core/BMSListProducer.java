@@ -47,12 +47,12 @@ public class BMSListProducer {
     public synchronized List<BMS> produceBMSList() {
         if (bmsList == null) {
             bmsList = new ArrayList<>();
-            String type = System.getProperty("bms.0.type");
+            String type = System.getProperty("bms.1.type");
 
             // if no bms is found, probably the config.properties have not been read
             if (type == null) {
                 Util.updateSystemProperties(Path.of(System.getProperty("configFile", "config.properties")));
-                type = System.getProperty("bms.0.type");
+                type = System.getProperty("bms.1.type");
 
                 if (type == null) {
                     LOG.error("No config.properties found or no BMSes are configured!");
@@ -60,13 +60,13 @@ public class BMSListProducer {
                 }
             }
 
-            int bmsNo = 0;
+            int index = 1;
 
             while (type != null) {
-                bmsList.add(createBMS(bmsNo, type));
+                bmsList.add(createBMS(index, type));
 
-                bmsNo++;
-                type = System.getProperty("bms." + bmsNo + ".type");
+                index++;
+                type = System.getProperty("bms." + index + ".type");
             }
         }
 
@@ -74,14 +74,14 @@ public class BMSListProducer {
     }
 
 
-    private BMS createBMS(final int bmsNo, final String name) {
+    private BMS createBMS(final int index, final String name) {
         final BMSDescriptor bmsDescriptor = getBMSDescriptor(name);
         final BMS bms = CDI.current().select(bmsDescriptor.getBMSClass()).get();
         energyStorage.getBatteryPacks().addAll(bms.getBatteryPacks());
-        final String portLocator = System.getProperty("bms." + bmsNo + ".portLocator");
-        final int pollInverval = Integer.valueOf(System.getProperty("bms." + bmsNo + ".pollInterval"));
-        final int delayAfterNoBytes = Integer.valueOf(System.getProperty("bms." + bmsNo + ".delayAfterNoBytes"));
-        final BMSConfig config = new BMSConfig(bmsNo, portLocator, pollInverval, delayAfterNoBytes, bmsDescriptor);
+        final int bmsId = Integer.valueOf(System.getProperty("bms." + index + ".id"));
+        final String portLocator = System.getProperty("bms." + index + ".portLocator");
+        final int delayAfterNoBytes = Integer.valueOf(System.getProperty("bms." + index + ".delayAfterNoBytes"));
+        final BMSConfig config = new BMSConfig(bmsId, portLocator, delayAfterNoBytes, bmsDescriptor);
         bms.initialize(config);
 
         LOG.info("Intialized BMS #" + config.getBmsId() + "[" + config.getDescriptor().getName() + "] on port " + portLocator);

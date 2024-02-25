@@ -82,27 +82,18 @@ public abstract class BMS {
      * number is greater than already known, then the pack size will increase until it has the
      * number specified.
      *
+     * @param index the index of the {@link BatteryPack}
      * @return the {@link BatteryPack} at the specified index associated with this {@link BMS}
      */
-    public BatteryPack getBatteryPack(final int bmsNo) {
+    public BatteryPack getBatteryPack(final int index) {
         // TODO find a better solution and also change energystorage and webserver
-        while (getBatteryPacks().size() <= bmsNo) {
+        while (getBatteryPacks().size() <= index) {
             final BatteryPack pack = new BatteryPack();
             batteryPacks.add(pack);
             energyStorage.getBatteryPacks().add(pack);
         }
 
-        return batteryPacks.get(bmsNo);
-    }
-
-
-    /**
-     * Gets the polling interval in seconds.
-     *
-     * @return the polling interval in seconds
-     */
-    public int getPollInterval() {
-        return config.getPollInterval();
+        return batteryPacks.get(index);
     }
 
 

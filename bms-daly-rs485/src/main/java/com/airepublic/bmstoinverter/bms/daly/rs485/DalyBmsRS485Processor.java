@@ -40,8 +40,8 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
     };
 
     @Override
-    protected List<ByteBuffer> sendMessage(final Port port, final int bmsNo, final DalyCommand cmd, final byte[] data) throws IOException, TooManyInvalidFramesException, NoDataAvailableException {
-        final int address = bmsNo + 0x40;
+    protected List<ByteBuffer> sendMessage(final Port port, final DalyCommand cmd, final byte[] data) throws IOException, TooManyInvalidFramesException, NoDataAvailableException {
+        final int address = getBmsId() + 0x3F;
         final ByteBuffer sendBuffer = prepareSendFrame(address, cmd, data);
         int framesToBeReceived = getResponseFrameCount(cmd);
         final int frameCount = framesToBeReceived;
@@ -75,7 +75,7 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
                         LOG.debug("RECEIVED: {}", Port.printBuffer(receiveBuffer));
 
                         // check if its the correct requested response
-                        if (receiveBuffer.get(1) == (byte) (address - 0x40 + 1) && receiveBuffer.get(2) == (byte) cmd.id) {
+                        if (receiveBuffer.get(1) == getBmsId() && receiveBuffer.get(2) == (byte) cmd.id) {
                             framesToBeReceived--;
                             readBuffers.add(receiveBuffer);
                         }
@@ -164,7 +164,7 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
     @Override
     protected DalyMessage convertReceiveFrameToDalyMessage(final ByteBuffer buffer) {
         final DalyMessage msg = new DalyMessage();
-        msg.address = buffer.get(1);
+        msg.bmsId = buffer.get(1);
         msg.cmd = DalyCommand.valueOf(Byte.toUnsignedInt(buffer.get(2)));
 
         if (msg.cmd == null) {
