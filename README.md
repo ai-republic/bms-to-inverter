@@ -38,8 +38,8 @@ _**NOTE:** If you would like me to add a BMS or inverter module just let me know
 * SMA Sunny Island (CAN)
 * Growatt low voltage (12V/24V/48V) inverters (CAN)
 * Growatt high voltage inverters (CAN)
-* PylonTech low voltage (CAN)
-* PylonTech high voltage (CAN)
+* PylonTech low voltage inverters (CAN)
+* PylonTech high voltage inverters (CAN)
 * Deye inverters (CAN)
 * SolArk inverters (CAN)
 * any other inverters using the PylonTech (CAN) protocols
