@@ -10,12 +10,16 @@ import org.slf4j.LoggerFactory;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 
+import jakarta.inject.Inject;
+
 /**
  * The class to identify an {@link Inverter}.
  */
 public abstract class Inverter {
     private final static Logger LOG = LoggerFactory.getLogger(Inverter.class);
     private InverterConfig config;
+    @Inject
+    private EnergyStorage energyStorage;
 
     /**
      * Initializes the {@link Inverter} with the specified {@link InverterConfig}, initializing the
@@ -66,12 +70,17 @@ public abstract class Inverter {
      */
     public void process(final Runnable callback) {
         try {
-            final List<ByteBuffer> sendFrames = createSendFrames();
+            final BatteryPack pack = energyStorage.getAggregatedBatteryInfo();
             final Port port = PortAllocator.allocate(getPortLocator());
+            final ByteBuffer requestFrame = readRequest(port);
+            LOG.debug("Inverter received: " + Port.printBuffer(requestFrame));
+            final List<ByteBuffer> sendFrames = createSendFrames(requestFrame, pack);
 
-            for (final ByteBuffer frame : sendFrames) {
-                LOG.debug("Inverter send: {}", Port.printBuffer(frame));
-                sendFrame(port, frame);
+            if (sendFrames != null) {
+                for (final ByteBuffer frame : sendFrames) {
+                    LOG.debug("Inverter send: {}", Port.printBuffer(frame));
+                    sendFrame(port, frame);
+                }
             }
         } catch (final Throwable e) {
             LOG.error("Failed to send CAN frame", e);
@@ -86,6 +95,16 @@ public abstract class Inverter {
 
 
     /**
+     * Read the next request (if any) to be responded to the inverter.
+     *
+     * @param port the {@link Port}
+     * @return the received frame or null if no frames need to be read
+     * @throws IOException if the frame could not be read
+     */
+    protected abstract ByteBuffer readRequest(Port port) throws IOException;
+
+
+    /**
      * Implementations must send the frame depending on its protocol.
      *
      * @param port the {@link Port}
@@ -96,10 +115,13 @@ public abstract class Inverter {
 
 
     /**
-     * Aggregate all {@link BatteryPack}s of the {@link EnergyStorage} and create CAN messages to be
-     * sent to the inverter.
+     * Create CAN messages for the specified request frame (if any) using the aggregated
+     * {@link BatteryPack}s of the {@link EnergyStorage} which will be sent to the inverter.
      *
+     * @param requestFrame the request frame if any
+     * @param aggregatedPack the {@link BatteryPack} resembling and aggregation of all
+     *        {@link EnergyStorage}'s {@link BatteryPack}s.
      * @return the CAN messages to be sent to the inverter
      */
-    protected abstract List<ByteBuffer> createSendFrames();
+    protected abstract List<ByteBuffer> createSendFrames(ByteBuffer requestFrame, BatteryPack aggregatedPack);
 }

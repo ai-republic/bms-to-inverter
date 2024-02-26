@@ -7,7 +7,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
-import java.util.stream.Stream;
 
 import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.Port;
@@ -27,17 +26,23 @@ public class GrowattInverterCANProcessor extends Inverter {
     private EnergyStorage energyStorage;
 
     @Override
-    protected List<ByteBuffer> createSendFrames() {
+    protected List<ByteBuffer> createSendFrames(final ByteBuffer requestFrame, final BatteryPack aggregatedPack) {
         final List<ByteBuffer> frames = new ArrayList<>();
 
-        frames.add(createChargeDischargeInfo()); // 0x311
-        frames.add(createAlarms()); // 0x312
-        frames.add(createBatteryVoltage()); // 0x313
-        frames.add(createBatteryStatus()); // 0x314
-        frames.add(createMinMaxVoltageCell()); // 0x319
-        frames.add(createBMSInfo()); // 0x320
+        frames.add(createChargeDischargeInfo(aggregatedPack)); // 0x311
+        frames.add(createAlarms(aggregatedPack)); // 0x312
+        frames.add(createBatteryVoltage(aggregatedPack)); // 0x313
+        frames.add(createBatteryStatus(aggregatedPack)); // 0x314
+        frames.add(createMinMaxVoltageCell(aggregatedPack)); // 0x319
+        frames.add(createBMSInfo(aggregatedPack)); // 0x320
 
         return frames;
+    }
+
+
+    @Override
+    protected ByteBuffer readRequest(final Port port) throws IOException {
+        return null;
     }
 
 
@@ -48,27 +53,26 @@ public class GrowattInverterCANProcessor extends Inverter {
 
 
     // 0x311
-    private ByteBuffer createChargeDischargeInfo() {
-        final int bmsNo = 0; // read the limits from the first BMS
+    private ByteBuffer createChargeDischargeInfo(final BatteryPack pack) {
         final ByteBuffer frame = prepareFrame(0x311);
 
         // Battery charge voltage (0.1V) - uint_16
-        frame.putChar((char) energyStorage.getBatteryPack(bmsNo).maxPackVoltageLimit);
+        frame.putChar((char) pack.maxPackVoltageLimit);
         // Charge current limit (0.1A) - sint_16
-        frame.putChar((char) energyStorage.getBatteryPack(bmsNo).maxPackChargeCurrent);
+        frame.putChar((char) pack.maxPackChargeCurrent);
         // Discharge current limit (0.1A) - sint_16
-        frame.putChar((char) energyStorage.getBatteryPack(bmsNo).maxPackDischargeCurrent);
+        frame.putChar((char) pack.maxPackDischargeCurrent);
         // status bits (see documentation)
-        frame.put(get311Status());
+        frame.put(get311Status(pack));
 
         return frame;
     }
 
 
-    private byte[] get311Status() {
+    private byte[] get311Status(final BatteryPack pack) {
         final BitSet bits = new BitSet(12);
         // charging status
-        final boolean charging = energyStorage.getBatteryPacks().stream().anyMatch(pack -> pack.chargeMOSState == true);
+        final boolean charging = pack.chargeMOSState;
         bits.set(0, charging);
         bits.set(1, false);
 
@@ -76,7 +80,7 @@ public class GrowattInverterCANProcessor extends Inverter {
         bits.set(2, false);
 
         // balancing status
-        bits.set(3, energyStorage.getBatteryPacks().stream().anyMatch(pack -> pack.cellBalanceActive == true));
+        bits.set(3, pack.cellBalanceActive);
 
         // sleep status
         bits.set(4, false);
@@ -103,102 +107,76 @@ public class GrowattInverterCANProcessor extends Inverter {
 
 
     // 0x312
-    private ByteBuffer createAlarms() {
+    private ByteBuffer createAlarms(final BatteryPack pack) {
         final ByteBuffer frame = prepareFrame(0x312);
 
-        final boolean aggregatedLevelTwoCellVoltageTooHigh = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelTwoCellVoltageTooHigh).anyMatch(b -> true);
-        final boolean aggregatedLevelTwoCellVoltageTooLow = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelTwoCellVoltageTooLow).anyMatch(b -> true);
-        final boolean aggregatedLevelTwoCellVoltageDifferenceTooHigh = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelTwoCellVoltageDifferenceTooHigh).anyMatch(b -> true);
-        final boolean aggregatedLevelTwoDischargeTempTooHigh = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelTwoDischargeTempTooHigh).anyMatch(b -> true);
-        final boolean aggregatedLevelTwoDischargeTempTooLow = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelTwoDischargeTempTooLow).anyMatch(b -> true);
-        final boolean aggregatedLevelTwoChargeTempTooHigh = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelTwoChargeTempTooHigh).anyMatch(b -> true);
-        final boolean aggregatedLevelTwoChargeTempTooLow = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelTwoChargeTempTooLow).anyMatch(b -> true);
-        final boolean aggregatedLevelTwoDischargeCurrentTooHigh = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelTwoDischargeCurrentTooHigh).anyMatch(b -> true);
-        final boolean aggregatedLevelTwoChargeCurrentTooHigh = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelTwoChargeCurrentTooHigh).anyMatch(b -> true);
-        final boolean aggregatedLevelTwoPackVoltageTooHigh = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelTwoPackVoltageTooHigh).anyMatch(b -> true);
-        final boolean aggregatedLevelTwoPackVoltageTooLow = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelTwoPackVoltageTooLow).anyMatch(b -> true);
-        final boolean aggregatedFailureOfShortCircuitProtection = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.failureOfShortCircuitProtection).anyMatch(b -> true);
-
-        final boolean aggregatedLevelOneCellVoltageTooHigh = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelOneCellVoltageTooHigh).anyMatch(b -> true);
-        final boolean aggregatedLevelOneCellVoltageTooLow = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelOneCellVoltageTooLow).anyMatch(b -> true);
-        final boolean aggregatedLevelOneCellVoltageDifferenceTooHigh = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelOneCellVoltageDifferenceTooHigh).anyMatch(b -> true);
-        final boolean aggregatedLevelOneDischargeTempTooHigh = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelOneDischargeTempTooHigh).anyMatch(b -> true);
-        final boolean aggregatedLevelOneDischargeTempTooLow = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelOneDischargeTempTooLow).anyMatch(b -> true);
-        final boolean aggregatedLevelOneChargeTempTooHigh = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelOneChargeTempTooHigh).anyMatch(b -> true);
-        final boolean aggregatedLevelOneChargeTempTooLow = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelOneChargeTempTooLow).anyMatch(b -> true);
-        final boolean aggregatedLevelOneDischargeCurrentTooHigh = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelOneDischargeCurrentTooHigh).anyMatch(b -> true);
-        final boolean aggregatedLevelOneChargeCurrentTooHigh = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelOneChargeCurrentTooHigh).anyMatch(b -> true);
-        final boolean aggregatedLevelOnePackVoltageTooHigh = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelOnePackVoltageTooHigh).anyMatch(b -> true);
-        final boolean aggregatedLevelOnePackVoltageTooLow = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.levelOnePackVoltageTooLow).anyMatch(b -> true);
-
-        final boolean aggregatedFailureOfIntranetCommunicationModule = energyStorage.getBatteryPacks().stream().map(pack -> pack.alarms.failureOfIntranetCommunicationModule).anyMatch(b -> true);
-        final boolean aggregatedSystemError = Stream.of(energyStorage.getBatteryPack(getChargeStates())).map(pack -> pack.alarms).anyMatch(alarms -> alarms.failureOfAFEAcquisitionModule.value
-                || alarms.failureOfChargeFETAdhesion.value
-                || alarms.failureOfChargeFETTBreaker.value
-                || alarms.failureOfChargeFETTemperatureSensor.value
-                || alarms.failureOfCurrentSensorModule.value
-                || alarms.failureOfDischargeFETAdhesion.value
-                || alarms.failureOfDischargeFETBreaker.value
-                || alarms.failureOfDischargeFETTemperatureSensor.value
-                || alarms.failureOfEEPROMStorageModule.value
-                || alarms.failureOfIntranetCommunicationModule.value
-                || alarms.failureOfLowVoltageNoCharging.value
-                || alarms.failureOfMainVoltageSensorModule.value
-                || alarms.failureOfPrechargeModule.value
-                || alarms.failureOfRealtimeClockModule.value
-                || alarms.failureOfTemperatureSensorModule.value
-                || alarms.failureOfInternalCommunicationModule.value
-                || alarms.failureOfVoltageSensorModule.value);
+        final boolean aggregatedSystemError = pack.alarms.failureOfAFEAcquisitionModule.value
+                || pack.alarms.failureOfChargeFETAdhesion.value
+                || pack.alarms.failureOfChargeFETTBreaker.value
+                || pack.alarms.failureOfChargeFETTemperatureSensor.value
+                || pack.alarms.failureOfCurrentSensorModule.value
+                || pack.alarms.failureOfDischargeFETAdhesion.value
+                || pack.alarms.failureOfDischargeFETBreaker.value
+                || pack.alarms.failureOfDischargeFETTemperatureSensor.value
+                || pack.alarms.failureOfEEPROMStorageModule.value
+                || pack.alarms.failureOfIntranetCommunicationModule.value
+                || pack.alarms.failureOfLowVoltageNoCharging.value
+                || pack.alarms.failureOfMainVoltageSensorModule.value
+                || pack.alarms.failureOfPrechargeModule.value
+                || pack.alarms.failureOfRealtimeClockModule.value
+                || pack.alarms.failureOfTemperatureSensorModule.value
+                || pack.alarms.failureOfInternalCommunicationModule.value
+                || pack.alarms.failureOfVoltageSensorModule.value;
 
         // protection alarms
         BitSet bits = new BitSet(8);
         bits.set(0, false);
-        bits.set(1, aggregatedLevelTwoPackVoltageTooLow);
-        bits.set(2, aggregatedLevelTwoPackVoltageTooHigh);
-        bits.set(3, aggregatedLevelTwoCellVoltageTooLow);
-        bits.set(4, aggregatedLevelTwoCellVoltageTooHigh);
-        bits.set(5, aggregatedFailureOfShortCircuitProtection);
-        bits.set(6, aggregatedLevelTwoChargeCurrentTooHigh);
-        bits.set(7, aggregatedLevelTwoDischargeCurrentTooHigh);
+        bits.set(1, pack.alarms.levelTwoPackVoltageTooLow.value);
+        bits.set(2, pack.alarms.levelTwoPackVoltageTooHigh.value);
+        bits.set(3, pack.alarms.levelTwoCellVoltageTooLow.value);
+        bits.set(4, pack.alarms.levelTwoCellVoltageTooHigh.value);
+        bits.set(5, pack.alarms.failureOfShortCircuitProtection.value);
+        bits.set(6, pack.alarms.levelTwoChargeCurrentTooHigh.value);
+        bits.set(7, pack.alarms.levelTwoDischargeCurrentTooHigh.value);
         frame.put(bits.toByteArray()[0]);
 
         bits = new BitSet(8);
         bits.set(0, false);
         bits.set(1, false);
-        bits.set(2, aggregatedLevelTwoCellVoltageDifferenceTooHigh);
+        bits.set(2, pack.alarms.levelTwoCellVoltageDifferenceTooHigh.value);
         bits.set(3, aggregatedSystemError);
-        bits.set(4, aggregatedLevelTwoChargeTempTooLow);
-        bits.set(5, aggregatedLevelTwoDischargeTempTooLow);
-        bits.set(6, aggregatedLevelTwoChargeTempTooHigh);
-        bits.set(7, aggregatedLevelTwoDischargeTempTooHigh);
+        bits.set(4, pack.alarms.levelTwoChargeTempTooLow.value);
+        bits.set(5, pack.alarms.levelTwoDischargeTempTooLow.value);
+        bits.set(6, pack.alarms.levelTwoChargeTempTooHigh.value);
+        bits.set(7, pack.alarms.levelTwoDischargeTempTooHigh.value);
         frame.put(bits.toByteArray()[0]);
 
         // warning alarms
         bits = new BitSet(8);
         bits.set(0, false);
-        bits.set(1, aggregatedLevelOnePackVoltageTooLow);
-        bits.set(2, aggregatedLevelOnePackVoltageTooHigh);
-        bits.set(3, aggregatedLevelOneCellVoltageTooLow);
-        bits.set(4, aggregatedLevelOneCellVoltageTooHigh);
+        bits.set(1, pack.alarms.levelOnePackVoltageTooLow.value);
+        bits.set(2, pack.alarms.levelOnePackVoltageTooHigh.value);
+        bits.set(3, pack.alarms.levelOneCellVoltageTooLow.value);
+        bits.set(4, pack.alarms.levelOneCellVoltageTooHigh.value);
         bits.set(5, false);
-        bits.set(6, aggregatedLevelOneChargeCurrentTooHigh);
-        bits.set(7, aggregatedLevelOneDischargeCurrentTooHigh);
+        bits.set(6, pack.alarms.levelOneChargeCurrentTooHigh.value);
+        bits.set(7, pack.alarms.levelOneDischargeCurrentTooHigh.value);
         frame.put(bits.toByteArray()[0]);
 
         bits = new BitSet(8);
-        bits.set(0, aggregatedFailureOfIntranetCommunicationModule);
+        bits.set(0, pack.alarms.failureOfIntranetCommunicationModule.value);
         bits.set(1, false);
-        bits.set(2, aggregatedLevelOneCellVoltageDifferenceTooHigh);
+        bits.set(2, pack.alarms.levelOneCellVoltageDifferenceTooHigh.value);
         bits.set(3, false);
-        bits.set(4, aggregatedLevelOneChargeTempTooLow);
-        bits.set(5, aggregatedLevelOneDischargeTempTooLow);
-        bits.set(6, aggregatedLevelOneChargeTempTooHigh);
-        bits.set(7, aggregatedLevelOneDischargeTempTooHigh);
+        bits.set(4, pack.alarms.levelOneChargeTempTooLow.value);
+        bits.set(5, pack.alarms.levelOneDischargeTempTooLow.value);
+        bits.set(6, pack.alarms.levelOneChargeTempTooHigh.value);
+        bits.set(7, pack.alarms.levelOneDischargeTempTooHigh.value);
         frame.put(bits.toByteArray()[0]);
 
         frame.put((byte) energyStorage.getBatteryPack(0).numberOfCells);
         frame.putChar((char) 0); // skip 2 manufacturer codes
-        frame.put((byte) energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.numberOfCells).sum());
+        frame.put((byte) pack.numberOfCells);
 
         return frame;
     }
@@ -209,17 +187,17 @@ public class GrowattInverterCANProcessor extends Inverter {
      *
      * @return the bitset
      */
-    private byte getChargeStates() {
+    private byte getChargeStates(final BatteryPack pack) {
         final BitSet bits = new BitSet(8);
 
         // 0x319 table 5
-        bits.set(7, energyStorage.getBatteryPacks().stream().map(pack -> pack.chargeMOSState).anyMatch(b -> b == true));
-        bits.set(6, energyStorage.getBatteryPacks().stream().map(pack -> pack.disChargeMOSState).anyMatch(b -> b == true));
+        bits.set(7, pack.chargeMOSState);
+        bits.set(6, pack.disChargeMOSState);
         bits.set(5, false);
         bits.set(4, false);
         bits.set(3, false);
         bits.set(2, false);
-        switch (energyStorage.getBatteryPack(0).type) {
+        switch (pack.type) {
             case 0:
                 bits.set(1, 0);
                 bits.set(0, 0);
@@ -239,76 +217,50 @@ public class GrowattInverterCANProcessor extends Inverter {
 
 
     // 0x313
-    private ByteBuffer createBatteryVoltage() {
-        final int aggregatedPackVoltage = (int) energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.packVoltage).average().orElse(500) * 10;
-        final int aggregatedPackCurrent = energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.packCurrent).sum();
-        final int aggregatedPackTemperature = (int) energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.tempMax).average().orElse(300);
-        final byte aggregatedSOC = (byte) (energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.packSOC).average().orElse(500) / 10);
-        final byte aggregatedSOH = (byte) (energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.packSOH).average().orElse(500) / 10);
-
+    private ByteBuffer createBatteryVoltage(final BatteryPack pack) {
         final ByteBuffer frame = prepareFrame(0x313);
 
         // Battery voltage (0.01V) - uint_16
-        frame.putShort((short) aggregatedPackVoltage);
+        frame.putShort((short) (pack.packVoltage * 10));
         // Battery current (0.1A) - uint_16
-        frame.putShort((short) aggregatedPackCurrent);
+        frame.putShort((short) pack.packCurrent);
         // Battery temperature (0.1C) - uint_16
-        frame.putShort((short) aggregatedPackTemperature);
+        frame.putShort((short) pack.tempAverage);
         // Battery SOC
-        frame.put(aggregatedSOC);
+        frame.put((byte) (pack.packSOC / 10));
         // Battery SOH
-        frame.put(aggregatedSOH);
+        frame.put((byte) (pack.packSOH / 10));
 
         return frame;
     }
 
 
     // 0x314
-    private ByteBuffer createBatteryStatus() {
-        final int aggregatedCurrentCapacity = energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.remainingCapacitymAh).sum() / 10;
-        final int aggregatedFullyChargedCapacity = energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.ratedCapacitymAh).sum() / 10;
-        final int aggregatedHighestVoltageDiff = energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.cellDiffmV).max().orElse(0);
-        final int aggregatedCycleCount = energyStorage.getBatteryPacks().stream().mapToInt(pack -> pack.bmsCycles).max().orElse(0);
-
+    private ByteBuffer createBatteryStatus(final BatteryPack pack) {
         final ByteBuffer frame = prepareFrame(0x314);
-        frame.putChar((char) aggregatedCurrentCapacity);
-        frame.putChar((char) aggregatedFullyChargedCapacity);
-        frame.putChar((char) aggregatedHighestVoltageDiff);
-        frame.putChar((char) aggregatedCycleCount);
+        // remaining capacity (10mAh)
+        frame.putChar((char) (pack.remainingCapacitymAh / 10f));
+        // full capacity (10mAh)
+        frame.putChar((char) (pack.ratedCapacitymAh / 10f));
+        // cell difference (1mv)
+        frame.putChar((char) pack.cellDiffmV);
+        // bms cycles
+        frame.putChar((char) pack.bmsCycles);
 
         return frame;
     }
 
 
     // 0x319
-    private ByteBuffer createMinMaxVoltageCell() {
-        int maxCellVoltage = 0;
-        int maxCellVoltageNo = 0;
-        int minCellVoltage = 4000;
-        int minCellVoltageNo = 0;
-
-        for (int i = 0; i < energyStorage.getBatteryPacks().size(); i++) {
-            final BatteryPack pack = energyStorage.getBatteryPack(i);
-
-            if (pack.maxCellmV > maxCellVoltage) {
-                maxCellVoltage = pack.maxCellmV;
-                maxCellVoltageNo = pack.maxCellVNum;
-            }
-
-            if (pack.minCellmV < minCellVoltage) {
-                minCellVoltage = pack.minCellmV;
-                minCellVoltageNo = pack.minCellVNum;
-            }
-        }
-
+    private ByteBuffer createMinMaxVoltageCell(final BatteryPack pack) {
         final ByteBuffer frame = prepareFrame(0x314);
         // charge state and battery status
-        frame.put(getChargeStates());
+        frame.put(getChargeStates(pack));
 
-        frame.putChar((char) maxCellVoltage);
-        frame.putChar((char) minCellVoltage);
-        frame.putChar((char) maxCellVoltageNo);
-        frame.putChar((char) minCellVoltageNo);
+        frame.putChar((char) pack.maxCellmV);
+        frame.putChar((char) pack.minCellmV);
+        frame.put((byte) pack.maxCellVNum);
+        frame.put((byte) pack.minCellVNum);
         // pack id of faulty battery
         frame.put((byte) 0);
 
@@ -317,7 +269,7 @@ public class GrowattInverterCANProcessor extends Inverter {
 
 
     // 0x320
-    private ByteBuffer createBMSInfo() {
+    private ByteBuffer createBMSInfo(final BatteryPack pack) {
         final ByteBuffer frame = prepareFrame(0x320);
 
         // manufacturer
@@ -422,7 +374,7 @@ public class GrowattInverterCANProcessor extends Inverter {
 
         final GrowattInverterCANProcessor processor = new GrowattInverterCANProcessor();
         processor.energyStorage = es;
-        final ByteBuffer frame = processor.createBatteryVoltage();
+        final ByteBuffer frame = processor.createBatteryVoltage(pack);
 
         System.out.println(Port.printBuffer(frame));
     }

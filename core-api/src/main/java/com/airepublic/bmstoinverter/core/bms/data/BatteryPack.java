@@ -66,10 +66,6 @@ public class BatteryPack {
     public boolean disChargeMOSState;
     /** force charging */
     public boolean forceCharge;
-    /** The flag if charging is forbidden */
-    public boolean chargeForbidden;
-    /** The flag if discharging is forbidden */
-    public boolean dischargeForbidden;
 
     /** BMS life (0~255 cycles)? */
     public int bmsHeartBeat;

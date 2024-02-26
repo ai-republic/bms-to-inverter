@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.Port;
+import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Default;
@@ -19,8 +20,14 @@ import jakarta.enterprise.inject.Default;
 public class DummyInverterProcessor extends Inverter {
 
     @Override
-    protected List<ByteBuffer> createSendFrames() {
+    protected List<ByteBuffer> createSendFrames(final ByteBuffer requestFrame, final BatteryPack aggregatedPack) {
         return Collections.emptyList();
+    }
+
+
+    @Override
+    protected ByteBuffer readRequest(final Port port) throws IOException {
+        return null;
     }
 
 

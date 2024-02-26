@@ -323,11 +323,11 @@ public class PylonHVBmsCANProcessor extends BMS {
     // 0x4280
     private void readChargeForbiddenMarks(final BatteryPack pack, final ByteBuffer data) {
         // flag if charging is forbidden
-        pack.chargeForbidden = data.get() == 0xAA;
+        pack.chargeMOSState = data.get() != 0xAA;
         // flag if discharging is forbidden
-        pack.dischargeForbidden = data.get() == 0xAA;
+        pack.disChargeMOSState = data.get() != 0xAA;
 
-        LOG.debug("\nCharge Forbidden\tDischarge Forbidden\n\t{}\t\t{}", pack.chargeForbidden, pack.dischargeForbidden);
+        LOG.debug("\nCharge Forbidden\tDischarge Forbidden\n\t{}\t\t{}", pack.chargeMOSState, pack.disChargeMOSState);
     }
 
 

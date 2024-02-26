@@ -3,6 +3,7 @@ package com.airepublic.bmstoinverter.inverter.pylonhv.can;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -10,14 +11,11 @@ import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.Port;
-import com.airepublic.bmstoinverter.core.PortAllocator;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
-import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 import com.airepublic.bmstoinverter.core.util.Util;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 /**
  * The class to handle CAN messages for a Growatt low voltage (12V/24V/48V) {@link Inverter}.
@@ -25,34 +23,10 @@ import jakarta.inject.Inject;
 @ApplicationScoped
 public class PylonHVInverterCANProcessor extends Inverter {
     private final static Logger LOG = LoggerFactory.getLogger(PylonHVInverterCANProcessor.class);
-    @Inject
-    private EnergyStorage energyStorage;
 
     @Override
-    public void process(final Runnable callback) {
-        final Port port = PortAllocator.allocate(getPortLocator());
-
-        try {
-            // listen for inverter requests
-            final ByteBuffer requestFrame = port.receiveFrame();
-            handleRequest(port, requestFrame);
-        } catch (final Throwable e) {
-            LOG.error("Error communicating to inverter!", e);
-        }
-
-        try {
-            callback.run();
-        } catch (final Exception e) {
-            LOG.error("Inverter process callback threw an exception!", e);
-        }
-
-    }
-
-
-    @Override
-    protected List<ByteBuffer> createSendFrames() {
-        // TODO let inverters do processing itself
-        return null;
+    protected ByteBuffer readRequest(final Port port) throws IOException {
+        return port.receiveFrame();
     }
 
 
@@ -62,37 +36,33 @@ public class PylonHVInverterCANProcessor extends Inverter {
     }
 
 
-    private void handleRequest(final Port port, final ByteBuffer frame) {
-        frame.rewind();
-        final int frameId = frame.getInt();
-        final int length = frame.get();
+    @Override
+    protected List<ByteBuffer> createSendFrames(final ByteBuffer requestFrame, final BatteryPack aggregatedPack) {
+        List<ByteBuffer> sendFrames = null;
+        requestFrame.rewind();
+        final int frameId = requestFrame.getInt();
+        final int length = requestFrame.get();
         final byte[] data = new byte[length];
-        frame.get(8, data);
+        requestFrame.get(8, data);
 
-        // send data from all battery modules
-        for (int bmsNo = 0; bmsNo < energyStorage.getBatteryPacks().size(); bmsNo++) {
-            final BatteryPack pack = energyStorage.getBatteryPack(bmsNo);
-
-            // TODO do not allow invalid bms ids to populate energy storage
-            if (pack.packSOC != -1) {
-                try {
-                    switch (frameId) {
-                        case 0x00004200:
-                            switch (data[0]) {
-                                case 0x00:
-                                    sendEnsembleInformation(port, bmsNo);
-                                break;
-                                case 0x02:
-                                    sendEquipmentInformation(port, bmsNo);
-                                break;
-                            }
+        try {
+            switch (frameId) {
+                case 0x00004200:
+                    switch (data[0]) {
+                        case 0x00:
+                            sendFrames = sendEnsembleInformation(aggregatedPack);
+                        break;
+                        case 0x02:
+                            sendFrames = sendEquipmentInformation(aggregatedPack);
                         break;
                     }
-                } catch (final IOException e) {
-                    LOG.error("Error sending responses for request: " + Port.printBuffer(frame), e);
-                }
+                break;
             }
+        } catch (final IOException e) {
+            LOG.error("Error creating responses for request: " + Port.printBuffer(requestFrame), e);
         }
+
+        return sendFrames;
     }
 
 
@@ -109,42 +79,46 @@ public class PylonHVInverterCANProcessor extends Inverter {
     }
 
 
-    private void sendEnsembleInformation(final Port port, final int bmsNo) throws IOException {
+    private List<ByteBuffer> sendEnsembleInformation(final BatteryPack pack) throws IOException {
+        final List<ByteBuffer> sendFrames = new ArrayList<>();
         // 0x4210
-        sendBatteryStatus(port, bmsNo);
+        sendFrames.add(sendBatteryStatus(pack));
         // 0x4220
-        sendChargeDischargeLimits(port, bmsNo);
+        sendFrames.add(sendChargeDischargeLimits(pack));
         // 0x4230
-        sendMaxMinCellVoltages(port, bmsNo);
+        sendFrames.add(sendMaxMinCellVoltages(pack));
         // 0x4240
-        sendMaxMinCellTemperatures(port, bmsNo);
+        sendFrames.add(sendMaxMinCellTemperatures(pack));
         // 0x4250
-        sendAlarms(port, bmsNo);
+        sendFrames.add(sendAlarms(pack));
         // 0x4260
-        sendMaxMinModuleVoltages(port, bmsNo);
+        sendFrames.add(sendMaxMinModuleVoltages(pack));
         // 0x4270
-        sendMaxMinModuleTemperatures(port, bmsNo);
+        sendFrames.add(sendMaxMinModuleTemperatures(pack));
         // 0x4280
-        sendChargeForbiddenMarks(port, bmsNo);
-
+        sendFrames.add(sendChargeForbiddenMarks(pack));
         // 0x42B0
-        sendBatteyVoltageSOCSOH(port, bmsNo);
+        sendFrames.add(sendBatteyVoltageSOCSOH(pack));
+
+        return sendFrames;
     }
 
 
-    private void sendEquipmentInformation(final Port port, final int bmsNo) throws IOException {
+    private List<ByteBuffer> sendEquipmentInformation(final BatteryPack pack) throws IOException {
+        final List<ByteBuffer> sendFrames = new ArrayList<>();
         // 0x7310
-        sendHardwareSoftwareVersion(port, bmsNo);
+        sendFrames.add(sendHardwareSoftwareVersion(pack));
         // 0x7320
-        sendBatterModuleInfo(port, bmsNo);
+        sendFrames.add(sendBatterModuleInfo(pack));
         // 0x7340
-        sendManufacturer(port, bmsNo);
+        sendFrames.addAll(sendManufacturer(pack));
+
+        return sendFrames;
     }
 
 
     // 0x4210
-    private void sendBatteryStatus(final Port port, final int bmsNo) throws IOException {
-        final BatteryPack pack = energyStorage.getBatteryPack(bmsNo);
+    private ByteBuffer sendBatteryStatus(final BatteryPack pack) throws IOException {
         final ByteBuffer frame = prepareSendFrame(0x00004210);
 
         // Battery voltage (0.1V)
@@ -159,13 +133,12 @@ public class PylonHVInverterCANProcessor extends Inverter {
         frame.put((byte) (pack.packSOH / 10));
 
         LOG.debug("Sending battery status: {}", Port.printBuffer(frame));
-        sendFrame(port, frame);
+        return frame;
     }
 
 
     // 0x4220
-    private void sendChargeDischargeLimits(final Port port, final int bmsNo) throws IOException {
-        final BatteryPack pack = energyStorage.getBatteryPack(bmsNo);
+    private ByteBuffer sendChargeDischargeLimits(final BatteryPack pack) throws IOException {
         final ByteBuffer frame = prepareSendFrame(0x00004220);
 
         // Charge cutoff voltage (0.1V)
@@ -178,13 +151,12 @@ public class PylonHVInverterCANProcessor extends Inverter {
         frame.putShort((short) (pack.maxPackDischargeCurrent + 30000));
 
         LOG.debug("Sending max/min voltage, current, charge and discharge limits: {}", Port.printBuffer(frame));
-        sendFrame(port, frame);
+        return frame;
     }
 
 
     // 0x4230
-    private void sendMaxMinCellVoltages(final Port port, final int bmsNo) throws IOException {
-        final BatteryPack pack = energyStorage.getBatteryPack(bmsNo);
+    private ByteBuffer sendMaxMinCellVoltages(final BatteryPack pack) throws IOException {
         final ByteBuffer frame = prepareSendFrame(0x00004230);
 
         // Maximum cell voltage (0.001V)
@@ -197,13 +169,12 @@ public class PylonHVInverterCANProcessor extends Inverter {
         frame.putShort((short) pack.minCellVNum);
 
         LOG.debug("Sending max/min cell voltages: {}", Port.printBuffer(frame));
-        sendFrame(port, frame);
+        return frame;
     }
 
 
     // 0x4240
-    private void sendMaxMinCellTemperatures(final Port port, final int bmsNo) throws IOException {
-        final BatteryPack pack = energyStorage.getBatteryPack(bmsNo);
+    private ByteBuffer sendMaxMinCellTemperatures(final BatteryPack pack) throws IOException {
         final ByteBuffer frame = prepareSendFrame(0x00004240);
 
         // Maximum cell temperature (0.1C) offset -100C
@@ -216,13 +187,12 @@ public class PylonHVInverterCANProcessor extends Inverter {
         frame.putShort((short) pack.tempMinCellNum);
 
         LOG.debug("Sending max/min cell temparatures: {}", Port.printBuffer(frame));
-        sendFrame(port, frame);
+        return frame;
     }
 
 
     // 0x4250
-    private void sendAlarms(final Port port, final int bmsNo) throws IOException {
-        final BatteryPack pack = energyStorage.getBatteryPack(bmsNo);
+    private ByteBuffer sendAlarms(final BatteryPack pack) throws IOException {
         final ByteBuffer frame = prepareSendFrame(0x00004250);
 
         // Basic status
@@ -306,13 +276,12 @@ public class PylonHVInverterCANProcessor extends Inverter {
         frame.putShort(protection);
 
         LOG.debug("Sending alarms: {}", Port.printBuffer(frame));
-        sendFrame(port, frame);
+        return frame;
     }
 
 
     // 0x4260
-    private void sendMaxMinModuleVoltages(final Port port, final int bmsNo) throws IOException {
-        final BatteryPack pack = energyStorage.getBatteryPack(bmsNo);
+    private ByteBuffer sendMaxMinModuleVoltages(final BatteryPack pack) throws IOException {
         final ByteBuffer frame = prepareSendFrame(0x00004260);
 
         // maximum module voltage (0.001V)
@@ -325,13 +294,12 @@ public class PylonHVInverterCANProcessor extends Inverter {
         frame.putShort((short) pack.minModulemVNum);
 
         LOG.debug("Sending max/min module V: {}", Port.printBuffer(frame));
-        sendFrame(port, frame);
+        return frame;
     }
 
 
     // 0x4270
-    private void sendMaxMinModuleTemperatures(final Port port, final int bmsNo) throws IOException {
-        final BatteryPack pack = energyStorage.getBatteryPack(bmsNo);
+    private ByteBuffer sendMaxMinModuleTemperatures(final BatteryPack pack) throws IOException {
         final ByteBuffer frame = prepareSendFrame(0x00004270);
 
         // maximum module temperature (0.1C) offset -100C
@@ -344,28 +312,26 @@ public class PylonHVInverterCANProcessor extends Inverter {
         frame.putShort((short) pack.minModuleTempNum);
 
         LOG.debug("Sending max/min module C: {}", Port.printBuffer(frame));
-        sendFrame(port, frame);
+        return frame;
     }
 
 
     // 0x4280
-    private void sendChargeForbiddenMarks(final Port port, final int bmsNo) throws IOException {
-        final BatteryPack pack = energyStorage.getBatteryPack(bmsNo);
+    private ByteBuffer sendChargeForbiddenMarks(final BatteryPack pack) throws IOException {
         final ByteBuffer frame = prepareSendFrame(0x00004280);
 
         // flag if charging is forbidden
-        frame.put(pack.chargeForbidden ? (byte) 0xAA : (byte) 0x00);
+        frame.put(pack.chargeMOSState ? (byte) 0x00 : (byte) 0xAA);
         // flag if discharging is forbidden
-        frame.put(pack.dischargeForbidden ? (byte) 0xAA : (byte) 0x00);
+        frame.put(pack.disChargeMOSState ? (byte) 0x00 : (byte) 0xAA);
 
         LOG.debug("Sending dis-/charge forbidden marks: {}", Port.printBuffer(frame));
-        sendFrame(port, frame);
+        return frame;
     }
 
 
     // 0x42B0
-    private void sendBatteyVoltageSOCSOH(final Port port, final int bmsNo) throws IOException {
-        final BatteryPack pack = energyStorage.getBatteryPack(bmsNo);
+    private ByteBuffer sendBatteyVoltageSOCSOH(final BatteryPack pack) throws IOException {
         final ByteBuffer frame = prepareSendFrame(0x00004210);
 
         // Battery voltage (0.1V)
@@ -380,13 +346,12 @@ public class PylonHVInverterCANProcessor extends Inverter {
         frame.put((byte) (pack.packSOH / 10));
 
         LOG.debug("Sending battery status: {}", Port.printBuffer(frame));
-        sendFrame(port, frame);
+        return frame;
     }
 
 
     // 0x7310
-    private void sendHardwareSoftwareVersion(final Port port, final int bmsNo) throws IOException {
-        final BatteryPack pack = energyStorage.getBatteryPack(bmsNo);
+    private ByteBuffer sendHardwareSoftwareVersion(final BatteryPack pack) throws IOException {
         final ByteBuffer frame = prepareSendFrame(0x00007310);
 
         if (pack.hardwareVersion != null && pack.hardwareVersion.length() > 2) {
@@ -437,13 +402,12 @@ public class PylonHVInverterCANProcessor extends Inverter {
         }
 
         LOG.debug("Sending hard-/software version: {}", Port.printBuffer(frame));
-        sendFrame(port, frame);
+        return frame;
     }
 
 
     // 0x7320
-    private void sendBatterModuleInfo(final Port port, final int bmsNo) throws IOException {
-        final BatteryPack pack = energyStorage.getBatteryPack(bmsNo);
+    private ByteBuffer sendBatterModuleInfo(final BatteryPack pack) throws IOException {
         final ByteBuffer frame = prepareSendFrame(0x00007320);
 
         // battery module quantity
@@ -458,13 +422,13 @@ public class PylonHVInverterCANProcessor extends Inverter {
         frame.putShort((short) pack.moduleRatedCapacityAh);
 
         LOG.debug("Sending battery module info: {}", Port.printBuffer(frame));
-        sendFrame(port, frame);
+        return frame;
     }
 
 
     // 0x7330
-    private void sendManufacturer(final Port port, final int bmsNo) throws IOException {
-        final BatteryPack pack = energyStorage.getBatteryPack(bmsNo);
+    private List<ByteBuffer> sendManufacturer(final BatteryPack pack) throws IOException {
+        final List<ByteBuffer> sendFrames = new ArrayList<>();
         ByteBuffer frame = prepareSendFrame(0x00007320);
         final byte[] bytes = pack.manufacturerCode.getBytes();
 
@@ -472,19 +436,20 @@ public class PylonHVInverterCANProcessor extends Inverter {
             frame.put(bytes);
 
             LOG.debug("Sending manufacturer: {}", Port.printBuffer(frame));
-            sendFrame(port, frame);
+            sendFrames.add(frame);
         } else {
             frame.put(bytes, 0, 8);
 
             LOG.debug("Sending manufacturer: {}", Port.printBuffer(frame));
-            sendFrame(port, frame);
+            sendFrames.add(frame);
 
             frame = prepareSendFrame(0x00007330);
             frame.put(bytes, 8, bytes.length > 16 ? 8 : bytes.length - 8);
 
             LOG.debug("Sending manufacturer: {}", Port.printBuffer(frame));
-            sendFrame(port, frame);
-
+            sendFrames.add(frame);
         }
+
+        return sendFrames;
     }
 }

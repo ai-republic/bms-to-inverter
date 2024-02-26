@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.Port;
+import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 
@@ -27,17 +28,10 @@ public class SMAInverterCANProcessor extends Inverter {
     private EnergyStorage energyStorage;
 
     @Override
-    protected List<ByteBuffer> createSendFrames() {
+    protected List<ByteBuffer> createSendFrames(final ByteBuffer requestFrame, final BatteryPack aggregatedPack) {
         final List<ByteBuffer> frames = new ArrayList<>();
-        final byte length = (byte) 8;
         // 0x0351 charge voltage, charge amp limit, discharge amp limit, discharge voltage limit
-        ByteBuffer frame = ByteBuffer.allocateDirect(16);
-        frame.order(ByteOrder.LITTLE_ENDIAN);
-
-        frame.putInt(0x0351)
-                .put(length)
-                .put((byte) 0) // flags
-                .putShort((short) 0); // skip 2 bytes
+        ByteBuffer frame = prepareFrame(0x0351);
         // charge voltage setpoint (0.1V) - u_int_16
         frame.asCharBuffer().put((char) energyStorage.getBatteryPack(0).maxPackVoltageLimit);
         // max charge amps (0.1A) - s_int_16
@@ -49,14 +43,7 @@ public class SMAInverterCANProcessor extends Inverter {
         frames.add(frame);
 
         // 0x0355 SOC, SOH, HiRes SOC
-        frame = ByteBuffer.allocateDirect(16);
-        frame.order(ByteOrder.LITTLE_ENDIAN);
-
-        frame.putInt(0x0355)
-                .put(length)
-                .put((byte) 0) // flags
-                .putShort((short) 0); // skip 2 bytes
-
+        frame = prepareFrame(0x0355);
         // get the minimim SOC of all the packs
         final int soc = energyStorage.getBatteryPacks().stream().map(pack -> pack.packSOC).filter(packSoc -> packSoc != 0).min((s1, s2) -> s1.compareTo(s2)).orElse(50);
         // SOC (1%) - u_int_16
@@ -67,14 +54,7 @@ public class SMAInverterCANProcessor extends Inverter {
         frames.add(frame);
 
         // 0x0356 battery voltage, battery current, battery temperature
-        frame = ByteBuffer.allocateDirect(16);
-        frame.order(ByteOrder.LITTLE_ENDIAN);
-
-        frame.putInt(0x0356)
-                .put(length)
-                .put((byte) 0) // flags
-                .putShort((short) 0); // skip 2 bytes
-
+        frame = prepareFrame(0x0356);
         final short batteryVoltage = (short) (energyStorage.getBatteryPacks().stream().map(pack -> pack.packVoltage).filter(volt -> volt != 0).min((v1, v2) -> v1.compareTo(v2)).orElse(520) * 10);
         final short batteryCurrent = (short) energyStorage.getBatteryPacks().stream().mapToInt(b -> b.packCurrent).sum();
         final short batteryTemperature = (short) energyStorage.getBatteryPacks().stream().mapToInt(b -> b.tempAverage).average().orElseGet(() -> 350d); // 35degC
@@ -88,21 +68,15 @@ public class SMAInverterCANProcessor extends Inverter {
         frames.add(frame);
 
         // 0x035A alarms and warnings
-        frame = ByteBuffer.allocateDirect(16);
-        frame.order(ByteOrder.LITTLE_ENDIAN);
-
-        frame.putInt(0x035A)
-                .put(length)
-                .put((byte) 0) // flags
-                .putShort((short) 0)
-                // general arrive/leave, high voltage arrive/leave, low
-                // voltage arrive/leave, high temperature arrive/leave, low temperature
-                // arrive/leave, high temp charge
-                // arrive/leave, low temp charge arrive/leave, high current arrive/leave
-                // high current charge arrive/leave, contactor arrive/leave, short circuit
-                // arrive/leave, BMS internal arrive/leave
-                // cell imbalance arrive/leave, last 6 bits reserved
-                .putInt(0) // alarms
+        frame = prepareFrame(0x035A);
+        // general arrive/leave, high voltage arrive/leave, low
+        // voltage arrive/leave, high temperature arrive/leave, low temperature
+        // arrive/leave, high temp charge
+        // arrive/leave, low temp charge arrive/leave, high current arrive/leave
+        // high current charge arrive/leave, contactor arrive/leave, short circuit
+        // arrive/leave, BMS internal arrive/leave
+        // cell imbalance arrive/leave, last 6 bits reserved
+        frame.putInt(0) // alarms
                 .putInt(0); // warnings
         frames.add(frame);
 
@@ -113,8 +87,25 @@ public class SMAInverterCANProcessor extends Inverter {
 
 
     @Override
+    protected ByteBuffer readRequest(final Port port) throws IOException {
+        return null;
+    }
+
+
+    @Override
     protected void sendFrame(final Port port, final ByteBuffer frame) throws IOException {
         ((CANPort) port).sendExtendedFrame(frame);
+    }
+
+
+    private ByteBuffer prepareFrame(final int cmd) {
+        final ByteBuffer frame = ByteBuffer.allocateDirect(16).order(ByteOrder.LITTLE_ENDIAN);
+        frame.putInt(cmd)
+                .put((byte) 8)
+                .put((byte) 0) // flags
+                .putShort((short) 0); // skip 2 bytes
+
+        return frame;
     }
 
 }
