@@ -72,8 +72,8 @@ public class PylonHVBmsCANProcessor extends BMS {
     private void handleMessage(final ByteBuffer receiveFrame) {
         try {
             final int frameId = receiveFrame.getInt();
-            final int batteryNo = frameId & 0x0000000F;
-            final BatteryPack pack = getBatteryPack(batteryNo);
+            final int batteryId = frameId & 0x0000000F;
+            final BatteryPack pack = getBatteryPack(batteryId);
             final byte[] dataBytes = new byte[receiveFrame.get(4)];
             receiveFrame.get(8, dataBytes);
 

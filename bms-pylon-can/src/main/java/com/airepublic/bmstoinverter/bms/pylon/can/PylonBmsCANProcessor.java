@@ -16,12 +16,12 @@ import com.airepublic.bmstoinverter.core.util.Util;
  */
 public class PylonBmsCANProcessor extends BMS {
     private final static Logger LOG = LoggerFactory.getLogger(PylonBmsCANProcessor.class);
+    private final static int BATTERY_ID = 0;
 
     @Override
     public void collectData(final Port port) {
         try {
-            final int batteryNo = 0;
-            final BatteryPack pack = getBatteryPack(batteryNo);
+            final BatteryPack pack = getBatteryPack(BATTERY_ID);
             final ByteBuffer frame = port.receiveFrame();
             final int frameId = frame.getInt();
             final byte[] bytes = new byte[8];

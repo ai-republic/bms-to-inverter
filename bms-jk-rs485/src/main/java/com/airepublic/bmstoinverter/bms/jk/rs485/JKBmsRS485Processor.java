@@ -16,6 +16,7 @@ import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
  */
 public class JKBmsRS485Processor extends BMS {
     private final static Logger LOG = LoggerFactory.getLogger(JKBmsRS485Processor.class);
+    private final static int BATTERY_ID = 0;
 
     @Override
     protected void collectData(final Port port) {
@@ -26,7 +27,7 @@ public class JKBmsRS485Processor extends BMS {
 
             try {
                 final ByteBuffer frame = port.receiveFrame();
-                final BatteryPack pack = getBatteryPacks().get(0);
+                final BatteryPack pack = getBatteryPack(BATTERY_ID);
                 final int dataLength = frame.getShort(2) - 1; // -1 because of command id byte is
                                                               // first data byte
                 final int commandId = frame.get(11);

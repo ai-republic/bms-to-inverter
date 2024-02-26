@@ -1,8 +1,9 @@
 package com.airepublic.bmstoinverter.core;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collection;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +18,7 @@ import jakarta.inject.Inject;
  */
 public abstract class BMS {
     private final static Logger LOG = LoggerFactory.getLogger(BMS.class);
-    private final List<BatteryPack> batteryPacks = new ArrayList<>();
+    private final Map<Integer, BatteryPack> batteryPacks = new LinkedHashMap<>();
     private BMSConfig config;
     @Inject
     private transient EnergyStorage energyStorage;
@@ -72,8 +73,8 @@ public abstract class BMS {
      *
      * @return the {@link BatteryPack}s associated with this {@link BMS}
      */
-    public List<BatteryPack> getBatteryPacks() {
-        return batteryPacks;
+    public Collection<BatteryPack> getBatteryPacks() {
+        return batteryPacks.values();
     }
 
 
@@ -82,18 +83,19 @@ public abstract class BMS {
      * number is greater than already known, then the pack size will increase until it has the
      * number specified.
      *
-     * @param index the index of the {@link BatteryPack}
-     * @return the {@link BatteryPack} at the specified index associated with this {@link BMS}
+     * @param batteryId the id of the {@link BatteryPack}
+     * @return the {@link BatteryPack} with the specified id associated with this {@link BMS}
      */
-    public BatteryPack getBatteryPack(final int index) {
-        // TODO find a better solution and also change energystorage and webserver
-        while (getBatteryPacks().size() <= index) {
-            final BatteryPack pack = new BatteryPack();
-            batteryPacks.add(pack);
+    public BatteryPack getBatteryPack(final int batteryId) {
+        BatteryPack pack = batteryPacks.get(batteryId);
+
+        if (pack == null) {
+            pack = new BatteryPack();
+            batteryPacks.put(batteryId, pack);
             energyStorage.getBatteryPacks().add(pack);
         }
 
-        return batteryPacks.get(index);
+        return pack;
     }
 
 

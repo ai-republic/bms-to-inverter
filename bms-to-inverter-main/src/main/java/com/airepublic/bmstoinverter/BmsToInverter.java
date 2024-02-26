@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.StringTokenizer;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,13 +46,15 @@ public class BmsToInverter implements AutoCloseable {
     @Inject
     @InverterQualifier
     private Inverter inverter;
+    private Thread bmsRunner;
+    private Thread inverterRunner;
+    private boolean running = true;
     private IMQTTBrokerService mqttBroker;
     private IMQTTProducerService mqttProducer;
     private IEmailService emailService;
     private EmailAccount account;
     private final List<String> emailRecipients = new ArrayList<>();
     private List<String> lastAlarms = new ArrayList<>();
-    final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(2);
 
     /**
      * The main method to start the application.
@@ -157,7 +157,7 @@ public class BmsToInverter implements AutoCloseable {
             LOG.info("Starting BMS receiver...");
             final int pollInterval = Integer.parseInt(System.getProperty("bms.pollInterval", "1"));
 
-            new Thread(() -> {
+            final Thread bmsRunner = new Thread(() -> {
                 do {
                     for (final BMS bms : bmsList) {
                         try {
@@ -171,11 +171,9 @@ public class BmsToInverter implements AutoCloseable {
                         Thread.sleep(pollInterval * 1000);
                     } catch (final InterruptedException e) {
                     }
-                } while (true);
-            }).start();
-
-            // executorService.scheduleWithFixedDelay(() -> bms.process(() -> receivedData()),
-            // 1, bms.getPollInterval(), TimeUnit.SECONDS);
+                } while (running);
+            });
+            bmsRunner.start();
 
             // wait for the first data to be received
             synchronized (this) {
@@ -186,7 +184,7 @@ public class BmsToInverter implements AutoCloseable {
             if (inverter != null) {
 
                 LOG.info("Starting inverter sender...");
-                new Thread(() -> {
+                inverterRunner = new Thread(() -> {
                     do {
                         try {
                             LOG.info("Sending to inverter " + inverter.getName() + " on " + inverter.getPortLocator() + "...");
@@ -194,10 +192,9 @@ public class BmsToInverter implements AutoCloseable {
                             Thread.sleep(inverter.getSendInterval() * 1000);
                         } catch (final Throwable e) {
                         }
-                    } while (true);
-                }).start();
-                // executorService.scheduleWithFixedDelay(() -> inverter.process(() -> sentData()),
-                // 1, inverter.getSendInterval(), TimeUnit.SECONDS);
+                    } while (running);
+                });
+                inverterRunner.start();
             }
         } catch (
 
@@ -444,7 +441,9 @@ public class BmsToInverter implements AutoCloseable {
     @Override
     public void close() {
         try {
-            executorService.shutdownNow();
+            running = false;
+            bmsRunner.interrupt();
+            inverterRunner.interrupt();
             LOG.info("Shutting down BMS and inverter threads...OK");
         } catch (final Throwable e) {
             LOG.info("Shutting down BMS and inverter threads...FAILED");
