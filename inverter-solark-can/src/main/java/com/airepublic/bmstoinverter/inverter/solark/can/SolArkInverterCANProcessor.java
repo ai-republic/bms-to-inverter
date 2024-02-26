@@ -50,13 +50,13 @@ public class SolArkInverterCANProcessor extends Inverter {
     private ByteBuffer createChargeDischargeInfo(final BatteryPack pack) {
         final ByteBuffer frame = prepareFrame(0x351);
 
-        // Battery charge voltage (0.1V) - uint_16
+        // Battery charge voltage (0.1V) - u_int_16
         frame.putChar((char) pack.maxPackVoltageLimit);
-        // Charge current limit (0.1A) - sint_16
+        // Charge current limit (0.1A) - s_int_16
         frame.putShort((short) pack.maxPackChargeCurrent);
-        // Discharge current limit (0.1A) - sint_16
+        // Discharge current limit (0.1A) - s_int_16
         frame.putShort((short) pack.maxPackDischargeCurrent);
-        // Battery discharge voltage (0.1V) - uint_16
+        // Battery discharge voltage (0.1V) - u_int_16
         frame.putChar((char) pack.minPackVoltageLimit);
 
         return frame;
@@ -68,9 +68,9 @@ public class SolArkInverterCANProcessor extends Inverter {
     private ByteBuffer createSOC(final BatteryPack pack) {
         final ByteBuffer frame = prepareFrame(0x355);
 
-        // SOC (1%) - uint_16
+        // SOC (1%) - u_int_16
         frame.putChar((char) (pack.packSOC / 10));
-        // SOH (1%) - uint_16
+        // SOH (1%) - u_int_16
         frame.putChar((char) (pack.packSOH / 10));
 
         return frame;
@@ -81,11 +81,11 @@ public class SolArkInverterCANProcessor extends Inverter {
     private ByteBuffer createBatteryVoltage(final BatteryPack pack) {
         final ByteBuffer frame = prepareFrame(0x356);
 
-        // Battery voltage (0.01V) - uint_16
+        // Battery voltage (0.01V) - u_int_16
         frame.putShort((short) (pack.packVoltage * 10));
-        // Battery current (0.1A) - uint_16
+        // Battery current (0.1A) - u_int_16
         frame.putShort((short) pack.packCurrent);
-        // Battery temperature (0.1C) - uint_16
+        // Battery temperature (0.1C) - u_int_16
         frame.putShort((short) pack.tempAverage);
 
         return frame;
