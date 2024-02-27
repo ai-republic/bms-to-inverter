@@ -117,7 +117,7 @@ public class DeyeInverterCANProcessor extends Inverter {
         // request force charge
         Util.setBit(flags, 4, pack.forceCharge);
         Util.setBit(flags, 5, pack.forceCharge);
-        Util.setBit(flags, 6, pack.disChargeMOSState);
+        Util.setBit(flags, 6, pack.dischargeMOSState);
         Util.setBit(flags, 7, pack.chargeMOSState);
 
         frame.put(flags);

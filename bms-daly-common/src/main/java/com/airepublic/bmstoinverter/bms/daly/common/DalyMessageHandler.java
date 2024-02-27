@@ -217,7 +217,7 @@ public class DalyMessageHandler {
         // data byte 1 charge MOS state
         battery.chargeMOSState = msg.data.get() == 1;
         // data byte 2 discharge MOS state
-        battery.disChargeMOSState = msg.data.get() == 1;
+        battery.dischargeMOSState = msg.data.get() == 1;
         // data byte 3 BMS life cycles
         battery.bmsHeartBeat = Byte.toUnsignedInt(msg.data.get());
 
@@ -230,7 +230,7 @@ public class DalyMessageHandler {
                     + "\tChargeMOS-State: {}\n"
                     + "\tDisChargeMOS-State: {}\n"
                     + "\tBMSHeartBeat: {}",
-                    bms.getBmsId() + 1, battery.chargeDischargeStatus, battery.chargeMOSState, battery.disChargeMOSState, battery.bmsHeartBeat);
+                    bms.getBmsId() + 1, battery.chargeDischargeStatus, battery.chargeMOSState, battery.dischargeMOSState, battery.bmsHeartBeat);
         }
     }
 
@@ -244,7 +244,7 @@ public class DalyMessageHandler {
         // data byte 1 number of temperature sensors
         battery.numOfTempSensors = msg.data.get();
         // data byte 2 charger status
-        battery.chargeState = msg.data.get() == 1;
+        battery.chargerState = msg.data.get() == 1;
         // data byte 3 load status
         battery.loadState = msg.data.get() == 1;
 

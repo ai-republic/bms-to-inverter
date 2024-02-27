@@ -189,7 +189,7 @@ public class GrowattInverterCANProcessor extends Inverter {
 
         // 0x319 table 5
         bits.set(7, pack.chargeMOSState);
-        bits.set(6, pack.disChargeMOSState);
+        bits.set(6, pack.dischargeMOSState);
         bits.set(5, false);
         bits.set(4, false);
         bits.set(3, false);

@@ -161,11 +161,11 @@ public abstract class Inverter {
 
             // result.chargeDischargeStatus = pack.chargeDischargeStatus;
             result.chargeMOSState |= pack.chargeMOSState;
-            result.disChargeMOSState |= pack.disChargeMOSState;
+            result.dischargeMOSState |= pack.dischargeMOSState;
             result.forceCharge |= pack.forceCharge;
             result.remainingCapacitymAh += pack.remainingCapacitymAh;
             result.numberOfCells += pack.numberOfCells;
-            result.chargeState |= pack.chargeState;
+            result.chargerState |= pack.chargerState;
             result.loadState |= pack.loadState;
             result.bmsCycles = Math.max(result.bmsCycles, pack.bmsCycles);
             // cellVmV

@@ -103,6 +103,22 @@ public class Util {
     /**
      * Sets the bit in the value at the specified index to on or off.
      *
+     * @param value the short value
+     * @param index the index
+     * @param on the flag whether to set the bit to 1 (on) or 0 (off)
+     */
+    public static void setBit(char value, final int index, final boolean on) {
+        if (on) {
+            value |= 1 << index;
+        } else {
+            value &= ~(1 << index);
+        }
+    }
+
+
+    /**
+     * Sets the bit in the value at the specified index to on or off.
+     *
      * @param value the integer value
      * @param index the index
      * @param on the flag whether to set the bit to 1 (on) or 0 (off)

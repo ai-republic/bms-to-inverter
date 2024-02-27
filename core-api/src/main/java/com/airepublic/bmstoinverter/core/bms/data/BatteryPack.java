@@ -37,12 +37,15 @@ public class BatteryPack {
     /** State of Health (0.1%) */
     public int packSOH;
 
-    // data from 0x91
-    /** Maximum cell voltage (mV) */
+    /** Maximum cell voltage limit (1mV) */
+    public int maxCellVoltageLimit;
+    /** Minimum cell voltage limit (1mV) */
+    public int minCellVoltageLimit;
+    /** Maximum cell voltage (1mV) */
     public int maxCellmV;
     /** Number of cell with highest voltage */
     public int maxCellVNum;
-    /** Minimum cell voltage (mV) */
+    /** Minimum cell voltage (1mV) */
     public int minCellmV;
     /** Number of cell with lowest voltage */
     public int minCellVNum;
@@ -63,7 +66,7 @@ public class BatteryPack {
     /** charging MOSFET status */
     public boolean chargeMOSState;
     /** discharge MOSFET state */
-    public boolean disChargeMOSState;
+    public boolean dischargeMOSState;
     /** force charging */
     public boolean forceCharge;
 
@@ -78,7 +81,7 @@ public class BatteryPack {
     /** Temp sensor count */
     public int numOfTempSensors;
     /** charger status 0 = disconnected 1 = connected */
-    public boolean chargeState;
+    public boolean chargerState;
     /** Load Status 0=disconnected 1=connected */
     public boolean loadState;
     /** No information about this */
@@ -133,7 +136,7 @@ public class BatteryPack {
     /** The pack number with minimum module temperature */
     public int minModuleTempNum;
     /** The number of battery modules in series */
-    public byte modulesInSeries;
+    public int modulesInSeries;
     /** The number of cells in a module */
     public byte moduleNumberOfCells;
     /** The module voltage (1V) */

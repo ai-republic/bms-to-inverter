@@ -323,7 +323,7 @@ public class PylonHVInverterCANProcessor extends Inverter {
         // flag if charging is forbidden
         frame.put(pack.chargeMOSState ? (byte) 0x00 : (byte) 0xAA);
         // flag if discharging is forbidden
-        frame.put(pack.disChargeMOSState ? (byte) 0x00 : (byte) 0xAA);
+        frame.put(pack.dischargeMOSState ? (byte) 0x00 : (byte) 0xAA);
 
         LOG.debug("Sending dis-/charge forbidden marks: {}", Port.printBuffer(frame));
         return frame;
@@ -413,7 +413,7 @@ public class PylonHVInverterCANProcessor extends Inverter {
         // battery module quantity
         frame.putShort((short) pack.numberOfCells);
         // battery modules in series
-        frame.put(pack.modulesInSeries);
+        frame.put((byte) pack.modulesInSeries);
         // cell quantity in battery module
         frame.put(pack.moduleNumberOfCells);
         // battery cabinet voltage level (1V)
