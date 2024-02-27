@@ -247,10 +247,10 @@ public class BmsToInverter implements AutoCloseable {
         final StringBuffer alarmContent = new StringBuffer();
         Email email = null;
 
-        for (int i = 0; i < energyStorage.getBatteryPacks().size(); i++) {
-            for (final String key : getAlarmState(energyStorage.getBatteryPack(i))) {
-                currentAlarms.add("BMS #" + (i + 1) + ":" + key);
-                alarmContent.append("\tBMS #" + (i + 1) + ":\t" + key + "\r\n");
+        for (int index = 0; index < energyStorage.getBatteryPacks().size(); index++) {
+            for (final String key : getAlarmState(energyStorage.getBatteryPack(index))) {
+                currentAlarms.add("BMS #" + (index + 1) + ":" + key);
+                alarmContent.append("\tBMS #" + (index + 1) + ":\t" + key + "\r\n");
             }
         }
 
@@ -481,10 +481,10 @@ public class BmsToInverter implements AutoCloseable {
         // header
         log.append("\nBMS\tSOC\t  V  \t  A  \t CellMinV \t CellMaxV\tCellDiff\n");
 
-        for (int bmsNo = 0; bmsNo < energyStorage.getBatteryPackCount(); bmsNo++) {
-            final BatteryPack b = energyStorage.getBatteryPack(bmsNo);
+        for (int index = 0; index < energyStorage.getBatteryPacks().size(); index++) {
+            final BatteryPack b = energyStorage.getBatteryPack(index);
 
-            log.append(bmsNo + 1
+            log.append("#" + (index + 1)
                     + "\t " + b.packSOC / 10f
                     + "\t" + b.packVoltage / 10f
                     + "\t" + b.packCurrent / 10f

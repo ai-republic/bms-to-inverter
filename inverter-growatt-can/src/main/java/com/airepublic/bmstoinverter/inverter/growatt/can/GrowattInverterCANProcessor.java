@@ -15,15 +15,12 @@ import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 /**
  * The class to handle CAN messages for a Growatt low voltage (12V/24V/48V) {@link Inverter}.
  */
 @ApplicationScoped
 public class GrowattInverterCANProcessor extends Inverter {
-    @Inject
-    private EnergyStorage energyStorage;
 
     @Override
     protected List<ByteBuffer> createSendFrames(final ByteBuffer requestFrame, final BatteryPack aggregatedPack) {
@@ -174,7 +171,7 @@ public class GrowattInverterCANProcessor extends Inverter {
         bits.set(7, pack.alarms.levelOneDischargeTempTooHigh.value);
         frame.put(bits.toByteArray()[0]);
 
-        frame.put((byte) energyStorage.getBatteryPack(0).numberOfCells);
+        frame.put((byte) pack.numberOfCells);
         frame.putChar((char) 0); // skip 2 manufacturer codes
         frame.put((byte) pack.numberOfCells);
 
@@ -373,7 +370,6 @@ public class GrowattInverterCANProcessor extends Inverter {
         es.getBatteryPacks().add(pack);
 
         final GrowattInverterCANProcessor processor = new GrowattInverterCANProcessor();
-        processor.energyStorage = es;
         final ByteBuffer frame = processor.createBatteryVoltage(pack);
 
         System.out.println(Port.printBuffer(frame));
