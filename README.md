@@ -15,7 +15,7 @@ This way _you_ control what gets send to the inverter.
 
 A wide range of BMS and inverters already supported (see below). Any BMS or inverter can be supported in a very short time by just mapping the manufacturers protocol specification in an own implementation of the [`BMS`](https://github.com/ai-republic/bms-to-inverter/blob/main/core-api/src/main/java/com/airepublic/bmstoinverter/core/BMS.java) or [`Inverter`](https://github.com/ai-republic/bms-to-inverter/blob/main/core-api/src/main/java/com/airepublic/bmstoinverter/core/Inverter.java).
 
-**NOTE:** If you would like me to add a BMS or inverter module just let me know! I would appreciate support to test the BMS and inverter bindings in all variations. Please let me know if you would like to support this project - Testers are very welcome! :)
+_**NOTE:** If you would like me to add a BMS or inverter module just let me know! I would appreciate support to test the BMS and inverter bindings in all variations. Please let me know if you would like to support this project - Testers are very welcome! :)_
 
 ----------
 
@@ -28,6 +28,7 @@ A wide range of BMS and inverters already supported (see below). Any BMS or inve
 
 ## Currently implemented BMS:
 * Daly BMS (CAN / RS485 (& UART / RS232))
+* Growatt high voltage (CAN)
 * JK BMS (CAN / RS485 (& UART / RS232))
 * Seplos BMS (CAN)
 * PylonTech low voltage BMS (CAN)
@@ -36,12 +37,15 @@ A wide range of BMS and inverters already supported (see below). Any BMS or inve
 ## Currently implemented inverters:
 * SMA Sunny Island (CAN)
 * Growatt low voltage (12V/24V/48V) inverters (CAN)
+* Growatt high voltage inverters (CAN)
+* PylonTech low voltage inverters (CAN)
+* PylonTech high voltage inverters (CAN)
 * Deye inverters (CAN)
 * SolArk inverters (CAN)
-* any inverter speaking the PylonTech (CAN) protocol
+* any other inverters using the PylonTech (CAN) protocols
 
 
-**NOTE:** **If your BMS or inverter is not in the list just open an issue!**
+_**NOTE:** **If your BMS or inverter is not in the list just open an issue!**_
 
 ----------
 
@@ -58,7 +62,7 @@ The following architectures are supported:
 * riscv32
 * riscv64
 
-**NOTE:** There are restrictions using CAN on Windows as SocketCAN library is *NOT* available on Windows OS.
+_**NOTE:** There are restrictions using CAN on Windows as SocketCAN library is *NOT* available on Windows OS_
 
 ----------
 
