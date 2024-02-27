@@ -166,7 +166,7 @@ public class BMSDialog extends JDialog {
             if (config == null) {
                 config = new BMSConfig(bmsId, portLocator, delayAfterNoBytes, descriptor);
             } else {
-                config.update(config.getBmsId(), portLocator, delayAfterNoBytes, descriptor);
+                config.update(bmsId, portLocator, delayAfterNoBytes, descriptor);
             }
             dispose();
         });
@@ -202,9 +202,9 @@ public class BMSDialog extends JDialog {
 
 
     /**
-     * Sets the entered port locator string.
+     * Sets the {@link BMSConfig}.
      *
-     * @param config the entered port locator string.
+     * @param config the {@link BMSConfig}
      */
     public void setBMSConfig(final BMSConfig config) {
         this.config = config;
@@ -230,6 +230,12 @@ public class BMSDialog extends JDialog {
     }
 
 
+    /**
+     * Verifies the fields of this panel.
+     *
+     * @param errors the buffer to append the errors
+     * @return true if no errors were found, otherwise false
+     */
     public boolean verify(final StringBuffer errors) {
         boolean fail = false;
 
