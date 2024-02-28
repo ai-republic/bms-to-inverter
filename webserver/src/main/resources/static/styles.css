@@ -62,7 +62,7 @@ body {
 	margin: 5px;
 	padding: 5px;
 	border-radius: 10px;
-	text-align: left;
+	text-align: right;
 }
 
 .overviewDataFieldValue {
@@ -82,7 +82,7 @@ body {
 	margin: 5px;
 	padding: 5px;
 	border-radius: 10px;
-	text-align: left;
+	text-align: right;
 }
 
 .bmsDataFieldValue {
