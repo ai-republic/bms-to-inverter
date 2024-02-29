@@ -1,4 +1,4 @@
-package com.airepublic.bmstoinverter.bms.sma.can;
+package com.airepublic.bmstoinverter.bms.byd.can;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -12,10 +12,10 @@ import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 
 /**
- * The class to handle CAN messages from a SMA {@link BMS}.
+ * The class to handle CAN messages from a BYD {@link BMS}.
  */
-public class SMABmsCANProcessor extends BMS {
-    private final static Logger LOG = LoggerFactory.getLogger(SMABmsCANProcessor.class);
+public class BYDBmsCANProcessor extends BMS {
+    private final static Logger LOG = LoggerFactory.getLogger(BYDBmsCANProcessor.class);
     private final static int BATTERY_ID = 0;
 
     @Override
@@ -41,14 +41,8 @@ public class SMABmsCANProcessor extends BMS {
                 case 0x35A:
                     readAlarms(pack, data);
                 break;
-                case 0x35B:
-                    readEvents(pack, data);
-                break;
                 case 0x35E:
                     readManufacturer(pack, data);
-                break;
-                case 0x35F:
-                    readBatteryInfo(pack, data);
                 break;
             }
         } catch (final IOException e) {
@@ -162,11 +156,6 @@ public class SMABmsCANProcessor extends BMS {
     }
 
 
-    // 0x35B
-    private void readEvents(final BatteryPack pack, final ByteBuffer data) {
-    }
-
-
     // 0x35E
     private void readManufacturer(final BatteryPack pack, final ByteBuffer data) {
         pack.manufacturerCode = "";
@@ -183,14 +172,4 @@ public class SMABmsCANProcessor extends BMS {
         LOG.debug("\nManufacturer\n{}", pack.manufacturerCode);
 
     }
-
-
-    // 0x35F
-    private void readBatteryInfo(final BatteryPack pack, final ByteBuffer data) {
-        pack.type = data.getChar();
-        pack.hardwareVersion = data.get() + "." + data.get();
-        pack.ratedCapacitymAh = data.getChar();
-        pack.softwareVersion = data.get() + "." + data.get();
-    }
-
 }

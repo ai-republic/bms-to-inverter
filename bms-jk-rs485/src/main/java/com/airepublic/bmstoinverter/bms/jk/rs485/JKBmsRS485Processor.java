@@ -13,7 +13,7 @@ import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.util.Util;
 
 /**
- * The class to handle CAN messages from a JK {@link BMS}.
+ * The class to handle RS485 messages from a JK {@link BMS}.
  */
 public class JKBmsRS485Processor extends BMS {
     private final static Logger LOG = LoggerFactory.getLogger(JKBmsRS485Processor.class);

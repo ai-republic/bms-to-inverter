@@ -1,4 +1,4 @@
-package com.airepublic.bmstoinverter.bms.pylon.can;
+package com.airepublic.bmstoinverter.bms.byd.can;
 
 import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.BMSConfig;
@@ -7,18 +7,18 @@ import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.protocol.can.JavaCANPort;
 
 /**
- * The {@link BMSDescriptor} for the Pylon LV BMS using the CAN protocol.
+ * The {@link BMSDescriptor} for the BYD BMS using the CAN protocol.
  */
-public class PylonBmsCANDescriptor implements BMSDescriptor {
+public class BYDBmsCANDescriptor implements BMSDescriptor {
     @Override
     public String getName() {
-        return "PYLON_CAN";
+        return "BYD_CAN";
     }
 
 
     @Override
     public Class<? extends BMS> getBMSClass() {
-        return PylonBmsCANProcessor.class;
+        return BYDBmsCANProcessor.class;
     }
 
 

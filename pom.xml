@@ -39,6 +39,7 @@
 		<module>bms-pylon-hv-can</module>
 		<module>inverter-pylon-hv-can</module>
 		<module>bms-sma-can</module>
+		<module>bms-byd-can</module>
 	</modules>
 
 	<build>

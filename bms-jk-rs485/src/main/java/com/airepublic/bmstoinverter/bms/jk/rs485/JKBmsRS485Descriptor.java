@@ -9,7 +9,7 @@ import com.airepublic.bmstoinverter.protocol.rs485.JSerialCommPort;
 import com.fazecast.jSerialComm.SerialPort;
 
 /**
- * The {@link BMSDescriptor} for the Daly BMS using the CAN protocol.
+ * The {@link BMSDescriptor} for the JK BMS using the RS485 protocol.
  */
 public class JKBmsRS485Descriptor implements BMSDescriptor {
     @Override
