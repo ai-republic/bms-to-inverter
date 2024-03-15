@@ -113,7 +113,7 @@ public class JKBmsRS485Processor extends BMS {
 
 
     ByteBuffer prepareSendFrame(final byte commandId) {
-        final ByteBuffer sendFrame = ByteBuffer.allocateDirect(21).order(ByteOrder.LITTLE_ENDIAN);
+        final ByteBuffer sendFrame = ByteBuffer.allocate(21).order(ByteOrder.LITTLE_ENDIAN);
         sendFrame.put((byte) 0x4E); // start flag 2 bytes
         sendFrame.put((byte) 0x57);
         sendFrame.put((byte) 0x00); // frame length including this 2 bytes
