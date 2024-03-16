@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.BMS;
+import com.airepublic.bmstoinverter.core.NoDataAvailableException;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.util.Util;
@@ -21,93 +22,129 @@ public class JKBmsRS485Processor extends BMS {
 
     @Override
     protected void collectData(final Port port) {
-        final ByteBuffer sendFrame = prepareSendFrame((byte) 0x85); // SOC
+        final byte[] cmdIds = new byte[] { 0x79, (byte) 0x80, (byte) 0x81, (byte) 0x82, (byte) 0x83, (byte) 0x84, (byte) 0x85, (byte) 0x86, (byte) 0x87, (byte) 0x89, (byte) 0x8A, (byte) 0x8B, (byte) 0x8C, (byte) 0x8E, (byte) 0x8F, (byte) 0x90, (byte) 0x93, (byte) 0x97, (byte) 0xAA, (byte) 0xAF };
+        int noDataReceived = 0;
 
-        try {
-            port.sendFrame(sendFrame);
+        for (final byte cmdId : cmdIds) {
+            final ByteBuffer sendFrame = prepareSendFrame(cmdId);
 
             try {
-                final ByteBuffer frame = port.receiveFrame();
-                final BatteryPack pack = getBatteryPack(BATTERY_ID);
-                final int dataLength = frame.getShort(2) - 1; // -1 because of command id byte is
-                                                              // first data byte
-                final int commandId = frame.get(11);
-                final byte[] bytes = new byte[dataLength];
-                frame.position(12);
-                frame.get(bytes);
-                final ByteBuffer data = ByteBuffer.wrap(bytes);
+                port.sendFrame(sendFrame);
 
-                switch (commandId) {
-                    case 0x79:
-                        readCellVoltages(pack, data);
-                    break;
-                    case 0x80:
-                        readTubeTemperature(pack, data);
-                    break;
-                    case 0x81:
-                        readBoxTemperature(pack, data);
-                    break;
-                    case 0x82:
-                        readBatteryTemperature(pack, data);
-                    break;
-                    case 0x83:
-                        readTotalVoltage(pack, data);
-                    break;
-                    case 0x84:
-                        readTotalCurrent(pack, data);
-                    break;
-                    case 0x85:
-                        readBatterySOC(pack, data);
-                    break;
-                    case 0x86:
-                        readNumberOfTemperatureSensors(pack, data);
-                    break;
-                    case 0x87:
-                        readCycleTimes(pack, data);
-                    break;
-                    case 0x89:
-                        readTotalCapacity(pack, data);
-                    break;
-                    case 0x8A:
-                        readNumberOfBatteryStrings(pack, data);
-                    break;
-                    case 0x8B:
-                        readAlarms(pack, data);
-                    break;
-                    case 0x8C:
-                        readBatteryStatus(pack, data);
-                    break;
-                    case 0x8E:
-                        readBatteryOverVoltageLimit(pack, data);
-                    break;
-                    case 0x8F:
-                        readBatteryUnderVoltageLimit(pack, data);
-                    break;
-                    case 0x90:
-                        readCellOverVoltageLimit(pack, data);
-                    break;
-                    case 0x93:
-                        readCellUnderVoltageLimit(pack, data);
-                    break;
-                    case 0x97:
-                        readDischargeCurrentLimit(pack, data);
-                    break;
-                    case 0x99:
-                        readChargeCurrentLimit(pack, data);
-                    break;
-                    case 0xAA:
-                        readRatedCapacity(pack, data);
-                    break;
-                    case 0xAF:
-                        readBatteryType(pack, data);
-                    break;
+                try {
+                    boolean valid = true;
+
+                    // read frames until the requested frame is read
+                    do {
+
+                        final ByteBuffer frame = port.receiveFrame();
+
+                        if (frame != null) {
+                            final BatteryPack pack = getBatteryPack(BATTERY_ID);
+                            final int dataLength = frame.getShort(2) - 1; // -1 because of command
+                                                                          // id
+                                                                          // byte
+                                                                          // is counted as
+                                                                          // first data byte
+                            final int commandId = frame.get(11);
+                            final byte[] bytes = new byte[dataLength];
+                            frame.position(12);
+                            frame.get(bytes);
+                            final ByteBuffer data = ByteBuffer.wrap(bytes);
+
+                            switch (commandId) {
+                                case 0x79:
+                                    readCellVoltages(pack, data);
+                                break;
+                                case 0x80:
+                                    readTubeTemperature(pack, data);
+                                break;
+                                case 0x81:
+                                    readBoxTemperature(pack, data);
+                                break;
+                                case 0x82:
+                                    readBatteryTemperature(pack, data);
+                                break;
+                                case 0x83:
+                                    readTotalVoltage(pack, data);
+                                break;
+                                case 0x84:
+                                    readTotalCurrent(pack, data);
+                                break;
+                                case 0x85:
+                                    readBatterySOC(pack, data);
+                                break;
+                                case 0x86:
+                                    readNumberOfTemperatureSensors(pack, data);
+                                break;
+                                case 0x87:
+                                    readCycleTimes(pack, data);
+                                break;
+                                case 0x89:
+                                    readTotalCapacity(pack, data);
+                                break;
+                                case 0x8A:
+                                    readNumberOfBatteryStrings(pack, data);
+                                break;
+                                case 0x8B:
+                                    readAlarms(pack, data);
+                                break;
+                                case 0x8C:
+                                    readBatteryStatus(pack, data);
+                                break;
+                                case 0x8E:
+                                    readBatteryOverVoltageLimit(pack, data);
+                                break;
+                                case 0x8F:
+                                    readBatteryUnderVoltageLimit(pack, data);
+                                break;
+                                case 0x90:
+                                    readCellOverVoltageLimit(pack, data);
+                                break;
+                                case 0x93:
+                                    readCellUnderVoltageLimit(pack, data);
+                                break;
+                                case 0x97:
+                                    readDischargeCurrentLimit(pack, data);
+                                break;
+                                case 0x99:
+                                    readChargeCurrentLimit(pack, data);
+                                break;
+                                case 0xAA:
+                                    readRatedCapacity(pack, data);
+                                break;
+                                case 0xAF:
+                                    readBatteryType(pack, data);
+                                break;
+                            }
+                        } else { // received nothing
+                            // keep track of how often no bytes could be read
+                            noDataReceived++;
+                            LOG.debug("No bytes received: " + noDataReceived + " times!");
+
+                            // if we received no bytes more than 10 times we stop and notify the
+                            // handler to re-open the port
+                            if (noDataReceived >= 10) {
+                                throw new NoDataAvailableException();
+                            }
+
+                            // try and wait for the next message to arrive
+                            try {
+                                LOG.debug("Waiting for messages to arrive....");
+                                Thread.sleep(getDelayAfterNoBytes());
+                            } catch (final InterruptedException e) {
+                            }
+
+                            // try to receive the response again
+                            valid = false;
+                        }
+                    } while (!valid);
+                } catch (final IOException e) {
+                    LOG.error("Error receiving frame!", e);
                 }
-
-            } catch (final IOException e) {
-                LOG.error("Error receiving frame!", e);
+            } catch (final Exception e) {
+                LOG.error("Error sending frame: " + Port.printBuffer(sendFrame));
             }
-        } catch (final IOException e) {
-            LOG.error("Error sending frame: " + Port.printBuffer(sendFrame));
         }
     }
 
