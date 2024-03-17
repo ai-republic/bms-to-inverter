@@ -50,8 +50,12 @@ public class JKBmsRS485ResponseFrame {
             if (foundDataId) {
                 var dataEntry = new DataEntry();
                 dataEntry.setId(wrappedBuffer.get(index));
-                int length = JkBmsR485DataIdEnum.fromDataId(wrappedBuffer.get(index)).getlength();
-                if (length != 0) {
+                var dataIdType = JkBmsR485DataIdEnum.fromDataId(wrappedBuffer.get(index));
+                int length = dataIdType.getlength();
+                if (dataIdType.equals(JkBmsR485DataIdEnum.READ_CELL_VOLTAGES)) {
+                    length = buffer[index + 1] + 1;
+                }
+                if (length == 0) {
                     var start = index;
                     var end = index + 1;
 
@@ -72,6 +76,7 @@ public class JKBmsRS485ResponseFrame {
                     wrappedBuffer.get(start, datacopy);
                     dataEntry.setData(ByteBuffer.wrap(datacopy));
                     dataEntries.add(dataEntry);
+                    index = end;
                 }
             } else {
                 index = this.size - 9;
