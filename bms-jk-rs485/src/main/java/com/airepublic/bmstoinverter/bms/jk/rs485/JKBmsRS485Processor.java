@@ -41,7 +41,7 @@ public class JKBmsRS485Processor extends BMS {
 
                         if (frame != null) {
                             final BatteryPack pack = getBatteryPack(BATTERY_ID);
-                            final int dataLength = frame.getShort(2) - 1; // -1 because of command
+                            final int dataLength = frame.getShort(2)-12-9; // -12 pre data --9 post data
                                                                           // id
                                                                           // byte
                                                                           // is counted as
@@ -192,7 +192,7 @@ public class JKBmsRS485Processor extends BMS {
         }
 
         for (int i = 0; i < pack.numberOfCells; i++) {
-            pack.cellVmV[data.get()] = data.getChar();
+            pack.cellVmV[data.get()-1] = data.getChar();
         }
     }
 
