@@ -22,7 +22,9 @@ public class JKBmsRS485Processor extends BMS {
 
     @Override
     protected void collectData(final Port port) {
-        final byte[] cmdIds = new byte[] { 0x79, (byte) 0x80, (byte) 0x81, (byte) 0x82, (byte) 0x83, (byte) 0x84, (byte) 0x85, (byte) 0x86, (byte) 0x87, (byte) 0x89, (byte) 0x8A, (byte) 0x8B, (byte) 0x8C, (byte) 0x8E, (byte) 0x8F, (byte) 0x90, (byte) 0x93, (byte) 0x97, (byte) 0xAA, (byte) 0xAF };
+        final byte[] cmdIds = new byte[] { (byte) 0x00
+//                0x79, (byte) 0x80, (byte) 0x81, (byte) 0x82, (byte) 0x83, (byte) 0x84, (byte) 0x85, (byte) 0x86, (byte) 0x87, (byte) 0x89, (byte) 0x8A, (byte) 0x8B, (byte) 0x8C, (byte) 0x8E, (byte) 0x8F, (byte) 0x90, (byte) 0x93, (byte) 0x97, (byte) 0xAA, (byte) 0xAF
+                };
         int noDataReceived = 0;
 
         for (final byte cmdId : cmdIds) {
@@ -41,82 +43,83 @@ public class JKBmsRS485Processor extends BMS {
 
                         if (frame != null) {
                             final BatteryPack pack = getBatteryPack(BATTERY_ID);
-                            final int dataLength = frame.getShort(2)-12-9; // -12 pre data --9 post data
-                                                                          // id
-                                                                          // byte
-                                                                          // is counted as
-                                                                          // first data byte
-                            final int commandId = frame.get(11);
-                            final byte[] bytes = new byte[dataLength];
-                            frame.position(12);
-                            frame.get(bytes);
-                            final ByteBuffer data = ByteBuffer.wrap(bytes);
+                            var responseFrame = new JKBmsRS485ResponseFrame(frame.array());
 
-                            switch (commandId) {
-                                case 0x79:
-                                    readCellVoltages(pack, data);
-                                break;
-                                case 0x80:
-                                    readTubeTemperature(pack, data);
-                                break;
-                                case 0x81:
-                                    readBoxTemperature(pack, data);
-                                break;
-                                case 0x82:
-                                    readBatteryTemperature(pack, data);
-                                break;
-                                case 0x83:
-                                    readTotalVoltage(pack, data);
-                                break;
-                                case 0x84:
-                                    readTotalCurrent(pack, data);
-                                break;
-                                case 0x85:
-                                    readBatterySOC(pack, data);
-                                break;
-                                case 0x86:
-                                    readNumberOfTemperatureSensors(pack, data);
-                                break;
-                                case 0x87:
-                                    readCycleTimes(pack, data);
-                                break;
-                                case 0x89:
-                                    readTotalCapacity(pack, data);
-                                break;
-                                case 0x8A:
-                                    readNumberOfBatteryStrings(pack, data);
-                                break;
-                                case 0x8B:
-                                    readAlarms(pack, data);
-                                break;
-                                case 0x8C:
-                                    readBatteryStatus(pack, data);
-                                break;
-                                case 0x8E:
-                                    readBatteryOverVoltageLimit(pack, data);
-                                break;
-                                case 0x8F:
-                                    readBatteryUnderVoltageLimit(pack, data);
-                                break;
-                                case 0x90:
-                                    readCellOverVoltageLimit(pack, data);
-                                break;
-                                case 0x93:
-                                    readCellUnderVoltageLimit(pack, data);
-                                break;
-                                case 0x97:
-                                    readDischargeCurrentLimit(pack, data);
-                                break;
-                                case 0x99:
-                                    readChargeCurrentLimit(pack, data);
-                                break;
-                                case 0xAA:
-                                    readRatedCapacity(pack, data);
-                                break;
-                                case 0xAF:
-                                    readBatteryType(pack, data);
-                                break;
-                            }
+                                for (var dataSegment : responseFrame.getDataEntries()) {
+                                    var dataId = dataSegment.getId();
+
+
+
+                                    switch (JkBmsR485DataIdEnum.fromDataId(dataId)) {
+                                        case READ_CELL_VOLTAGES:
+                                            readCellVoltages(pack, dataSegment.getData());
+                                            break;
+                                        case READ_TUBE_TEMPERATURE:
+                                            readTubeTemperature(pack, dataSegment.getData());
+                                            break;
+                                        case READ_BOX_TEMPERATURE:
+                                            readBoxTemperature(pack, dataSegment.getData());
+                                            break;
+                                        case READ_BATTERY_TEMPERATURE:
+                                            readBatteryTemperature(pack, dataSegment.getData());
+                                            break;
+                                        case READ_TOTAL_VOLTAGE:
+                                            readTotalVoltage(pack, dataSegment.getData());
+                                            break;
+                                        case READ_TOTAL_CURRENT:
+                                            readTotalCurrent(pack, dataSegment.getData());
+                                            break;
+                                        case READ_BATTERY_SOC:
+                                            readBatterySOC(pack, dataSegment.getData());
+                                            break;
+                                        case READ_NUMBER_OF_TEMPERATURE_SENSORS:
+                                            readNumberOfTemperatureSensors(pack, dataSegment.getData());
+                                            break;
+                                        case READ_CYCLE_TIMES:
+                                            readCycleTimes(pack, dataSegment.getData());
+                                            break;
+                                        case READ_TOTAL_CAPACITY:
+                                            readTotalCapacity(pack, dataSegment.getData());
+                                            break;
+                                        case READ_NUMBER_OF_BATTERY_STRINGS:
+                                            readNumberOfBatteryStrings(pack, dataSegment.getData());
+                                            break;
+                                        case READ_ALARMS:
+                                            readAlarms(pack, dataSegment.getData());
+                                            break;
+                                        case READ_BATTERY_STATUS:
+                                            readBatteryStatus(pack, dataSegment.getData());
+                                            break;
+                                        case READ_BATTERY_OVER_VOLTAGE_LIMIT:
+                                            readBatteryOverVoltageLimit(pack, dataSegment.getData());
+                                            break;
+                                        case READ_BATTERY_UNDER_VOLTAGE_LIMIT:
+                                            readBatteryUnderVoltageLimit(pack, dataSegment.getData());
+                                            break;
+                                        case READ_CELL_OVER_VOLTAGE_LIMIT:
+                                            readCellOverVoltageLimit(pack, dataSegment.getData());
+                                            break;
+                                        case READ_CELL_UNDER_VOLTAGE_LIMIT:
+                                            readCellUnderVoltageLimit(pack, dataSegment.getData());
+                                            break;
+                                        case READ_DISCHARGE_CURRENT_LIMIT:
+                                            readDischargeCurrentLimit(pack, dataSegment.getData());
+                                            break;
+                                        case READ_CHARGE_CURRENT_LIMIT:
+                                            readChargeCurrentLimit(pack, dataSegment.getData());
+                                            break;
+                                        case READ_RATED_CAPACITY:
+                                            readRatedCapacity(pack, dataSegment.getData());
+                                            break;
+                                        case READ_BATTERY_TYPE:
+                                            readBatteryType(pack, dataSegment.getData());
+                                            break;
+                                        default:
+                                            LOG.error("command not recognized...", dataId);
+                                            break;
+                                    }
+
+                                }
                         } else { // received nothing
                             // keep track of how often no bytes could be read
                             noDataReceived++;
