@@ -151,30 +151,30 @@ public class JKBmsRS485Processor extends BMS {
 
     ByteBuffer prepareSendFrame(final byte commandId) {
         final ByteBuffer sendFrame = ByteBuffer.allocate(21).order(ByteOrder.LITTLE_ENDIAN);
-        sendFrame.put((byte) 0x4E); // start flag 2 bytes
-        sendFrame.put((byte) 0x57);
-        sendFrame.put((byte) 0x00); // frame length including this 2 bytes
-        sendFrame.put((byte) 0x13);
-        sendFrame.put((byte) 0x00); // terminal number 4 bytes
-        sendFrame.put((byte) 0x00);
-        sendFrame.put((byte) 0x00);
-        sendFrame.put((byte) 0x00);
-        sendFrame.put((byte) 0x03); // command id (0x01 - activation instruction, 0x02 - write
-                                    // instruction, 0x03 - read identifier data, 0x05 - pair code,
-                                    // 0x06 - read all data
+        sendFrame.put((byte) 0x4E); // Start flag
+        sendFrame.put((byte) 0x57); // Additional start flag or part of a combined flag
+        sendFrame.put((byte) 0x00); // Frame Length Byte 1
+        sendFrame.put((byte) 0x13); // Frame Length Byte 2
+        sendFrame.put((byte) 0x00); // Terminal Number Byte 1
+        sendFrame.put((byte) 0x00); // Terminal Number Byte 2
+        sendFrame.put((byte) 0x00); // Terminal Number Byte 3
+        sendFrame.put((byte) 0x00); // Terminal Number Byte 4
+        sendFrame.put((byte) 0x06); // command id (0x01 - activation instruction, 0x02 - write instruction, 0x03 - read identifier data, 0x05 - pair code 0x06, - read all data
         sendFrame.put((byte) 0x03); // frame source id (0x00 - BMS, 0x01- BT, 0x02-GPS, 0x03 - PC)
-        sendFrame.put((byte) 0x00); // transport type (0x00 - request, 0x01 - response)
-        sendFrame.put(commandId);
+        sendFrame.put((byte) 0x00); //0.Read data, 1.Answer frame 2.Data box active upload
+        sendFrame.put(commandId); // Read a single data reference (5.1 table);Read all data and fill in 0x00
         sendFrame.putInt(0x00000000); // record number - 4 bytes (1st random, 2-4 recorde number)
-        sendFrame.put((byte) 0x68); // end flag
+        sendFrame.put((byte) 0x68); // End Identity
 
-        int crc = 0;
-
-        for (int i = 2; i < sendFrame.capacity() - 4; i++) {
-            crc += sendFrame.get(i);
+        int sum = 0;
+        for (int i=0;  i< sendFrame.array().length ; i++ ) {
+            sum += (sendFrame.array()[i] & 0xFF); // Ensure the byte is treated as unsigned
         }
-        sendFrame.putInt(crc); // CRC 4 byts
-
+        sendFrame.put( (byte) 0x00); //Checksum Byte 1
+        sendFrame.put( (byte) 0x00); //Checksum Byte 2
+        sendFrame.put( (byte) 0x01); //Checksum Byte 3
+        sendFrame.put((byte) sum ); //Checksum Byte 4
+        
         return sendFrame;
     }
 
