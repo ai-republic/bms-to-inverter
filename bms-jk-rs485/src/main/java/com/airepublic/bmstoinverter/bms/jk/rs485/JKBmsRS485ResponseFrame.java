@@ -33,6 +33,8 @@ public class JKBmsRS485ResponseFrame {
     private void parse(byte[] buffer) {
         ByteBuffer wrappedBuffer = ByteBuffer.wrap(buffer);
         var index = 0;
+        var start = 0;
+        var end = 0;
         stx = new byte[2];
         wrappedBuffer.get(index += 2, stx);
 
@@ -56,28 +58,24 @@ public class JKBmsRS485ResponseFrame {
                     length = buffer[index + 1] + 1;
                 }
                 if (length == 0) {
-                    var start = index;
-                    var end = index + 1;
+                    start = index+1;
+                    end = index + 1;
 
 
-                    while (!JkBmsR485DataIdEnum.dataId(wrappedBuffer.get(end++)) && end < this.size - 9) {
-
-
+                    while (buffer[end]==0 || (!JkBmsR485DataIdEnum.dataId(wrappedBuffer.get(end)) && end < this.size - 9)) {
+                        end++;
                     }
-                    var datacopy = new byte[end - start - 2];
-                    wrappedBuffer.get(start + 1, datacopy);
-                    dataEntry.setData(ByteBuffer.wrap(datacopy));
-                    dataEntries.add(dataEntry);
-                    index = end - 1;
+
+
                 } else {
-                    var start = index + 1;
-                    var end = start + length;
-                    var datacopy = new byte[end - start];
-                    wrappedBuffer.get(start, datacopy);
-                    dataEntry.setData(ByteBuffer.wrap(datacopy));
-                    dataEntries.add(dataEntry);
-                    index = end;
+                    start = index + 1;
+                    end = start + length;
                 }
+                var datacopy = new byte[end - start];
+                wrappedBuffer.get(start, datacopy);
+                dataEntry.setData(ByteBuffer.wrap(datacopy));
+                dataEntries.add(dataEntry);
+                index = end ;
             } else {
                 index = this.size - 9;
             }
