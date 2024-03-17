@@ -215,13 +215,13 @@ public class JKBmsRS485Processor extends BMS {
     // 0x82
     private void readBatteryTemperature(final BatteryPack pack, final ByteBuffer data) {
         final int temp = data.getChar();
-        pack.tempAverage = temp > 100 ? -(temp - 100) * 10 : temp * 10;
+        pack.tempAverage = temp > 100 ? -(temp - 100) : temp;
     }
 
 
     // 0x83
     private void readTotalVoltage(final BatteryPack pack, final ByteBuffer data) {
-        pack.packVoltage = (int) (data.getChar() / 10f);
+        pack.packVoltage = (int) (data.getChar() *.001);
     }
 
 
@@ -242,7 +242,7 @@ public class JKBmsRS485Processor extends BMS {
     // 0x85
     private void readBatterySOC(final BatteryPack pack, final ByteBuffer data) {
         // Battery SOC (1%)
-        pack.packSOC = data.get() * 10;
+        pack.packSOC = data.get();
     }
 
 
