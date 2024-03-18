@@ -88,11 +88,11 @@ public class PylonBmsCANProcessor extends BMS {
 
     // 0x356
     private void readBatteryVoltage(final BatteryPack pack, final ByteBuffer data) {
-        // Battery voltage (0.01V) - uint_16
+        // Battery voltage (0.01V) - sint_16
         pack.packVoltage = data.getShort();
-        // Battery current (0.1A) - uint_16
+        // Battery current (0.1A) - sint_16
         pack.packCurrent = data.getShort();
-        // Battery current (0.1C) - uint_16
+        // Battery current (0.1C) - sint_16
         pack.tempAverage = data.getShort();
 
         LOG.debug("Pack V \t Pack A \t Avg Temp\n {}\t\t{}\t\t{}", pack.packVoltage / 100f, pack.packCurrent / 10f, pack.tempAverage / 10f);
