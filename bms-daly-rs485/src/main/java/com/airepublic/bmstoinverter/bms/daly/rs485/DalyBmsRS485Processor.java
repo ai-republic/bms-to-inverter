@@ -119,6 +119,15 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
                     LOG.debug("Invalid frame received! {}", Port.printBuffer(receiveBuffer));
 
                     if (failureCount >= 10) {
+                        // try and wait for the bus to get quiet
+                        try {
+                            LOG.debug("Waiting for bus to idle....");
+                            Thread.sleep(1000);
+                        } catch (final InterruptedException e) {
+                        }
+
+                        port.clearBuffers();
+
                         throw new TooManyInvalidFramesException();
                     }
 
