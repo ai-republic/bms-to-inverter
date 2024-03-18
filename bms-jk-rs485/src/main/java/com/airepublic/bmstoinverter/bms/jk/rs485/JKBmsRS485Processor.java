@@ -41,11 +41,8 @@ public class JKBmsRS485Processor extends BMS {
 
                         if (frame != null) {
                             final BatteryPack pack = getBatteryPack(BATTERY_ID);
-                            final int dataLength = frame.getShort(2) - 1; // -1 because of command
-                                                                          // id
-                                                                          // byte
-                                                                          // is counted as
-                                                                          // first data byte
+                            final int dataLength = frame.getShort(2) - 12 - 9; // -12 pre data, -9
+                                                                               // post data
                             final int commandId = frame.get(11);
                             final byte[] bytes = new byte[dataLength];
                             frame.position(12);
@@ -151,29 +148,34 @@ public class JKBmsRS485Processor extends BMS {
 
     ByteBuffer prepareSendFrame(final byte commandId) {
         final ByteBuffer sendFrame = ByteBuffer.allocate(21).order(ByteOrder.LITTLE_ENDIAN);
-        sendFrame.put((byte) 0x4E); // start flag 2 bytes
-        sendFrame.put((byte) 0x57);
-        sendFrame.put((byte) 0x00); // frame length including this 2 bytes
-        sendFrame.put((byte) 0x13);
-        sendFrame.put((byte) 0x00); // terminal number 4 bytes
-        sendFrame.put((byte) 0x00);
-        sendFrame.put((byte) 0x00);
-        sendFrame.put((byte) 0x00);
+        sendFrame.put((byte) 0x4E); // Start flag
+        sendFrame.put((byte) 0x57); // Additional start flag or part of a combined flag
+        sendFrame.put((byte) 0x00); // Frame Length Byte 1
+        sendFrame.put((byte) 0x13); // Frame Length Byte 2
+        sendFrame.put((byte) 0x00); // Terminal Number Byte 1
+        sendFrame.put((byte) 0x00); // Terminal Number Byte 2
+        sendFrame.put((byte) 0x00); // Terminal Number Byte 3
+        sendFrame.put((byte) 0x00); // Terminal Number Byte 4
         sendFrame.put((byte) 0x03); // command id (0x01 - activation instruction, 0x02 - write
-                                    // instruction, 0x03 - read identifier data, 0x05 - pair code,
-                                    // 0x06 - read all data
+                                    // instruction, 0x03 - read identifier data, 0x05 - pair code
+                                    // 0x06, - read all data
         sendFrame.put((byte) 0x03); // frame source id (0x00 - BMS, 0x01- BT, 0x02-GPS, 0x03 - PC)
-        sendFrame.put((byte) 0x00); // transport type (0x00 - request, 0x01 - response)
-        sendFrame.put(commandId);
+        sendFrame.put((byte) 0x00); // 0.Read data, 1.Answer frame 2.Data box active upload
+        sendFrame.put(commandId); // Read a single data reference (5.1 table);Read all data and fill
+                                  // in 0x00
         sendFrame.putInt(0x00000000); // record number - 4 bytes (1st random, 2-4 recorde number)
         sendFrame.put((byte) 0x68); // end flag
 
-        int crc = 0;
+        int sum = 0;
 
-        for (int i = 2; i < sendFrame.capacity() - 4; i++) {
-            crc += sendFrame.get(i);
+        for (int i = 0; i < sendFrame.capacity() - 4; i++) {
+            sum += sendFrame.get(i) & 0xFF; // Ensure the byte is treated as unsigned
         }
-        sendFrame.putInt(crc); // CRC 4 byts
+
+        sendFrame.put((byte) 0x00); // Checksum Byte 1
+        sendFrame.put((byte) 0x00); // Checksum Byte 2
+        sendFrame.put((byte) (sum >> 8 & 0xFF)); // Checksum Byte 3
+        sendFrame.put((byte) (sum & 0xFF)); // Checksum Byte 4
 
         return sendFrame;
     }
@@ -192,7 +194,7 @@ public class JKBmsRS485Processor extends BMS {
         }
 
         for (int i = 0; i < pack.numberOfCells; i++) {
-            pack.cellVmV[data.get()] = data.getChar();
+            pack.cellVmV[data.get() - 1] = data.getChar();
         }
     }
 
