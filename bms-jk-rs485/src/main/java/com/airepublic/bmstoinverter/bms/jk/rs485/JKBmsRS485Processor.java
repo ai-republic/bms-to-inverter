@@ -46,7 +46,7 @@ public class JKBmsRS485Processor extends BMS {
                             for (final var dataSegment : responseFrame.getDataEntries()) {
                                 final var dataId = dataSegment.getId();
 
-                                switch (JkBmsR485DataIdEnum.fromDataId(dataId)) {
+                                switch (dataId) {
                                     case READ_CELL_VOLTAGES:
                                         readCellVoltages(pack, dataSegment.getData());
                                     break;
@@ -183,8 +183,8 @@ public class JKBmsRS485Processor extends BMS {
 
     // 0x79
     private void readCellVoltages(final BatteryPack pack, final ByteBuffer data) {
-        // first byte is the length of cells
-        pack.numberOfCells = data.get() / 3;
+        // data is packed in 3 bytes per cell
+        pack.numberOfCells = data.capacity() / 3;
 
         // ensure that batterypack cell array is big enough
         if (pack.cellVmV.length < pack.numberOfCells) {
@@ -193,8 +193,14 @@ public class JKBmsRS485Processor extends BMS {
             pack.cellVmV = swp;
         }
 
+        int value = 0;
+
         for (int i = 0; i < pack.numberOfCells; i++) {
-            pack.cellVmV[data.get() - 1] = data.getChar();
+            value = data.get() << 16;
+            value &= data.get() << 8;
+            value &= data.get();
+
+            pack.cellVmV[i] = value;
         }
     }
 

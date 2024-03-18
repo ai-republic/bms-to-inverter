@@ -1,14 +1,16 @@
 package com.airepublic.bmstoinverter.bms.jk.rs485;
 
-import java.nio.ByteBuffer;
-
+/**
+ * The enumeration of all JK command data identifiers mapped also to their length of their data
+ * segment.
+ */
 public enum JkBmsR485DataIdEnum {
     READ_CELL_VOLTAGES((byte) 0x79, 0),
     READ_TUBE_TEMPERATURE((byte) 0x80, 2),
     READ_BOX_TEMPERATURE((byte) 0x81, 2),
     READ_BATTERY_TEMPERATURE((byte) 0x82, 2),
     READ_TOTAL_VOLTAGE((byte) 0x83, 2),
-    READ_TOTAL_CURRENT((byte) 0x84, 0),
+    READ_TOTAL_CURRENT((byte) 0x84, 2),
     READ_BATTERY_SOC((byte) 0x85, 1),
     READ_NUMBER_OF_TEMPERATURE_SENSORS((byte) 0x86, 1),
     READ_CYCLE_TIMES((byte) 0x87, 2),
@@ -28,48 +30,53 @@ public enum JkBmsR485DataIdEnum {
     private final byte dataId;
     private final int length;
 
-    JkBmsR485DataIdEnum(byte dataId, int length) {
+    /**
+     * Constructor.
+     *
+     * @param dataId the data id byte
+     * @param length the length of the data segment
+     */
+    JkBmsR485DataIdEnum(final byte dataId, final int length) {
         this.dataId = dataId;
         this.length = length;
     }
 
-    public ByteBuffer getDataIs() {
-        ByteBuffer buffer = ByteBuffer.allocate(1);
-        buffer.put(dataId);
-        buffer.flip();
-        return buffer;
+
+    /**
+     * Gets the length of the data segment for this data id.
+     *
+     * @return the length of the data segment
+     */
+    public int getLength() {
+        return length;
     }
 
-    public int getlength() {
-       return length;
-    }
 
-    public static JkBmsR485DataIdEnum fromDataId(byte dataId) {
+    /**
+     * Gets the {@link JkBmsR485DataIdEnum} for the specified data id.
+     *
+     * @param dataId the byte resembling a valid data id
+     * @return the {@link JkBmsR485DataIdEnum}
+     */
+    public static JkBmsR485DataIdEnum fromDataId(final byte dataId) {
 
-
-            for (JkBmsR485DataIdEnum value : values()) {
-                if (value.dataId == dataId) {
-                    return value;
-                }
+        for (final JkBmsR485DataIdEnum value : values()) {
+            if (value.dataId == dataId) {
+                return value;
             }
-           return null;
-    }
-    public static JkBmsR485DataIdEnum fromDataId(ByteBuffer dataId) {
-        if (dataId != null && dataId.remaining() >= 1) {
-            byte dataIdBye = dataId.get();
-            for (JkBmsR485DataIdEnum value : values()) {
-                if (value.dataId == dataIdBye) {
-                    return value;
-                }
-            }
-            String hexCommand = String.format("%02X", dataIdBye);
-            throw new IllegalArgumentException(hexCommand + " is an invalid DataId");
         }
-        throw new IllegalArgumentException("DataId ByteBuffer is null or not enough data");
+        return null;
     }
 
-    public static boolean dataId(byte dataId) {
-        for (JkBmsR485DataIdEnum value : values()) {
+
+    /**
+     * Checks if the provided byte resembles a valid data id.
+     *
+     * @param dataId the byte to check
+     * @return true if the provided byte resembles a data id, otherwise false
+     */
+    public static boolean isDataId(final byte dataId) {
+        for (final JkBmsR485DataIdEnum value : values()) {
             if (value.dataId == dataId) {
                 return true;
             }

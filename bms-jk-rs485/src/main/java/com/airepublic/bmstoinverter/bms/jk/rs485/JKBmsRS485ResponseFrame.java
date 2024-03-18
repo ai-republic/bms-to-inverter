@@ -4,6 +4,9 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Class to resemble a whole RS485 response frame.
+ */
 public class JKBmsRS485ResponseFrame {
     private byte[] stx; // Start Frame
     private byte[] length; // LENGTH
@@ -17,6 +20,11 @@ public class JKBmsRS485ResponseFrame {
     private byte[] checksum; // Checksum
     private final int size;
 
+    /**
+     * Constructor.
+     * 
+     * @param buffer the received bytes representing a complete response
+     */
     public JKBmsRS485ResponseFrame(final byte[] buffer) {
         dataEntries = new ArrayList<>();
         size = buffer.length;
@@ -27,72 +35,80 @@ public class JKBmsRS485ResponseFrame {
     }
 
 
+    /**
+     * Parse the bytes that represent a complete response frame.
+     *
+     * @param buffer the response frame bytes
+     */
     private void parse(final byte[] buffer) {
         final ByteBuffer wrappedBuffer = ByteBuffer.wrap(buffer);
-        var index = 0;
-        var start = 0;
-        var end = 0;
+
+        // start flag
         stx = new byte[2];
-        wrappedBuffer.get(index += 2, stx);
+        wrappedBuffer.get(stx);
 
+        // length of the rest of the frame including this length
         length = new byte[2];
-        wrappedBuffer.get(index += 2, length);
-        terminalNumber = new byte[4];
-        wrappedBuffer.get(index += 4, terminalNumber);
-        commandWord = wrappedBuffer.get(index++);
-        frameSource = wrappedBuffer.get(index++);
-        transportType = wrappedBuffer.get(index++);
+        wrappedBuffer.get(length);
 
-        while (index < size - 9) {
-            final boolean foundDataId = JkBmsR485DataIdEnum.dataId(wrappedBuffer.get(index));
+        // terminal number
+        terminalNumber = new byte[4];
+        wrappedBuffer.get(terminalNumber);
+
+        // command
+        commandWord = wrappedBuffer.get();
+        // source
+        frameSource = wrappedBuffer.get();
+        // request/response
+        transportType = wrappedBuffer.get();
+
+        // read the frame except the last 9 status/checksum bytes
+        while (wrappedBuffer.position() < size - 9) {
+            // check if the remaining buffer starts with a valid data id
+            final byte dataId = wrappedBuffer.get();
+            final boolean foundDataId = JkBmsR485DataIdEnum.isDataId(dataId);
 
             if (foundDataId) {
                 final var dataEntry = new DataEntry();
-                dataEntry.setId(wrappedBuffer.get(index));
-                final var dataIdType = JkBmsR485DataIdEnum.fromDataId(wrappedBuffer.get(index));
-                int length = dataIdType.getlength();
+                // get the data id for the entry
+                final var dataIdType = JkBmsR485DataIdEnum.fromDataId(dataId);
+                dataEntry.setId(dataIdType);
+
+                // get the length of the data segment
+                int length = dataIdType.getLength();
+
+                // special handling for cell voltages,
                 if (dataIdType.equals(JkBmsR485DataIdEnum.READ_CELL_VOLTAGES)) {
-                    length = buffer[index + 1] + 1;
+                    // the first data byte declares the number bytes for all cells
+                    length = wrappedBuffer.get();
                 }
-                if (length == 0) {
-                    start = index + 1;
-                    end = index + 1;
 
-                    while (buffer[end] == 0 || !JkBmsR485DataIdEnum.dataId(wrappedBuffer.get(end)) && end < size - 9) {
-                        end++;
-                    }
-
-                } else {
-                    start = index + 1;
-                    end = start + length;
-                }
-                final var datacopy = new byte[end - start];
-                wrappedBuffer.get(start, datacopy);
+                // copy the relevant data bytes and set them for this entry
+                final var datacopy = new byte[length];
+                wrappedBuffer.get(datacopy);
                 dataEntry.setData(ByteBuffer.wrap(datacopy));
                 dataEntries.add(dataEntry);
-                index = end;
             } else {
-                index = size - 9;
+                wrappedBuffer.position(size - 9);
             }
-
         }
 
         recordNumber = new byte[4];
-        wrappedBuffer.get(index += 4, recordNumber);
-        endIdentity = wrappedBuffer.get(index++);
+        wrappedBuffer.get(recordNumber);
+        endIdentity = wrappedBuffer.get();
         checksum = new byte[4];
-        wrappedBuffer.get(index, checksum);
+        wrappedBuffer.get(checksum);
 
     }
 
     public static class DataEntry {
-        private byte id;
+        private JkBmsR485DataIdEnum id;
         private ByteBuffer data;
 
         /**
          * @return the id
          */
-        public byte getId() {
+        public JkBmsR485DataIdEnum getId() {
             return id;
         }
 
@@ -100,7 +116,7 @@ public class JKBmsRS485ResponseFrame {
         /**
          * @param id the id to set
          */
-        public void setId(final byte id) {
+        public void setId(final JkBmsR485DataIdEnum id) {
             this.id = id;
         }
 
