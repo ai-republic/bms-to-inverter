@@ -27,12 +27,14 @@ _**NOTE:** If you would like me to add a BMS or inverter module just let me know
 ----------
 
 ## Currently implemented BMS:
+* BYD BMS (CAN)
 * Daly BMS (CAN / RS485 (& UART / RS232))
 * Growatt high voltage (CAN)
 * JK BMS (CAN / RS485 (& UART / RS232))
-* Seplos BMS (CAN)
 * PylonTech low voltage BMS (CAN)
 * PylonTech high voltage BMS (CAN)
+* Seplos BMS (CAN)
+* SMA BMS (CAN)
 
 ## Currently implemented inverters:
 * SMA Sunny Island (CAN)
