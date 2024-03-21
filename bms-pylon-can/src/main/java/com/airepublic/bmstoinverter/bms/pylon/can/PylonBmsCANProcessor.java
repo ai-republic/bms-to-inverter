@@ -61,7 +61,7 @@ public class PylonBmsCANProcessor extends BMS {
 
 
     // 0x351
-    private void readChargeDischargeInfo(final BatteryPack pack, final ByteBuffer data) {
+    protected void readChargeDischargeInfo(final BatteryPack pack, final ByteBuffer data) {
         // Battery charge voltage (0.1V) - uint_16
         pack.maxPackVoltageLimit = data.getChar();
         // Charge current limit (0.1A) - sint_16
@@ -76,31 +76,31 @@ public class PylonBmsCANProcessor extends BMS {
 
 
     // 0x355
-    private void readSOC(final BatteryPack pack, final ByteBuffer data) {
+    protected void readSOC(final BatteryPack pack, final ByteBuffer data) {
         // SOC (1%) - uint_16
-        pack.packSOC = data.getChar();
+        pack.packSOC = data.getChar() * 10;
         // SOH (1%) - uint_16
-        pack.packSOH = data.getChar();
+        pack.packSOH = data.getChar() * 10;
 
-        LOG.debug("SOC \tSOH\n{} \t{}", pack.packSOC, pack.packSOH);
+        LOG.debug("SOC \tSOH\n{} \t{}", pack.packSOC / 10f, pack.packSOH / 10f);
     }
 
 
     // 0x356
-    private void readBatteryVoltage(final BatteryPack pack, final ByteBuffer data) {
+    protected void readBatteryVoltage(final BatteryPack pack, final ByteBuffer data) {
         // Battery voltage (0.01V) - sint_16
-        pack.packVoltage = data.getShort();
+        pack.packVoltage = data.getShort() / 10;
         // Battery current (0.1A) - sint_16
         pack.packCurrent = data.getShort();
         // Battery current (0.1C) - sint_16
         pack.tempAverage = data.getShort();
 
-        LOG.debug("Pack V \t Pack A \t Avg Temp\n {}\t\t{}\t\t{}", pack.packVoltage / 100f, pack.packCurrent / 10f, pack.tempAverage / 10f);
+        LOG.debug("Pack V \t Pack A \t Avg Temp\n {}\t\t{}\t\t{}", pack.packVoltage / 10f, pack.packCurrent / 10f, pack.tempAverage / 10f);
     }
 
 
     // 0x35C
-    private void requestChargeDischargeConfigChange(final BatteryPack pack, final ByteBuffer data) {
+    protected void requestChargeDischargeConfigChange(final BatteryPack pack, final ByteBuffer data) {
         final byte bits = data.get();
 
         if (Util.bit(bits, 4)) {
@@ -122,7 +122,7 @@ public class PylonBmsCANProcessor extends BMS {
 
 
     // 0x370
-    private void readMinMaxTemperatureVoltage(final BatteryPack pack, final ByteBuffer data) {
+    protected void readMinMaxTemperatureVoltage(final BatteryPack pack, final ByteBuffer data) {
         // Maximum cell temperature (0.1C) - uint_16
         pack.tempMax = data.getShort();
         // Minimum cell temperature (0.1C) - uint_16
@@ -137,7 +137,7 @@ public class PylonBmsCANProcessor extends BMS {
 
 
     // 0x371
-    private void readTemperatureIds(final BatteryPack pack, final ByteBuffer data) {
+    protected void readTemperatureIds(final BatteryPack pack, final ByteBuffer data) {
         // Maximum cell temperature (0.1C) - uint_16
         // pack.tempMax = data.getShort();
         // Minimum cell temperature (0.1C) - uint_16
@@ -152,7 +152,7 @@ public class PylonBmsCANProcessor extends BMS {
 
 
     // 0x35E
-    private void readManufacturer(final BatteryPack pack, final ByteBuffer data) {
+    protected void readManufacturer(final BatteryPack pack, final ByteBuffer data) {
         pack.manufacturerCode = "";
         byte chr;
 
@@ -169,7 +169,7 @@ public class PylonBmsCANProcessor extends BMS {
 
 
     // 0x359
-    private void readAlarms(final BatteryPack pack, final ByteBuffer data) {
+    protected void readAlarms(final BatteryPack pack, final ByteBuffer data) {
         // read first 8 bits
         int value = data.getInt();
 

@@ -48,14 +48,14 @@ public class JKBmsCANProcessor extends BMS {
     }
 
 
-    private void readBatteryStatus(final BatteryPack pack, final ByteBuffer data) {
+    protected void readBatteryStatus(final BatteryPack pack, final ByteBuffer data) {
         // frame id is already read, so start at the first data byte
         // Battery voltage (0.1V)
         pack.packVoltage = data.getShort();
         // Battery current (0.1A) offset 4000
         pack.packCurrent = data.getShort() - 4000;
         // Battery SOC (1%)
-        pack.packSOC = data.get();
+        pack.packSOC = data.get() * 10;
         // skip 1 byte
         data.get();
         // discharge time, e.g. 100h (not mapped)
