@@ -37,10 +37,11 @@ public class MQTTProducerService implements IMQTTProducerService {
             producer = session.createProducer(topic);
             session.start();
 
+            LOG.info("Connected MQTT producer at {} to topic {}", locator, topic);
             running = true;
             return this;
         } catch (final Exception e) {
-            LOG.error("Error starting MQTT service!", e);
+            LOG.error("Error starting MQTT producer service!", e);
             try {
                 close();
             } catch (final Exception e1) {
