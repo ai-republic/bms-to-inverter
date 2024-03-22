@@ -2,6 +2,7 @@ package com.airepublic.bmstoinverter.bms.pylon.can;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +27,7 @@ public class PylonBmsCANProcessor extends BMS {
             final int frameId = frame.getInt();
             final byte[] bytes = new byte[8];
             frame.get(bytes);
-            final ByteBuffer data = ByteBuffer.wrap(bytes);
+            final ByteBuffer data = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
 
             switch (frameId) {
                 case 0x351:
@@ -71,7 +72,7 @@ public class PylonBmsCANProcessor extends BMS {
         // Battery discharge voltage (0.1V) - uint_16
         pack.minPackVoltageLimit = data.getChar();
 
-        LOG.debug("Max Voltage \tMax Charge \tMax Discharge \tMin Voltage\n\t{}\t\t{}\t\t{}\t\t", pack.maxPackVoltageLimit / 10f, pack.maxPackChargeCurrent / 10f, pack.maxPackDischargeCurrent / 10f, pack.minPackVoltageLimit / 10f);
+        LOG.debug("\nMax Voltage \tMax Charge \tMax Discharge \tMin Voltage\n  {}\t\t{}\t\t{}\t\t", pack.maxPackVoltageLimit / 10f, pack.maxPackChargeCurrent / 10f, pack.maxPackDischargeCurrent / 10f, pack.minPackVoltageLimit / 10f);
     }
 
 
@@ -82,7 +83,7 @@ public class PylonBmsCANProcessor extends BMS {
         // SOH (1%) - uint_16
         pack.packSOH = data.getChar() * 10;
 
-        LOG.debug("SOC \tSOH\n{} \t{}", pack.packSOC / 10f, pack.packSOH / 10f);
+        LOG.debug("\nSOC \tSOH\n{} \t{}", pack.packSOC / 10f, pack.packSOH / 10f);
     }
 
 
@@ -95,7 +96,7 @@ public class PylonBmsCANProcessor extends BMS {
         // Battery current (0.1C) - sint_16
         pack.tempAverage = data.getShort();
 
-        LOG.debug("Pack V \t Pack A \t Avg Temp\n {}\t\t{}\t\t{}", pack.packVoltage / 10f, pack.packCurrent / 10f, pack.tempAverage / 10f);
+        LOG.debug("\nPack V \t Pack A \t Avg Temp\n {}\t  {}\t\t  {}", pack.packVoltage / 10f, pack.packCurrent / 10f, pack.tempAverage / 10f);
     }
 
 
@@ -132,7 +133,7 @@ public class PylonBmsCANProcessor extends BMS {
         // Minimum cell voltage (0.1V) - uint_16
         pack.minCellmV = data.getShort();
 
-        LOG.debug("Max Temp \tMin Temp \tMax Cell mV \tMin Cell mV\n{} \t {}\t\t{}\t\t{}", pack.tempMax / 10f, pack.tempMin / 10f, pack.maxCellmV, pack.minCellmV);
+        LOG.debug("\nMax Temp \tMin Temp \tMax Cell mV \tMin Cell mV\n{} \t {}\t\t{}\t\t{}", pack.tempMax / 10f, pack.tempMin / 10f, pack.maxCellmV, pack.minCellmV);
     }
 
 
@@ -147,7 +148,7 @@ public class PylonBmsCANProcessor extends BMS {
         // Minimum cell voltage id - uint_16
         pack.minCellVNum = data.getShort();
 
-        LOG.debug("Max V Cell \t Min V Cell\n\t{}\t\t{}", pack.maxCellVNum, pack.minCellVNum);
+        LOG.debug("\nMax V Cell \t Min V Cell\n\t{}\t\t{}", pack.maxCellVNum, pack.minCellVNum);
     }
 
 
@@ -164,7 +165,7 @@ public class PylonBmsCANProcessor extends BMS {
             }
         } while (chr != 0x00 && data.position() < data.capacity());
 
-        LOG.debug("Manufacturer", pack.manufacturerCode);
+        LOG.debug("\nManufacturer: {}", pack.manufacturerCode);
     }
 
 
