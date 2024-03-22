@@ -26,7 +26,7 @@ public class PylonBmsCANProcessor extends BMS {
             final ByteBuffer frame = port.receiveFrame();
             final int frameId = frame.getInt();
             final byte[] bytes = new byte[8];
-            frame.get(bytes);
+            frame.get(8, bytes);
             final ByteBuffer data = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
 
             switch (frameId) {
