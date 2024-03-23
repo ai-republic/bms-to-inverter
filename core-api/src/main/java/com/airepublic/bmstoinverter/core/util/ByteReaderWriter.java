@@ -11,20 +11,19 @@ public class ByteReaderWriter implements AutoCloseable {
 
     /**
      * Reads bytes from the available queue into the specified array. If there are not enough bytes
-     * in the queue it will throw an {@link IOException}. Otherwise the byte array will be filled,
+     * in the queue to fill the array it will return -1. Otherwise the byte array will be filled,
      * the queue adjusted and the byte array length.
      *
      * @param bytes the bytes to be read
-     * @return the byte array length
-     * @throws IOException if not enough bytes are available
+     * @return the byte array length or -1
      */
-    public int read(final byte[] bytes) throws IOException {
+    public int read(final byte[] bytes) {
         synchronized (queue) {
             final byte[] first = queue.peek();
 
             // check if there are any bytes available
             if (first == null) {
-                throw new IOException("Not enough bytes available!");
+                return -1;
             }
 
             // determine how many byte array elements are needed to fill the requested byte array
@@ -43,7 +42,7 @@ public class ByteReaderWriter implements AutoCloseable {
             // if not enough bytes are available
             if (byteCount < bytes.length) {
                 // return fault
-                throw new IOException("Not enough bytes available!");
+                return -1;
             }
 
             int remaining = bytes.length;

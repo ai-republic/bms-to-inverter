@@ -2,6 +2,7 @@ package com.airepublic.bmstoinverter.protocol.rs485;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,6 +95,38 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
     }
 
 
+    /**
+     * Fills the specified byte array with data read from the port.
+     *
+     * @param buffer the byte array to fill
+     * @param timeoutMs read timeout in milliseconds
+     * @return the buffers length or -1 if not enough bytes are available or timed out
+     */
+    public int readBytes(final byte[] buffer, final long timeoutMs) {
+        final long start = System.currentTimeMillis();
+        boolean done = false;
+
+        Arrays.fill(buffer, (byte) 0);
+
+        do {
+            if (queue.read(buffer) == -1) {
+                try {
+                    Thread.sleep(10);
+                } catch (final InterruptedException e) {
+                }
+            } else {
+                done = true;
+            }
+        } while (!done && System.currentTimeMillis() - start < timeoutMs);
+
+        if (!done) {
+            Arrays.fill(buffer, (byte) 0);
+            return -1;
+        }
+        return buffer.length;
+    }
+
+
     @Override
     public ByteBuffer receiveFrame() {
         ByteBuffer frame = null;
@@ -167,7 +200,10 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
         boolean foundStartFlag = false;
         // check for startflag
         byte[] bytes = new byte[getStartFlag().length];
-        queue.read(bytes);
+
+        if (queue.read(bytes) == -1) {
+            throw new IOException("Not enough bytes available!");
+        }
 
         while (!foundStartFlag) {
             for (int startFlagIndex = 0; startFlagIndex < getStartFlag().length; startFlagIndex++) {
