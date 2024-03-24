@@ -20,6 +20,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.airepublic.bmstoinverter.bms.jk.rs485.JKBmsRS485Processor.DataEntry;
+import com.airepublic.bmstoinverter.core.util.ByteReaderWriter;
 import com.airepublic.bmstoinverter.protocol.rs485.JSerialCommPort;
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortEvent;
@@ -202,6 +203,7 @@ public class TestJKBmsRS485Processor {
         fillPortByteQueue();
 
         doCallRealMethod().when(port).readBytes(any(), anyLong());
+
         final List<DataEntry> entries = processor.readFrame(port);
 
         assertNotNull(entries);
@@ -210,7 +212,10 @@ public class TestJKBmsRS485Processor {
 
 
     private void fillPortByteQueue() {
+        doCallRealMethod().when(port).setQueue(any());
         doCallRealMethod().when(port).serialEvent(any(SerialPortEvent.class));
+
+        port.setQueue(new ByteReaderWriter());
 
         do {
             final int length = (int) Math.round(Math.random() * frame.remaining());

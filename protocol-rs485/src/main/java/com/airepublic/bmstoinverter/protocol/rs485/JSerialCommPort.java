@@ -21,7 +21,7 @@ import com.fazecast.jSerialComm.SerialPortEvent;
 public class JSerialCommPort extends RS485Port implements SerialPortDataListener {
     private final static Logger LOG = LoggerFactory.getLogger(JSerialCommPort.class);
     private SerialPort port;
-    private ByteReaderWriter queue;
+    private ByteReaderWriter queue = new ByteReaderWriter();
 
     /**
      * Constructor.
@@ -190,9 +190,6 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
             LOG.debug("Received: {}", Port.printBytes(bytes));
 
             if (bytes != null) {
-                if (queue == null) {
-                    queue = new ByteReaderWriter();
-                }
                 queue.write(bytes);
             }
         }
@@ -271,6 +268,16 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
         }
 
         return ByteBuffer.wrap(bytes);
+    }
+
+
+    /**
+     * Sets the receive data queue.
+     *
+     * @param queue the queue
+     */
+    public void setQueue(final ByteReaderWriter queue) {
+        this.queue = queue;
     }
 
 }
