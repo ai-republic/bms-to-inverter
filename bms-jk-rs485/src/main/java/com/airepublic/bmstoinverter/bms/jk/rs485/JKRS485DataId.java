@@ -56,8 +56,7 @@ public enum JKRS485DataId {
     X28((byte) 0xB7, 15),
     X29((byte) 0xB8, 2),
     X30((byte) 0xB9, 4),
-    X31((byte) 0xBA, 2),
-    X32((byte) 0xB0, 24),
+    X31((byte) 0xBA, 24),
     X33((byte) 0xC0, 5),
     END_FLAG((byte) 0x68, 4);
 

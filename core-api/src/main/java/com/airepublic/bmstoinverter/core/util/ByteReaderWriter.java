@@ -17,7 +17,7 @@ public class ByteReaderWriter implements AutoCloseable {
      * @param bytes the bytes to be read
      * @return the byte array length or -1
      */
-    public int read(final byte[] bytes) {
+    public synchronized int read(final byte[] bytes) {
         synchronized (queue) {
             final byte[] first = queue.peek();
 

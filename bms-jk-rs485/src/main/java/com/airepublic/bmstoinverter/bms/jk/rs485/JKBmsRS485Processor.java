@@ -186,12 +186,12 @@ public class JKBmsRS485Processor extends BMS {
     }
 
 
-    private List<DataEntry> readFrame(final Port port) throws IOException {
+    List<DataEntry> readFrame(final Port port) throws IOException {
         final JSerialCommPort serialPort = (JSerialCommPort) port;
         byte[] buffer = new byte[1];
 
         // try to read the start flag
-        if (serialPort.readBytes(buffer, 200) != -1) {
+        if (serialPort.readBytes(buffer, 200) == -1) {
             // no bytes available
             return null;
         }
@@ -208,7 +208,7 @@ public class JKBmsRS485Processor extends BMS {
             final byte[] dataId = new byte[1];
 
             // check if bytes are available
-            if (serialPort.readBytes(dataId, 200) == -1) {
+            if (serialPort.readBytes(dataId, 200) != -1) {
                 final var dataIdType = JKRS485DataId.fromDataId(dataId[0]);
 
                 if (dataIdType != null) {
@@ -228,12 +228,17 @@ public class JKBmsRS485Processor extends BMS {
                         endFlagFound = true;
                     }
 
-                    // copy the relevant data bytes and set them for this entry
-                    final var datacopy = new byte[length];
-                    serialPort.readBytes(datacopy, 200);
-                    dataEntry.setData(ByteBuffer.wrap(datacopy));
-                    dataEntries.add(dataEntry);
+                    // do not add the endflag as entry
+                    if (!endFlagFound) {
+                        // copy the relevant data bytes and set them for this entry
+                        final var datacopy = new byte[length];
+                        serialPort.readBytes(datacopy, 200);
+                        dataEntry.setData(ByteBuffer.wrap(datacopy));
+                        dataEntries.add(dataEntry);
+                    }
                 }
+            } else {
+                return null;
             }
         } while (!endFlagFound);
 
