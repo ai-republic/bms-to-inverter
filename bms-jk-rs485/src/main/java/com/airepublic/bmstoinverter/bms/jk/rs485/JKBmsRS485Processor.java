@@ -285,6 +285,9 @@ public class JKBmsRS485Processor extends BMS {
 
     // 0x79
     private void readCellVoltages(final BatteryPack pack, final ByteBuffer data) {
+        pack.minCellmV = Integer.MAX_VALUE;
+        pack.maxCellmV = 0;
+
         // data is packed in 3 bytes per cell
         pack.numberOfCells = data.capacity() / 3;
 
@@ -302,8 +305,21 @@ public class JKBmsRS485Processor extends BMS {
             final int cellNo = value = data.get();
             pack.cellVmV[cellNo - 1] = data.getShort();
 
+            if (pack.minCellmV > pack.cellVmV[cellNo - 1]) {
+                pack.minCellVNum = cellNo - 1;
+                pack.minCellmV = pack.cellVmV[pack.minCellVNum];
+            }
+
+            if (pack.maxCellmV < pack.cellVmV[cellNo - 1]) {
+                pack.maxCellVNum = cellNo - 1;
+                pack.maxCellmV = pack.cellVmV[pack.maxCellVNum];
+            }
+
             LOG.debug("\tCell #{}: {} mV\n", cellNo, value);
         }
+
+        pack.cellDiffmV = pack.maxCellmV - pack.minCellmV;
+        LOG.debug("Cell low: {} mV\nCell high: {} mV\nCell-diff: {} mV", pack.maxCellmV, pack.minCellmV, pack.cellDiffmV);
     }
 
 
@@ -376,8 +392,9 @@ public class JKBmsRS485Processor extends BMS {
     // 0x89
     private void readTotalCapacity(final BatteryPack pack, final ByteBuffer data) {
         // Total capacity of battery cycles
-        pack.moduleRatedCapacityAh = data.getInt();
-        LOG.debug("Battery rated capacity: {} AH", pack.moduleRatedCapacityAh);
+
+        // not mapped
+        LOG.debug("Total capacity of battery cyles: {} AH", data.getInt());
     }
 
 
@@ -412,7 +429,7 @@ public class JKBmsRS485Processor extends BMS {
 
     // 0x8C
     private void readBatteryStatus(final BatteryPack pack, final ByteBuffer data) {
-        final byte value = data.get();
+        final byte value = data.get(1);
         pack.chargeMOSState = Util.bit(value, 0);
         pack.dischargeMOSState = Util.bit(value, 1);
         pack.cellBalanceActive = Util.bit(value, 2);
@@ -470,7 +487,7 @@ public class JKBmsRS485Processor extends BMS {
     private void readRatedCapacity(final BatteryPack pack, final ByteBuffer data) {
         // rated capacity of battery (1A)
         pack.ratedCapacitymAh = data.getInt() * 1000;
-        LOG.debug("Cell rated capacity: {} AH", pack.ratedCapacitymAh / 1000f);
+        LOG.debug("Battery rated capacity: {} AH", pack.ratedCapacitymAh / 1000f);
     }
 
 
