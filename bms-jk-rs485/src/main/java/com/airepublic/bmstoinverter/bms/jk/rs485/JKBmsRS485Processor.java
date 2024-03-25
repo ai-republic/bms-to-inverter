@@ -298,24 +298,23 @@ public class JKBmsRS485Processor extends BMS {
             pack.cellVmV = swp;
         }
 
-        int value = 0;
         LOG.debug("Cell voltages\n");
 
         for (int i = 0; i < pack.numberOfCells; i++) {
-            final int cellNo = value = data.get();
+            final int cellNo = data.get();
             pack.cellVmV[cellNo - 1] = data.getShort();
 
-            if (pack.minCellmV > pack.cellVmV[cellNo - 1]) {
-                pack.minCellVNum = cellNo - 1;
-                pack.minCellmV = pack.cellVmV[pack.minCellVNum];
-            }
-
-            if (pack.maxCellmV < pack.cellVmV[cellNo - 1]) {
+            if (pack.cellVmV[cellNo - 1] > pack.maxCellmV) {
                 pack.maxCellVNum = cellNo - 1;
                 pack.maxCellmV = pack.cellVmV[pack.maxCellVNum];
             }
 
-            LOG.debug("\tCell #{}: {} mV\n", cellNo, value);
+            if (pack.cellVmV[cellNo - 1] < pack.minCellmV) {
+                pack.minCellVNum = cellNo - 1;
+                pack.minCellmV = pack.cellVmV[pack.minCellVNum];
+            }
+
+            LOG.debug("\tCell #{}: {} mV\n", cellNo, pack.cellVmV[cellNo - 1]);
         }
 
         pack.cellDiffmV = pack.maxCellmV - pack.minCellmV;
