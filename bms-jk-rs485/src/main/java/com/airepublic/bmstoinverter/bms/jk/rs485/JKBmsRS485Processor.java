@@ -62,126 +62,124 @@ public class JKBmsRS485Processor extends BMS {
 
     @Override
     protected void collectData(final Port port) {
-        final byte[] cmdIds = new byte[] { (byte) 0x00, (byte) 0x79, (byte) 0x80, (byte) 0x81, (byte) 0x82, (byte) 0x83, (byte) 0x84, (byte) 0x85, (byte) 0x86, (byte) 0x87, (byte) 0x89, (byte) 0x8A, (byte) 0x8B, (byte) 0x8C, (byte) 0x8E, (byte) 0x8F, (byte) 0x90, (byte) 0x93, (byte) 0x97, (byte) 0xAA, (byte) 0xAF };
         int noDataReceived = 0;
 
-        for (final byte cmdId : cmdIds) {
-            final ByteBuffer sendFrame = prepareSendFrame(cmdId);
+        final ByteBuffer sendFrame = prepareSendFrame();
+
+        try {
+            port.clearBuffers();
+            port.sendFrame(sendFrame);
 
             try {
-                port.sendFrame(sendFrame);
+                boolean valid = true;
 
-                try {
-                    boolean valid = true;
+                // read frames until the requested frame is read
+                do {
+                    final List<DataEntry> dataEntries = readFrame(port);
 
-                    // read frames until the requested frame is read
-                    do {
-                        final List<DataEntry> dataEntries = readFrame(port);
+                    if (dataEntries != null) {
+                        final BatteryPack pack = getBatteryPack(BATTERY_ID);
 
-                        if (dataEntries != null) {
-                            final BatteryPack pack = getBatteryPack(BATTERY_ID);
+                        for (final var dataEntry : dataEntries) {
+                            final var dataId = dataEntry.getId();
 
-                            for (final var dataEntry : dataEntries) {
-                                final var dataId = dataEntry.getId();
-
-                                switch (dataId) {
-                                    case READ_CELL_VOLTAGES:
-                                        readCellVoltages(pack, dataEntry.getData());
-                                    break;
-                                    case READ_TUBE_TEMPERATURE:
-                                        readTubeTemperature(pack, dataEntry.getData());
-                                    break;
-                                    case READ_BOX_TEMPERATURE:
-                                        readBoxTemperature(pack, dataEntry.getData());
-                                    break;
-                                    case READ_BATTERY_TEMPERATURE:
-                                        readBatteryTemperature(pack, dataEntry.getData());
-                                    break;
-                                    case READ_TOTAL_VOLTAGE:
-                                        readTotalVoltage(pack, dataEntry.getData());
-                                    break;
-                                    case READ_TOTAL_CURRENT:
-                                        readTotalCurrent(pack, dataEntry.getData());
-                                    break;
-                                    case READ_BATTERY_SOC:
-                                        readBatterySOC(pack, dataEntry.getData());
-                                    break;
-                                    case READ_NUMBER_OF_TEMPERATURE_SENSORS:
-                                        readNumberOfTemperatureSensors(pack, dataEntry.getData());
-                                    break;
-                                    case READ_CYCLE_TIMES:
-                                        readCycleTimes(pack, dataEntry.getData());
-                                    break;
-                                    case READ_TOTAL_CAPACITY:
-                                        readTotalCapacity(pack, dataEntry.getData());
-                                    break;
-                                    case READ_NUMBER_OF_BATTERY_STRINGS:
-                                        readNumberOfBatteryStrings(pack, dataEntry.getData());
-                                    break;
-                                    case READ_ALARMS:
-                                        readAlarms(pack, dataEntry.getData());
-                                    break;
-                                    case READ_BATTERY_STATUS:
-                                        readBatteryStatus(pack, dataEntry.getData());
-                                    break;
-                                    case READ_BATTERY_OVER_VOLTAGE_LIMIT:
-                                        readBatteryOverVoltageLimit(pack, dataEntry.getData());
-                                    break;
-                                    case READ_BATTERY_UNDER_VOLTAGE_LIMIT:
-                                        readBatteryUnderVoltageLimit(pack, dataEntry.getData());
-                                    break;
-                                    case READ_CELL_OVER_VOLTAGE_LIMIT:
-                                        readCellOverVoltageLimit(pack, dataEntry.getData());
-                                    break;
-                                    case READ_CELL_UNDER_VOLTAGE_LIMIT:
-                                        readCellUnderVoltageLimit(pack, dataEntry.getData());
-                                    break;
-                                    case READ_DISCHARGE_CURRENT_LIMIT:
-                                        readDischargeCurrentLimit(pack, dataEntry.getData());
-                                    break;
-                                    case READ_CHARGE_CURRENT_LIMIT:
-                                        readChargeCurrentLimit(pack, dataEntry.getData());
-                                    break;
-                                    case READ_RATED_CAPACITY:
-                                        readRatedCapacity(pack, dataEntry.getData());
-                                    break;
-                                    case READ_BATTERY_TYPE:
-                                        readBatteryType(pack, dataEntry.getData());
-                                    break;
-                                    default:
-                                        LOG.error("command not recognized...", dataId);
-                                    break;
-                                }
-
-                            }
-                        } else { // received nothing
-                            // keep track of how often no bytes could be read
-                            noDataReceived++;
-                            LOG.debug("No bytes received: " + noDataReceived + " times!");
-
-                            // if we received no bytes more than 10 times we stop and notify the
-                            // handler to re-open the port
-                            if (noDataReceived >= 10) {
-                                throw new NoDataAvailableException();
+                            switch (dataId) {
+                                case READ_CELL_VOLTAGES:
+                                    readCellVoltages(pack, dataEntry.getData());
+                                break;
+                                case READ_TUBE_TEMPERATURE:
+                                    readTubeTemperature(pack, dataEntry.getData());
+                                break;
+                                case READ_BOX_TEMPERATURE:
+                                    readBoxTemperature(pack, dataEntry.getData());
+                                break;
+                                case READ_BATTERY_TEMPERATURE:
+                                    readBatteryTemperature(pack, dataEntry.getData());
+                                break;
+                                case READ_TOTAL_VOLTAGE:
+                                    readTotalVoltage(pack, dataEntry.getData());
+                                break;
+                                case READ_TOTAL_CURRENT:
+                                    readTotalCurrent(pack, dataEntry.getData());
+                                break;
+                                case READ_BATTERY_SOC:
+                                    readBatterySOC(pack, dataEntry.getData());
+                                break;
+                                case READ_NUMBER_OF_TEMPERATURE_SENSORS:
+                                    readNumberOfTemperatureSensors(pack, dataEntry.getData());
+                                break;
+                                case READ_CYCLE_TIMES:
+                                    readCycleTimes(pack, dataEntry.getData());
+                                break;
+                                case READ_TOTAL_CAPACITY:
+                                    readTotalCapacity(pack, dataEntry.getData());
+                                break;
+                                case READ_NUMBER_OF_BATTERY_STRINGS:
+                                    readNumberOfBatteryStrings(pack, dataEntry.getData());
+                                break;
+                                case READ_ALARMS:
+                                    readAlarms(pack, dataEntry.getData());
+                                break;
+                                case READ_BATTERY_STATUS:
+                                    readBatteryStatus(pack, dataEntry.getData());
+                                break;
+                                case READ_BATTERY_OVER_VOLTAGE_LIMIT:
+                                    readBatteryOverVoltageLimit(pack, dataEntry.getData());
+                                break;
+                                case READ_BATTERY_UNDER_VOLTAGE_LIMIT:
+                                    readBatteryUnderVoltageLimit(pack, dataEntry.getData());
+                                break;
+                                case READ_CELL_OVER_VOLTAGE_LIMIT:
+                                    readCellOverVoltageLimit(pack, dataEntry.getData());
+                                break;
+                                case READ_CELL_UNDER_VOLTAGE_LIMIT:
+                                    readCellUnderVoltageLimit(pack, dataEntry.getData());
+                                break;
+                                case READ_DISCHARGE_CURRENT_LIMIT:
+                                    readDischargeCurrentLimit(pack, dataEntry.getData());
+                                break;
+                                case READ_CHARGE_CURRENT_LIMIT:
+                                    readChargeCurrentLimit(pack, dataEntry.getData());
+                                break;
+                                case READ_RATED_CAPACITY:
+                                    readRatedCapacity(pack, dataEntry.getData());
+                                break;
+                                case READ_BATTERY_TYPE:
+                                    readBatteryType(pack, dataEntry.getData());
+                                break;
+                                default:
+                                    LOG.error("command not recognized...", dataId);
+                                break;
                             }
 
-                            // try and wait for the next message to arrive
-                            try {
-                                LOG.debug("Waiting for messages to arrive....");
-                                Thread.sleep(getDelayAfterNoBytes());
-                            } catch (final InterruptedException e) {
-                            }
-
-                            // try to receive the response again
-                            valid = false;
                         }
-                    } while (!valid);
-                } catch (final IOException e) {
-                    LOG.error("Error receiving frame!", e);
-                }
-            } catch (final Exception e) {
-                LOG.error("Error sending frame: " + Port.printBuffer(sendFrame));
+                    } else { // received nothing
+                        // keep track of how often no bytes could be read
+                        noDataReceived++;
+                        LOG.debug("No bytes received: " + noDataReceived + " times!");
+
+                        // if we received no bytes more than 10 times we stop and notify the
+                        // handler to re-open the port
+                        if (noDataReceived >= 10) {
+                            throw new NoDataAvailableException();
+                        }
+
+                        // try and wait for the next message to arrive
+                        try {
+                            LOG.debug("Waiting for messages to arrive....");
+                            Thread.sleep(getDelayAfterNoBytes());
+                        } catch (final InterruptedException e) {
+                        }
+
+                        // try to receive the response again
+                        valid = false;
+                    }
+                } while (!valid);
+            } catch (final IOException e) {
+                LOG.error("Error receiving frame!", e);
             }
+        } catch (final Exception e) {
+            LOG.error("Error sending frame: " + Port.printBuffer(sendFrame));
         }
     }
 
@@ -246,7 +244,7 @@ public class JKBmsRS485Processor extends BMS {
     }
 
 
-    ByteBuffer prepareSendFrame(final byte commandId) {
+    ByteBuffer prepareSendFrame() {
         final ByteBuffer sendFrame = ByteBuffer.allocate(21).order(ByteOrder.LITTLE_ENDIAN);
         sendFrame.put((byte) 0x4E); // Start flag
         sendFrame.put((byte) 0x57); // Additional start flag or part of a combined flag
@@ -261,8 +259,9 @@ public class JKBmsRS485Processor extends BMS {
                                     // 0x06, - read all data
         sendFrame.put((byte) 0x03); // frame source id (0x00 - BMS, 0x01- BT, 0x02-GPS, 0x03 - PC)
         sendFrame.put((byte) 0x00); // 0.Read data, 1.Answer frame 2.Data box active upload
-        sendFrame.put(commandId); // Read a single data reference (5.1 table);Read all data and fill
-                                  // in 0x00
+        sendFrame.put((byte) 0x00); // Read a single data reference (5.1 table);Read all data and
+                                    // fill
+                                    // in 0x00
         sendFrame.putInt(0x00000000); // record number - 4 bytes (1st random, 2-4 recorde number)
         sendFrame.put((byte) 0x68); // End Identity
 
@@ -292,6 +291,7 @@ public class JKBmsRS485Processor extends BMS {
         }
 
         int value = 0;
+        LOG.debug("Cell voltages\n");
 
         for (int i = 0; i < pack.numberOfCells; i++) {
             value = data.get() << 16;
@@ -299,6 +299,8 @@ public class JKBmsRS485Processor extends BMS {
             value &= data.get();
 
             pack.cellVmV[i] = value;
+
+            LOG.debug("\tCell #{}: {} mV\n", i, value);
         }
     }
 
@@ -319,12 +321,14 @@ public class JKBmsRS485Processor extends BMS {
     private void readBatteryTemperature(final BatteryPack pack, final ByteBuffer data) {
         final int temp = data.getChar();
         pack.tempAverage = temp > 100 ? -(temp - 100) * 10 : temp * 10;
+        LOG.debug("Battery temperature: {} C", pack.tempAverage / 10f);
     }
 
 
     // 0x83
     private void readTotalVoltage(final BatteryPack pack, final ByteBuffer data) {
         pack.packVoltage = (int) (data.getChar() / 10f);
+        LOG.debug("Pack voltagee: {} V", pack.packVoltage / 10f);
     }
 
 
@@ -339,6 +343,7 @@ public class JKBmsRS485Processor extends BMS {
         value &= 0x7FFF;
 
         pack.packCurrent = (int) (charging ? value / 10f : -(value / 10f));
+        LOG.debug("Pack current: {} A", pack.packCurrent / 10f);
     }
 
 
@@ -346,6 +351,7 @@ public class JKBmsRS485Processor extends BMS {
     private void readBatterySOC(final BatteryPack pack, final ByteBuffer data) {
         // Battery SOC (1%)
         pack.packSOC = data.get() * 10;
+        LOG.debug("Battery SOC: {} %", pack.packSOC / 10f);
     }
 
 
@@ -353,6 +359,7 @@ public class JKBmsRS485Processor extends BMS {
     private void readNumberOfTemperatureSensors(final BatteryPack pack, final ByteBuffer data) {
         // Number of battery temperature sensors
         pack.numOfTempSensors = data.get();
+        LOG.debug("No of temperature sensors: {}", pack.numOfTempSensors);
     }
 
 
@@ -360,13 +367,15 @@ public class JKBmsRS485Processor extends BMS {
     private void readCycleTimes(final BatteryPack pack, final ByteBuffer data) {
         // Number of battery cycles
         pack.bmsCycles = data.getChar();
+        LOG.debug("Battery cycles: {}", pack.bmsCycles);
     }
 
 
     // 0x89
     private void readTotalCapacity(final BatteryPack pack, final ByteBuffer data) {
         // Total capacity of battery cycles
-        pack.ratedCapacitymAh = data.getInt();
+        pack.moduleRatedCapacityAh = data.getInt();
+        LOG.debug("Battery rated capacity: {} AH", pack.moduleRatedCapacityAh);
     }
 
 
@@ -374,6 +383,7 @@ public class JKBmsRS485Processor extends BMS {
     private void readNumberOfBatteryStrings(final BatteryPack pack, final ByteBuffer data) {
         // Total capacity of battery cycles
         pack.modulesInSeries = data.getChar();
+        LOG.debug("Battery modules in series: {}", pack.modulesInSeries);
     }
 
 
@@ -404,42 +414,49 @@ public class JKBmsRS485Processor extends BMS {
         pack.chargeMOSState = Util.bit(value, 0);
         pack.dischargeMOSState = Util.bit(value, 1);
         pack.cellBalanceActive = Util.bit(value, 2);
+        LOG.debug("Battery status: \n\tCharge MOS={}\n\tDischarge MOS={}\n\tBalancing={}", pack.chargeMOSState ? "ON" : "OFF", pack.dischargeMOSState ? "ON" : "OFF", pack.cellBalanceActive ? "ON" : "OFF");
     }
 
 
     // 0x8E
     private void readBatteryOverVoltageLimit(final BatteryPack pack, final ByteBuffer data) {
         pack.maxPackVoltageLimit = data.getChar() / 10;
+        LOG.debug("Battery max voltage limit: {} V", pack.maxPackVoltageLimit / 10f);
     }
 
 
     // 0x8F
     private void readBatteryUnderVoltageLimit(final BatteryPack pack, final ByteBuffer data) {
         pack.minPackVoltageLimit = data.getChar() / 10;
+        LOG.debug("Battery min voltage limit: {} V", pack.minPackVoltageLimit / 10f);
     }
 
 
     // 0x90
     private void readCellOverVoltageLimit(final BatteryPack pack, final ByteBuffer data) {
         pack.maxCellVoltageLimit = data.getChar() / 10;
+        LOG.debug("Cell max voltage limit: {} V", pack.maxCellVoltageLimit / 1000f);
     }
 
 
     // 0x93
     private void readCellUnderVoltageLimit(final BatteryPack pack, final ByteBuffer data) {
         pack.minCellVoltageLimit = data.getChar() / 10;
+        LOG.debug("Cell min voltage limit: {} V", pack.minCellVoltageLimit / 1000f);
     }
 
 
     // 0x97
     private void readDischargeCurrentLimit(final BatteryPack pack, final ByteBuffer data) {
         pack.maxPackDischargeCurrent = data.getChar() * 10;
+        LOG.debug("Cell max discharge limit: {} A", pack.maxPackDischargeCurrent / 10f);
     }
 
 
     // 0x99
     private void readChargeCurrentLimit(final BatteryPack pack, final ByteBuffer data) {
         pack.maxPackChargeCurrent = data.getChar() * 10;
+        LOG.debug("Cell max charge limit: {} A", pack.maxPackChargeCurrent / 10f);
     }
 
 
@@ -447,6 +464,7 @@ public class JKBmsRS485Processor extends BMS {
     private void readRatedCapacity(final BatteryPack pack, final ByteBuffer data) {
         // rated capacity of battery (1A)
         pack.ratedCapacitymAh = data.getInt() * 1000;
+        LOG.debug("Cell rated capacity: {} A", pack.ratedCapacitymAh / 1000f);
     }
 
 
@@ -454,6 +472,7 @@ public class JKBmsRS485Processor extends BMS {
     private void readBatteryType(final BatteryPack pack, final ByteBuffer data) {
         // 0: lithium iron phosphate, 1: ternary, 2: lithium titanate
         pack.type = data.get();
+        LOG.debug("Battery type: {}", pack.type == 0 ? "LiFePo" : pack.type == 1 ? "Ternary" : "Lithium titanate");
     }
 
 

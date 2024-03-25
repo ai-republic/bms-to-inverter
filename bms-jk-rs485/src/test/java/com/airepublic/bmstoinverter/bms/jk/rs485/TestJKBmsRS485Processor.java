@@ -186,11 +186,11 @@ public class TestJKBmsRS485Processor {
 
         // GIVEN
         // - the expected output frame bytes for command 0x85
-        final byte[] frameBytes = new byte[] { (byte) 0x4E, (byte) 0x57, (byte) 0x00, (byte) 0x13, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x06, (byte) 0x03, (byte) 0x00, (byte) 0x85, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x68, (byte) 0x00, (byte) 0x00, (byte) 0x01, (byte) 0xAE };
+        final byte[] frameBytes = new byte[] { (byte) 0x4E, (byte) 0x57, (byte) 0x00, (byte) 0x13, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x06, (byte) 0x03, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x68, (byte) 0x00, (byte) 0x00, (byte) 0x01, (byte) 0x29 };
 
         // WHEN
         // - preparing a send frame for command 0x85
-        final ByteBuffer sendFrame = processor.prepareSendFrame((byte) 0x85);
+        final ByteBuffer sendFrame = processor.prepareSendFrame();
 
         // THEN
         // - the created send frame bytes should match
