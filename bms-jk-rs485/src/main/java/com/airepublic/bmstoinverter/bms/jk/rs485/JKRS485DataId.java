@@ -53,10 +53,10 @@ public enum JKRS485DataId {
     X25((byte) 0xB4, 8),
     X26((byte) 0xB5, 4),
     X27((byte) 0xB6, 4),
-    X28((byte) 0xB7, 15),
+    READ_SOFTWARE_VERSION((byte) 0xB7, 15),
     X29((byte) 0xB8, 2),
     X30((byte) 0xB9, 4),
-    X31((byte) 0xBA, 24),
+    READ_MANUFACTURER((byte) 0xBA, 24),
     X33((byte) 0xC0, 5),
     END_FLAG((byte) 0x68, 4);
 

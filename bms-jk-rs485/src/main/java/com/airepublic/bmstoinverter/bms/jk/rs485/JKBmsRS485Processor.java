@@ -147,8 +147,13 @@ public class JKBmsRS485Processor extends BMS {
                                 case READ_BATTERY_TYPE:
                                     readBatteryType(pack, dataEntry.getData());
                                 break;
+                                case READ_SOFTWARE_VERSION:
+                                    readSoftwareVersion(pack, sendFrame);
+                                break;
+                                case READ_MANUFACTURER:
+                                    readManufacturer(pack, dataEntry.getData());
+                                break;
                                 default:
-                                    LOG.error("command not recognized...", dataId);
                                 break;
                             }
 
@@ -473,6 +478,20 @@ public class JKBmsRS485Processor extends BMS {
         // 0: lithium iron phosphate, 1: ternary, 2: lithium titanate
         pack.type = data.get();
         LOG.debug("Battery type: {}", pack.type == 0 ? "LiFePo" : pack.type == 1 ? "Ternary" : "Lithium titanate");
+    }
+
+
+    // 0xB7
+    private void readSoftwareVersion(final BatteryPack pack, final ByteBuffer data) {
+        pack.softwareVersion = new String(data.array());
+        LOG.debug("BMS software version: {}", pack.softwareVersion);
+    }
+
+
+    // 0xBA
+    private void readManufacturer(final BatteryPack pack, final ByteBuffer data) {
+        pack.manufacturerCode = new String(data.array());
+        LOG.debug("BMS manufacturer: {}", pack.softwareVersion);
     }
 
 
