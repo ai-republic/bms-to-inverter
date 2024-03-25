@@ -72,27 +72,31 @@ public abstract class Inverter {
      * @param callback the code executed after successful processing
      */
     public void process(final Runnable callback) {
-        try {
-            final BatteryPack pack = getAggregatedBatteryInfo();
-            final Port port = PortAllocator.allocate(getPortLocator());
-            final ByteBuffer requestFrame = readRequest(port);
-            LOG.debug("Inverter received: " + Port.printBuffer(requestFrame));
-            final List<ByteBuffer> sendFrames = createSendFrames(requestFrame, pack);
+        if (energyStorage.getBatteryPacks().size() > 0) {
+            try {
+                final BatteryPack pack = getAggregatedBatteryInfo();
+                final Port port = PortAllocator.allocate(getPortLocator());
+                final ByteBuffer requestFrame = readRequest(port);
+                LOG.debug("Inverter received: " + Port.printBuffer(requestFrame));
+                final List<ByteBuffer> sendFrames = createSendFrames(requestFrame, pack);
 
-            if (sendFrames != null) {
-                for (final ByteBuffer frame : sendFrames) {
-                    LOG.debug("Inverter send: {}", Port.printBuffer(frame));
-                    sendFrame(port, frame);
+                if (sendFrames != null) {
+                    for (final ByteBuffer frame : sendFrames) {
+                        LOG.debug("Inverter send: {}", Port.printBuffer(frame));
+                        sendFrame(port, frame);
+                    }
                 }
+            } catch (final Throwable e) {
+                LOG.error("Failed to send CAN frame", e);
             }
-        } catch (final Throwable e) {
-            LOG.error("Failed to send CAN frame", e);
-        }
 
-        try {
-            callback.run();
-        } catch (final Exception e) {
-            LOG.error("Inverter process callback threw an exception!", e);
+            try {
+                callback.run();
+            } catch (final Exception e) {
+                LOG.error("Inverter process callback threw an exception!", e);
+            }
+        } else {
+            LOG.debug("No battery data yet received to send to inverter!");
         }
     }
 
@@ -193,25 +197,27 @@ public abstract class Inverter {
 
         // calculate averages
         final int count = energyStorage.getBatteryPacks().size();
-        result.ratedCapacitymAh = result.ratedCapacitymAh / count;
-        result.ratedCellmV = result.ratedCellmV / count;
-        result.maxPackVoltageLimit = result.maxPackVoltageLimit / count;
-        result.minPackVoltageLimit = result.minPackVoltageLimit / count;
-        result.packVoltage = result.packVoltage / count;
-        result.packSOC = result.packSOC / count;
-        result.packSOH = result.packSOH / count;
-        result.tempAverage = result.tempAverage / count;
-        result.bmsCycles = result.bmsCycles / count;
-        result.moduleVoltage = result.moduleVoltage / count;
-        result.moduleRatedCapacityAh = result.moduleRatedCapacityAh / count;
 
-        // other calculations
-        result.cellDiffmV = result.maxCellmV - result.minCellmV;
-        result.type = energyStorage.getBatteryPack(0).type;
-        result.manufacturerCode = energyStorage.getBatteryPack(0).manufacturerCode;
-        result.hardwareVersion = energyStorage.getBatteryPack(0).hardwareVersion;
-        result.softwareVersion = energyStorage.getBatteryPack(0).softwareVersion;
+        if (count > 0) {
+            result.ratedCapacitymAh = result.ratedCapacitymAh / count;
+            result.ratedCellmV = result.ratedCellmV / count;
+            result.maxPackVoltageLimit = result.maxPackVoltageLimit / count;
+            result.minPackVoltageLimit = result.minPackVoltageLimit / count;
+            result.packVoltage = result.packVoltage / count;
+            result.packSOC = result.packSOC / count;
+            result.packSOH = result.packSOH / count;
+            result.tempAverage = result.tempAverage / count;
+            result.bmsCycles = result.bmsCycles / count;
+            result.moduleVoltage = result.moduleVoltage / count;
+            result.moduleRatedCapacityAh = result.moduleRatedCapacityAh / count;
 
+            // other calculations
+            result.cellDiffmV = result.maxCellmV - result.minCellmV;
+            result.type = energyStorage.getBatteryPack(0).type;
+            result.manufacturerCode = energyStorage.getBatteryPack(0).manufacturerCode;
+            result.hardwareVersion = energyStorage.getBatteryPack(0).hardwareVersion;
+            result.softwareVersion = energyStorage.getBatteryPack(0).softwareVersion;
+        }
         return result;
     }
 

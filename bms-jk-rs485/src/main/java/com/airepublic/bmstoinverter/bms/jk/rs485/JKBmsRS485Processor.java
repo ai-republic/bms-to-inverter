@@ -67,7 +67,6 @@ public class JKBmsRS485Processor extends BMS {
         final ByteBuffer sendFrame = prepareSendFrame();
 
         try {
-            port.clearBuffers();
             port.sendFrame(sendFrame);
 
             try {
@@ -154,6 +153,7 @@ public class JKBmsRS485Processor extends BMS {
                                     readManufacturer(pack, dataEntry.getData());
                                 break;
                                 default:
+
                                 break;
                             }
 
