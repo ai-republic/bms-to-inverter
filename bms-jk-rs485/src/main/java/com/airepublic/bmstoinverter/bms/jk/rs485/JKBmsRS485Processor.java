@@ -299,13 +299,10 @@ public class JKBmsRS485Processor extends BMS {
         LOG.debug("Cell voltages\n");
 
         for (int i = 0; i < pack.numberOfCells; i++) {
-            value = data.get() << 16;
-            value &= data.get() << 8;
-            value &= data.get();
+            final int cellNo = value = data.get();
+            pack.cellVmV[cellNo - 1] = data.getShort();
 
-            pack.cellVmV[i] = value;
-
-            LOG.debug("\tCell #{}: {} mV\n", i, value);
+            LOG.debug("\tCell #{}: {} mV\n", cellNo, value);
         }
     }
 
@@ -333,7 +330,7 @@ public class JKBmsRS485Processor extends BMS {
     // 0x83
     private void readTotalVoltage(final BatteryPack pack, final ByteBuffer data) {
         pack.packVoltage = (int) (data.getChar() / 10f);
-        LOG.debug("Pack voltagee: {} V", pack.packVoltage / 10f);
+        LOG.debug("Pack voltage: {} V", pack.packVoltage / 10f);
     }
 
 
@@ -425,6 +422,7 @@ public class JKBmsRS485Processor extends BMS {
 
     // 0x8E
     private void readBatteryOverVoltageLimit(final BatteryPack pack, final ByteBuffer data) {
+        // maximum pack voltage (10mv)
         pack.maxPackVoltageLimit = data.getChar() / 10;
         LOG.debug("Battery max voltage limit: {} V", pack.maxPackVoltageLimit / 10f);
     }
@@ -432,6 +430,7 @@ public class JKBmsRS485Processor extends BMS {
 
     // 0x8F
     private void readBatteryUnderVoltageLimit(final BatteryPack pack, final ByteBuffer data) {
+        // minimum pack voltage (10mv)
         pack.minPackVoltageLimit = data.getChar() / 10;
         LOG.debug("Battery min voltage limit: {} V", pack.minPackVoltageLimit / 10f);
     }
@@ -439,14 +438,16 @@ public class JKBmsRS485Processor extends BMS {
 
     // 0x90
     private void readCellOverVoltageLimit(final BatteryPack pack, final ByteBuffer data) {
-        pack.maxCellVoltageLimit = data.getChar() / 10;
+        // maximum cell voltage (1mv)
+        pack.maxCellVoltageLimit = data.getChar();
         LOG.debug("Cell max voltage limit: {} V", pack.maxCellVoltageLimit / 1000f);
     }
 
 
     // 0x93
     private void readCellUnderVoltageLimit(final BatteryPack pack, final ByteBuffer data) {
-        pack.minCellVoltageLimit = data.getChar() / 10;
+        // minimum cell voltage (1mv)
+        pack.minCellVoltageLimit = data.getChar();
         LOG.debug("Cell min voltage limit: {} V", pack.minCellVoltageLimit / 1000f);
     }
 
@@ -469,7 +470,7 @@ public class JKBmsRS485Processor extends BMS {
     private void readRatedCapacity(final BatteryPack pack, final ByteBuffer data) {
         // rated capacity of battery (1A)
         pack.ratedCapacitymAh = data.getInt() * 1000;
-        LOG.debug("Cell rated capacity: {} A", pack.ratedCapacitymAh / 1000f);
+        LOG.debug("Cell rated capacity: {} AH", pack.ratedCapacitymAh / 1000f);
     }
 
 
