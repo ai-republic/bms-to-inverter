@@ -306,19 +306,19 @@ public class JKBmsRS485Processor extends BMS {
 
             if (pack.cellVmV[cellNo - 1] > pack.maxCellmV) {
                 pack.maxCellVNum = cellNo - 1;
-                pack.maxCellmV = pack.cellVmV[pack.maxCellVNum];
+                pack.maxCellmV = pack.cellVmV[cellNo - 1];
             }
 
             if (pack.cellVmV[cellNo - 1] < pack.minCellmV) {
                 pack.minCellVNum = cellNo - 1;
-                pack.minCellmV = pack.cellVmV[pack.minCellVNum];
+                pack.minCellmV = pack.cellVmV[cellNo - 1];
             }
 
             LOG.debug("\tCell #{}: {} mV\n", cellNo, pack.cellVmV[cellNo - 1]);
         }
 
         pack.cellDiffmV = pack.maxCellmV - pack.minCellmV;
-        LOG.debug("Cell low: {} mV\nCell high: {} mV\nCell-diff: {} mV", pack.maxCellmV, pack.minCellmV, pack.cellDiffmV);
+        LOG.debug("\n\tCell low: {} mV\n\tCell high: {} mV\n\tCell-diff: {} mV", pack.minCellmV, pack.maxCellmV, pack.cellDiffmV);
     }
 
 
