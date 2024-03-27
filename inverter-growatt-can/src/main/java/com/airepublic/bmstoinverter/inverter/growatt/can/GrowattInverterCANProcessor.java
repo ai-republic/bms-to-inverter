@@ -8,8 +8,10 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
+import com.airepublic.bmstoinverter.core.AlarmLevel;
 import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.Port;
+import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
@@ -107,68 +109,52 @@ public class GrowattInverterCANProcessor extends Inverter {
     private ByteBuffer createAlarms(final BatteryPack pack) {
         final ByteBuffer frame = prepareFrame(0x312);
 
-        final boolean aggregatedSystemError = pack.alarms.failureOfAFEAcquisitionModule.value
-                || pack.alarms.failureOfChargeFETAdhesion.value
-                || pack.alarms.failureOfChargeFETTBreaker.value
-                || pack.alarms.failureOfChargeFETTemperatureSensor.value
-                || pack.alarms.failureOfCurrentSensorModule.value
-                || pack.alarms.failureOfDischargeFETAdhesion.value
-                || pack.alarms.failureOfDischargeFETBreaker.value
-                || pack.alarms.failureOfDischargeFETTemperatureSensor.value
-                || pack.alarms.failureOfEEPROMStorageModule.value
-                || pack.alarms.failureOfIntranetCommunicationModule.value
-                || pack.alarms.failureOfLowVoltageNoCharging.value
-                || pack.alarms.failureOfMainVoltageSensorModule.value
-                || pack.alarms.failureOfPrechargeModule.value
-                || pack.alarms.failureOfRealtimeClockModule.value
-                || pack.alarms.failureOfTemperatureSensorModule.value
-                || pack.alarms.failureOfInternalCommunicationModule.value
-                || pack.alarms.failureOfVoltageSensorModule.value;
+        final boolean aggregatedSystemError = pack.getAlarmLevel(Alarm.FAILURE_OTHER) == AlarmLevel.ALARM || pack.getAlarmLevel(Alarm.FAILURE_OTHER) == AlarmLevel.WARNING;
 
         // protection alarms
         BitSet bits = new BitSet(8);
         bits.set(0, false);
-        bits.set(1, pack.alarms.levelTwoPackVoltageTooLow.value);
-        bits.set(2, pack.alarms.levelTwoPackVoltageTooHigh.value);
-        bits.set(3, pack.alarms.levelTwoCellVoltageTooLow.value);
-        bits.set(4, pack.alarms.levelTwoCellVoltageTooHigh.value);
-        bits.set(5, pack.alarms.failureOfShortCircuitProtection.value);
-        bits.set(6, pack.alarms.levelTwoChargeCurrentTooHigh.value);
-        bits.set(7, pack.alarms.levelTwoDischargeCurrentTooHigh.value);
+        bits.set(1, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_LOW) == AlarmLevel.ALARM);
+        bits.set(2, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_HIGH) == AlarmLevel.ALARM);
+        bits.set(3, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_LOW) == AlarmLevel.ALARM);
+        bits.set(4, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_HIGH) == AlarmLevel.ALARM);
+        bits.set(5, pack.getAlarmLevel(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION) == AlarmLevel.ALARM);
+        bits.set(6, pack.getAlarmLevel(Alarm.CHARGE_CURRENT_HIGH) == AlarmLevel.ALARM);
+        bits.set(7, pack.getAlarmLevel(Alarm.DISCHARGE_CURRENT_HIGH) == AlarmLevel.ALARM);
         frame.put(bits.toByteArray()[0]);
 
         bits = new BitSet(8);
         bits.set(0, false);
         bits.set(1, false);
-        bits.set(2, pack.alarms.levelTwoCellVoltageDifferenceTooHigh.value);
+        bits.set(2, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH) == AlarmLevel.ALARM);
         bits.set(3, aggregatedSystemError);
-        bits.set(4, pack.alarms.levelTwoChargeTempTooLow.value);
-        bits.set(5, pack.alarms.levelTwoDischargeTempTooLow.value);
-        bits.set(6, pack.alarms.levelTwoChargeTempTooHigh.value);
-        bits.set(7, pack.alarms.levelTwoDischargeTempTooHigh.value);
+        bits.set(4, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_LOW) == AlarmLevel.ALARM);
+        bits.set(5, pack.getAlarmLevel(Alarm.DISCHARGE_TEMPERATURE_LOW) == AlarmLevel.ALARM);
+        bits.set(6, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_HIGH) == AlarmLevel.ALARM);
+        bits.set(7, pack.getAlarmLevel(Alarm.DISCHARGE_TEMPERATURE_HIGH) == AlarmLevel.ALARM);
         frame.put(bits.toByteArray()[0]);
 
         // warning alarms
         bits = new BitSet(8);
         bits.set(0, false);
-        bits.set(1, pack.alarms.levelOnePackVoltageTooLow.value);
-        bits.set(2, pack.alarms.levelOnePackVoltageTooHigh.value);
-        bits.set(3, pack.alarms.levelOneCellVoltageTooLow.value);
-        bits.set(4, pack.alarms.levelOneCellVoltageTooHigh.value);
+        bits.set(1, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_LOW) == AlarmLevel.WARNING);
+        bits.set(2, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_HIGH) == AlarmLevel.WARNING);
+        bits.set(3, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_LOW) == AlarmLevel.WARNING);
+        bits.set(4, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_HIGH) == AlarmLevel.WARNING);
         bits.set(5, false);
-        bits.set(6, pack.alarms.levelOneChargeCurrentTooHigh.value);
-        bits.set(7, pack.alarms.levelOneDischargeCurrentTooHigh.value);
+        bits.set(6, pack.getAlarmLevel(Alarm.CHARGE_CURRENT_HIGH) == AlarmLevel.WARNING);
+        bits.set(7, pack.getAlarmLevel(Alarm.DISCHARGE_CURRENT_HIGH) == AlarmLevel.WARNING);
         frame.put(bits.toByteArray()[0]);
 
         bits = new BitSet(8);
-        bits.set(0, pack.alarms.failureOfIntranetCommunicationModule.value);
+        bits.set(0, pack.getAlarmLevel(Alarm.FAILURE_COMMUNICATION_INTERNAL) == AlarmLevel.WARNING);
         bits.set(1, false);
-        bits.set(2, pack.alarms.levelOneCellVoltageDifferenceTooHigh.value);
+        bits.set(2, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH) == AlarmLevel.WARNING);
         bits.set(3, false);
-        bits.set(4, pack.alarms.levelOneChargeTempTooLow.value);
-        bits.set(5, pack.alarms.levelOneDischargeTempTooLow.value);
-        bits.set(6, pack.alarms.levelOneChargeTempTooHigh.value);
-        bits.set(7, pack.alarms.levelOneDischargeTempTooHigh.value);
+        bits.set(4, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_LOW) == AlarmLevel.WARNING);
+        bits.set(5, pack.getAlarmLevel(Alarm.DISCHARGE_TEMPERATURE_LOW) == AlarmLevel.WARNING);
+        bits.set(6, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_HIGH) == AlarmLevel.WARNING);
+        bits.set(7, pack.getAlarmLevel(Alarm.DISCHARGE_TEMPERATURE_HIGH) == AlarmLevel.WARNING);
         frame.put(bits.toByteArray()[0]);
 
         frame.put((byte) pack.numberOfCells);

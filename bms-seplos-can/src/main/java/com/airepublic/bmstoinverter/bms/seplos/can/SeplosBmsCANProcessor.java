@@ -6,9 +6,12 @@ import java.nio.ByteBuffer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.airepublic.bmstoinverter.core.AlarmLevel;
 import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.Port;
+import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
+import com.airepublic.bmstoinverter.core.util.Util;
 
 /**
  * The class to handle CAN messages from a Seplos {@link BMS}.
@@ -150,28 +153,28 @@ public class SeplosBmsCANProcessor extends BMS {
     }
 
 
+    private AlarmLevel getAlarmLevel(final boolean warning, final boolean alarm) {
+        return alarm ? AlarmLevel.ALARM : warning ? AlarmLevel.WARNING : AlarmLevel.ALARM;
+    }
+
+
     // 0x359
     private void readAlarms(final BatteryPack pack, final ByteBuffer data) {
-        // read first 8 bits
-        int value = data.getInt();
+        // read first 8 bytes
+        final int protection1 = data.get();
+        final int protection2 = data.get();
+        final int alarm1 = data.get();
+        final int alarm2 = data.get();
 
-        // protection alarms
-        pack.alarms.levelTwoCellVoltageTooHigh.value = bitRead(value, 1);
-        pack.alarms.levelTwoCellVoltageTooLow.value = bitRead(value, 2);
-        pack.alarms.levelTwoDischargeTempTooHigh.value = bitRead(value, 3);
-        pack.alarms.levelTwoDischargeTempTooLow.value = bitRead(value, 4);
-        pack.alarms.levelTwoDischargeCurrentTooHigh.value = bitRead(value, 7);
-        pack.alarms.levelTwoChargeCurrentTooHigh.value = bitRead(value, 8);
-
-        // warning alarms
-        pack.alarms.levelOneCellVoltageTooHigh.value = bitRead(value, 17);
-        pack.alarms.levelOneCellVoltageTooLow.value = bitRead(value, 18);
-        pack.alarms.levelOneChargeTempTooHigh.value = bitRead(value, 19);
-        pack.alarms.levelOneChargeTempTooLow.value = bitRead(value, 20);
-        pack.alarms.levelOneDischargeCurrentTooHigh.value = bitRead(value, 23);
-        pack.alarms.levelOneChargeCurrentTooHigh.value = bitRead(value, 24);
-        pack.alarms.failureOfIntranetCommunicationModule.value = bitRead(value, 27);
-        pack.alarms.levelTwoCellVoltageDifferenceTooHigh.value = bitRead(value, 28);
+        // protection and alarms
+        pack.setAlarm(Alarm.CELL_VOLTAGE_HIGH, getAlarmLevel(Util.bit(protection1, 1), Util.bit(alarm1, 1)));
+        pack.setAlarm(Alarm.CELL_VOLTAGE_LOW, getAlarmLevel(Util.bit(protection1, 2), Util.bit(alarm1, 2)));
+        pack.setAlarm(Alarm.CELL_TEMPERATURE_HIGH, getAlarmLevel(Util.bit(protection1, 3), Util.bit(alarm1, 3)));
+        pack.setAlarm(Alarm.CELL_TEMPERATURE_LOW, getAlarmLevel(Util.bit(protection1, 4), Util.bit(alarm1, 4)));
+        pack.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, getAlarmLevel(Util.bit(protection1, 7), Util.bit(alarm1, 7)));
+        pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, getAlarmLevel(Util.bit(protection2, 0), Util.bit(alarm2, 7)));
+        pack.setAlarm(Alarm.FAILURE_COMMUNICATION_INTERNAL, Util.bit(alarm2, 3) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, Util.bit(protection2, 3) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
         pack.numberOfCells = data.get();
 
@@ -179,10 +182,7 @@ public class SeplosBmsCANProcessor extends BMS {
         data.getShort();
 
         // dip switch
-        value = data.get();
-        final int packNo = value >> 4;
-        final int cellNo = value & 0x0F;
-
+        data.get();
     }
 
 

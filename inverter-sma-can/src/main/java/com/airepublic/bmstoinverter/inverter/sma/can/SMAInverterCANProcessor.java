@@ -10,8 +10,10 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.airepublic.bmstoinverter.core.AlarmLevel;
 import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.Port;
+import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 
@@ -105,86 +107,125 @@ public class SMAInverterCANProcessor extends Inverter {
         // alarms
         bits.set(0, false);
         bits.set(1, false);
-        bits.set(2, pack.alarms.levelTwoPackVoltageTooHigh.value); // pack voltage to high
-        bits.set(3, !pack.alarms.levelTwoPackVoltageTooHigh.value);
-        bits.set(4, pack.alarms.levelTwoPackVoltageTooLow.value); // pack voltage to low
-        bits.set(5, !pack.alarms.levelTwoPackVoltageTooLow.value);
-        bits.set(6, pack.alarms.levelTwoChargeTempTooHigh.value);// pack temp to high
-        bits.set(7, !pack.alarms.levelTwoChargeTempTooHigh.value);
+
+        bits.set(2, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_HIGH) == AlarmLevel.ALARM);
+        bits.set(3, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_HIGH) == AlarmLevel.NONE); // pack voltage
+                                                                                     // to high
+        bits.set(4, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_LOW) == AlarmLevel.ALARM); // pack voltage
+                                                                                     // to low
+        bits.set(5, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_LOW) == AlarmLevel.NONE);
+        bits.set(6, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_HIGH) == AlarmLevel.ALARM);// pack
+                                                                                         // temp to
+                                                                                         // high
+        bits.set(7, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_HIGH) == AlarmLevel.NONE);
 
         frame.put(bits.toByteArray()[0]);
 
         bits = new BitSet(8);
-        bits.set(0, pack.alarms.levelTwoChargeTempTooLow.value); // pack temp to low
-        bits.set(1, !pack.alarms.levelTwoChargeTempTooLow.value);
-        bits.set(2, pack.alarms.levelTwoChargeTempTooHigh.value);// charge temp to high
-        bits.set(3, !pack.alarms.levelTwoChargeTempTooHigh.value);
-        bits.set(4, pack.alarms.levelTwoChargeTempTooLow.value); // charge temp to low
-        bits.set(5, !pack.alarms.levelTwoChargeTempTooLow.value);
-        bits.set(6, pack.alarms.levelTwoChargeCurrentTooHigh.value); // pack current to high
-        bits.set(7, !pack.alarms.levelTwoChargeCurrentTooHigh.value);
+        bits.set(0, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_LOW) == AlarmLevel.ALARM); // pack
+                                                                                         // temp to
+                                                                                         // low
+        bits.set(1, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_LOW) == AlarmLevel.NONE);
+        bits.set(2, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_HIGH) == AlarmLevel.ALARM);// charge
+                                                                                           // temp
+                                                                                           // to
+                                                                                           // high
+        bits.set(3, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_HIGH) == AlarmLevel.NONE);
+        bits.set(4, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_LOW) == AlarmLevel.ALARM); // charge
+                                                                                           // temp
+                                                                                           // to low
+        bits.set(5, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_LOW) == AlarmLevel.NONE);
+        bits.set(6, pack.getAlarmLevel(Alarm.PACK_CURRENT_HIGH) == AlarmLevel.ALARM); // pack
+                                                                                      // current to
+                                                                                      // high
+        bits.set(7, pack.getAlarmLevel(Alarm.PACK_CURRENT_HIGH) == AlarmLevel.NONE);
 
         frame.put(bits.toByteArray()[0]);
 
         bits = new BitSet(8);
-        bits.set(0, pack.alarms.levelTwoChargeCurrentTooHigh.value); // charge current to high
-        bits.set(1, !pack.alarms.levelTwoChargeCurrentTooHigh.value);
+        bits.set(0, pack.getAlarmLevel(Alarm.CHARGE_CURRENT_HIGH) == AlarmLevel.ALARM); // charge
+                                                                                        // current
+                                                                                        // to high
+        bits.set(1, pack.getAlarmLevel(Alarm.CHARGE_CURRENT_HIGH) == AlarmLevel.ALARM);
         bits.set(2, false); // contactor
         bits.set(3, false);
-        bits.set(4, pack.alarms.failureOfShortCircuitProtection.value); // short circuit
-        bits.set(5, !pack.alarms.failureOfShortCircuitProtection.value);
+        bits.set(4, pack.getAlarmLevel(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION) == AlarmLevel.ALARM); // short
+                                                                                                     // circuit
+        bits.set(5, pack.getAlarmLevel(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION) == AlarmLevel.NONE);
         bits.set(6, false); // other bms internal error
         bits.set(7, false);
 
         frame.put(bits.toByteArray()[0]);
 
         bits = new BitSet(8);
-        bits.set(0, pack.alarms.levelTwoCellVoltageDifferenceTooHigh.value); // cell difference to
-                                                                             // high
-        bits.set(1, !pack.alarms.levelTwoCellVoltageDifferenceTooHigh.value);
+        bits.set(0, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH) == AlarmLevel.ALARM); // cell
+                                                                                                 // difference
+                                                                                                 // to
+        // high
+        bits.set(1, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH) == AlarmLevel.NONE);
         frame.put(bits.toByteArray()[0]);
 
         // warnings
         bits = new BitSet(8);
         bits.set(0, false);
         bits.set(1, false);
-        bits.set(2, pack.alarms.levelOnePackVoltageTooHigh.value); // pack voltage to high
-        bits.set(3, !pack.alarms.levelOnePackVoltageTooHigh.value);
-        bits.set(4, pack.alarms.levelOnePackVoltageTooLow.value); // pack voltage to low
-        bits.set(5, !pack.alarms.levelOnePackVoltageTooLow.value);
-        bits.set(6, pack.alarms.levelOneChargeTempTooHigh.value);// pack temp to high
-        bits.set(7, !pack.alarms.levelOneChargeTempTooHigh.value);
+
+        bits.set(2, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_HIGH) == AlarmLevel.ALARM);
+        bits.set(3, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_HIGH) == AlarmLevel.NONE); // pack voltage
+                                                                                     // to high
+        bits.set(4, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_LOW) == AlarmLevel.ALARM); // pack voltage
+                                                                                     // to low
+        bits.set(5, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_LOW) == AlarmLevel.NONE);
+        bits.set(6, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_HIGH) == AlarmLevel.ALARM);// pack
+                                                                                         // temp to
+                                                                                         // high
+        bits.set(7, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_HIGH) == AlarmLevel.NONE);
 
         frame.put(bits.toByteArray()[0]);
 
         bits = new BitSet(8);
-        bits.set(0, pack.alarms.levelOneChargeTempTooLow.value); // pack temp to low
-        bits.set(1, !pack.alarms.levelOneChargeTempTooLow.value);
-        bits.set(2, pack.alarms.levelOneChargeTempTooHigh.value);// charge temp to high
-        bits.set(3, !pack.alarms.levelOneChargeTempTooHigh.value);
-        bits.set(4, pack.alarms.levelOneChargeTempTooLow.value); // charge temp to low
-        bits.set(5, !pack.alarms.levelOneChargeTempTooLow.value);
-        bits.set(6, pack.alarms.levelOneChargeCurrentTooHigh.value); // pack current to high
-        bits.set(7, !pack.alarms.levelOneChargeCurrentTooHigh.value);
+        bits.set(0, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_LOW) == AlarmLevel.ALARM); // pack
+                                                                                         // temp to
+                                                                                         // low
+        bits.set(1, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_LOW) == AlarmLevel.NONE);
+        bits.set(2, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_HIGH) == AlarmLevel.ALARM);// charge
+                                                                                           // temp
+                                                                                           // to
+                                                                                           // high
+        bits.set(3, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_HIGH) == AlarmLevel.NONE);
+        bits.set(4, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_LOW) == AlarmLevel.ALARM); // charge
+                                                                                           // temp
+                                                                                           // to low
+        bits.set(5, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_LOW) == AlarmLevel.NONE);
+        bits.set(6, pack.getAlarmLevel(Alarm.PACK_CURRENT_HIGH) == AlarmLevel.ALARM); // pack
+                                                                                      // current to
+                                                                                      // high
+        bits.set(7, pack.getAlarmLevel(Alarm.PACK_CURRENT_HIGH) == AlarmLevel.NONE);
 
         frame.put(bits.toByteArray()[0]);
 
         bits = new BitSet(8);
-        bits.set(0, pack.alarms.levelOneChargeCurrentTooHigh.value); // charge current to high
-        bits.set(1, !pack.alarms.levelOneChargeCurrentTooHigh.value);
+        bits.set(0, pack.getAlarmLevel(Alarm.CHARGE_CURRENT_HIGH) == AlarmLevel.ALARM); // charge
+                                                                                        // current
+                                                                                        // to high
+        bits.set(1, pack.getAlarmLevel(Alarm.CHARGE_CURRENT_HIGH) == AlarmLevel.ALARM);
         bits.set(2, false); // contactor
         bits.set(3, false);
-        bits.set(4, pack.alarms.failureOfShortCircuitProtection.value); // short circuit
-        bits.set(5, !pack.alarms.failureOfShortCircuitProtection.value);
+        bits.set(4, pack.getAlarmLevel(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION) == AlarmLevel.ALARM); // short
+                                                                                                     // circuit
+        bits.set(5, pack.getAlarmLevel(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION) == AlarmLevel.NONE);
         bits.set(6, false); // other bms internal error
         bits.set(7, false);
 
         frame.put(bits.toByteArray()[0]);
 
         bits = new BitSet(8);
-        bits.set(0, pack.alarms.levelOneCellVoltageDifferenceTooHigh.value); // cell difference to
-                                                                             // high
-        bits.set(1, !pack.alarms.levelOneCellVoltageDifferenceTooHigh.value);
+        bits.set(0, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH) == AlarmLevel.ALARM); // cell
+                                                                                                 // difference
+                                                                                                 // to
+        // high
+        bits.set(1, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH) == AlarmLevel.NONE);
+        frame.put(bits.toByteArray()[0]);
         return frame;
     }
 

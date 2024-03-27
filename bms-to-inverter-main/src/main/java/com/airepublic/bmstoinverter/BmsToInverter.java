@@ -4,17 +4,19 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.StringTokenizer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.airepublic.bmstoinverter.core.AlarmLevel;
 import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.InverterQualifier;
 import com.airepublic.bmstoinverter.core.PortAllocator;
-import com.airepublic.bmstoinverter.core.bms.data.Alarms;
+import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.service.IMQTTBrokerService;
@@ -260,9 +262,9 @@ public class BmsToInverter implements AutoCloseable {
         Email email = null;
 
         for (int index = 0; index < energyStorage.getBatteryPacks().size(); index++) {
-            for (final String key : getAlarmState(energyStorage.getBatteryPack(index))) {
-                currentAlarms.add("BMS #" + (index + 1) + ":" + key);
-                alarmContent.append("\tBMS #" + (index + 1) + ":\t" + key + "\r\n");
+            for (final Map.Entry<Alarm, AlarmLevel> entry : energyStorage.getBatteryPack(index).getAlarms(AlarmLevel.WARNING, AlarmLevel.ALARM).entrySet()) {
+                currentAlarms.add("BMS #" + (index + 1) + ":" + entry.getValue().name() + " -> " + entry.getKey());
+                alarmContent.append("\tBMS #" + (index + 1) + ":\t" + entry.getValue().name() + " -> " + entry.getKey().name() + "\r\n");
             }
         }
 
@@ -294,159 +296,6 @@ public class BmsToInverter implements AutoCloseable {
                 }
             }
         }
-    }
-
-
-    private List<String> getAlarmState(final BatteryPack pack) {
-        final List<String> activeAlarms = new ArrayList<>();
-        final Alarms alarms = pack.alarms;
-
-        if (alarms.levelOneCellVoltageTooHigh.value == true) {
-            activeAlarms.add(alarms.levelOneCellVoltageTooHigh.key);
-        }
-        if (alarms.levelTwoCellVoltageTooHigh.value == true) {
-            activeAlarms.add(alarms.levelTwoCellVoltageTooHigh.key);
-        }
-        if (alarms.levelOneCellVoltageTooLow.value == true) {
-            activeAlarms.add(alarms.levelOneCellVoltageTooLow.key);
-        }
-        if (alarms.levelTwoCellVoltageTooLow.value == true) {
-            activeAlarms.add(alarms.levelTwoCellVoltageTooLow.key);
-        }
-        if (alarms.levelOnePackVoltageTooHigh.value == true) {
-            activeAlarms.add(alarms.levelOnePackVoltageTooHigh.key);
-        }
-        if (alarms.levelTwoPackVoltageTooHigh.value == true) {
-            activeAlarms.add(alarms.levelTwoPackVoltageTooHigh.key);
-        }
-        if (alarms.levelOnePackVoltageTooLow.value == true) {
-            activeAlarms.add(alarms.levelOnePackVoltageTooLow.key);
-        }
-        if (alarms.levelTwoPackVoltageTooLow.value == true) {
-            activeAlarms.add(alarms.levelTwoPackVoltageTooLow.key);
-        }
-        if (alarms.levelOneChargeTempTooHigh.value == true) {
-            activeAlarms.add(alarms.levelOneChargeTempTooHigh.key);
-        }
-        if (alarms.levelTwoChargeTempTooHigh.value == true) {
-            activeAlarms.add(alarms.levelTwoChargeTempTooHigh.key);
-        }
-        if (alarms.levelOneChargeTempTooLow.value == true) {
-            activeAlarms.add(alarms.levelOneChargeTempTooLow.key);
-        }
-        if (alarms.levelTwoChargeTempTooLow.value == true) {
-            activeAlarms.add(alarms.levelTwoChargeTempTooLow.key);
-        }
-        if (alarms.levelOneDischargeTempTooHigh.value == true) {
-            activeAlarms.add(alarms.levelOneDischargeTempTooHigh.key);
-        }
-        if (alarms.levelTwoDischargeTempTooHigh.value == true) {
-            activeAlarms.add(alarms.levelTwoDischargeTempTooHigh.key);
-        }
-        if (alarms.levelOneDischargeTempTooLow.value == true) {
-            activeAlarms.add(alarms.levelOneDischargeTempTooLow.key);
-        }
-        if (alarms.levelTwoDischargeTempTooLow.value == true) {
-            activeAlarms.add(alarms.levelTwoDischargeTempTooLow.key);
-        }
-        if (alarms.levelOneChargeCurrentTooHigh.value == true) {
-            activeAlarms.add(alarms.levelOneChargeCurrentTooHigh.key);
-        }
-        if (alarms.levelTwoChargeCurrentTooHigh.value == true) {
-            activeAlarms.add(alarms.levelTwoChargeCurrentTooHigh.key);
-        }
-        if (alarms.levelOneDischargeCurrentTooHigh.value == true) {
-            activeAlarms.add(alarms.levelOneDischargeCurrentTooHigh.key);
-        }
-        if (alarms.levelTwoDischargeCurrentTooHigh.value == true) {
-            activeAlarms.add(alarms.levelTwoDischargeCurrentTooHigh.key);
-        }
-        if (alarms.levelOneStateOfChargeTooHigh.value == true) {
-            activeAlarms.add(alarms.levelOneStateOfChargeTooHigh.key);
-        }
-        if (alarms.levelTwoStateOfChargeTooHigh.value == true) {
-            activeAlarms.add(alarms.levelTwoStateOfChargeTooHigh.key);
-        }
-        if (alarms.levelOneStateOfChargeTooLow.value == true) {
-            activeAlarms.add(alarms.levelOneStateOfChargeTooLow.key);
-        }
-        if (alarms.levelTwoStateOfChargeTooLow.value == true) {
-            activeAlarms.add(alarms.levelTwoStateOfChargeTooLow.key);
-        }
-        if (alarms.levelOneCellVoltageDifferenceTooHigh.value == true) {
-            activeAlarms.add(alarms.levelOneCellVoltageDifferenceTooHigh.key);
-        }
-        if (alarms.levelTwoCellVoltageDifferenceTooHigh.value == true) {
-            activeAlarms.add(alarms.levelTwoCellVoltageDifferenceTooHigh.key);
-        }
-        if (alarms.levelOneTempSensorDifferenceTooHigh.value == true) {
-            activeAlarms.add(alarms.levelOneTempSensorDifferenceTooHigh.key);
-        }
-        if (alarms.levelTwoTempSensorDifferenceTooHigh.value == true) {
-            activeAlarms.add(alarms.levelTwoTempSensorDifferenceTooHigh.key);
-        }
-        if (alarms.chargeFETTemperatureTooHigh.value == true) {
-            activeAlarms.add(alarms.chargeFETTemperatureTooHigh.key);
-        }
-        if (alarms.dischargeFETTemperatureTooHigh.value == true) {
-            activeAlarms.add(alarms.dischargeFETTemperatureTooHigh.key);
-        }
-        if (alarms.failureOfChargeFETTemperatureSensor.value == true) {
-            activeAlarms.add(alarms.failureOfChargeFETTemperatureSensor.key);
-        }
-        if (alarms.failureOfDischargeFETTemperatureSensor.value == true) {
-            activeAlarms.add(alarms.failureOfDischargeFETTemperatureSensor.key);
-        }
-        if (alarms.failureOfChargeFETAdhesion.value == true) {
-            activeAlarms.add(alarms.failureOfChargeFETAdhesion.key);
-        }
-        if (alarms.failureOfDischargeFETAdhesion.value == true) {
-            activeAlarms.add(alarms.failureOfDischargeFETAdhesion.key);
-        }
-        if (alarms.failureOfChargeFETTBreaker.value == true) {
-            activeAlarms.add(alarms.failureOfChargeFETTBreaker.key);
-        }
-        if (alarms.failureOfDischargeFETBreaker.value == true) {
-            activeAlarms.add(alarms.failureOfDischargeFETBreaker.key);
-        }
-        if (alarms.failureOfAFEAcquisitionModule.value == true) {
-            activeAlarms.add(alarms.failureOfAFEAcquisitionModule.key);
-        }
-        if (alarms.failureOfVoltageSensorModule.value == true) {
-            activeAlarms.add(alarms.failureOfVoltageSensorModule.key);
-        }
-        if (alarms.failureOfTemperatureSensorModule.value == true) {
-            activeAlarms.add(alarms.failureOfTemperatureSensorModule.key);
-        }
-        if (alarms.failureOfEEPROMStorageModule.value == true) {
-            activeAlarms.add(alarms.failureOfEEPROMStorageModule.key);
-        }
-        if (alarms.failureOfRealtimeClockModule.value == true) {
-            activeAlarms.add(alarms.failureOfRealtimeClockModule.key);
-        }
-        if (alarms.failureOfPrechargeModule.value == true) {
-            activeAlarms.add(alarms.failureOfPrechargeModule.key);
-        }
-        if (alarms.failureOfInternalCommunicationModule.value == true) {
-            activeAlarms.add(alarms.failureOfInternalCommunicationModule.key);
-        }
-        if (alarms.failureOfIntranetCommunicationModule.value == true) {
-            activeAlarms.add(alarms.failureOfIntranetCommunicationModule.key);
-        }
-        if (alarms.failureOfCurrentSensorModule.value == true) {
-            activeAlarms.add(alarms.failureOfCurrentSensorModule.key);
-        }
-        if (alarms.failureOfMainVoltageSensorModule.value == true) {
-            activeAlarms.add(alarms.failureOfMainVoltageSensorModule.key);
-        }
-        if (alarms.failureOfShortCircuitProtection.value == true) {
-            activeAlarms.add(alarms.failureOfShortCircuitProtection.key);
-        }
-        if (alarms.failureOfLowVoltageNoCharging.value == true) {
-            activeAlarms.add(alarms.failureOfLowVoltageNoCharging.key);
-        }
-
-        return activeAlarms;
     }
 
 

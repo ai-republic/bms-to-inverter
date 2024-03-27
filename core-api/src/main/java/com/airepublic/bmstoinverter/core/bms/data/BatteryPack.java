@@ -1,11 +1,18 @@
 package com.airepublic.bmstoinverter.core.bms.data;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import com.airepublic.bmstoinverter.core.AlarmLevel;
+
 /**
  * Holds all the data of a set of battery cells - a battery pack - collected from the BMS.
  *
  * Comments specify the precision and units of the value.
  */
 public class BatteryPack {
+    public final Map<Alarm, AlarmLevel> alarms = new HashMap<>();
     // data from 0x53
     /** Battery type: 0=lithium iron, 1=ternary lithium, 2=lithium titanate */
     public int type;
@@ -103,9 +110,6 @@ public class BatteryPack {
     /** boolean is cell balance active */
     public boolean cellBalanceActive;
 
-    // data from 0x98
-    /** alarm states */
-    public Alarms alarms = new Alarms();
     //
     /** The manufacturer code */
     public String manufacturerCode = "";
@@ -144,4 +148,41 @@ public class BatteryPack {
     /** The rated capacity of the module (1Ah) */
     public int moduleRatedCapacityAh;
 
+    /**
+     * Gets all {@link Alarm}s for the given levels.
+     * 
+     * @param levels the {@link AlarmLevel}
+     * @return the matching {@link Alarm}s
+     */
+    public final Map<Alarm, AlarmLevel> getAlarms(final AlarmLevel... levels) {
+        final Map<Alarm, AlarmLevel> result = new HashMap<>();
+
+        for (final AlarmLevel level : levels) {
+            result.putAll(alarms.entrySet().stream().filter(entry -> entry.getValue() == level).collect(Collectors.toMap(entry -> entry.getKey(), entry -> entry.getValue())));
+        }
+
+        return result;
+    }
+
+
+    /**
+     * Sets the {@link Alarm} with its reported {@link AlarmLevel}.
+     *
+     * @param alarm the {@link Alarm}
+     * @param level the {@link AlarmLevel}
+     */
+    public final void setAlarm(final Alarm alarm, final AlarmLevel level) {
+        alarms.put(alarm, level);
+    }
+
+
+    /**
+     * Gets the {@link AlarmLevel} for the specified {@link Alarm}.
+     *
+     * @param alarm the {@link Alarm} to get the {@link AlarmLevel} for
+     * @return the {@link AlarmLevel} or null if not present
+     */
+    public AlarmLevel getAlarmLevel(final Alarm alarm) {
+        return alarms.get(alarm);
+    }
 }

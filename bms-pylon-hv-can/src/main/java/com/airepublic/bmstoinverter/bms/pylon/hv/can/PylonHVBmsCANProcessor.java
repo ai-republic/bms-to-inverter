@@ -10,8 +10,10 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.airepublic.bmstoinverter.core.AlarmLevel;
 import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.Port;
+import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 import com.airepublic.bmstoinverter.core.util.Util;
@@ -221,6 +223,11 @@ public class PylonHVBmsCANProcessor extends BMS {
     }
 
 
+    private AlarmLevel getAlarmLevel(final boolean warning, final boolean alarm) {
+        return alarm ? AlarmLevel.ALARM : warning ? AlarmLevel.WARNING : AlarmLevel.ALARM;
+    }
+
+
     // 0x4250
     private void readAlarms(final BatteryPack pack, final ByteBuffer data) {
         // Basic status
@@ -251,42 +258,30 @@ public class PylonHVBmsCANProcessor extends BMS {
 
         // Error
         final byte error = data.get();
-        pack.alarms.failureOfVoltageSensorModule.value = Util.bit(error, 0);
-        pack.alarms.failureOfTemperatureSensorModule.value = Util.bit(error, 1);
-        pack.alarms.failureOfInternalCommunicationModule.value = Util.bit(error, 2);
-        pack.alarms.failureOfMainVoltageSensorModule.value = Util.bit(error, 3);
-        pack.alarms.failureOfAFEAcquisitionModule.value = Util.bit(error, 4);
-        pack.alarms.failureOfChargeFETTBreaker.value = Util.bit(error, 5);
+        pack.setAlarm(Alarm.FAILURE_SENSOR_PACK_VOLTAGE, Util.bit(error, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.FAILURE_SENSOR_PACK_TEMPERATURE, Util.bit(error, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.FAILURE_COMMUNICATION_INTERNAL, Util.bit(error, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.FAILURE_CHARGE_BREAKER, Util.bit(error, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.FAILURE_OTHER, Util.bits(error, 3, 4) > 0 ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         // Alarm
-        final short alarm = data.getShort();
-        pack.alarms.levelOneCellVoltageTooLow.value = Util.bit(alarm, 0);
-        pack.alarms.levelOneCellVoltageTooHigh.value = Util.bit(alarm, 1);
-        pack.alarms.levelOneStateOfChargeTooLow.value = Util.bit(alarm, 2);
-        pack.alarms.levelOneStateOfChargeTooHigh.value = Util.bit(alarm, 3);
-        pack.alarms.levelOneChargeTempTooLow.value = Util.bit(alarm, 4);
-        pack.alarms.levelOneChargeTempTooHigh.value = Util.bit(alarm, 5);
-        pack.alarms.levelOneDischargeTempTooLow.value = Util.bit(alarm, 6);
-        pack.alarms.levelOneDischargeTempTooHigh.value = Util.bit(alarm, 7);
-        pack.alarms.levelOneChargeCurrentTooHigh.value = Util.bit(alarm, 8);
-        pack.alarms.levelOneDischargeCurrentTooHigh.value = Util.bit(alarm, 9);
-        pack.alarms.levelOnePackVoltageTooLow.value = Util.bit(alarm, 10);
-        pack.alarms.levelOnePackVoltageTooHigh.value = Util.bit(alarm, 11);
-
+        final int alarm = data.getShort();
         // Protection
-        final short protection = data.getShort();
-        pack.alarms.levelTwoCellVoltageTooLow.value = Util.bit(protection, 0);
-        pack.alarms.levelTwoCellVoltageTooHigh.value = Util.bit(protection, 1);
-        pack.alarms.levelTwoStateOfChargeTooLow.value = Util.bit(protection, 2);
-        pack.alarms.levelTwoStateOfChargeTooHigh.value = Util.bit(protection, 3);
-        pack.alarms.levelTwoChargeTempTooLow.value = Util.bit(protection, 4);
-        pack.alarms.levelTwoChargeTempTooHigh.value = Util.bit(protection, 5);
-        pack.alarms.levelTwoDischargeTempTooLow.value = Util.bit(protection, 6);
-        pack.alarms.levelTwoDischargeTempTooHigh.value = Util.bit(protection, 7);
-        pack.alarms.levelTwoChargeCurrentTooHigh.value = Util.bit(protection, 8);
-        pack.alarms.levelTwoDischargeCurrentTooHigh.value = Util.bit(protection, 9);
-        pack.alarms.levelTwoPackVoltageTooLow.value = Util.bit(protection, 10);
-        pack.alarms.levelTwoPackVoltageTooHigh.value = Util.bit(protection, 11);
+        final int protection = data.getShort();
+
+        pack.setAlarm(Alarm.CELL_VOLTAGE_LOW, getAlarmLevel(Util.bit(protection, 0), Util.bit(alarm, 0)));
+        pack.setAlarm(Alarm.CELL_VOLTAGE_HIGH, getAlarmLevel(Util.bit(protection, 1), Util.bit(alarm, 1)));
+        pack.setAlarm(Alarm.DISCHARGE_VOLTAGE_LOW, getAlarmLevel(Util.bit(protection, 2), Util.bit(alarm, 2)));
+        pack.setAlarm(Alarm.CHARGE_VOLTAGE_HIGH, getAlarmLevel(Util.bit(protection, 3), Util.bit(alarm, 3)));
+        pack.setAlarm(Alarm.CHARGE_TEMPERATURE_LOW, getAlarmLevel(Util.bit(protection, 4), Util.bit(alarm, 4)));
+        pack.setAlarm(Alarm.CHARGE_TEMPERATURE_HIGH, getAlarmLevel(Util.bit(protection, 5), Util.bit(alarm, 5)));
+        pack.setAlarm(Alarm.DISCHARGE_TEMPERATURE_LOW, getAlarmLevel(Util.bit(protection, 6), Util.bit(alarm, 6)));
+        pack.setAlarm(Alarm.DISCHARGE_TEMPERATURE_HIGH, getAlarmLevel(Util.bit(protection, 7), Util.bit(alarm, 7)));
+        pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, getAlarmLevel(Util.bit(protection, 8), Util.bit(alarm, 8)));
+        pack.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, getAlarmLevel(Util.bit(protection, 9), Util.bit(alarm, 9)));
+        pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, getAlarmLevel(Util.bit(protection, 10), Util.bit(alarm, 10)));
+        pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, getAlarmLevel(Util.bit(protection, 11), Util.bit(alarm, 11)));
+
     }
 
 

@@ -1,15 +1,14 @@
 package com.airepublic.bmstoinverter.core;
 
 import java.io.IOException;
-import java.lang.reflect.Field;
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
-import com.airepublic.bmstoinverter.core.bms.data.Alarms;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 
@@ -177,7 +176,7 @@ public abstract class Inverter {
             // cellBalanceState
             result.cellBalanceActive |= pack.cellBalanceActive;
 
-            aggregateAlarms(result, pack.alarms);
+            aggregateAlarms(result, pack.getAlarms(AlarmLevel.WARNING, AlarmLevel.ALARM));
 
             result.tempMaxCellNum = Math.max(result.tempMaxCellNum, pack.tempMaxCellNum);
             result.tempMinCellNum = Math.min(result.tempMinCellNum, pack.tempMinCellNum);
@@ -222,16 +221,14 @@ public abstract class Inverter {
     }
 
 
-    private void aggregateAlarms(final BatteryPack result, final Alarms alarms) {
+    private void aggregateAlarms(final BatteryPack result, final Map<Alarm, AlarmLevel> alarms) {
         try {
-            for (final Field field : Alarms.class.getFields()) {
-                if (Alarm.class.equals(field.getType())) {
-                    final Alarm alarm = (Alarm) field.get(alarms);
-                    final Alarm alarmResult = (Alarm) field.get(result.alarms);
 
-                    if (alarm.value) {
-                        alarmResult.value = true;
-                    }
+            for (final Map.Entry<Alarm, AlarmLevel> entry : alarms.entrySet()) {
+                final AlarmLevel level = result.getAlarmLevel(entry.getKey());
+
+                if (level == null || level == AlarmLevel.WARNING && entry.getValue() == AlarmLevel.ALARM) {
+                    result.setAlarm(entry.getKey(), entry.getValue());
                 }
             }
         } catch (final Exception e) {

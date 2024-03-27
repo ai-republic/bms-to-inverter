@@ -7,8 +7,10 @@ import java.util.BitSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.airepublic.bmstoinverter.core.AlarmLevel;
 import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.Port;
+import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 
 /**
@@ -93,72 +95,217 @@ public class SMABmsCANProcessor extends BMS {
 
     // 0x35A
     private void readAlarms(final BatteryPack pack, final ByteBuffer data) {
-        BitSet bits = BitSet.valueOf(new byte[] { data.get() });
-
-        // alarms
-        pack.alarms.levelTwoPackVoltageTooHigh.value = bits.get(2); // pack voltage to high
-        pack.alarms.levelTwoPackVoltageTooHigh.value = !bits.get(3);
-        pack.alarms.levelTwoPackVoltageTooLow.value = bits.get(4); // pack voltage to low
-        pack.alarms.levelTwoPackVoltageTooLow.value = !bits.get(5);
-        pack.alarms.levelTwoChargeTempTooHigh.value = bits.get(6);// pack temp to high
-        pack.alarms.levelTwoChargeTempTooHigh.value = !bits.get(7);
-
-        bits = BitSet.valueOf(new byte[] { data.get() });
-
-        pack.alarms.levelTwoChargeTempTooLow.value = bits.get(0); // pack temp to low
-        pack.alarms.levelTwoChargeTempTooLow.value = !bits.get(1);
-        pack.alarms.levelTwoChargeTempTooHigh.value = bits.get(2);// charge temp to high
-        pack.alarms.levelTwoChargeTempTooHigh.value = !bits.get(3);
-        pack.alarms.levelTwoChargeTempTooLow.value = bits.get(4); // charge temp to low
-        pack.alarms.levelTwoChargeTempTooLow.value = !bits.get(5);
-        pack.alarms.levelTwoChargeCurrentTooHigh.value = bits.get(6); // pack current to high
-        pack.alarms.levelTwoChargeCurrentTooHigh.value = !bits.get(7);
-
-        bits = BitSet.valueOf(new byte[] { data.get() });
-
-        pack.alarms.levelTwoChargeCurrentTooHigh.value = bits.get(0); // charge current to high
-        pack.alarms.levelTwoChargeCurrentTooHigh.value = !bits.get(1);
-        pack.alarms.failureOfShortCircuitProtection.value = bits.get(4); // short circuit
-        pack.alarms.failureOfShortCircuitProtection.value = !bits.get(5);
-
-        bits = BitSet.valueOf(new byte[] { data.get() });
-
-        pack.alarms.levelTwoCellVoltageDifferenceTooHigh.value = bits.get(0); // cell difference to
-                                                                              // high
-        pack.alarms.levelTwoCellVoltageDifferenceTooHigh.value = !bits.get(1);
+        pack.setAlarm(Alarm.FAILURE_OTHER, AlarmLevel.NONE);
 
         // warnings
-        bits = BitSet.valueOf(new byte[] { data.get() });
+        BitSet bits = BitSet.valueOf(new byte[] { data.get(4) });
 
-        pack.alarms.levelOnePackVoltageTooHigh.value = bits.get(2); // pack voltage to high
-        pack.alarms.levelOnePackVoltageTooHigh.value = !bits.get(3);
-        pack.alarms.levelOnePackVoltageTooLow.value = bits.get(4); // pack voltage to low
-        pack.alarms.levelOnePackVoltageTooLow.value = !bits.get(5);
-        pack.alarms.levelOneChargeTempTooHigh.value = bits.get(6);// pack temp to high
-        pack.alarms.levelOneChargeTempTooHigh.value = !bits.get(7);
+        if (bits.get(0)) {
+            pack.setAlarm(Alarm.FAILURE_OTHER, AlarmLevel.WARNING);
+        }
 
-        bits = BitSet.valueOf(new byte[] { data.get() });
+        if (bits.get(1)) {
+            pack.setAlarm(Alarm.FAILURE_OTHER, AlarmLevel.NONE);
+        }
 
-        pack.alarms.levelOneChargeTempTooLow.value = bits.get(0); // pack temp to low
-        pack.alarms.levelOneChargeTempTooLow.value = !bits.get(1);
-        pack.alarms.levelOneChargeTempTooHigh.value = bits.get(2);// charge temp to high
-        pack.alarms.levelOneChargeTempTooHigh.value = !bits.get(3);
-        pack.alarms.levelOneChargeTempTooLow.value = bits.get(4); // charge temp to low
-        pack.alarms.levelOneChargeTempTooLow.value = !bits.get(5);
-        pack.alarms.levelOneChargeCurrentTooHigh.value = bits.get(6); // pack current to high
-        pack.alarms.levelOneChargeCurrentTooHigh.value = !bits.get(7);
+        if (bits.get(2)) {
+            pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, AlarmLevel.WARNING);
+        }
 
-        bits = BitSet.valueOf(new byte[] { data.get() });
+        if (bits.get(3)) {
+            pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, AlarmLevel.NONE);
+        }
 
-        pack.alarms.levelOneChargeCurrentTooHigh.value = bits.get(0); // charge current to high
-        pack.alarms.levelOneChargeCurrentTooHigh.value = !bits.get(1);
-        pack.alarms.failureOfShortCircuitProtection.value = bits.get(4); // short circuit
-        pack.alarms.failureOfShortCircuitProtection.value = !bits.get(5);
+        if (bits.get(4)) {
+            pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, AlarmLevel.WARNING);
+        }
 
-        bits = BitSet.valueOf(new byte[] { data.get() });
+        if (bits.get(5)) {
+            pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, AlarmLevel.NONE);
+        }
 
-        pack.alarms.levelOneCellVoltageDifferenceTooHigh.value = bits.get(0); // cell difference to
-        pack.alarms.levelOneCellVoltageDifferenceTooHigh.value = !bits.get(1);
+        if (bits.get(6)) {
+            pack.setAlarm(Alarm.PACK_TEMPERATURE_HIGH, AlarmLevel.WARNING);
+        }
+
+        if (bits.get(7)) {
+            pack.setAlarm(Alarm.PACK_TEMPERATURE_HIGH, AlarmLevel.NONE);
+        }
+
+        bits = BitSet.valueOf(new byte[] { data.get(5) });
+
+        if (bits.get(0)) {
+            pack.setAlarm(Alarm.PACK_TEMPERATURE_LOW, AlarmLevel.WARNING);
+        }
+
+        if (bits.get(1)) {
+            pack.setAlarm(Alarm.PACK_TEMPERATURE_LOW, AlarmLevel.NONE);
+        }
+
+        if (bits.get(2)) {
+            pack.setAlarm(Alarm.CHARGE_TEMPERATURE_HIGH, AlarmLevel.WARNING);
+        }
+
+        if (bits.get(3)) {
+            pack.setAlarm(Alarm.CHARGE_TEMPERATURE_HIGH, AlarmLevel.NONE);
+        }
+
+        if (bits.get(4)) {
+            pack.setAlarm(Alarm.CHARGE_TEMPERATURE_LOW, AlarmLevel.WARNING);
+        }
+
+        if (bits.get(5)) {
+            pack.setAlarm(Alarm.CHARGE_TEMPERATURE_LOW, AlarmLevel.NONE);
+        }
+
+        if (bits.get(6)) {
+            pack.setAlarm(Alarm.PACK_CURRENT_HIGH, AlarmLevel.WARNING);
+        }
+
+        if (bits.get(7)) {
+            pack.setAlarm(Alarm.PACK_CURRENT_HIGH, AlarmLevel.NONE);
+        }
+
+        bits = BitSet.valueOf(new byte[] { data.get(6) });
+
+        if (bits.get(0)) {
+            pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, AlarmLevel.WARNING);
+        }
+
+        if (bits.get(1)) {
+            pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, AlarmLevel.NONE);
+        }
+
+        if (bits.get(4)) {
+            pack.setAlarm(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, AlarmLevel.WARNING);
+        }
+
+        if (bits.get(5)) {
+            pack.setAlarm(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, AlarmLevel.NONE);
+        }
+
+        if (bits.get(6) && pack.getAlarmLevel(Alarm.FAILURE_OTHER) != AlarmLevel.WARNING) {
+            pack.setAlarm(Alarm.FAILURE_OTHER, AlarmLevel.WARNING);
+        }
+
+        if (bits.get(7)) {
+            pack.setAlarm(Alarm.FAILURE_OTHER, AlarmLevel.NONE);
+        }
+
+        bits = BitSet.valueOf(new byte[] { data.get(7) });
+
+        if (bits.get(0)) {
+            pack.setAlarm(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, AlarmLevel.WARNING);
+        }
+
+        if (bits.get(1)) {
+            pack.setAlarm(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, AlarmLevel.NONE);
+        }
+
+        // alarms
+        bits = BitSet.valueOf(new byte[] { data.get(0) });
+
+        if (bits.get(0)) {
+            pack.setAlarm(Alarm.FAILURE_OTHER, AlarmLevel.ALARM);
+        }
+
+        if (bits.get(1)) {
+            pack.setAlarm(Alarm.FAILURE_OTHER, AlarmLevel.NONE);
+        }
+
+        if (bits.get(2)) {
+            pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, AlarmLevel.ALARM);
+        }
+
+        if (bits.get(3)) {
+            pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, AlarmLevel.NONE);
+        }
+
+        if (bits.get(4)) {
+            pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, AlarmLevel.ALARM);
+        }
+
+        if (bits.get(5)) {
+            pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, AlarmLevel.NONE);
+        }
+
+        if (bits.get(6)) {
+            pack.setAlarm(Alarm.PACK_TEMPERATURE_HIGH, AlarmLevel.ALARM);
+        }
+
+        if (bits.get(7)) {
+            pack.setAlarm(Alarm.PACK_TEMPERATURE_HIGH, AlarmLevel.NONE);
+        }
+
+        bits = BitSet.valueOf(new byte[] { data.get(1) });
+
+        if (bits.get(0)) {
+            pack.setAlarm(Alarm.PACK_TEMPERATURE_LOW, AlarmLevel.ALARM);
+        }
+
+        if (bits.get(1)) {
+            pack.setAlarm(Alarm.PACK_TEMPERATURE_LOW, AlarmLevel.NONE);
+        }
+
+        if (bits.get(2)) {
+            pack.setAlarm(Alarm.CHARGE_TEMPERATURE_HIGH, AlarmLevel.ALARM);
+        }
+
+        if (bits.get(3)) {
+            pack.setAlarm(Alarm.CHARGE_TEMPERATURE_HIGH, AlarmLevel.NONE);
+        }
+
+        if (bits.get(4)) {
+            pack.setAlarm(Alarm.CHARGE_TEMPERATURE_LOW, AlarmLevel.ALARM);
+        }
+
+        if (bits.get(5)) {
+            pack.setAlarm(Alarm.CHARGE_TEMPERATURE_LOW, AlarmLevel.NONE);
+        }
+
+        if (bits.get(6)) {
+            pack.setAlarm(Alarm.PACK_CURRENT_HIGH, AlarmLevel.ALARM);
+        }
+
+        if (bits.get(7)) {
+            pack.setAlarm(Alarm.PACK_CURRENT_HIGH, AlarmLevel.NONE);
+        }
+
+        bits = BitSet.valueOf(new byte[] { data.get(2) });
+
+        if (bits.get(0)) {
+            pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, AlarmLevel.ALARM);
+        }
+
+        if (bits.get(1)) {
+            pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, AlarmLevel.NONE);
+        }
+
+        if (bits.get(4)) {
+            pack.setAlarm(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, AlarmLevel.ALARM);
+        }
+
+        if (bits.get(5)) {
+            pack.setAlarm(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, AlarmLevel.NONE);
+        }
+
+        if (bits.get(6) && pack.getAlarmLevel(Alarm.FAILURE_OTHER) != AlarmLevel.ALARM) {
+            pack.setAlarm(Alarm.FAILURE_OTHER, AlarmLevel.ALARM);
+        }
+
+        if (bits.get(7)) {
+            pack.setAlarm(Alarm.FAILURE_OTHER, AlarmLevel.NONE);
+        }
+
+        bits = BitSet.valueOf(new byte[] { data.get(3) });
+
+        if (bits.get(0)) {
+            pack.setAlarm(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, AlarmLevel.ALARM);
+        }
+
+        if (bits.get(1)) {
+            pack.setAlarm(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, AlarmLevel.NONE);
+        }
     }
 
 

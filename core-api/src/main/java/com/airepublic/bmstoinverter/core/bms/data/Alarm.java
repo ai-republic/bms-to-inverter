@@ -1,22 +1,61 @@
 package com.airepublic.bmstoinverter.core.bms.data;
 
-/**
- * Class to represent a warning or alarm from the BMS.
- */
-public class Alarm {
-    /** The key identifier to look up the internationalized message. */
-    public String key;
-    /** The flag if the warning/alarm is active. */
-    public boolean value = false;
+import com.airepublic.bmstoinverter.core.BMS;
 
-    /**
-     * Constructor.
-     * 
-     * @param key the key identifier to look up the internationalized message
-     * @param value the flag if the warning/alarm is active
-     */
-    public Alarm(final String key, final boolean value) {
-        this.key = key;
-        this.value = value;
-    }
+/**
+ * Alarms holds alarm and warning flags for all possible errors/warnings from a {@link BMS}.
+ */
+public enum Alarm {
+    CELL_VOLTAGE_HIGH,
+    CELL_VOLTAGE_LOW,
+    CELL_VOLTAGE_DIFFERENCE_HIGH,
+    CELL_TEMPERATURE_HIGH,
+    CELL_TEMPERATURE_LOW,
+
+    PACK_VOLTAGE_HIGH,
+    PACK_VOLTAGE_LOW,
+    PACK_CURRENT_HIGH,
+    PACK_CURRENT_LOW,
+    PACK_TEMPERATURE_HIGH,
+    PACK_TEMPERATURE_LOW,
+
+    CHARGE_CURRENT_HIGH,
+    CHARGE_VOLTAGE_HIGH,
+    CHARGE_VOLTAGE_LOW,
+    CHARGE_TEMPERATURE_HIGH,
+    CHARGE_TEMPERATURE_LOW,
+    CHARGE_MODULE_TEMPERATURE_HIGH,
+
+    DISCHARGE_CURRENT_HIGH,
+    DISCHARGE_VOLTAGE_HIGH,
+    DISCHARGE_VOLTAGE_LOW,
+    DISCHARGE_TEMPERATURE_HIGH,
+    DISCHARGE_TEMPERATURE_LOW,
+    DISCHARGE_MODULE_TEMPERATURE_HIGH,
+
+    SOC_HIGH,
+    SOC_LOW,
+
+    ENCASING_TEMPERATURE_HIGH,
+
+    TEMPERATURE_SENSOR_DIFFERENCE_HIGH,
+
+    FAILURE_SENSOR_CELL_TEMPERATURE,
+    FAILURE_SENSOR_PACK_TEMPERATURE,
+    FAILURE_SENSOR_CHARGE_MODULE_TEMPERATURE,
+    FAILURE_SENSOR_DISCHARGE_MODULE_TEMPERATURE,
+    FAILURE_SENSOR_PACK_VOLTAGE,
+    FAILURE_SENSOR_PACK_CURRENT,
+
+    FAILURE_COMMUNICATION_INTERNAL,
+    FAILURE_COMMUNICATION_EXTERNAL,
+    FAILURE_CLOCK_MODULE,
+    FAILURE_CHARGE_BREAKER,
+    FAILURE_DISCHARGE_BREAKER,
+    FAILURE_SHORT_CIRCUIT_PROTECTION,
+    FAILURE_EEPROM_MODULE,
+    FAILURE_PRECHARGE_MODULE,
+    FAILURE_NOT_CHARGING_DUE_TO_LOW_VOLTAGE,
+
+    FAILURE_OTHER;
 }
