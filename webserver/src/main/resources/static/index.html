@@ -222,7 +222,10 @@
 	function getAlarmState(bmsNo) {
 		var alarms = new Array();
 		var idx = 0;
-		for (let [key, value] of  bmsData.batteryPacks[bmsNo].alarms.entries()) {
+		var map = new Map(Object.entries(bmsData.batteryPacks[bmsNo].alarms));
+		
+		for (let [key, value] of map) {
+			
 			if (value != 'NONE') {
 				alarms[idx++] = value + ': ' + key;
 			}
