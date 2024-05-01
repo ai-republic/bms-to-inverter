@@ -2,7 +2,10 @@ package com.airepublic.bmstoinverter.service.mqtt;
 
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.QueueConfiguration;
+import org.apache.activemq.artemis.api.core.RoutingType;
+import org.apache.activemq.artemis.api.core.SimpleString;
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
+import org.apache.activemq.artemis.api.core.client.ClientConsumer;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.ClientProducer;
 import org.apache.activemq.artemis.api.core.client.ClientSession;
@@ -40,8 +43,7 @@ public class MQTTBrokerService implements IMQTTBrokerService {
             final Configuration config = new ConfigurationImpl();
             config.setSecurityEnabled(false);
             config.setPersistenceEnabled(false);
-
-            config.addAcceptorConfiguration("tcp", locator);
+            config.addAcceptorConfiguration("tcp", locator + "?protocols=CORE,MQTT");
 
             embedded = new EmbeddedActiveMQ();
             embedded.setConfiguration(config);
@@ -59,15 +61,15 @@ public class MQTTBrokerService implements IMQTTBrokerService {
 
 
     @Override
-    public void createTopic(final String topic, final long ringSize) {
+    public void createAddress(final String address, final boolean isMulticast) {
         try (final ServerLocator serverLocator = ActiveMQClient.createServerLocator(locator)) {
             final ClientSessionFactory factory = serverLocator.createSessionFactory();
             final ClientSession session = factory.createSession();
 
-            session.createQueue(new QueueConfiguration(topic).setRingSize(ringSize));
+            session.createAddress(new SimpleString(address), isMulticast ? RoutingType.MULTICAST : RoutingType.ANYCAST, true);
             session.close();
         } catch (final Exception e) {
-            LOG.error("Error creating topic {}", topic);
+            LOG.error("Error creating topic {}", address);
         }
     }
 
@@ -109,30 +111,66 @@ public class MQTTBrokerService implements IMQTTBrokerService {
      * @param args none
      */
     public static void main(final String[] args) {
-        final String locator = "tcp://127.0.0.1:61616";
-        final String topic = "energystorage";
+        final String locator = "tcp://localhost:61616";
+        final String address = "energystorage";
+        final String queue1 = "1";
+        final String queue2 = "2";
         final MQTTBrokerService mqtt = new MQTTBrokerService();
 
         try {
 
             mqtt.start(locator);
 
+            mqtt.createAddress(address, true);
+
             final ServerLocator serverLocator = ActiveMQClient.createServerLocator(locator);
             final ClientSessionFactory factory = serverLocator.createSessionFactory();
             final ClientSession session = factory.createSession();
 
-            session.createQueue(new QueueConfiguration(topic).setRingSize(1L));
+            session.createQueue(new QueueConfiguration(address + "::" + queue1).setRingSize(1L).setRoutingType(RoutingType.MULTICAST));
+            session.createQueue(new QueueConfiguration(address + "::" + queue2).setRingSize(1L).setRoutingType(RoutingType.MULTICAST));
 
-            final ClientProducer producer = session.createProducer(topic);
-            final ClientMessage message = session.createMessage(true);
-            message.getBodyBuffer().writeString("Hello");
-            producer.send(message);
+            final ClientConsumer consumer = session.createConsumer(address + "::" + queue1);
+            consumer.setMessageHandler(msg -> {
+                System.out.println("----------> Consumer#1 Received message: " + msg.getBodyBuffer().readString());
+            });
+
+            final ServerLocator serverLocator2 = ActiveMQClient.createServerLocator(locator);
+            final ClientSessionFactory factory2 = serverLocator2.createSessionFactory();
+            final ClientSession session2 = factory2.createSession();
+            final ClientConsumer consumer2 = session2.createConsumer(address + "::" + queue2);
+            consumer2.setMessageHandler(msg -> {
+                System.out.println("----------> Consumer#2 Received message: " + msg.getBodyBuffer().readString());
+            });
+
+            final ServerLocator serverLocator3 = ActiveMQClient.createServerLocator(locator);
+            final ClientSessionFactory factory3 = serverLocator3.createSessionFactory();
+            final ClientSession session3 = factory3.createSession();
+            final ClientProducer producer = session3.createProducer(address);
 
             session.start();
-            // final ClientConsumer consumer = session.createConsumer("example");
-            // final ClientMessage msgReceived = consumer.receive();
-            // System.out.println("message = " + msgReceived.getBodyBuffer().readString());
-            // session.close();
+            session2.start();
+            session3.start();
+
+            final ServerLocator serverLocator4 = ActiveMQClient.createServerLocator(locator);
+            final ClientSessionFactory factory4 = serverLocator4.createSessionFactory();
+            final ClientSession session4 = factory4.createSession();
+
+            ClientMessage message = session4.createMessage(true);
+            message.setRoutingType(RoutingType.MULTICAST);
+            message.writeBodyBufferString("Hello");
+            producer.send(message);
+
+            message = session4.createMessage(true);
+            message.setRoutingType(RoutingType.MULTICAST);
+            message.writeBodyBufferString("Hello2");
+            producer.send(message);
+
+            message = session4.createMessage(true);
+            message.setRoutingType(RoutingType.MULTICAST);
+            message.writeBodyBufferString("Hello3");
+            producer.send(message);
+
         } catch (final ActiveMQException e) {
             e.printStackTrace();
         } catch (final Exception e) {

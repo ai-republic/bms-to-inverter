@@ -1,13 +1,16 @@
 package com.airepublic.bmstoinverter.service.mqtt;
 
 import java.io.IOException;
+import java.util.function.Consumer;
 
+import org.apache.activemq.artemis.api.core.QueueConfiguration;
+import org.apache.activemq.artemis.api.core.RoutingType;
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.apache.activemq.artemis.api.core.client.ClientConsumer;
-import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.ClientSession;
 import org.apache.activemq.artemis.api.core.client.ClientSessionFactory;
 import org.apache.activemq.artemis.api.core.client.ServerLocator;
+import org.jgroups.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,19 +25,27 @@ public class MQTTConsumerService implements IMQTTConsumerService {
     private ClientSession session;
     private ClientConsumer consumer;
     private String locator;
-    private String topic;
 
     @Override
-    public MQTTConsumerService create(final String locator, final String topic) throws IOException {
+    public MQTTConsumerService create(final String locator, final String address, final Consumer<String> messageHandler) throws IOException {
         this.locator = locator;
-        this.topic = topic;
 
         try {
             final ServerLocator serverLocator = ActiveMQClient.createServerLocator(locator);
             final ClientSessionFactory factory = serverLocator.createSessionFactory();
             session = factory.createSession();
             session.start();
-            consumer = session.createConsumer(topic);
+
+            final String name = UUID.randomUUID().toString();
+            final QueueConfiguration config = new QueueConfiguration()
+                    .setAddress(address)
+                    .setName(name)
+                    .setRingSize(1L)
+                    .setRoutingType(RoutingType.MULTICAST)
+                    .setAutoDelete(false);
+            session.createQueue(config);
+            consumer = session.createConsumer(address + "::" + name);
+            consumer.setMessageHandler(msg -> messageHandler.accept(msg.getBodyBuffer().readString()));
 
             running = true;
             return this;
@@ -45,38 +56,38 @@ public class MQTTConsumerService implements IMQTTConsumerService {
             } catch (final Exception e1) {
             }
 
-            throw new IOException("Could not create MQTT producer client at " + locator + " on topic " + topic, e);
+            throw new IOException("Could not create MQTT producer client at " + locator + " on address " + address, e);
         }
     }
 
 
     @Override
     public boolean isRunning() {
-        return running;
-    }
-
-
-    @Override
-    public String consume(final long timeoutMs) throws IOException {
-        try {
-            final ClientMessage message = consumer.receive(timeoutMs);
-
-            if (message != null) {
-                return message.getBodyBuffer().readString();
-            }
-
-            return null;
-        } catch (final Exception e) {
-            throw new IOException("Could not receive MQTT message on topic " + topic, e);
+        if (session != null && session.isClosed() || consumer != null && consumer.isClosed()) {
+            stop();
         }
+
+        return running;
     }
 
 
     @Override
     public void stop() {
         try {
-            session.close();
-            running = false;
+            if (consumer != null) {
+                try {
+                    consumer.close();
+                    consumer = null;
+                } catch (final Exception e) {
+                }
+            }
+
+            if (session != null) {
+                session.stop();
+                session.close();
+                session = null;
+                running = false;
+            }
         } catch (final Exception e) {
             throw new RuntimeException("Failed to stop MQTT consumer!", e);
         }
@@ -111,8 +122,8 @@ public class MQTTConsumerService implements IMQTTConsumerService {
             producer.close();
 
             final MQTTConsumerService consumer = new MQTTConsumerService();
-            consumer.create(locator, topic);
-            System.out.println(consumer.consume(5000));
+            consumer.create(locator, topic, System.out::println);
+
             consumer.close();
 
         } catch (final Exception e) {

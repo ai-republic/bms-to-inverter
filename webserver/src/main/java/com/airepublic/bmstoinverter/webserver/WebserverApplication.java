@@ -1,13 +1,9 @@
 package com.airepublic.bmstoinverter.webserver;
 
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 import java.util.ServiceLoader;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,33 +61,20 @@ public class WebserverApplication {
 
         alarmMessages = new Gson().toJson(map);
 
-        startMQTTClient();
+        startMQTTConsumer();
     }
 
 
-    private void startMQTTClient() throws Exception {
-        final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
+    private void startMQTTConsumer() throws Exception {
         LOG.info("Connecting to MQTT at {}/{}", locator, topic);
-        mqtt.create(locator, topic);
 
         try {
+            mqtt.create(locator, topic, msg -> {
+                data = msg;
+                LOG.info("Successfully received data");
+
+            });
             LOG.info("Connected to MQTT at {}/{}", locator, topic);
-
-            executor.scheduleAtFixedRate(() -> {
-                try {
-                    synchronized (data) {
-                        final String message = mqtt.consume(1000);
-
-                        if (message != null) {
-                            data = message;
-                        }
-                    }
-                    LOG.info("Successfully received data");
-
-                } catch (final IOException e) {
-                    LOG.error("Error receiving MQTT data", e);
-                }
-            }, 0, 1000, TimeUnit.MILLISECONDS);
 
         } catch (final Exception e) {
             LOG.error("Error initializing MQTT consumer", e);
@@ -106,6 +89,19 @@ public class WebserverApplication {
      */
     @GetMapping("/data")
     public String data() {
+        if (!mqtt.isRunning()) {
+            try {
+                mqtt.close();
+            } catch (final Exception e) {
+            }
+
+            try {
+                startMQTTConsumer();
+                Thread.sleep(1000L);
+            } catch (final Exception e) {
+            }
+        }
+
         synchronized (data) {
             return data;
         }

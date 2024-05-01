@@ -97,13 +97,13 @@ public class BmsToInverter implements AutoCloseable {
             }
 
             final String locator = System.getProperty("mqtt.broker.locator");
-            final String topic = System.getProperty("mqtt.broker.topic");
+            final String address = System.getProperty("mqtt.broker.topic");
 
             try {
                 mqttBroker.start(locator);
-                mqttBroker.createTopic(topic, 1L);
+                mqttBroker.createAddress(address, true);
             } catch (final Exception e) {
-                LOG.error("Could not start MQTT broker at {} on topic {}", locator, topic, e);
+                LOG.error("Could not start MQTT broker at {} on topic {}", locator, address, e);
             }
         }
 
@@ -269,7 +269,7 @@ public class BmsToInverter implements AutoCloseable {
         }
 
         if (!currentAlarms.isEmpty()) {
-            LOG.info("BMS alarms:\n" + currentAlarms.toString());
+            LOG.info("BMS alarms:\n" + alarmContent.toString());
         } else {
             LOG.info("BMS alarms: \n\tNONE");
         }

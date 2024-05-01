@@ -2,6 +2,7 @@ package com.airepublic.bmstoinverter.service.mqtt;
 
 import java.io.IOException;
 
+import org.apache.activemq.artemis.api.core.RoutingType;
 import org.apache.activemq.artemis.api.core.client.ActiveMQClient;
 import org.apache.activemq.artemis.api.core.client.ClientMessage;
 import org.apache.activemq.artemis.api.core.client.ClientProducer;
@@ -25,19 +26,19 @@ public class MQTTProducerService implements IMQTTProducerService {
     private String locator;
 
     @Override
-    public MQTTProducerService connect(final String locator, final String topic) throws IOException {
+    public MQTTProducerService connect(final String locator, final String address) throws IOException {
         this.locator = locator;
-        this.topic = topic;
+        topic = address;
 
         try {
 
             final ServerLocator serverLocator = ActiveMQClient.createServerLocator(locator);
             final ClientSessionFactory factory = serverLocator.createSessionFactory();
             session = factory.createSession();
-            producer = session.createProducer(topic);
             session.start();
+            producer = session.createProducer(address);
 
-            LOG.info("Connected MQTT producer at {} to topic {}", locator, topic);
+            LOG.info("Connected MQTT producer at {} to topic {}", locator, address);
             running = true;
             return this;
         } catch (final Exception e) {
@@ -47,7 +48,7 @@ public class MQTTProducerService implements IMQTTProducerService {
             } catch (final Exception e1) {
             }
 
-            throw new IOException("Could not create MQTT producer client at " + locator + " on topic " + topic, e);
+            throw new IOException("Could not create MQTT producer client at " + locator + " on topic " + address, e);
         }
     }
 
@@ -61,13 +62,13 @@ public class MQTTProducerService implements IMQTTProducerService {
     @Override
     public void sendMessage(final String content) throws IOException {
         try {
-            final ClientMessage message = session.createMessage(true);
-            message.getBodyBuffer().writeString(content);
+            final ClientMessage message = session.createMessage(false);
+            message.setRoutingType(RoutingType.MULTICAST);
+            message.writeBodyBufferString(content);
             producer.send(message);
         } catch (final Exception e) {
             throw new IOException("Could not send MQTT message on topic " + topic, e);
         }
-
     }
 
 
@@ -107,8 +108,9 @@ public class MQTTProducerService implements IMQTTProducerService {
             final ClientSession session = factory.createSession();
 
             final ClientProducer producer = session.createProducer("energystorage");
-            final ClientMessage message = session.createMessage(true);
-            message.getBodyBuffer().writeString("Hello from producer");
+            final ClientMessage message = session.createMessage(false);
+            message.setRoutingType(RoutingType.MULTICAST);
+            message.writeBodyBufferString("Hello from producer");
             producer.send(message);
 
             session.start();

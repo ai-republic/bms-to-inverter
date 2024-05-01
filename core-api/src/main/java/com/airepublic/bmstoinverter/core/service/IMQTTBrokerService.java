@@ -6,12 +6,13 @@ package com.airepublic.bmstoinverter.core.service;
 public interface IMQTTBrokerService extends AutoCloseable {
 
     /**
-     * Creates the specified topic with the specified amount of message held in the ring.
+     * Creates the specified address where queues can be added.
      *
-     * @param topic the topic name
-     * @param ringSize the amount of message kept in the ring
+     * @param address the topic name
+     * @param isMulticast true if the topic is a multi-cast topic (each message delivered to all
+     *        consumers)
      */
-    void createTopic(String topic, long ringSize);
+    void createAddress(String address, boolean isMulticast);
 
 
     /**
