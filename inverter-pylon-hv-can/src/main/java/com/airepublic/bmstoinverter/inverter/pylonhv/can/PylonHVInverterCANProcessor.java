@@ -147,6 +147,8 @@ public class PylonHVInverterCANProcessor extends Inverter {
         frame.putShort((short) pack.maxPackVoltageLimit);
         // Discharge cutoff voltage (0.1V)
         frame.putShort((short) pack.minPackVoltageLimit);
+
+        // TODO check if these should be swapped as described in Growatt_Battery_BMS.pdf
         // Max charge current (0.1A) offset -3000A
         frame.putShort((short) (pack.maxPackChargeCurrent + 30000));
         // Max discharge current (0.1A) offset -3000A

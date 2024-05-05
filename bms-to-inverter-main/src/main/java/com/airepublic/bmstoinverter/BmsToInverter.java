@@ -116,12 +116,12 @@ public class BmsToInverter implements AutoCloseable {
             }
 
             final String locator = System.getProperty("mqtt.producer.locator");
-            final String topic = System.getProperty("mqtt.producer.topic");
+            final String address = System.getProperty("mqtt.producer.topic");
 
             try {
-                mqttProducer.connect(locator, topic);
+                mqttProducer.connect(locator, address);
             } catch (final Exception e) {
-                LOG.error("Could not connect MQTT producer client at {} on topic {}", locator, topic, e);
+                LOG.error("Could not connect MQTT producer client at {} on topic {}", locator, address, e);
             }
         }
 

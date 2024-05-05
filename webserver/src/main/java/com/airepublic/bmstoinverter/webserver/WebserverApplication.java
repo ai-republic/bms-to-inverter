@@ -69,7 +69,7 @@ public class WebserverApplication {
         LOG.info("Connecting to MQTT at {}/{}", locator, topic);
 
         try {
-            mqtt.create(locator, topic, msg -> {
+            mqtt.createQueueOnAddress(locator, topic, msg -> {
                 data = msg;
                 LOG.info("Successfully received data");
 

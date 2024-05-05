@@ -182,6 +182,8 @@ public class PylonHVBmsCANProcessor extends BMS {
         pack.maxPackVoltageLimit = data.getShort();
         // Discharge cutoff voltage (0.1V)
         pack.minPackVoltageLimit = data.getShort();
+
+        // TODO check if these should be swapped as described in Growatt_Battery_BMS.pdf
         // Max charge current (0.1A) offset -3000A
         pack.maxPackChargeCurrent = data.getShort() - 30000;
         // Max discharge current (0.1A) offset -3000A
@@ -318,9 +320,9 @@ public class PylonHVBmsCANProcessor extends BMS {
     // 0x4280
     private void readChargeForbiddenMarks(final BatteryPack pack, final ByteBuffer data) {
         // flag if charging is forbidden
-        pack.chargeMOSState = data.get() != 0xAA;
+        pack.chargeMOSState = data.get() != (byte) 0xAA;
         // flag if discharging is forbidden
-        pack.dischargeMOSState = data.get() != 0xAA;
+        pack.dischargeMOSState = data.get() != (byte) 0xAA;
 
         LOG.debug("\nCharge Forbidden\tDischarge Forbidden\n\t{}\t\t{}", pack.chargeMOSState, pack.dischargeMOSState);
     }

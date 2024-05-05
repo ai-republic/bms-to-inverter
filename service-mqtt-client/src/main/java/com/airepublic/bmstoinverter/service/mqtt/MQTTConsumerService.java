@@ -27,7 +27,7 @@ public class MQTTConsumerService implements IMQTTConsumerService {
     private String locator;
 
     @Override
-    public MQTTConsumerService create(final String locator, final String address, final Consumer<String> messageHandler) throws IOException {
+    public MQTTConsumerService createQueueOnAddress(final String locator, final String address, final Consumer<String> messageHandler) throws IOException {
         this.locator = locator;
 
         try {
@@ -122,7 +122,7 @@ public class MQTTConsumerService implements IMQTTConsumerService {
             producer.close();
 
             final MQTTConsumerService consumer = new MQTTConsumerService();
-            consumer.create(locator, topic, System.out::println);
+            consumer.createQueueOnAddress(locator, topic, System.out::println);
 
             consumer.close();
 

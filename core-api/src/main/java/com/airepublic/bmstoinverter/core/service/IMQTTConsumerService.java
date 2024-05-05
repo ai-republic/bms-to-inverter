@@ -14,7 +14,7 @@ public interface IMQTTConsumerService extends AutoCloseable {
      * @param messageHandler the function to handle the incoming message
      * @throws Exception if an error occurs
      */
-    IMQTTConsumerService create(String locator, String topic, Consumer<String> messageHandler) throws Exception;
+    IMQTTConsumerService createQueueOnAddress(String locator, String topic, Consumer<String> messageHandler) throws Exception;
 
 
     /**
