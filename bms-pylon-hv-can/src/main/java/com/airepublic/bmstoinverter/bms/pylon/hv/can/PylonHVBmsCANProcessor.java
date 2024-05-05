@@ -324,7 +324,7 @@ public class PylonHVBmsCANProcessor extends BMS {
         // flag if discharging is forbidden
         pack.dischargeMOSState = data.get() != (byte) 0xAA;
 
-        LOG.debug("\nCharge Forbidden\tDischarge Forbidden\n\t{}\t\t{}", pack.chargeMOSState, pack.dischargeMOSState);
+        LOG.debug("\nCharge Forbidden\tDischarge Forbidden\n\t{}\t\t{}", !pack.chargeMOSState, !pack.dischargeMOSState);
     }
 
 
