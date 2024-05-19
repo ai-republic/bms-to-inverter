@@ -36,7 +36,7 @@ public class MQTTProducerService implements IMQTTProducerService {
     private String locator;
 
     @Override
-    public MQTTProducerService connect(final String locator, final String address) throws IOException {
+    public MQTTProducerService connect(final String locator, final String address, final String username, final String password) throws IOException {
         this.locator = locator;
         topic = address;
 
@@ -44,7 +44,7 @@ public class MQTTProducerService implements IMQTTProducerService {
 
             final ServerLocator serverLocator = ActiveMQClient.createServerLocator(locator);
             final ClientSessionFactory factory = serverLocator.createSessionFactory();
-            session = factory.createSession();
+            session = factory.createSession(username, password, false, true, true, true, 1);
             session.start();
             producer = session.createProducer(address);
 

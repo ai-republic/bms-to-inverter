@@ -18,6 +18,7 @@ import java.util.Properties;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 public class MQTTServicePanel extends JPanel {
@@ -26,6 +27,10 @@ public class MQTTServicePanel extends JPanel {
     private final JTextField mqttProducerLocatorField;
     private final JLabel mqttProducerTopicLabel;
     private final JTextField mqttProducerTopicField;
+    private final JLabel mqttProducerUsernameLabel;
+    private final JTextField mqttProducerUsernameField;
+    private final JLabel mqttProducerPasswordLabel;
+    private final JTextField mqttProducerPasswordField;
     private final JCheckBox activateMQTTBrokerCheckBox;
     private final JCheckBox activateMQTTProducerCheckBox;
     private final JLabel mqttBrokerLocatorLabel;
@@ -91,6 +96,44 @@ public class MQTTServicePanel extends JPanel {
         gbc_mqttProducerTopicField.gridy = 2;
         add(mqttProducerTopicField, gbc_mqttProducerTopicField);
 
+        mqttProducerUsernameLabel = new JLabel("Username");
+        mqttProducerUsernameLabel.setEnabled(false);
+        final GridBagConstraints gbc_mqttProducerUsernameLabel = new GridBagConstraints();
+        gbc_mqttProducerUsernameLabel.anchor = GridBagConstraints.EAST;
+        gbc_mqttProducerUsernameLabel.insets = new Insets(0, 0, 5, 5);
+        gbc_mqttProducerUsernameLabel.gridx = 0;
+        gbc_mqttProducerUsernameLabel.gridy = 3;
+        add(mqttProducerUsernameLabel, gbc_mqttProducerUsernameLabel);
+
+        mqttProducerUsernameField = new JTextField();
+        mqttProducerUsernameField.setColumns(10);
+        mqttProducerUsernameField.setEnabled(false);
+        final GridBagConstraints gbc_mqttProducerUsernamerField = new GridBagConstraints();
+        gbc_mqttProducerUsernamerField.fill = GridBagConstraints.BOTH;
+        gbc_mqttProducerUsernamerField.insets = new Insets(0, 0, 5, 0);
+        gbc_mqttProducerUsernamerField.gridx = 1;
+        gbc_mqttProducerUsernamerField.gridy = 3;
+        add(mqttProducerUsernameField, gbc_mqttProducerUsernamerField);
+
+        mqttProducerPasswordLabel = new JLabel("Password");
+        mqttProducerPasswordLabel.setEnabled(false);
+        final GridBagConstraints gbc_mqttProducerPasswordLabel = new GridBagConstraints();
+        gbc_mqttProducerPasswordLabel.anchor = GridBagConstraints.EAST;
+        gbc_mqttProducerPasswordLabel.insets = new Insets(0, 0, 5, 5);
+        gbc_mqttProducerPasswordLabel.gridx = 0;
+        gbc_mqttProducerPasswordLabel.gridy = 4;
+        add(mqttProducerPasswordLabel, gbc_mqttProducerPasswordLabel);
+
+        mqttProducerPasswordField = new JPasswordField();
+        mqttProducerPasswordField.setColumns(10);
+        mqttProducerPasswordField.setEnabled(false);
+        final GridBagConstraints gbc_mqttProducerPasswordField = new GridBagConstraints();
+        gbc_mqttProducerPasswordField.insets = new Insets(0, 0, 5, 0);
+        gbc_mqttProducerPasswordField.fill = GridBagConstraints.BOTH;
+        gbc_mqttProducerPasswordField.gridx = 1;
+        gbc_mqttProducerPasswordField.gridy = 4;
+        add(mqttProducerPasswordField, gbc_mqttProducerPasswordField);
+
         activateMQTTBrokerCheckBox = new JCheckBox("MQTT Broker Server");
         activateMQTTBrokerCheckBox.setToolTipText("Activate only if you want to connect other MQTT clients to your broker");
         final GridBagConstraints gbc_activateMQTTBrokerCheckBox = new GridBagConstraints();
@@ -99,7 +142,7 @@ public class MQTTServicePanel extends JPanel {
         gbc_activateMQTTBrokerCheckBox.fill = GridBagConstraints.VERTICAL;
         gbc_activateMQTTBrokerCheckBox.anchor = GridBagConstraints.WEST;
         gbc_activateMQTTBrokerCheckBox.gridx = 0;
-        gbc_activateMQTTBrokerCheckBox.gridy = 3;
+        gbc_activateMQTTBrokerCheckBox.gridy = 5;
         add(activateMQTTBrokerCheckBox, gbc_activateMQTTBrokerCheckBox);
 
         mqttBrokerLocatorLabel = new JLabel("Locator");
@@ -108,7 +151,7 @@ public class MQTTServicePanel extends JPanel {
         gbc_mqttBrokerLocatorLabel.anchor = GridBagConstraints.EAST;
         gbc_mqttBrokerLocatorLabel.insets = new Insets(0, 0, 5, 5);
         gbc_mqttBrokerLocatorLabel.gridx = 0;
-        gbc_mqttBrokerLocatorLabel.gridy = 4;
+        gbc_mqttBrokerLocatorLabel.gridy = 6;
         add(mqttBrokerLocatorLabel, gbc_mqttBrokerLocatorLabel);
 
         mqttBrokerLocatorField = new JTextField("tcp://127.0.0.1:61616");
@@ -118,7 +161,7 @@ public class MQTTServicePanel extends JPanel {
         gbc_mqttBrokerLocatorField.insets = new Insets(0, 0, 5, 0);
         gbc_mqttBrokerLocatorField.fill = GridBagConstraints.BOTH;
         gbc_mqttBrokerLocatorField.gridx = 1;
-        gbc_mqttBrokerLocatorField.gridy = 4;
+        gbc_mqttBrokerLocatorField.gridy = 6;
         add(mqttBrokerLocatorField, gbc_mqttBrokerLocatorField);
 
         mqttBrokerTopicLabel = new JLabel("Topic");
@@ -127,7 +170,7 @@ public class MQTTServicePanel extends JPanel {
         gbc_mqttBrokerTopicLabel.anchor = GridBagConstraints.EAST;
         gbc_mqttBrokerTopicLabel.insets = new Insets(0, 0, 0, 5);
         gbc_mqttBrokerTopicLabel.gridx = 0;
-        gbc_mqttBrokerTopicLabel.gridy = 5;
+        gbc_mqttBrokerTopicLabel.gridy = 7;
         add(mqttBrokerTopicLabel, gbc_mqttBrokerTopicLabel);
 
         mqttBrokerTopicField = new JTextField("energystorage");
@@ -136,7 +179,7 @@ public class MQTTServicePanel extends JPanel {
         final GridBagConstraints gbc_mqttBrokerTopicField = new GridBagConstraints();
         gbc_mqttBrokerTopicField.fill = GridBagConstraints.BOTH;
         gbc_mqttBrokerTopicField.gridx = 1;
-        gbc_mqttBrokerTopicField.gridy = 5;
+        gbc_mqttBrokerTopicField.gridy = 7;
         add(mqttBrokerTopicField, gbc_mqttBrokerTopicField);
 
         activateMQTTBrokerCheckBox.addActionListener(t -> mqttBrokerSelectionChanged());
@@ -169,6 +212,10 @@ public class MQTTServicePanel extends JPanel {
         mqttProducerLocatorField.setEnabled(activateMQTTProducerCheckBox.isSelected());
         mqttProducerTopicLabel.setEnabled(activateMQTTProducerCheckBox.isSelected());
         mqttProducerTopicField.setEnabled(activateMQTTProducerCheckBox.isSelected());
+        mqttProducerUsernameLabel.setEnabled(activateMQTTProducerCheckBox.isSelected());
+        mqttProducerUsernameField.setEnabled(activateMQTTProducerCheckBox.isSelected());
+        mqttProducerPasswordLabel.setEnabled(activateMQTTProducerCheckBox.isSelected());
+        mqttProducerPasswordField.setEnabled(activateMQTTProducerCheckBox.isSelected());
     }
 
 
@@ -220,10 +267,14 @@ public class MQTTServicePanel extends JPanel {
         if (activateMQTTProducerCheckBox.isSelected()) {
             config.append("# Activate the MQTT producer if you want to send your BMS data to a MQTT broker, e.g. HomeAssistant\n");
             config.append("mqtt.producer.enabled=" + activateMQTTProducerCheckBox.isSelected() + "\n");
-            config.append("# The URL of the MQTT broker to send to\n");
+            config.append("# The URL of the external MQTT broker to send to\n");
             config.append("mqtt.producer.locator=" + mqttProducerLocatorField.getText() + "\n");
-            config.append("# The topic name on the MQTT broker to send to\n");
+            config.append("# The topic name on the external MQTT broker to send to\n");
             config.append("mqtt.producer.topic=" + mqttProducerTopicField.getText() + "\n");
+            config.append("# The username of the external MQTT broker to send to\n");
+            config.append("mqtt.producer.username=" + mqttProducerUsernameField.getText() + "\n");
+            config.append("# The password on the external MQTT broker to send to\n");
+            config.append("mqtt.producer.password=" + mqttProducerPasswordField.getText() + "\n");
         }
     }
 
@@ -249,6 +300,8 @@ public class MQTTServicePanel extends JPanel {
         if (config.containsKey("mqtt.producer.enabled")) {
             mqttProducerLocatorField.setText(config.getProperty("mqtt.producer.locator"));
             mqttProducerTopicField.setText(config.getProperty("mqtt.producer.topic"));
+            mqttProducerUsernameField.setText(config.getProperty("mqtt.producer.username"));
+            mqttProducerPasswordField.setText(config.getProperty("mqtt.producer.password"));
             activateMQTTProducerCheckBox.setSelected(true);
             mqttProducerSelectionchanged();
         }

@@ -101,74 +101,122 @@ public class BmsToInverter implements AutoCloseable {
     protected void initializeServices() {
         // check for MQTT broker service module
         if (System.getProperty("mqtt.broker.enabled") != null && System.getProperty("mqtt.broker.enabled").equals("true")) {
-            mqttBroker = ServiceLoader.load(IMQTTBrokerService.class).findFirst().orElse(null);
-
-            if (mqttBroker == null) {
-                LOG.error("Error in project configuration - no MQTT Broker service implementation found!");
-            }
-
-            final String locator = System.getProperty("mqtt.broker.locator");
-            final String address = System.getProperty("mqtt.broker.topic");
-
-            try {
-                mqttBroker.start(locator);
-                mqttBroker.createAddress(address, true);
-
-                mqttProducer = ServiceLoader.load(IMQTTProducerService.class).findFirst().orElse(null);
-
-                if (mqttProducer == null) {
-                    LOG.error("Error in project configuration - no MQTT producer service implementation found!");
-                }
-
-                try {
-                    mqttProducer.connect(locator, address);
-                } catch (final Exception e) {
-                    LOG.error("Could not connect MQTT producer client at {} on topic {}", locator, address, e);
-                }
-
-            } catch (final Exception e) {
-                LOG.error("Could not start MQTT broker at {} on topic {}", locator, address, e);
-            }
+            initializeMQTTBroker();
+            initializeInternalMQTTProducer();
         }
 
         // check for MQTT external producer service module
         if (System.getProperty("mqtt.producer.enabled") != null && System.getProperty("mqtt.producer.enabled").equals("true")) {
-            mqttExternalProducer = ServiceLoader.load(IMQTTProducerService.class).findFirst().orElse(null);
-
-            if (mqttExternalProducer == null) {
-                LOG.error("Error in project configuration - no MQTT external producer service implementation found!");
-            }
-
-            final String locator = System.getProperty("mqtt.producer.locator");
-            final String address = System.getProperty("mqtt.producer.topic");
-
-            try {
-                mqttExternalProducer.connect(locator, address);
-            } catch (final Exception e) {
-                LOG.error("Could not connect MQTT external producer client at {} on topic {}", locator, address, e);
-            }
+            initializeExternalMQTTProducer();
         }
 
         // check for EmailService service module
         if (System.getProperty("mail.service.enabled") != null && System.getProperty("mail.service.enabled").equals("true")) {
-            emailService = ServiceLoader.load(IEmailService.class).findFirst().orElse(null);
+            initializeEmailService();
+        }
+    }
 
-            if (emailService == null) {
-                LOG.error("Error in project configuration - no email provider was found be email service is activated!");
+
+    /**
+     * Initialize the MQTT broker.
+     */
+    protected void initializeMQTTBroker() {
+        mqttBroker = ServiceLoader.load(IMQTTBrokerService.class).findFirst().orElse(null);
+
+        if (mqttBroker == null) {
+            LOG.error("Error in project configuration - no MQTT Broker service implementation found!");
+        }
+
+        final String locator = System.getProperty("mqtt.broker.locator");
+        final String address = System.getProperty("mqtt.broker.topic");
+
+        try {
+            mqttBroker.start(locator);
+            mqttBroker.createAddress(address, true);
+
+            mqttProducer = ServiceLoader.load(IMQTTProducerService.class).findFirst().orElse(null);
+
+            if (mqttProducer == null) {
+                LOG.error("Error in project configuration - no MQTT producer service implementation found!");
             }
 
-            account = new EmailAccount(System.getProperties());
-            final String commaSeparatedList = System.getProperty("mail.out.recipients");
-
-            if (commaSeparatedList == null) {
-                throw new IllegalArgumentException("EmailService is activated but the property 'mail.out.recipients' could not be found!");
+            try {
+                mqttProducer.connect(locator, address, null, null);
+            } catch (final Exception e) {
+                LOG.error("Could not connect MQTT producer client at {} on topic {}", locator, address, e);
             }
 
-            final StringTokenizer tokenizer = new StringTokenizer(commaSeparatedList, ",");
+        } catch (final Exception e) {
+            LOG.error("Could not start MQTT broker at {} on topic {}", locator, address, e);
+        }
+    }
 
-            while (tokenizer.hasMoreTokens()) {
-                emailRecipients.add(tokenizer.nextToken());
-            }
+
+    /**
+     * Initialize the external MQTT producer.
+     */
+    protected void initializeInternalMQTTProducer() {
+        mqttProducer = ServiceLoader.load(IMQTTProducerService.class).findFirst().orElse(null);
+
+        if (mqttProducer == null) {
+            LOG.error("Error in project configuration - no MQTT internal producer service implementation found!");
+        }
+
+        final String locator = System.getProperty("mqtt.producer.locator");
+        final String address = System.getProperty("mqtt.producer.topic");
+
+        try {
+            mqttProducer.connect(locator, address, null, null);
+        } catch (final Exception e) {
+            LOG.error("Could not connect MQTT internal producer client at {} on topic {}", locator, address, e);
+        }
+    }
+
+
+    /**
+     * Initialize the external MQTT producer.
+     */
+    protected void initializeExternalMQTTProducer() {
+        mqttExternalProducer = ServiceLoader.load(IMQTTProducerService.class).findFirst().orElse(null);
+
+        if (mqttExternalProducer == null) {
+            LOG.error("Error in project configuration - no MQTT external producer service implementation found!");
+        }
+
+        final String locator = System.getProperty("mqtt.producer.locator");
+        final String address = System.getProperty("mqtt.producer.topic");
+        final String username = System.getProperty("mqtt.producer.username");
+        final String password = System.getProperty("mqtt.producer.password");
+
+        try {
+            mqttExternalProducer.connect(locator, address, username, password);
+        } catch (final Exception e) {
+            LOG.error("Could not connect MQTT external producer client at {} on topic {}", locator, address, e);
+        }
+    }
+
+
+    /**
+     * Initialize the email service.
+     */
+    protected void initializeEmailService() {
+        emailService = ServiceLoader.load(IEmailService.class).findFirst().orElse(null);
+
+        if (emailService == null) {
+            LOG.error("Error in project configuration - no email provider was found be email service is activated!");
+        }
+
+        account = new EmailAccount(System.getProperties());
+        final String commaSeparatedList = System.getProperty("mail.out.recipients");
+
+        if (commaSeparatedList == null) {
+            throw new IllegalArgumentException("EmailService is activated but the property 'mail.out.recipients' could not be found!");
+        }
+
+        final StringTokenizer tokenizer = new StringTokenizer(commaSeparatedList, ",");
+
+        while (tokenizer.hasMoreTokens()) {
+            emailRecipients.add(tokenizer.nextToken());
         }
     }
 
@@ -242,23 +290,37 @@ public class BmsToInverter implements AutoCloseable {
             LOG.info(createBatteryOverview());
 
             if (mqttProducer != null) {
-                // send energystorage data to MQTT broker
+                // send energystorage data to internal MQTT broker
                 try {
                     mqttProducer.sendMessage(energyStorage.toJson());
                 } catch (final Throwable e) {
                     LOG.error("Failed to send MQTT message!", e);
 
-                    // try to reconnect
+                    // try to reconnect and resend message
                     try {
                         mqttProducer.close();
+                        initializeInternalMQTTProducer();
+                        mqttProducer.sendMessage(energyStorage.toJson());
+                    } catch (final Exception e1) {
+                    }
+                }
+            }
+
+            if (mqttExternalProducer != null) {
+                // send energystorage data to external MQTT broker
+                try {
+                    mqttProducer.sendMessage(energyStorage.toJson());
+                } catch (final Throwable e) {
+                    LOG.error("Failed to send MQTT message!", e);
+
+                    // try to reconnect and resent message
+                    try {
+                        mqttProducer.close();
+                        initializeExternalMQTTProducer();
+                        mqttProducer.sendMessage(energyStorage.toJson());
                     } catch (final Exception e1) {
                     }
 
-                    final String locator = System.getProperty("mqtt.producer.locator");
-                    final String topic = System.getProperty("mqtt.producer.topic");
-
-                    mqttProducer.connect(locator, topic);
-                    mqttProducer.sendMessage(energyStorage.toJson());
                 }
             }
 

@@ -21,9 +21,11 @@ public interface IMQTTProducerService extends AutoCloseable {
      *
      * @param locator the locator url
      * @param topic the topic name
+     * @param username the username to use to login with
+     * @param password the password to use to login with
      * @throws Exception if an error occurs
      */
-    IMQTTProducerService connect(String locator, String topic) throws Exception;
+    IMQTTProducerService connect(String locator, String topic, String username, String password) throws Exception;
 
 
     /**
