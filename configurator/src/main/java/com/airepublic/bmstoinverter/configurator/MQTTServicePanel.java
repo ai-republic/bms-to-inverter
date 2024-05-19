@@ -32,6 +32,7 @@ public class MQTTServicePanel extends JPanel {
     private final JTextField mqttBrokerLocatorField;
     private final JLabel mqttBrokerTopicLabel;
     private final JTextField mqttBrokerTopicField;
+    private boolean overrideBrokerEnabled = false;
 
     public MQTTServicePanel() {
 
@@ -43,7 +44,7 @@ public class MQTTServicePanel extends JPanel {
         setLayout(gbl_mqttPanel);
 
         activateMQTTProducerCheckBox = new JCheckBox("MQTT producer");
-        activateMQTTProducerCheckBox.setToolTipText("Activate this if you want to send BMS data to a MQTT broker, e.g. HomeAssistant");
+        activateMQTTProducerCheckBox.setToolTipText("Activate this if you want to send BMS data to a external MQTT broker, e.g. HomeAssistant");
         final GridBagConstraints gbc_activateMQTTProducerCheckBox = new GridBagConstraints();
         gbc_activateMQTTProducerCheckBox.anchor = GridBagConstraints.WEST;
         gbc_activateMQTTProducerCheckBox.gridwidth = 2;
@@ -138,14 +139,24 @@ public class MQTTServicePanel extends JPanel {
         gbc_mqttBrokerTopicField.gridy = 5;
         add(mqttBrokerTopicField, gbc_mqttBrokerTopicField);
 
-        activateMQTTBrokerCheckBox.addActionListener(t -> enableMQTTBroker());
+        activateMQTTBrokerCheckBox.addActionListener(t -> mqttBrokerSelectionChanged());
 
-        activateMQTTProducerCheckBox.addActionListener(t -> enableMQTTProducer());
+        activateMQTTProducerCheckBox.addActionListener(t -> mqttProducerSelectionchanged());
     }
 
 
-    void enableMQTTBroker() {
-        activateMQTTBrokerCheckBox.setSelected(true);
+    void enableMQTTBroker(final boolean isEnabled) {
+        overrideBrokerEnabled = isEnabled;
+        activateMQTTBrokerCheckBox.setSelected(isEnabled);
+        mqttBrokerSelectionChanged();
+    }
+
+
+    private void mqttBrokerSelectionChanged() {
+        if (overrideBrokerEnabled) {
+            activateMQTTBrokerCheckBox.setSelected(overrideBrokerEnabled);
+        }
+
         mqttBrokerLocatorLabel.setEnabled(activateMQTTBrokerCheckBox.isSelected());
         mqttBrokerLocatorField.setEnabled(activateMQTTBrokerCheckBox.isSelected());
         mqttBrokerTopicLabel.setEnabled(activateMQTTBrokerCheckBox.isSelected());
@@ -153,8 +164,7 @@ public class MQTTServicePanel extends JPanel {
     }
 
 
-    void enableMQTTProducer() {
-        activateMQTTProducerCheckBox.setSelected(true);
+    private void mqttProducerSelectionchanged() {
         mqttProducerLocatorLabel.setEnabled(activateMQTTProducerCheckBox.isSelected());
         mqttProducerLocatorField.setEnabled(activateMQTTProducerCheckBox.isSelected());
         mqttProducerTopicLabel.setEnabled(activateMQTTProducerCheckBox.isSelected());
@@ -232,13 +242,15 @@ public class MQTTServicePanel extends JPanel {
         if (config.containsKey("mqtt.broker.enabled")) {
             mqttBrokerLocatorField.setText(config.getProperty("mqtt.broker.locator"));
             mqttBrokerTopicField.setText(config.getProperty("mqtt.broker.topic"));
-            enableMQTTBroker();
+            activateMQTTBrokerCheckBox.setSelected(true);
+            mqttBrokerSelectionChanged();
         }
 
         if (config.containsKey("mqtt.producer.enabled")) {
             mqttProducerLocatorField.setText(config.getProperty("mqtt.producer.locator"));
             mqttProducerTopicField.setText(config.getProperty("mqtt.producer.topic"));
-            enableMQTTProducer();
+            activateMQTTProducerCheckBox.setSelected(true);
+            mqttProducerSelectionchanged();
         }
 
     }

@@ -63,6 +63,7 @@ public class BmsToInverter implements AutoCloseable {
     private boolean running = true;
     private IMQTTBrokerService mqttBroker;
     private IMQTTProducerService mqttProducer;
+    private IMQTTProducerService mqttExternalProducer;
     private IEmailService emailService;
     private EmailAccount account;
     private final List<String> emailRecipients = new ArrayList<>();
@@ -112,26 +113,39 @@ public class BmsToInverter implements AutoCloseable {
             try {
                 mqttBroker.start(locator);
                 mqttBroker.createAddress(address, true);
+
+                mqttProducer = ServiceLoader.load(IMQTTProducerService.class).findFirst().orElse(null);
+
+                if (mqttProducer == null) {
+                    LOG.error("Error in project configuration - no MQTT producer service implementation found!");
+                }
+
+                try {
+                    mqttProducer.connect(locator, address);
+                } catch (final Exception e) {
+                    LOG.error("Could not connect MQTT producer client at {} on topic {}", locator, address, e);
+                }
+
             } catch (final Exception e) {
                 LOG.error("Could not start MQTT broker at {} on topic {}", locator, address, e);
             }
         }
 
-        // check for MQTT producer service module
+        // check for MQTT external producer service module
         if (System.getProperty("mqtt.producer.enabled") != null && System.getProperty("mqtt.producer.enabled").equals("true")) {
-            mqttProducer = ServiceLoader.load(IMQTTProducerService.class).findFirst().orElse(null);
+            mqttExternalProducer = ServiceLoader.load(IMQTTProducerService.class).findFirst().orElse(null);
 
-            if (mqttProducer == null) {
-                LOG.error("Error in project configuration - no MQTT producer service implementation found!");
+            if (mqttExternalProducer == null) {
+                LOG.error("Error in project configuration - no MQTT external producer service implementation found!");
             }
 
             final String locator = System.getProperty("mqtt.producer.locator");
             final String address = System.getProperty("mqtt.producer.topic");
 
             try {
-                mqttProducer.connect(locator, address);
+                mqttExternalProducer.connect(locator, address);
             } catch (final Exception e) {
-                LOG.error("Could not connect MQTT producer client at {} on topic {}", locator, address, e);
+                LOG.error("Could not connect MQTT external producer client at {} on topic {}", locator, address, e);
             }
         }
 
