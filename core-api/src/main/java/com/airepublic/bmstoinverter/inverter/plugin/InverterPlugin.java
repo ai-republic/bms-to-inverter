@@ -8,10 +8,10 @@
  *
  * @author Torsten Oltmanns - bms-to-inverter''AT''gmail.com
  */
-package com.airepublic.bmstoinverter.core;
+package com.airepublic.bmstoinverter.inverter.plugin;
 
-public enum AlarmLevel {
-    NONE,
-    WARNING,
-    ALARM
+import java.nio.ByteBuffer;
+
+public interface InverterPlugin {
+    ByteBuffer changeSendFrame(ByteBuffer sendFame);
 }
