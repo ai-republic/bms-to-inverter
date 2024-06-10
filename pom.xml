@@ -19,29 +19,30 @@
 		<module>core-api</module>
 		<module>protocol-rs485</module>
 		<module>protocol-can</module>
+		<module>protocol-modbus</module>
+		<module>bms-byd-can</module>
 		<module>bms-daly-common</module>
-		<module>bms-daly-rs485</module>
 		<module>bms-daly-can</module>
-		<module>inverter-sma-can</module>
+		<module>bms-daly-rs485</module>
+		<module>bms-jk-can</module>
+		<module>bms-jk-rs485</module>
+		<module>bms-pace-can</module>
+		<module>bms-pylon-can</module>
+		<module>bms-pylon-hv-can</module>
+		<module>bms-seplos-can</module>
+		<module>bms-sma-can</module>
 		<module>bms-to-inverter-main</module>
+		<module>inverter-deye-can</module>
+		<module>inverter-dummy</module>
+		<module>inverter-growatt-can</module>
+		<module>inverter-growatt-rs485</module>
+		<module>inverter-pylon-hv-can</module>
+		<module>inverter-solark-can</module>
+		<module>inverter-sma-can</module>
 		<module>service-mqtt-broker</module>
 		<module>service-mqtt-client</module>
 		<module>webserver</module>
-		<module>inverter-growatt-rs485</module>
-		<module>protocol-modbus</module>
-		<module>inverter-growatt-can</module>
-		<module>bms-jk-can</module>
-		<module>bms-seplos-can</module>
-		<module>inverter-deye-can</module>
-		<module>inverter-solark-can</module>
-		<module>bms-pylon-can</module>
-		<module>inverter-dummy</module>
 		<module>configurator</module>
-		<module>bms-jk-rs485</module>
-		<module>bms-pylon-hv-can</module>
-		<module>inverter-pylon-hv-can</module>
-		<module>bms-sma-can</module>
-		<module>bms-byd-can</module>
 	</modules>
 
 	<build>

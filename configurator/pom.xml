@@ -65,7 +65,7 @@
 			<version>1.0.5</version>
 		</dependency>
 
-		<!-- #################### !!!!!!!!	BMSes 	!!!!!!!! ###################### -->
+		<!-- ####################          !!!!!!!!	BMSes 	!!!!!!!!           ###################### -->
 
 		<!-- ####################  BYD (CAN) ################### -->
 		<dependency>
@@ -85,6 +85,13 @@
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>bms-daly-rs485</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- ####################  PACE (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-pace-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -131,8 +138,7 @@
 		</dependency>
 
 
-		<!-- #################### !!!!!!!!	Inverters 	!!!!!!!!
-		#################### -->
+		<!-- ####################         !!!!!!!!	Inverters 	!!!!!!!!		#################### -->
 
 		<!-- ####################  Dummy Inverter  ################### -->
 		<dependency>
