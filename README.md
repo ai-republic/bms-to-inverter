@@ -31,6 +31,7 @@ _**NOTE:** If you would like me to add a BMS or inverter module just let me know
 * Daly BMS (CAN / RS485 (& UART / RS232))
 * Growatt high voltage (CAN)
 * JK BMS (CAN / RS485 (& UART / RS232))
+* PACE BMS (CAN)
 * PylonTech low voltage BMS (CAN / RS485)
 * PylonTech high voltage BMS (CAN)
 * Seplos BMS (CAN)
