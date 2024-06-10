@@ -105,6 +105,13 @@
 
 		<!-- #################### !!!!!!!!	BMSes 	!!!!!!!! ###################### -->
 
+		<!-- ####################  BYD (CAN) ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-byd-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- ####################  DALY(CAN) ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
