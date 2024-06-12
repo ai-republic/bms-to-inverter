@@ -66,6 +66,18 @@ public class Util {
 
 
     /**
+     * Gets the bit at the specified index of the value.
+     *
+     * @param value the value
+     * @param index the index of the bit
+     * @return true if the bit is 1, otherwise false
+     */
+    public static boolean bit(final long value, final int index) {
+        return (value >> index & 1) == 1;
+    }
+
+
+    /**
      * Gets the specified number of bits starting at the specified index.
      *
      * @param value the value to read from

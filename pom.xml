@@ -43,6 +43,7 @@
 		<module>service-mqtt-client</module>
 		<module>webserver</module>
 		<module>configurator</module>
+		<module>bms-jbd-rs485</module>
 	</modules>
 
 	<build>
