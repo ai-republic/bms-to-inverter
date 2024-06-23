@@ -1,6 +1,7 @@
 com.airepublic.bmstoinverter.inverter.dummy.DummyInverterDescriptor
 com.airepublic.bmstoinverter.inverter.deye.can.DeyeInverterCANDescriptor
 com.airepublic.bmstoinverter.inverter.growatt.can.GrowattInverterCANDescriptor
+com.airepublic.bmstoinverter.inverter.pylon.can.PylonInverterCANDescriptor
 com.airepublic.bmstoinverter.inverter.pylonhv.can.PylonHVInverterCANDescriptor
 com.airepublic.bmstoinverter.inverter.sma.can.SMAInverterCANDescriptor
 com.airepublic.bmstoinverter.inverter.solark.can.SolArkInverterCANDescriptor

@@ -206,6 +206,13 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- ####################  PYLON (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-pylon-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- ####################  PYLONTECH HV (CAN)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>

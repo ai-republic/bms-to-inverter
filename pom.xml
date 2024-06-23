@@ -36,6 +36,7 @@
 		<module>inverter-dummy</module>
 		<module>inverter-growatt-can</module>
 		<module>inverter-growatt-rs485</module>
+		<module>inverter-pylon-can</module>
 		<module>inverter-pylon-hv-can</module>
 		<module>inverter-solark-can</module>
 		<module>inverter-sma-can</module>
