@@ -23,6 +23,14 @@ public interface InverterDescriptor {
 
 
     /**
+     * Gets the default baud rate.
+     *
+     * @return the default baud rate
+     */
+    int getDefaultBaudRate();
+
+
+    /**
      * Gets the class of the {@link Inverter} implementation.
      *
      * @return the class of the {@link Inverter} implementation

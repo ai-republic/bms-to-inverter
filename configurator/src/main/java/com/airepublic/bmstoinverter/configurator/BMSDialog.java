@@ -41,6 +41,7 @@ public class BMSDialog extends JDialog {
     private BMSConfig config = null;
     private final JComboBox<MenuItem<BMSDescriptor>> bmses;
     private final JTextField portLocatorField = new JTextField();
+    private final JTextField baudRateField = new JTextField();
     private final JTextField delayAfterNoBytesField = new JTextField("200");
     private final NumberInputVerifier numberInputVerifier = new NumberInputVerifier();
     private final JTextField idField = new JTextField();
@@ -68,7 +69,7 @@ public class BMSDialog extends JDialog {
         final GridBagLayout gbl_bmsPanel = new GridBagLayout();
         gbl_bmsPanel.columnWeights = new double[] { 0.0, 1.0 };
         gbl_bmsPanel.columnWidths = new int[] { 100, 150 };
-        gbl_bmsPanel.rowHeights = new int[] { 30, 0, 30, 30, 0, 30 };
+        gbl_bmsPanel.rowHeights = new int[] { 30, 0, 30, 30, 0, 30, 0, 30 };
         bmsPanel.setLayout(gbl_bmsPanel);
 
         final JLabel bmsLabel = new JLabel("BMS");
@@ -87,6 +88,7 @@ public class BMSDialog extends JDialog {
         gbc_bmses.gridx = 1;
         gbc_bmses.gridy = 0;
         bmsPanel.add(bmses, gbc_bmses);
+        bmses.addActionListener(action -> baudRateField.setText("" + bmses.getModel().getElementAt(bmses.getSelectedIndex()).getValue().getDefaultBaudRate()));
 
         final JLabel lblNewLabel = new JLabel("Id");
         final GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
@@ -126,20 +128,39 @@ public class BMSDialog extends JDialog {
             delayAfterNoBytesField.requestFocus();
         });
 
+        final JLabel baudRateLabel = new JLabel("Baudrate");
+        baudRateLabel.setToolTipText("The baud rate the port is running with");
+        final GridBagConstraints gbc_baudRateLabel = new GridBagConstraints();
+        gbc_baudRateLabel.insets = new Insets(0, 0, 5, 5);
+        gbc_baudRateLabel.anchor = GridBagConstraints.EAST;
+        gbc_baudRateLabel.gridx = 0;
+        gbc_baudRateLabel.gridy = 3;
+        bmsPanel.add(baudRateLabel, gbc_baudRateLabel);
+
+        final GridBagConstraints gbc_baudRateField = new GridBagConstraints();
+        gbc_baudRateField.insets = new Insets(0, 0, 5, 0);
+        gbc_baudRateField.fill = GridBagConstraints.HORIZONTAL;
+        gbc_baudRateField.gridx = 1;
+        gbc_baudRateField.gridy = 3;
+        bmsPanel.add(baudRateField, gbc_baudRateField);
+        baudRateField.addActionListener(e -> {
+            delayAfterNoBytesField.requestFocus();
+        });
+
         final JLabel delayAfterNoBytesLabel = new JLabel("Delay after no bytes (ms)");
         final GridBagConstraints gbc_delayAfterNoBytesLabel = new GridBagConstraints();
         gbc_delayAfterNoBytesLabel.fill = GridBagConstraints.VERTICAL;
         gbc_delayAfterNoBytesLabel.anchor = GridBagConstraints.EAST;
         gbc_delayAfterNoBytesLabel.insets = new Insets(0, 0, 5, 5);
         gbc_delayAfterNoBytesLabel.gridx = 0;
-        gbc_delayAfterNoBytesLabel.gridy = 3;
+        gbc_delayAfterNoBytesLabel.gridy = 4;
         bmsPanel.add(delayAfterNoBytesLabel, gbc_delayAfterNoBytesLabel);
 
         final GridBagConstraints gbc_delayAfterNoBytesField = new GridBagConstraints();
         gbc_delayAfterNoBytesField.insets = new Insets(0, 0, 5, 0);
         gbc_delayAfterNoBytesField.fill = GridBagConstraints.HORIZONTAL;
         gbc_delayAfterNoBytesField.gridx = 1;
-        gbc_delayAfterNoBytesField.gridy = 3;
+        gbc_delayAfterNoBytesField.gridy = 4;
         bmsPanel.add(delayAfterNoBytesField, gbc_delayAfterNoBytesField);
         delayAfterNoBytesField.setColumns(10);
         delayAfterNoBytesField.addActionListener(e -> {
@@ -171,12 +192,13 @@ public class BMSDialog extends JDialog {
             final BMSDescriptor descriptor = bmses.getModel().getElementAt(bmses.getSelectedIndex()).getValue();
             final Integer bmsId = Integer.valueOf(idField.getText());
             final String portLocator = portLocatorField.getText();
+            final Integer baudRate = Integer.valueOf(baudRateField.getText());
             final long delayAfterNoBytes = Long.valueOf(delayAfterNoBytesField.getText());
 
             if (config == null) {
-                config = new BMSConfig(bmsId, portLocator, delayAfterNoBytes, descriptor);
+                config = new BMSConfig(bmsId, portLocator, baudRate, delayAfterNoBytes, descriptor);
             } else {
-                config.update(bmsId, portLocator, delayAfterNoBytes, descriptor);
+                config.update(bmsId, portLocator, baudRate, delayAfterNoBytes, descriptor);
             }
             dispose();
         });
@@ -228,6 +250,7 @@ public class BMSDialog extends JDialog {
 
         idField.setText("" + config.getBmsId());
         portLocatorField.setText(config.getPortLocator());
+        baudRateField.setText("" + config.getBaudRate());
         delayAfterNoBytesField.setText("" + config.getDelayAfterNoBytes());
     }
 
@@ -264,6 +287,14 @@ public class BMSDialog extends JDialog {
 
         if (portLocatorField.getText().isBlank()) {
             errors.append("Missing BMS port locator!\r\n");
+            fail = true;
+        }
+
+        if (baudRateField.getText().isBlank()) {
+            errors.append("Missing BMS delay after no bytes received!\r\n");
+            fail = true;
+        } else if (!numberInputVerifier.verify(baudRateField.getText())) {
+            errors.append("Non-numeric BMS baud rate!\r\n");
             fail = true;
         }
 

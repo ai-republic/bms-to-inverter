@@ -27,6 +27,12 @@ public class PylonHVBmsCANDescriptor implements BMSDescriptor {
 
 
     @Override
+    public int getDefaultBaudRate() {
+        return 500000;
+    }
+
+
+    @Override
     public Class<? extends BMS> getBMSClass() {
         return PylonHVBmsCANProcessor.class;
     }
@@ -34,7 +40,7 @@ public class PylonHVBmsCANDescriptor implements BMSDescriptor {
 
     @Override
     public Port createPort(final BMSConfig config) {
-        final Port port = new JavaCANPort(config.getPortLocator(), 500000);
+        final Port port = new JavaCANPort(config.getPortLocator(), config.getBaudRate());
         return port;
     }
 

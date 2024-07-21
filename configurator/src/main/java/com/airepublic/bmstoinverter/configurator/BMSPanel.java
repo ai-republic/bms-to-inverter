@@ -151,7 +151,7 @@ public class BMSPanel extends JPanel {
 
             if (item != null) {
                 final BMSConfig config = item.getValue();
-                final BMSConfig duplicate = new BMSConfig(config.getBmsId() + 1, config.getPortLocator(), config.getDelayAfterNoBytes(), config.getDescriptor());
+                final BMSConfig duplicate = new BMSConfig(config.getBmsId() + 1, config.getPortLocator(), config.getBaudRate(), config.getDelayAfterNoBytes(), config.getDescriptor());
 
                 if (item != null) {
                     bmsListModel.addElement(new MenuItem<>(createBMSDisplayName(duplicate), duplicate));
@@ -215,6 +215,7 @@ public class BMSPanel extends JPanel {
                 + "# bms.pollIntervall - is the interval to request BMS data (in seconds)\n"
                 + "# bms.x.type - can be (DALY_CAN, DALY_RS485, JK_CAN, PYLON_CAN or SEPLOS_CAN \n"
                 + "# bms.x.portLocator - is the locator/device to use to communicate to the BMS, eg. can0, /dev/ttyUSB0, com3, etc.  \n"
+                + "# bms.x.baudRate - is the locator/device baudrate to use to communicate to the BMS, eg. 9600, 500000, etc.  \n"
                 + "# bms.x.delayAfterNoBytes - is the delay after receiving no data (in ms)\n");
         config.append("bms.pollInterval=" + pollIntervalField.getText() + "\n\n");
 
@@ -223,6 +224,7 @@ public class BMSPanel extends JPanel {
             config.append("bms." + index + ".type=" + bmsConfig.getDescriptor().getName() + "\n");
             config.append("bms." + index + ".id=" + bmsConfig.getBmsId() + "\n");
             config.append("bms." + index + ".portLocator=" + bmsConfig.getPortLocator() + "\n");
+            config.append("bms." + index + ".baudRate=" + bmsConfig.getBaudRate() + "\n");
             config.append("bms." + index + ".delayAfterNoBytes=" + bmsConfig.getDelayAfterNoBytes() + "\n");
             config.append("\n");
         }
@@ -239,8 +241,9 @@ public class BMSPanel extends JPanel {
         while ((bmsType = config.getProperty("bms." + index + ".type")) != null) {
             final String portLocator = config.getProperty("bms." + index + ".portLocator");
             final int bmsId = Integer.parseInt(config.getProperty("bms." + index + ".id", "" + index));
+            final int baudRate = Integer.parseInt(config.getProperty("bms." + index + ".baudRate", "" + index));
             final long delayAfterNoBytes = Long.parseLong(config.getProperty("bms." + index + ".delayAfterNoBytes"));
-            final BMSConfig bmsConfig = new BMSConfig(bmsId, portLocator, delayAfterNoBytes, descriptors.get(bmsType));
+            final BMSConfig bmsConfig = new BMSConfig(bmsId, portLocator, baudRate, delayAfterNoBytes, descriptors.get(bmsType));
             bmsListModel.add(index - 1, new MenuItem<>(createBMSDisplayName(bmsConfig), bmsConfig));
 
             index++;

@@ -29,6 +29,12 @@ public class JKBmsRS485Descriptor implements BMSDescriptor {
 
 
     @Override
+    public int getDefaultBaudRate() {
+        return 115200;
+    }
+
+
+    @Override
     public Class<? extends BMS> getBMSClass() {
         return JKBmsRS485Processor.class;
     }
@@ -36,7 +42,7 @@ public class JKBmsRS485Descriptor implements BMSDescriptor {
 
     @Override
     public Port createPort(final BMSConfig config) {
-        final Port port = new JSerialCommPort(config.getPortLocator(), 115200, 8, 1, SerialPort.NO_PARITY, new byte[] { 78, 87 }, FrameDefinition.create("SSLL(-2)D"));
+        final Port port = new JSerialCommPort(config.getPortLocator(), config.getBaudRate(), 8, 1, SerialPort.NO_PARITY, new byte[] { 78, 87 }, FrameDefinition.create("SSLL(-2)D"));
         return port;
     }
 

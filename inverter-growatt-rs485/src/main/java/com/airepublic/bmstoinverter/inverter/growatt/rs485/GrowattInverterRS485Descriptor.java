@@ -27,6 +27,12 @@ public class GrowattInverterRS485Descriptor implements InverterDescriptor {
 
 
     @Override
+    public int getDefaultBaudRate() {
+        return 500000;
+    }
+
+
+    @Override
     public Class<? extends Inverter> getInverterClass() {
         return GrowattInverterRS485Processor.class;
     }
@@ -34,7 +40,7 @@ public class GrowattInverterRS485Descriptor implements InverterDescriptor {
 
     @Override
     public Port createPort(final InverterConfig config) {
-        final Port port = new J2ModPort(config.getPortLocator(), 500000);
+        final Port port = new J2ModPort(config.getPortLocator(), config.getBaudRate());
         return port;
     }
 

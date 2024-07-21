@@ -30,6 +30,7 @@ public class InverterPanel extends JPanel {
     private final Vector<MenuItem<InverterDescriptor>> inverterItems = createInverterItems();
     private final JComboBox<MenuItem<InverterDescriptor>> inverterField;
     private final JTextField inverterPortLocatorField;
+    private final JTextField inverterBaudRateField;
     private final JTextField inverterSendIntervalField;
     private final NumberInputVerifier numberInputVerifier = new NumberInputVerifier();
 
@@ -37,7 +38,7 @@ public class InverterPanel extends JPanel {
         setBorder(new EmptyBorder(10, 10, 10, 10));
         final GridBagLayout gbl_inverterPanel = new GridBagLayout();
         gbl_inverterPanel.columnWidths = new int[] { 100, 250, 70, 70 };
-        gbl_inverterPanel.rowHeights = new int[] { 30, 30, 30, 30, 30 };
+        gbl_inverterPanel.rowHeights = new int[] { 30, 30, 30, 30, 30, 30 };
         gbl_inverterPanel.columnWeights = new double[] { 0.0, 1.0 };
         gbl_inverterPanel.rowWeights = new double[] { 0.0, 0.0, 0.0, 0.0, Double.MIN_VALUE };
         setLayout(gbl_inverterPanel);
@@ -75,12 +76,29 @@ public class InverterPanel extends JPanel {
         add(inverterPortLocatorField, gbc_inverterPortField);
         inverterPortLocatorField.setColumns(10);
 
+        final JLabel inverterBaudRateLabel = new JLabel("Baud rate");
+        final GridBagConstraints gbc_inverterBaudRateLabel = new GridBagConstraints();
+        gbc_inverterBaudRateLabel.anchor = GridBagConstraints.EAST;
+        gbc_inverterBaudRateLabel.insets = new Insets(0, 0, 5, 5);
+        gbc_inverterBaudRateLabel.gridx = 0;
+        gbc_inverterBaudRateLabel.gridy = 2;
+        add(inverterBaudRateLabel, gbc_inverterBaudRateLabel);
+
+        inverterBaudRateField = new JTextField();
+        final GridBagConstraints gbc_inverterBaudRateField = new GridBagConstraints();
+        gbc_inverterBaudRateField.insets = new Insets(0, 0, 5, 0);
+        gbc_inverterBaudRateField.fill = GridBagConstraints.BOTH;
+        gbc_inverterBaudRateField.gridx = 1;
+        gbc_inverterBaudRateField.gridy = 2;
+        add(inverterBaudRateField, gbc_inverterBaudRateField);
+        inverterBaudRateField.setColumns(10);
+
         final JLabel inverterSendIntervalLabel = new JLabel("Send interval");
         final GridBagConstraints gbc_inverterSendIntervalLabel = new GridBagConstraints();
         gbc_inverterSendIntervalLabel.insets = new Insets(0, 0, 5, 5);
         gbc_inverterSendIntervalLabel.anchor = GridBagConstraints.EAST;
         gbc_inverterSendIntervalLabel.gridx = 0;
-        gbc_inverterSendIntervalLabel.gridy = 2;
+        gbc_inverterSendIntervalLabel.gridy = 3;
         add(inverterSendIntervalLabel, gbc_inverterSendIntervalLabel);
 
         inverterSendIntervalField = new JTextField("1");
@@ -91,12 +109,12 @@ public class InverterPanel extends JPanel {
         gbc_inverterPushInvervalField.insets = new Insets(0, 0, 5, 0);
         gbc_inverterPushInvervalField.fill = GridBagConstraints.BOTH;
         gbc_inverterPushInvervalField.gridx = 1;
-        gbc_inverterPushInvervalField.gridy = 2;
+        gbc_inverterPushInvervalField.gridy = 3;
         add(inverterSendIntervalField, gbc_inverterPushInvervalField);
 
         inverterField.addActionListener(e -> inverterPortLocatorField.requestFocus());
-        inverterPortLocatorField.addActionListener(e -> inverterSendIntervalField.requestFocus());
-
+        inverterPortLocatorField.addActionListener(e -> inverterBaudRateField.requestFocus());
+        inverterBaudRateField.addActionListener(e -> inverterSendIntervalField.requestFocus());
     }
 
 
@@ -118,6 +136,11 @@ public class InverterPanel extends JPanel {
     }
 
 
+    public int getBaudRate() {
+        return Integer.valueOf(inverterBaudRateField.getText());
+    }
+
+
     public int getSendInterval() {
         return Integer.valueOf(inverterSendIntervalField.getText());
     }
@@ -133,6 +156,14 @@ public class InverterPanel extends JPanel {
 
         if (inverterPortLocatorField.getText().isBlank()) {
             errors.append("Missing inverter port locator!\n");
+            fail = true;
+        }
+
+        if (inverterBaudRateField.getText().isBlank()) {
+            errors.append("Missing inverter send interval!\n");
+            fail = true;
+        } else if (!numberInputVerifier.verify(inverterBaudRateField)) {
+            errors.append("Non-numeric inverter baud rate!\n");
             fail = true;
         }
 
@@ -156,6 +187,8 @@ public class InverterPanel extends JPanel {
         config.append("inverter.type=" + getInverterType().getName() + "\n");
         config.append("# The port name/device to use to communicate to the  inverter  \n");
         config.append("inverter.portLocator=" + getPortLocator() + "\n");
+        config.append("# The port baud rate to use to communicate to the  inverter  \n");
+        config.append("inverter.baudRate=" + getBaudRate() + "\n");
         config.append("# Interval to send data to the inverter (in seconds)\n");
         config.append("inverter.sendInterval=" + getSendInterval() + "\n");
         config.append("\n");
@@ -166,6 +199,7 @@ public class InverterPanel extends JPanel {
     void setConfiguration(final Properties config) {
         final String inverterType = config.getProperty("inverter.type");
         final String portLocator = config.getProperty("inverter.portLocator");
+        final int baudRate = Integer.parseInt(config.getProperty("inverter.baudRate"));
         final int sendInterval = Integer.parseInt(config.getProperty("inverter.sendInterval"));
 
         for (int i = 0; i < inverterItems.size(); i++) {
@@ -176,6 +210,7 @@ public class InverterPanel extends JPanel {
         }
 
         inverterPortLocatorField.setText(portLocator);
+        inverterBaudRateField.setText("" + baudRate);
         inverterSendIntervalField.setText("" + sendInterval);
     }
 }

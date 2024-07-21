@@ -23,6 +23,14 @@ public interface BMSDescriptor {
 
 
     /**
+     * Gets the default baud rate.
+     *
+     * @return the default baud rate
+     */
+    int getDefaultBaudRate();
+
+
+    /**
      * Gets the class of the {@link BMS} implementation.
      *
      * @return the class of the {@link BMS} implementation

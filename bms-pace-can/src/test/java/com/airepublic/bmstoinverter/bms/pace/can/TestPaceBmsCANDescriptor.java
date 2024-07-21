@@ -38,7 +38,7 @@ public class TestPaceBmsCANDescriptor {
 
     @Test
     public void testPort() {
-        final BMSConfig config = new BMSConfig(1, "", 200, desc);
+        final BMSConfig config = new BMSConfig(1, "", 250000, 200, desc);
         final Port port = desc.createPort(config);
 
         Assertions.assertEquals(JavaCANPort.class, port.getClass());

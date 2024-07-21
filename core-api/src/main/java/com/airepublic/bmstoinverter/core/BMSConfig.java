@@ -16,6 +16,7 @@ package com.airepublic.bmstoinverter.core;
 public class BMSConfig {
     private int bmsId;
     private String portLocator;
+    private int baudRate;
     private long delayAfterNoBytes;
     private BMSDescriptor descriptor;
 
@@ -24,13 +25,15 @@ public class BMSConfig {
      *
      * @param bmsId the id of the BMS
      * @param portLocator the port locator
+     * @param baudRate the baud rate
      * @param delayAfterNoBytes the delay after no bytes were received in milliseconds
      * @param descriptor the {@link BMSDescriptor} of the {@link BMS} to use
      */
-    public BMSConfig(final int bmsId, final String portLocator, final long delayAfterNoBytes, final BMSDescriptor descriptor) {
+    public BMSConfig(final int bmsId, final String portLocator, final int baudRate, final long delayAfterNoBytes, final BMSDescriptor descriptor) {
         super();
         this.bmsId = bmsId;
         this.portLocator = portLocator;
+        this.baudRate = baudRate;
         this.delayAfterNoBytes = delayAfterNoBytes;
         this.descriptor = descriptor;
     }
@@ -44,9 +47,10 @@ public class BMSConfig {
      * @param delayAfterNoBytes the delay after no bytes were received in milliseconds
      * @param bmsDescriptor the {@link BMSDescriptor} of the {@link BMS} to use
      */
-    public void update(final int bmsId, final String portLocator, final long delayAfterNoBytes, final BMSDescriptor bmsDescriptor) {
+    public void update(final int bmsId, final String portLocator, final int baudRate, final long delayAfterNoBytes, final BMSDescriptor bmsDescriptor) {
         this.bmsId = bmsId;
         this.portLocator = portLocator;
+        this.baudRate = baudRate;
         this.delayAfterNoBytes = delayAfterNoBytes;
         descriptor = bmsDescriptor;
     }
@@ -79,6 +83,26 @@ public class BMSConfig {
      */
     public String getPortLocator() {
         return portLocator;
+    }
+
+
+    /**
+     * Gets the baud rate.
+     *
+     * @return the baud rate
+     */
+    public int getBaudRate() {
+        return baudRate;
+    }
+
+
+    /**
+     * Sets the baud rate.
+     *
+     * @param baudRate the baud rate to set
+     */
+    public void setBaudRate(final int baudRate) {
+        this.baudRate = baudRate;
     }
 
 

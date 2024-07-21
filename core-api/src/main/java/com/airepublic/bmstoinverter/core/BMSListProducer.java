@@ -90,8 +90,9 @@ public class BMSListProducer {
         energyStorage.getBatteryPacks().addAll(bms.getBatteryPacks());
         final int bmsId = Integer.valueOf(System.getProperty("bms." + index + ".id"));
         final String portLocator = System.getProperty("bms." + index + ".portLocator");
+        final int baudRate = Integer.valueOf(System.getProperty("bms." + index + ".baudRate"));
         final int delayAfterNoBytes = Integer.valueOf(System.getProperty("bms." + index + ".delayAfterNoBytes"));
-        final BMSConfig config = new BMSConfig(bmsId, portLocator, delayAfterNoBytes, bmsDescriptor);
+        final BMSConfig config = new BMSConfig(bmsId, portLocator, baudRate, delayAfterNoBytes, bmsDescriptor);
         bms.initialize(config);
 
         LOG.info("Intialized BMS #" + config.getBmsId() + "[" + config.getDescriptor().getName() + "] on port " + portLocator);
