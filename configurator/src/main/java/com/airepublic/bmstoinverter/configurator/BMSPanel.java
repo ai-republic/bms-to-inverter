@@ -13,12 +13,15 @@ package com.airepublic.bmstoinverter.configurator;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceLoader;
+import java.util.stream.Stream;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
@@ -30,6 +33,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.border.EmptyBorder;
+import javax.swing.event.MouseInputAdapter;
 
 import com.airepublic.bmstoinverter.core.BMSConfig;
 import com.airepublic.bmstoinverter.core.BMSDescriptor;
@@ -39,6 +43,7 @@ public class BMSPanel extends JPanel {
     private final JList<MenuItem<BMSConfig>> bmsList;
     private final DefaultListModel<MenuItem<BMSConfig>> bmsListModel = new DefaultListModel<>();
     private final JTextField pollIntervalField;
+    private final JButton editBMSButton;
     private final NumberInputVerifier numberInputVerifier = new NumberInputVerifier();
 
     public BMSPanel(final JFrame frame) {
@@ -70,6 +75,16 @@ public class BMSPanel extends JPanel {
         bmsList = new JList<>(bmsListModel);
         bmsList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         bmsList.setVisibleRowCount(8);
+        bmsList.addMouseListener(new MouseInputAdapter() {
+
+            @Override
+            public void mouseClicked(final MouseEvent evt) {
+                final JList<MenuItem<BMSConfig>> list = (JList<MenuItem<BMSConfig>>) evt.getSource();
+                if (evt.getClickCount() == 2) {
+                    Stream.of(editBMSButton.getActionListeners()).forEach(listener -> listener.actionPerformed(new ActionEvent(editBMSButton, ActionEvent.ACTION_PERFORMED, "edit")));
+                }
+            }
+        });
         scrollPane.setViewportView(bmsList);
 
         final JButton addBMSButton = new JButton("Add");
@@ -93,7 +108,6 @@ public class BMSPanel extends JPanel {
         removeBMSButton.addActionListener(e -> {
             if (bmsList.getSelectedIndex() != -1) {
                 bmsListModel.remove(bmsList.getSelectedIndex());
-                reindexBMSList();
             }
         });
         final GridBagConstraints gbc_removeBMSButton = new GridBagConstraints();
@@ -102,7 +116,7 @@ public class BMSPanel extends JPanel {
         gbc_removeBMSButton.gridy = 0;
         add(removeBMSButton, gbc_removeBMSButton);
 
-        final JButton editBMSButton = new JButton("Edit");
+        editBMSButton = new JButton("Edit");
         final GridBagConstraints gbc_editBMSButton = new GridBagConstraints();
         gbc_editBMSButton.anchor = GridBagConstraints.NORTH;
         gbc_editBMSButton.insets = new Insets(0, 0, 5, 5);
@@ -163,17 +177,6 @@ public class BMSPanel extends JPanel {
 
     private String createBMSDisplayName(final BMSConfig config) {
         return config.getDescriptor().getName() + "(ID: " + config.getBmsId() + ") on " + config.getPortLocator();
-    }
-
-
-    private void reindexBMSList() {
-        for (int i = 0; i < bmsListModel.getSize(); i++) {
-            final MenuItem<BMSConfig> item = bmsListModel.get(i);
-            item.getValue().setBmsId(i);
-            item.setDisplayName(createBMSDisplayName(item.getValue()));
-        }
-
-        bmsList.repaint();
     }
 
 

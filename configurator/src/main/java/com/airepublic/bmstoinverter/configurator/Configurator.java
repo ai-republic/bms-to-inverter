@@ -388,30 +388,35 @@ public class Configurator extends JFrame {
         }
 
         // generate start scripts
-        final StringBuffer windowsCommands = new StringBuffer("start \"\" java -DconfigFile=config/config.properties -Dlog4j2.configurationFile=file:config/log4j2.xml -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar\n");
-        final StringBuffer linuxCommands = new StringBuffer("#!/bin/bash\njava -DconfigFile=config/config.properties -Dlog4j2.configurationFile=file:config/log4j2.xml -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar &\n");
-
-        if (servicesPanel.isWebserverEnabled()) {
-            windowsCommands.append("start \"\" java -jar lib/webserver-0.0.1-SNAPSHOT.jar --spring.config.location=file:config/config.properties\n");
-            linuxCommands.append("java -jar lib/webserver-0.0.1-SNAPSHOT.jar --spring.config.location=file:config/config.properties &\n");
-        }
-
         final Path windowsStart = installDirectory.resolve("start.cmd");
         Files.deleteIfExists(windowsStart);
-        Files.write(windowsStart, windowsCommands.toString().getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        Files.writeString(windowsStart, "start \"\" java -DconfigFile=config/config.properties -Dlog4j2.configurationFile=file:config/log4j2.xml -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar\n", StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         setFilePermissions(windowsStart, true, true, true);
 
-        final Path linuxStart = installDirectory.resolve("start");
+        final Path linuxStart = installDirectory.resolve("start.sh");
         Files.deleteIfExists(linuxStart);
-        Files.write(linuxStart, ("" + linuxCommands.toString()).getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        Files.writeString(linuxStart, "#!/bin/bash\njava -DconfigFile=config/config.properties -Dlog4j2.configurationFile=file:config/log4j2.xml -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar\n", StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         setFilePermissions(linuxStart, true, true, true);
 
+        if (servicesPanel.isWebserverEnabled()) {
+            final Path windowsStartWebserver = installDirectory.resolve("startWebserver.cmd");
+            Files.deleteIfExists(windowsStartWebserver);
+            Files.writeString(windowsStartWebserver, "start \"\" java -jar lib/webserver-0.0.1-SNAPSHOT.jar --spring.config.location=file:config/config.properties\n", StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+            setFilePermissions(windowsStartWebserver, true, true, true);
+
+            final Path linuxStartWebServer = installDirectory.resolve("startWebserver.sh");
+            Files.deleteIfExists(linuxStartWebServer);
+            Files.writeString(linuxStartWebServer, "\"#!/bin/bash\\njava -jar lib/webserver-0.0.1-SNAPSHOT.jar --spring.config.location=file:config/config.properties\n", StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+            setFilePermissions(linuxStartWebServer, true, true, true);
+
+        }
+
         final Path windowsConfigStart = installDirectory.resolve("configurator.cmd");
-        final Path linuxConfigStart = installDirectory.resolve("configurator");
+        final Path linuxConfigStart = installDirectory.resolve("configurator.sh");
         Files.deleteIfExists(windowsConfigStart);
         Files.deleteIfExists(linuxConfigStart);
-        Files.write(windowsConfigStart, "java -jar lib/configurator-0.0.1-SNAPSHOT.jar".getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-        Files.write(linuxConfigStart, "#!/bin/bash\njava -jar lib/configurator-0.0.1-SNAPSHOT.jar".getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        Files.writeString(windowsConfigStart, "java -jar lib/configurator-0.0.1-SNAPSHOT.jar", StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        Files.writeString(linuxConfigStart, "#!/bin/bash\njava -jar lib/configurator-0.0.1-SNAPSHOT.jar", StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         setFilePermissions(windowsConfigStart, true, true, true);
         setFilePermissions(linuxConfigStart, true, true, true);
     }
