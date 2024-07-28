@@ -162,8 +162,8 @@ public class BmsToInverter implements AutoCloseable {
             LOG.error("Error in project configuration - no MQTT internal producer service implementation found!");
         }
 
-        final String locator = System.getProperty("mqtt.producer.locator");
-        final String address = System.getProperty("mqtt.producer.topic");
+        final String locator = System.getProperty("mqtt.broker.locator");
+        final String address = System.getProperty("mqtt.broker.topic");
 
         try {
             mqttProducer.connect(locator, address, null, null);
