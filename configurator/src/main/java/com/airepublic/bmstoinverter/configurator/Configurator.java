@@ -390,7 +390,7 @@ public class Configurator extends JFrame {
         // generate start scripts
         final Path windowsStart = installDirectory.resolve("start.cmd");
         Files.deleteIfExists(windowsStart);
-        Files.writeString(windowsStart, "start \"\" java -DconfigFile=config/config.properties -Dlog4j2.configurationFile=file:config/log4j2.xml -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar\n", StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        Files.writeString(windowsStart, "start java -DconfigFile=config/config.properties -Dlog4j2.configurationFile=file:config/log4j2.xml -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar\n", StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         setFilePermissions(windowsStart, true, true, true);
 
         final Path linuxStart = installDirectory.resolve("start.sh");
@@ -401,12 +401,12 @@ public class Configurator extends JFrame {
         if (servicesPanel.isWebserverEnabled()) {
             final Path windowsStartWebserver = installDirectory.resolve("startWebserver.cmd");
             Files.deleteIfExists(windowsStartWebserver);
-            Files.writeString(windowsStartWebserver, "start \"\" java -jar lib/webserver-0.0.1-SNAPSHOT.jar --spring.config.location=file:config/config.properties\n", StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+            Files.writeString(windowsStartWebserver, "start java -jar lib/webserver-0.0.1-SNAPSHOT.jar --spring.config.location=file:config/config.properties\n", StandardOpenOption.CREATE, StandardOpenOption.WRITE);
             setFilePermissions(windowsStartWebserver, true, true, true);
 
             final Path linuxStartWebServer = installDirectory.resolve("startWebserver.sh");
             Files.deleteIfExists(linuxStartWebServer);
-            Files.writeString(linuxStartWebServer, "\"#!/bin/bash\\njava -jar lib/webserver-0.0.1-SNAPSHOT.jar --spring.config.location=file:config/config.properties\n", StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+            Files.writeString(linuxStartWebServer, "#!/bin/bash\njava -jar lib/webserver-0.0.1-SNAPSHOT.jar --spring.config.location=file:config/config.properties\n", StandardOpenOption.CREATE, StandardOpenOption.WRITE);
             setFilePermissions(linuxStartWebServer, true, true, true);
 
         }
