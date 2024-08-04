@@ -88,6 +88,27 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- ####################  JBD (RS485)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-jbd-rs485</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- ####################  JK (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-jk-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- ####################  JK (RS485)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-jk-rs485</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
 		<!-- ####################  PACE (CAN)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
@@ -109,24 +130,10 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<!-- ####################  JBD (RS485)  ################### -->
+		<!-- ####################  PYLONTECH (RS485)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>bms-jbd-rs485</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<!-- ####################  JK (CAN)  ################### -->
-		<dependency>
-			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>bms-jk-can</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<!-- ####################  JK (RS485)  ################### -->
-		<dependency>
-			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>bms-jk-rs485</artifactId>
+			<artifactId>bms-pylon-rs485</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -179,6 +186,13 @@
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>inverter-pylon-hv-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- ####################  PYLON (RS485)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-pylon-rs485</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

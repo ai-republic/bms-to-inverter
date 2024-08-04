@@ -76,11 +76,23 @@ public abstract class Inverter {
 
 
     /**
+     * Gets the {@link EnergyStorage} associated with this {@link Inverter}.
+     *
+     * @return the {@link EnergyStorage}
+     */
+    protected EnergyStorage getEnergyStorage() {
+        return energyStorage;
+    }
+
+
+    /**
      * Process sending the data via the {@link Port} to the {@link Inverter}.
      *
      * @param callback the code executed after successful processing
      */
     public void process(final Runnable callback) {
+        ByteBuffer currentFrame = null;
+
         if (energyStorage.getBatteryPacks().size() > 0) {
             try {
                 final BatteryPack pack = getAggregatedBatteryInfo();
@@ -91,12 +103,14 @@ public abstract class Inverter {
 
                 if (sendFrames != null) {
                     for (final ByteBuffer frame : sendFrames) {
+                        // keep a reference on the frame being processed for the error log
+                        currentFrame = frame;
                         LOG.debug("Inverter send: {}", Port.printBuffer(frame));
                         sendFrame(port, frame);
                     }
                 }
             } catch (final Throwable e) {
-                LOG.error("Failed to send CAN frame", e);
+                LOG.error("Failed to send frame to inverter:" + Port.printBuffer(currentFrame), e);
             }
 
             try {

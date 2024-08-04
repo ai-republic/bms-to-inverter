@@ -113,6 +113,7 @@ public class InverterPanel extends JPanel {
         add(inverterSendIntervalField, gbc_inverterPushInvervalField);
 
         inverterField.addActionListener(e -> inverterPortLocatorField.requestFocus());
+        inverterField.addActionListener(e -> inverterBaudRateField.setText("" + inverterField.getModel().getElementAt(inverterField.getSelectedIndex()).getValue().getDefaultBaudRate()));
         inverterPortLocatorField.addActionListener(e -> inverterBaudRateField.requestFocus());
         inverterBaudRateField.addActionListener(e -> inverterSendIntervalField.requestFocus());
     }

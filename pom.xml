@@ -29,6 +29,7 @@
 		<module>bms-pace-can</module>
 		<module>bms-pylon-can</module>
 		<module>bms-pylon-hv-can</module>
+		<module>bms-pylon-rs485</module>
 		<module>bms-seplos-can</module>
 		<module>bms-sma-can</module>
 		<module>bms-to-inverter-main</module>
@@ -38,6 +39,7 @@
 		<module>inverter-growatt-rs485</module>
 		<module>inverter-pylon-can</module>
 		<module>inverter-pylon-hv-can</module>
+		<module>inverter-pylon-rs485</module>
 		<module>inverter-solark-can</module>
 		<module>inverter-sma-can</module>
 		<module>service-mqtt-broker</module>
