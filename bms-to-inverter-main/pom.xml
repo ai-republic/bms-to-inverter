@@ -168,6 +168,13 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- ####################  SAMSUNG (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-samsung-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- ####################  SEPLOS (CAN)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>

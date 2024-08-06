@@ -108,15 +108,15 @@ public class BatteryPack {
 
     // data from 0x95
     /** Store Cell Voltages (mV) */
-    public int cellVmV[] = new int[48];
+    public int cellVmV[] = new int[1024];
 
     // data from 0x96
     /** array of cell Temperature sensors */
-    public int cellTemperature[] = new int[16];
+    public int cellTemperature[] = new int[1024];
 
     // data from 0x97
     /** boolean array of cell balance states */
-    public boolean[] cellBalanceState = new boolean[48];
+    public boolean[] cellBalanceState = new boolean[1024];
     /** boolean is cell balance active */
     public boolean cellBalanceActive;
 

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+
+	<Properties>
+		<Property name="name">BMS-to-Inverter</Property>
+		<Property name="pattern">%d{yyyy-MM-dd HH:mm:ss.SSS} | %-5.5p | %-10.10t | %-20.20C:%-5.5L | %msg%n</Property>
+	</Properties>
+	
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="${pattern}"/>
+		</Console>
+	</Appenders>
+	
+	<Loggers>
+		<Root level="debug"> <!-- We log everything -->
+			<AppenderRef ref="Console"/> <!-- To console -->
+			<AppenderRef ref="RollingFile"/> <!-- And to a rotated file -->
+		</Root>
+	</Loggers>
+	
+</Configuration>
+	

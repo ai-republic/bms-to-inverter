@@ -30,6 +30,7 @@
 		<module>bms-pylon-can</module>
 		<module>bms-pylon-hv-can</module>
 		<module>bms-pylon-rs485</module>
+		<module>bms-samsung-can</module>
 		<module>bms-seplos-can</module>
 		<module>bms-sma-can</module>
 		<module>bms-to-inverter-main</module>
