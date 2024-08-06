@@ -29,26 +29,33 @@ _**NOTE:** If you would like me to add a BMS or inverter module just let me know
 ## Currently implemented BMS:
 * BYD BMS (CAN)
 * Daly BMS (CAN / RS485 (& UART / RS232))
+* Growatt low voltage (12V/24V/48V) (CAN)
 * Growatt high voltage (CAN)
+* JBD BMS (RS485 (& UART / RS232))
 * JK BMS (CAN / RS485 (& UART / RS232))
 * PACE BMS (CAN)
 * PylonTech low voltage BMS (CAN / RS485)
 * PylonTech high voltage BMS (CAN)
+* Samsung BMS (CAN)
 * Seplos BMS (CAN)
 * SMA BMS (CAN)
+* Vertiv BMS (CAN)
 
 ## Currently implemented inverters:
-* SMA Sunny Island (CAN)
+* BYD inverters (CAN)
+* Fronius inverters
 * Growatt low voltage (12V/24V/48V) inverters (CAN)
 * Growatt high voltage inverters (CAN)
-* PylonTech low voltage inverters (CAN)
+* PylonTech low voltage inverters (CAN / RS485)
 * PylonTech high voltage inverters (CAN)
 * Deye inverters (CAN)
+* SMA inverters (CAN)
 * SolArk inverters (CAN)
-* any other inverters using the PylonTech (CAN) protocols
+* SolPlanet inverters (RS485 / RS232)
+* **and any other inverters supporting any of the above listed BMS protocols!**
 
 
-_**NOTE:** **If your BMS or inverter is not in the list just open an issue!**_
+**NOTE:** **If your BMS or inverter is not in the list just open an issue!**
 
 ----------
 
