@@ -21,12 +21,14 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -54,51 +56,6 @@ public class Configurator extends JFrame {
     private final BMSPanel bmsPanel;
     private final InverterPanel inverterPanel;
     private final ServicesPanel servicesPanel;
-    private final String logConfig = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"
-            + "<Configuration>\r\n"
-            + "\r\n"
-            + "    <Properties>\r\n"
-            + "        <Property name=\"name\">BMS-to-Inverter</Property>\r\n"
-            + "        <Property name=\"pattern\">%d{yyyy-MM-dd HH:mm:ss.SSS} | %-5.5p | %-10.10t | %-20.20C:%-5.5L | %msg%n</Property>\r\n"
-            + "    </Properties>\r\n"
-            + "    \r\n"
-            + "    <Appenders>\r\n"
-            + "        <Console name=\"Console\" target=\"SYSTEM_OUT\">\r\n"
-            + "            <PatternLayout pattern=\"${pattern}\"/>\r\n"
-            + "        </Console>\r\n"
-            + "        <RollingFile name=\"RollingFile\" fileName=\"logs/${name}.log\"\r\n"
-            + "                 filePattern=\"logs/$${date:yyyy-MM}/${name}-%d{yyyy-MM-dd}-%i.log.gz\">\r\n"
-            + "            <PatternLayout>\r\n"
-            + "                <pattern>${pattern}</pattern>\r\n"
-            + "            </PatternLayout>\r\n"
-            + "            <Policies>\r\n"
-            + "                <TimeBasedTriggeringPolicy /><!-- Rotated everyday -->\r\n"
-            + "                <SizeBasedTriggeringPolicy size=\"100 MB\"/> <!-- Or every 100 MB -->\r\n"
-            + "            </Policies>\r\n"
-            + "        </RollingFile>\r\n"
-            + "    </Appenders>\r\n"
-            + "    \r\n"
-            + "    <Loggers>\r\n"
-            + "        <Logger name=\"org.jboss.weld\" level=\"error\" additivity=\"false\">\r\n"
-            + "            <AppenderRef ref=\"Console\"/>\r\n"
-            + "            <AppenderRef ref=\"RollingFile\"/>\r\n"
-            + "        </Logger>\r\n"
-            + "        <Logger name=\"io.netty\" level=\"error\" additivity=\"false\">\r\n"
-            + "            <AppenderRef ref=\"Console\"/>\r\n"
-            + "            <AppenderRef ref=\"RollingFile\"/>\r\n"
-            + "        </Logger>\r\n"
-            + "        <Logger name=\"org.apache.activemq\" level=\"info\" additivity=\"false\">\r\n"
-            + "            <AppenderRef ref=\"Console\"/>\r\n"
-            + "            <AppenderRef ref=\"RollingFile\"/>\r\n"
-            + "        </Logger>\r\n"
-            + "        \r\n"
-            + "        <Root level=\"debug\">\r\n"
-            + "            <AppenderRef ref=\"Console\"/> <!-- To console -->\r\n"
-            + "            <AppenderRef ref=\"RollingFile\"/> <!-- And to a rotated file -->\r\n"
-            + "        </Root>\r\n"
-            + "    </Loggers>\r\n"
-            + "    \r\n"
-            + "</Configuration>";
 
     public Configurator() {
         super("BMS-to-Inverter Configurator");
@@ -145,8 +102,9 @@ public class Configurator extends JFrame {
             try {
                 updateConfiguration();
                 JOptionPane.showMessageDialog(Configurator.this, "Successfully updated the configuration!", "Information", JOptionPane.INFORMATION_MESSAGE);
-            } catch (final IOException e1) {
+            } catch (final Exception e1) {
                 JOptionPane.showMessageDialog(Configurator.this, "Failed to update the configuration!\n" + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                e1.printStackTrace();
             }
         });
 
@@ -229,7 +187,7 @@ public class Configurator extends JFrame {
     }
 
 
-    private void updateConfiguration() throws IOException {
+    private void updateConfiguration() throws IOException, URISyntaxException {
         final String config = generateConfiguration();
         // define paths
         final Path installDirectory = Path.of(generalPanel.getInstallationPath());
@@ -238,8 +196,9 @@ public class Configurator extends JFrame {
         // generate the configuration files
         Files.deleteIfExists(configDirectory.resolve("config.properties"));
         Files.write(configDirectory.resolve("config.properties"), config.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-        Files.deleteIfExists(configDirectory.resolve("lo4j2.xml"));
-        Files.write(configDirectory.resolve("log4j2.xml"), logConfig.toString().replace("<Root level=\"info\">", "<Root level=\"" + generalPanel.getLogLevel() + "\">").getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        Files.deleteIfExists(configDirectory.resolve("log4j2.xml"));
+        final String logConfig = Files.readString(Paths.get(this.getClass().getClassLoader().getResource("templates/main-log4j2.xml").toURI()));
+        Files.writeString(configDirectory.resolve("log4j2.xml"), logConfig.replace("<Root level=\"info\">", "<Root level=\"" + generalPanel.getLogLevel() + "\">"), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
 
     }
 
@@ -694,7 +653,7 @@ public class Configurator extends JFrame {
 
         try {
             final String logXml = Files.readString(logFilePath);
-            final int idx = logXml.indexOf("<root level=\"") + "<root level=\"".length();
+            final int idx = logXml.indexOf("<Root level=\"") + "<Root level=\"".length();
             final String logLevel = logXml.substring(idx, logXml.indexOf('\"', idx + 1));
             generalPanel.setLogLevel(logLevel);
             generalPanel.setConfiguration(config);
