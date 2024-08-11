@@ -25,7 +25,6 @@ import java.util.stream.Stream;
 
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
@@ -46,7 +45,7 @@ public class BMSPanel extends JPanel {
     private final JButton editBMSButton;
     private final NumberInputVerifier numberInputVerifier = new NumberInputVerifier();
 
-    public BMSPanel(final JFrame frame) {
+    public BMSPanel(final Configurator configurator) {
         setBorder(new EmptyBorder(10, 10, 10, 10));
         final GridBagLayout gbl_bmsPanel = new GridBagLayout();
         gbl_bmsPanel.columnWidths = new int[] { 100, 300, 70, 70 };
@@ -79,7 +78,6 @@ public class BMSPanel extends JPanel {
 
             @Override
             public void mouseClicked(final MouseEvent evt) {
-                final JList<MenuItem<BMSConfig>> list = (JList<MenuItem<BMSConfig>>) evt.getSource();
                 if (evt.getClickCount() == 2) {
                     Stream.of(editBMSButton.getActionListeners()).forEach(listener -> listener.actionPerformed(new ActionEvent(editBMSButton, ActionEvent.ACTION_PERFORMED, "edit")));
                 }
@@ -89,13 +87,19 @@ public class BMSPanel extends JPanel {
 
         final JButton addBMSButton = new JButton("Add");
         addBMSButton.addActionListener(e -> {
-            final BMSDialog dlg = new BMSDialog(frame);
+            final BMSDialog dlg = new BMSDialog(configurator);
             dlg.setVisible(true);
             final BMSConfig config = dlg.getBMSConfig();
 
             if (config != null) {
                 config.setBmsId(bmsListModel.getSize());
                 bmsListModel.addElement(new MenuItem<>(createBMSDisplayName(config), config));
+
+                // see if the same BMS type is already present
+                if (!isBMSTypePresent(config)) {
+                    // if not present, need to do a clean install
+                    configurator.disableUpdateConfiguration();
+                }
             }
         });
         final GridBagConstraints gbc_addBMSButton = new GridBagConstraints();
@@ -107,7 +111,14 @@ public class BMSPanel extends JPanel {
         final JButton removeBMSButton = new JButton("Remove");
         removeBMSButton.addActionListener(e -> {
             if (bmsList.getSelectedIndex() != -1) {
-                bmsListModel.remove(bmsList.getSelectedIndex());
+                final MenuItem<BMSConfig> item = bmsListModel.remove(bmsList.getSelectedIndex());
+
+                // see if the same BMS type is still present
+                if (!isBMSTypePresent(item.getValue())) {
+                    // if not present, need to do a clean install
+                    configurator.disableUpdateConfiguration();
+                }
+
             }
         });
         final GridBagConstraints gbc_removeBMSButton = new GridBagConstraints();
@@ -127,7 +138,7 @@ public class BMSPanel extends JPanel {
             final MenuItem<BMSConfig> item = bmsList.getSelectedValue();
 
             if (item != null) {
-                final BMSDialog dlg = new BMSDialog(frame);
+                final BMSDialog dlg = new BMSDialog(configurator);
                 dlg.setBMSConfig(item.getValue());
                 dlg.setVisible(true);
                 item.setDisplayName(createBMSDisplayName(item.getValue()));
@@ -172,6 +183,23 @@ public class BMSPanel extends JPanel {
                 }
             }
         });
+    }
+
+
+    private boolean isBMSTypePresent(final BMSConfig config) {
+        // go through the the existing BMS configs and see if the same BMS type is already
+        // present
+        boolean bmsTypePresent = false;
+
+        for (int i = 0; i < bmsListModel.size(); i++) {
+            final MenuItem<BMSConfig> item = bmsListModel.get(i);
+            if (item.getValue().getDescriptor().getName().equals(config.getDescriptor().getName())) {
+                bmsTypePresent = true;
+                break;
+            }
+        }
+
+        return bmsTypePresent;
     }
 
 

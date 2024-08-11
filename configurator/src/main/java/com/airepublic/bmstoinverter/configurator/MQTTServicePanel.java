@@ -39,7 +39,7 @@ public class MQTTServicePanel extends JPanel {
     private final JTextField mqttBrokerTopicField;
     private boolean overrideBrokerEnabled = false;
 
-    public MQTTServicePanel() {
+    public MQTTServicePanel(final Configurator configurator) {
 
         final GridBagLayout gbl_mqttPanel = new GridBagLayout();
         gbl_mqttPanel.columnWidths = new int[] { 80, 0 };
@@ -182,9 +182,15 @@ public class MQTTServicePanel extends JPanel {
         gbc_mqttBrokerTopicField.gridy = 7;
         add(mqttBrokerTopicField, gbc_mqttBrokerTopicField);
 
-        activateMQTTBrokerCheckBox.addActionListener(t -> mqttBrokerSelectionChanged());
+        activateMQTTBrokerCheckBox.addActionListener(t -> {
+            mqttBrokerSelectionChanged();
+            configurator.disableUpdateConfiguration();
+        });
 
-        activateMQTTProducerCheckBox.addActionListener(t -> mqttProducerSelectionchanged());
+        activateMQTTProducerCheckBox.addActionListener(t -> {
+            mqttProducerSelectionchanged();
+            configurator.disableUpdateConfiguration();
+        });
     }
 
 
@@ -192,6 +198,12 @@ public class MQTTServicePanel extends JPanel {
         overrideBrokerEnabled = isEnabled;
         activateMQTTBrokerCheckBox.setSelected(isEnabled);
         mqttBrokerSelectionChanged();
+    }
+
+
+    void enableMQTTProducer(final boolean isEnabled) {
+        activateMQTTProducerCheckBox.setSelected(isEnabled);
+        mqttProducerSelectionchanged();
     }
 
 
@@ -305,6 +317,8 @@ public class MQTTServicePanel extends JPanel {
             mqttBrokerTopicField.setText(config.getProperty("mqtt.broker.topic"));
             activateMQTTBrokerCheckBox.setSelected(true);
             mqttBrokerSelectionChanged();
+        } else {
+            enableMQTTBroker(false);
         }
 
         if (config.containsKey("mqtt.producer.enabled")) {
@@ -314,6 +328,8 @@ public class MQTTServicePanel extends JPanel {
             mqttProducerPasswordField.setText(config.getProperty("mqtt.producer.password"));
             activateMQTTProducerCheckBox.setSelected(true);
             mqttProducerSelectionchanged();
+        } else {
+            enableMQTTProducer(false);
         }
 
     }

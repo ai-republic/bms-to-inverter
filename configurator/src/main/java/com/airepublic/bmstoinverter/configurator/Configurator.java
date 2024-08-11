@@ -50,6 +50,7 @@ import javax.swing.SwingConstants;
 public class Configurator extends JFrame {
     private static final long serialVersionUID = 1L;
     private final GeneralPanel generalPanel;
+    private final JButton updateConfigButton;
     private final BMSPanel bmsPanel;
     private final InverterPanel inverterPanel;
     private final ServicesPanel servicesPanel;
@@ -116,13 +117,13 @@ public class Configurator extends JFrame {
         bmsPanel = new BMSPanel(this);
         tabbedPane.addTab("BMS", bmsPanel);
 
-        inverterPanel = new InverterPanel();
+        inverterPanel = new InverterPanel(this);
         tabbedPane.addTab("Inverter", null, inverterPanel, null);
 
         final JScrollPane servicesScrollPane = new JScrollPane();
         tabbedPane.addTab("Services", null, servicesScrollPane, null);
 
-        servicesPanel = new ServicesPanel();
+        servicesPanel = new ServicesPanel(this);
         servicesScrollPane.setViewportView(servicesPanel);
 
         final JPanel buttonPanel = new JPanel();
@@ -133,12 +134,13 @@ public class Configurator extends JFrame {
         gbl_buttonPanel.rowWeights = new double[] { 0.0, 0.0 };
         buttonPanel.setLayout(gbl_buttonPanel);
 
-        final JButton updateConfigButton = new JButton("Update Configuration");
+        updateConfigButton = new JButton("Update Configuration");
         final GridBagConstraints gbc_updateConfigButton = new GridBagConstraints();
         gbc_updateConfigButton.insets = new Insets(0, 0, 0, 5);
         gbc_updateConfigButton.gridx = 1;
         gbc_updateConfigButton.gridy = 1;
         buttonPanel.add(updateConfigButton, gbc_updateConfigButton);
+        disableUpdateConfiguration();
         updateConfigButton.addActionListener(e -> {
             try {
                 updateConfiguration();
@@ -373,7 +375,10 @@ public class Configurator extends JFrame {
 
         // add the webserver
         Files.deleteIfExists(installDirectory.resolve("lib/webserver-0.0.1-SNAPSHOT.jar"));
-        Files.copy(srcDirectory.resolve("webserver/target/webserver-0.0.1-SNAPSHOT.jar"), installDirectory.resolve("lib/webserver-0.0.1-SNAPSHOT.jar"));
+
+        if (servicesPanel.isWebserverEnabled()) {
+            Files.copy(srcDirectory.resolve("webserver/target/webserver-0.0.1-SNAPSHOT.jar"), installDirectory.resolve("lib/webserver-0.0.1-SNAPSHOT.jar"));
+        }
 
         // clean up source directory and zip
         Files.deleteIfExists(srcZip);
@@ -698,10 +703,19 @@ public class Configurator extends JFrame {
             servicesPanel.setConfiguration(config);
 
             JOptionPane.showMessageDialog(Configurator.this, "Successfully loaded the configuration!", "Information", JOptionPane.INFORMATION_MESSAGE);
+            updateConfigButton.setEnabled(true);
         } catch (final Exception e) {
             JOptionPane.showMessageDialog(Configurator.this, "Failed to load the configuration!\n" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
         }
+    }
+
+
+    /**
+     * Disables the Update Configuration button.
+     */
+    public void disableUpdateConfiguration() {
+        updateConfigButton.setEnabled(false);
     }
 
 }

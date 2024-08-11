@@ -16,13 +16,13 @@ import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.event.ActionListener;
 import java.util.ServiceLoader;
 import java.util.Vector;
 
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -45,19 +45,20 @@ public class BMSDialog extends JDialog {
     private final JTextField delayAfterNoBytesField = new JTextField("200");
     private final NumberInputVerifier numberInputVerifier = new NumberInputVerifier();
     private final JTextField idField = new JTextField();
-    final JButton okButton = new JButton("Ok");
+    private final JButton okButton = new JButton("Ok");
+    private final ActionListener disableUpdateConfiguration;
 
     /**
      * Constructor.
      *
-     * @param owner the owning frame
+     * @param configurator the owning frame
      */
-    public BMSDialog(final JFrame owner) {
-        super(owner, "BMS configuration...", true);
-
+    public BMSDialog(final Configurator configurator) {
+        super(configurator, "BMS configuration...", true);
+        disableUpdateConfiguration = (action) -> configurator.disableUpdateConfiguration();
         descriptors = createBMSDescriptors();
 
-        setLocation(owner.getBounds().width / 2 - 175, owner.getBounds().height / 2 - 60);
+        setLocation(configurator.getBounds().width / 2 - 175, configurator.getBounds().height / 2 - 60);
         setSize(new Dimension(350, 359));
         setResizable(false);
         getContentPane().setLayout(new BorderLayout(0, 0));
@@ -252,6 +253,18 @@ public class BMSDialog extends JDialog {
         portLocatorField.setText(config.getPortLocator());
         baudRateField.setText("" + config.getBaudRate());
         delayAfterNoBytesField.setText("" + config.getDelayAfterNoBytes());
+
+        bmses.addActionListener(disableUpdateConfiguration);
+    }
+
+
+    @Override
+    public void setVisible(final boolean b) {
+        super.setVisible(b);
+
+        if (!b) {
+            bmses.removeActionListener(disableUpdateConfiguration);
+        }
     }
 
 

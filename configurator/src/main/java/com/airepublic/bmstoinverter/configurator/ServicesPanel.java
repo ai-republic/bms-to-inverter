@@ -29,7 +29,7 @@ public class ServicesPanel extends JPanel {
     private final JCheckBox webserverCheckBox;
     private final WebserverServicePanel webserverPanel;
 
-    public ServicesPanel() {
+    public ServicesPanel(final Configurator configurator) {
         final GridBagLayout gbl_servicesPanel = new GridBagLayout();
         gbl_servicesPanel.columnWidths = new int[] { 100, 100, 100, 100, 0 };
         gbl_servicesPanel.rowHeights = new int[] { 30, 30, 30, 0, 30, 0, 30 };
@@ -62,9 +62,12 @@ public class ServicesPanel extends JPanel {
         add(emailPanel, gbc_emailPanel);
 
         enableComponent(emailPanel, false);
-        emailCheckBox.addActionListener(t -> enableComponent(emailPanel, emailCheckBox.isSelected()));
+        emailCheckBox.addActionListener(t -> {
+            enableComponent(emailPanel, emailCheckBox.isSelected());
+            configurator.disableUpdateConfiguration();
+        });
 
-        mqttPanel = new MQTTServicePanel();
+        mqttPanel = new MQTTServicePanel(configurator);
         final GridBagConstraints gbc_mqttPanel = new GridBagConstraints();
         gbc_mqttPanel.fill = GridBagConstraints.BOTH;
         gbc_mqttPanel.gridwidth = 4;
@@ -95,6 +98,7 @@ public class ServicesPanel extends JPanel {
         webserverCheckBox.addActionListener(t -> {
             mqttPanel.enableMQTTBroker(webserverCheckBox.isSelected());
             enableComponent(webserverPanel, webserverCheckBox.isSelected());
+            configurator.disableUpdateConfiguration();
         });
 
     }

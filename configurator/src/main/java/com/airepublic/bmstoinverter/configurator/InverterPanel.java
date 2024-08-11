@@ -34,7 +34,7 @@ public class InverterPanel extends JPanel {
     private final JTextField inverterSendIntervalField;
     private final NumberInputVerifier numberInputVerifier = new NumberInputVerifier();
 
-    public InverterPanel() {
+    public InverterPanel(final Configurator configurator) {
         setBorder(new EmptyBorder(10, 10, 10, 10));
         final GridBagLayout gbl_inverterPanel = new GridBagLayout();
         gbl_inverterPanel.columnWidths = new int[] { 100, 250, 70, 70 };
@@ -112,8 +112,11 @@ public class InverterPanel extends JPanel {
         gbc_inverterPushInvervalField.gridy = 3;
         add(inverterSendIntervalField, gbc_inverterPushInvervalField);
 
-        inverterField.addActionListener(e -> inverterPortLocatorField.requestFocus());
-        inverterField.addActionListener(e -> inverterBaudRateField.setText("" + inverterField.getModel().getElementAt(inverterField.getSelectedIndex()).getValue().getDefaultBaudRate()));
+        inverterField.addActionListener(e -> {
+            inverterPortLocatorField.requestFocus();
+            inverterBaudRateField.setText("" + inverterField.getModel().getElementAt(inverterField.getSelectedIndex()).getValue().getDefaultBaudRate());
+            configurator.disableUpdateConfiguration();
+        });
         inverterPortLocatorField.addActionListener(e -> inverterBaudRateField.requestFocus());
         inverterBaudRateField.addActionListener(e -> inverterSendIntervalField.requestFocus());
     }
