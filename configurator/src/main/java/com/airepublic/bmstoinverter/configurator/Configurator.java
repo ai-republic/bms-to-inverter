@@ -542,11 +542,11 @@ public class Configurator extends JFrame {
             if (!dependencies.containsKey(bmsName)) {
                 // otherwise create the artifactId from the BMS binding name
                 final String[] parts = bmsName.split("_");
-                final StringBuffer artifactId = new StringBuffer("bms-");
+                final StringBuffer artifactId = new StringBuffer("bms");
                 Stream.of(parts).forEach(part -> artifactId.append("-" + part.toLowerCase()));
 
                 // and add the dependency
-                dependencies.put(bmsName, "<!--  ####################  " + bmsName + " BMS   ################### -->\r\n"
+                dependencies.put(bmsName, "     <!--  ####################  " + bmsName + " BMS   ################### -->\r\n"
                         + "        <dependency>\r\n"
                         + "            <groupId>com.ai-republic.bms-to-inverter</groupId>\r\n"
                         + "            <artifactId>" + artifactId + "</artifactId>\r\n"
@@ -560,17 +560,17 @@ public class Configurator extends JFrame {
 
         // create the artifactId from the inverter binding name
         final String inverterName = inverterPanel.getInverterType().getName();
-        final StringBuffer artifactId = new StringBuffer("inverter-");
+        final StringBuffer artifactId = new StringBuffer("inverter");
 
         if (inverterName.equals("NONE")) {
-            artifactId.append("dummy");
+            artifactId.append("-dummy");
         } else {
             final String[] parts = inverterName.split("_");
             Stream.of(parts).forEach(part -> artifactId.append("-" + part.toLowerCase()));
         }
 
         // and add the inverter dependency
-        pom.append("<!-- ####################  " + inverterName + " inverter  ################### -->\r\n"
+        pom.append("        <!-- ####################  " + inverterName + " inverter  ################### -->\r\n"
                 + "        <dependency>\r\n"
                 + "            <groupId>com.ai-republic.bms-to-inverter</groupId>\r\n"
                 + "            <artifactId>" + artifactId + "</artifactId>\r\n"
@@ -615,7 +615,7 @@ public class Configurator extends JFrame {
                 + "    </dependencies>\r\n"
                 + "</project>");
 
-        final Path pomFile = tempDirectory.resolve("pom.xml");
+        final Path pomFile = tempDirectory.resolve("bms-to-inverter-main/bms-to-inverter-main//pom.xml");
         Files.deleteIfExists(pomFile);
         Files.writeString(pomFile, pom.toString(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
     }
