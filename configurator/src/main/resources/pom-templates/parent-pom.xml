@@ -19,7 +19,6 @@
 		<module>core-api</module>
 %s
 		<module>bms-to-inverter-main</module>
-		<module>configurator</module>
 	</modules>
 
 	<build>
