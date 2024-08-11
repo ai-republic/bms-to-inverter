@@ -96,13 +96,6 @@
 			<version>1.0.5</version>
 		</dependency>
 
-		<dependency>
-			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>configurator</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-
 		<!-- #################### !!!!!!!!	BMSes 	!!!!!!!! ###################### -->
 %s
 
