@@ -17,7 +17,7 @@
 
 	<modules>
 		<module>core-api</module>
-		{0}
+{0}
 		<module>bms-to-inverter-main</module>
 		<module>configurator</module>
 	</modules>
