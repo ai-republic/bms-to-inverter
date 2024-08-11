@@ -29,7 +29,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -329,6 +332,9 @@ public class Configurator extends JFrame {
         Files.deleteIfExists(srcDirectory.resolve("protocol-can/src/main/resources/native/libjavacan-core.so"));
         Files.copy(srcDirectory.resolve("protocol-can/src/main/resources/native/" + canLibFolder + "/native/libjavacan-core.so"), srcDirectory.resolve("protocol-can/src/main/resources/native/libjavacan-core.so"));
 
+        // create a new pom with necessary dependencies only
+        generatePOM(tempDirectory);
+
         // build the application
         out.append("Building application...\n");
         final String command = mavenDirectory.toString() + "/bin/mvn clean package -DskipTests=true";
@@ -419,6 +425,199 @@ public class Configurator extends JFrame {
         Files.writeString(linuxConfigStart, "#!/bin/bash\njava -jar lib/configurator-0.0.1-SNAPSHOT.jar", StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         setFilePermissions(windowsConfigStart, true, true, true);
         setFilePermissions(linuxConfigStart, true, true, true);
+    }
+
+
+    private void generatePOM(final Path tempDirectory) throws IOException {
+        final StringBuffer pom = new StringBuffer("<project xmlns=\"http://maven.apache.org/POM/4.0.0\"\r\n"
+                + "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\r\n"
+                + "    xsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd\">\r\n"
+                + "    <modelVersion>4.0.0</modelVersion>\r\n"
+                + "\r\n"
+                + "    <artifactId>bms-to-inverter-main</artifactId>\r\n"
+                + "\r\n"
+                + "    <parent>\r\n"
+                + "        <groupId>com.ai-republic.bms-to-inverter</groupId>\r\n"
+                + "        <artifactId>bms-to-inverter-parent</artifactId>\r\n"
+                + "        <version>0.0.1-SNAPSHOT</version>\r\n"
+                + "    </parent>\r\n"
+                + "\r\n"
+                + "    <name>${project.artifactId}-${project.version}</name>\r\n"
+                + "    <description>Application to communicate between a BMS and inverter</description>\r\n"
+                + "\r\n"
+                + "    <properties>\r\n"
+                + "        <encoding>UTF-8</encoding>\r\n"
+                + "        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>\r\n"
+                + "    </properties>\r\n"
+                + "\r\n"
+                + "    <build>\r\n"
+                + "        <plugins>\r\n"
+                + "            <plugin>\r\n"
+                + "                <artifactId>maven-jar-plugin</artifactId>\r\n"
+                + "                <version>3.3.0</version>\r\n"
+                + "                <configuration>\r\n"
+                + "                    <archive>\r\n"
+                + "                        <manifest>\r\n"
+                + "                            <addClasspath>true</addClasspath>\r\n"
+                + "                            <mainClass>\r\n"
+                + "                                com.airepublic.bmstoinverter.BmsToInverter</mainClass>\r\n"
+                + "                        </manifest>\r\n"
+                + "                    </archive>\r\n"
+                + "                </configuration>\r\n"
+                + "            </plugin>\r\n"
+                + "\r\n"
+                + "            <plugin>\r\n"
+                + "                <groupId>org.apache.maven.plugins</groupId>\r\n"
+                + "                <artifactId>maven-dependency-plugin</artifactId>\r\n"
+                + "                <version>3.6.0</version>\r\n"
+                + "                <executions>\r\n"
+                + "                    <execution>\r\n"
+                + "                        <id>copy-dependencies</id>\r\n"
+                + "                        <phase>package</phase>\r\n"
+                + "                        <goals>\r\n"
+                + "                            <goal>copy-dependencies</goal>\r\n"
+                + "                        </goals>\r\n"
+                + "                        <configuration>\r\n"
+                + "                            <outputDirectory>${project.build.directory}/lib</outputDirectory>\r\n"
+                + "                            <overWriteReleases>false</overWriteReleases>\r\n"
+                + "                            <overWriteSnapshots>false</overWriteSnapshots>\r\n"
+                + "                            <overWriteIfNewer>true</overWriteIfNewer>\r\n"
+                + "                        </configuration>\r\n"
+                + "                    </execution>\r\n"
+                + "                </executions>\r\n"
+                + "            </plugin>\r\n"
+                + "\r\n"
+                + "\r\n"
+                + "            <plugin>\r\n"
+                + "                <groupId>org.apache.maven.plugins</groupId>\r\n"
+                + "                <artifactId>maven-assembly-plugin</artifactId>\r\n"
+                + "                <configuration>\r\n"
+                + "                    <finalName>bms-to-inverter</finalName>\r\n"
+                + "                    <appendAssemblyId>false</appendAssemblyId>\r\n"
+                + "                </configuration>\r\n"
+                + "                <executions>\r\n"
+                + "                    <execution>\r\n"
+                + "                        <id>create-distribution</id>\r\n"
+                + "                        <phase>package</phase>\r\n"
+                + "                        <goals>\r\n"
+                + "                            <goal>single</goal>\r\n"
+                + "                        </goals>\r\n"
+                + "                        <configuration>\r\n"
+                + "                            <descriptors>\r\n"
+                + "                                <descriptor>assembly/zip.xml</descriptor>\r\n"
+                + "                            </descriptors>\r\n"
+                + "                        </configuration>\r\n"
+                + "                    </execution>\r\n"
+                + "                </executions>\r\n"
+                + "            </plugin>\r\n"
+                + "        </plugins>\r\n"
+                + "    </build>\r\n"
+                + "\r\n"
+                + "\r\n"
+                + "    <dependencies>\r\n"
+                + "        <dependency>\r\n"
+                + "            <groupId>org.jboss.weld.se</groupId>\r\n"
+                + "            <artifactId>weld-se-shaded</artifactId>\r\n"
+                + "            <version>5.1.1.Final</version>\r\n"
+                + "        </dependency>\r\n"
+                + "\r\n"
+                + "        <dependency>\r\n"
+                + "            <groupId>com.ai-republic.email</groupId>\r\n"
+                + "            <artifactId>email-api</artifactId>\r\n"
+                + "            <version>1.0.5</version>\r\n"
+                + "        </dependency>\r\n"
+                + "\r\n"
+                + "        <dependency>\r\n"
+                + "            <groupId>com.ai-republic.bms-to-inverter</groupId>\r\n"
+                + "            <artifactId>configurator</artifactId>\r\n"
+                + "            <version>${project.version}</version>\r\n"
+                + "        </dependency>\r\n"
+                + "");
+
+        final Map<String, String> dependencies = new HashMap<>();
+        bmsPanel.getBMSConfigList().forEach(bms -> {
+            final String bmsName = bms.getDescriptor().getName();
+
+            // check if dependency for the BMS is already added
+            if (!dependencies.containsKey(bmsName)) {
+                // otherwise create the artifactId from the BMS binding name
+                final String[] parts = bmsName.split("_");
+                final StringBuffer artifactId = new StringBuffer("bms-");
+                Stream.of(parts).forEach(part -> artifactId.append("-" + part.toLowerCase()));
+
+                // and add the dependency
+                dependencies.put(bmsName, "<!--  ####################  " + bmsName + " BMS   ################### -->\r\n"
+                        + "        <dependency>\r\n"
+                        + "            <groupId>com.ai-republic.bms-to-inverter</groupId>\r\n"
+                        + "            <artifactId>" + artifactId + "</artifactId>\r\n"
+                        + "            <version>${project.version}</version>\r\n"
+                        + "        </dependency>\r\n");
+            }
+        });
+
+        // now append all BMS dependencies to the pom
+        dependencies.values().forEach(pom::append);
+
+        // create the artifactId from the inverter binding name
+        final String inverterName = inverterPanel.getInverterType().getName();
+        final StringBuffer artifactId = new StringBuffer("inverter-");
+
+        if (inverterName.equals("NONE")) {
+            artifactId.append("dummy");
+        } else {
+            final String[] parts = inverterName.split("_");
+            Stream.of(parts).forEach(part -> artifactId.append("-" + part.toLowerCase()));
+        }
+
+        // and add the inverter dependency
+        pom.append("<!-- ####################  " + inverterName + " inverter  ################### -->\r\n"
+                + "        <dependency>\r\n"
+                + "            <groupId>com.ai-republic.bms-to-inverter</groupId>\r\n"
+                + "            <artifactId>" + artifactId + "</artifactId>\r\n"
+                + "            <version>${project.version}</version>\r\n"
+                + "        </dependency>\r\n");
+
+        // add optional services
+        if (servicesPanel.isMQTTEnabled()) {
+            // add webserver and broker dependencies
+            pom.append("        <!-- ####################  MQTT Producer ################### -->\r\n"
+                    + "         <dependency>\r\n"
+                    + "            <groupId>ccom.ai-republic.email</groupId>\r\n"
+                    + "            <artifactId>service-mqtt-client</artifactId>\r\n"
+                    + "            <version>1.0.5</version>\r\n"
+                    + "        </dependency>\r\n"
+                    + "");
+        }
+
+        if (servicesPanel.isWebserverEnabled()) {
+            // add webserver and broker dependencies
+            pom.append("        <!-- ####################  MQTT Broker  ################### -->\r\n"
+                    + "         <dependency>\r\n"
+                    + "            <groupId>com.ai-republic.bms-to-inverter</groupId>\r\n"
+                    + "            <artifactId>service-mqtt-broker</artifactId>\r\n"
+                    + "            <version>${project.version}</version>\r\n"
+                    + "        </dependency>\r\n"
+                    + "");
+        }
+
+        if (servicesPanel.isWebserverEnabled()) {
+            // add webserver and broker dependencies
+            pom.append("        <!-- ####################  MQTT Broker  ################### -->\r\n"
+                    + "         <dependency>\r\n"
+                    + "            <groupId>com.ai-republic.bms-to-inverter</groupId>\r\n"
+                    + "            <artifactId>service-mqtt-broker</artifactId>\r\n"
+                    + "            <version>${project.version}</version>\r\n"
+                    + "        </dependency>\r\n"
+                    + "");
+        }
+
+        pom.append("\r\n"
+                + "    </dependencies>\r\n"
+                + "</project>");
+
+        final Path pomFile = tempDirectory.resolve("pom.xml");
+        Files.deleteIfExists(pomFile);
+        Files.writeString(pomFile, pom.toString(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
     }
 
 

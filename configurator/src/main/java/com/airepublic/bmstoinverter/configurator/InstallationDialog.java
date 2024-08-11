@@ -31,10 +31,18 @@ import javax.swing.SwingConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.text.DefaultCaret;
 
+/**
+ * An dialog to run a {@link Runnable} code snippet and output the console logs to a text area.
+ */
 public class InstallationDialog extends JDialog {
     private static final long serialVersionUID = 1L;
     private final JTextArea textArea;
 
+    /**
+     * Constructor.
+     *
+     * @param frame the parent {@link JFrame}
+     */
     public InstallationDialog(final JFrame frame) {
         super(frame, "Installing...", true);
         setLocation(frame.getX() + frame.getBounds().width / 2 - 320, frame.getY() + frame.getBounds().height / 2 - 240);
@@ -78,6 +86,12 @@ public class InstallationDialog extends JDialog {
     }
 
 
+    /**
+     * Runs the installer code in a separate thread and prints the console output to the text area.
+     *
+     * @param installer the {@link Runnable} to run
+     * @throws Throwable if any exceptions were encountered
+     */
     public void startInstallation(final Runnable installer) throws Throwable {
         final ScheduledExecutorService executor = Executors.newScheduledThreadPool(1);
         final Future<?> future = executor.schedule(installer, 1, TimeUnit.SECONDS);
@@ -95,6 +109,11 @@ public class InstallationDialog extends JDialog {
     }
 
 
+    /**
+     * Gets the text area for the console output.
+     *
+     * @return the text area
+     */
     public JTextArea getTextArea() {
         return textArea;
     }

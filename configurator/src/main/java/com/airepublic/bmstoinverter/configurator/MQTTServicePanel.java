@@ -195,6 +195,16 @@ public class MQTTServicePanel extends JPanel {
     }
 
 
+    public boolean isMQTTBrokerEnabled() {
+        return activateMQTTBrokerCheckBox.isSelected();
+    }
+
+
+    public boolean isMQTTProducerEnabled() {
+        return activateMQTTProducerCheckBox.isSelected();
+    }
+
+
     private void mqttBrokerSelectionChanged() {
         if (overrideBrokerEnabled) {
             activateMQTTBrokerCheckBox.setSelected(overrideBrokerEnabled);

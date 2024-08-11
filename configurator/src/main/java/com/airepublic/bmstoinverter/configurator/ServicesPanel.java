@@ -148,8 +148,18 @@ public class ServicesPanel extends JPanel {
     }
 
 
+    public boolean isEmailEnabled() {
+        return emailCheckBox.isSelected();
+    }
+
+
     public boolean isWebserverEnabled() {
         return webserverCheckBox.isSelected();
+    }
+
+
+    public boolean isMQTTEnabled() {
+        return mqttPanel.isMQTTProducerEnabled();
     }
 
 
