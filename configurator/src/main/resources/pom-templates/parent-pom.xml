@@ -20,15 +20,8 @@
 		<module>protocol-rs485</module>
 		<module>protocol-can</module>
 		<module>protocol-modbus</module>
-		<!-- Protocols -->
 		{0}
-		<!-- BMSes -->
-		{1}
-		<!-- Inverter -->
-		{2}
 		<module>bms-to-inverter-main</module>
-		<!-- Optional services -->
-		{3}
 		<module>configurator</module>
 	</modules>
 
