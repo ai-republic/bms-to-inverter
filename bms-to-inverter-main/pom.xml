@@ -235,7 +235,7 @@
 		</dependency>
 
 
-		<!-- #################### !!!!!!!!	Optional service  !!!!!!!! ###################### -->
+		<!-- #################### !!!!!!!!	Optional services  !!!!!!!! ###################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>service-mqtt-broker</artifactId>
