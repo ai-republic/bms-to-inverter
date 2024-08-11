@@ -17,9 +17,6 @@
 
 	<modules>
 		<module>core-api</module>
-		<module>protocol-rs485</module>
-		<module>protocol-can</module>
-		<module>protocol-modbus</module>
 		{0}
 		<module>bms-to-inverter-main</module>
 		<module>configurator</module>
