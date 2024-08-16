@@ -129,7 +129,7 @@ public class DalyMessageHandler {
         // skip the next 2 bytes because only reading level 1
         msg.data.getShort();
 
-        battery.maxPackChargeCurrent = 30000 - msg.data.getShort(); // 3000 offset
+        battery.maxPackChargeCurrent = 30000 - msg.data.getShort(); // 30000 offset
 
         LOG.debug("maxPackChargeCurrent={}, maxPackDischargeCurrent=" + battery.maxPackChargeCurrent, battery.maxPackDischargeCurrent);
     }

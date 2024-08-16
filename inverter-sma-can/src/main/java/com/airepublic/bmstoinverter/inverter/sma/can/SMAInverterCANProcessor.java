@@ -24,6 +24,7 @@ import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
+import com.airepublic.bmstoinverter.core.plugin.inverter.PresetBatteryPackDataPlugin;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 import com.airepublic.bmstoinverter.core.util.Util;
 
@@ -35,6 +36,23 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class SMAInverterCANProcessor extends Inverter {
     private final static Logger LOG = LoggerFactory.getLogger(SMAInverterCANProcessor.class);
+
+    public SMAInverterCANProcessor() {
+        final BatteryPack presetPack = new BatteryPack();
+        // set some default values
+        presetPack.packSOC = 500; // 50%
+        presetPack.packSOH = 1000; // 100%
+        presetPack.packCurrent = 0; // 0A
+        presetPack.packVoltage = 550;// 55.0V
+        presetPack.maxPackChargeCurrent = 500; // 50.0A
+        presetPack.maxPackDischargeCurrent = -500; // -50.0A
+        presetPack.maxPackVoltageLimit = 560; // 56.0V
+        presetPack.minPackVoltageLimit = 480; // 48.0V
+        presetPack.tempAverage = 250; // 25.0C
+
+        setPlugin(new PresetBatteryPackDataPlugin(presetPack));
+    }
+
 
     @Override
     protected List<ByteBuffer> createSendFrames(final ByteBuffer requestFrame, final BatteryPack aggregatedPack) {
@@ -72,7 +90,7 @@ public class SMAInverterCANProcessor extends Inverter {
         // Charge current limit (0.1A) - s_int_16
         frame.putShort((short) pack.maxPackChargeCurrent);
         // Discharge current limit (0.1A) - s_int_16
-        frame.putShort((short) pack.maxPackDischargeCurrent);
+        frame.putShort((short) (pack.maxPackDischargeCurrent * -1)); // needs positive value
         // Battery discharge voltage (0.1V) - u_int_16
         frame.putChar((char) pack.minPackVoltageLimit);
 

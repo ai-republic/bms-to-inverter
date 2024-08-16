@@ -78,9 +78,9 @@ public class PylonBmsCANProcessor extends BMS {
         // Battery charge voltage (0.1V) - uint_16
         pack.maxPackVoltageLimit = data.getChar();
         // Charge current limit (0.1A) - sint_16
-        pack.maxPackChargeCurrent = 30000 - data.getShort();
+        pack.maxPackChargeCurrent = data.getShort();
         // Discharge current limit (0.1A) - sint_16
-        pack.maxPackDischargeCurrent = 30000 - data.getShort();
+        pack.maxPackDischargeCurrent = data.getShort();
         // Battery discharge voltage (0.1V) - uint_16
         pack.minPackVoltageLimit = data.getChar();
 

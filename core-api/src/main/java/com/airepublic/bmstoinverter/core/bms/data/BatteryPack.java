@@ -39,9 +39,9 @@ public class BatteryPack {
     public int minPackVoltageLimit;
 
     // data from 0x5B
-    /** Maximum total charge current (30000 - x 0.1A) */
+    /** Maximum total charge current (0.1A) */
     public int maxPackChargeCurrent;
-    /** Maximum total discharge current (30000 - x 0.1A) */
+    /** Maximum total discharge current (-0.1A) */
     public int maxPackDischargeCurrent;
 
     // data from 0x90
