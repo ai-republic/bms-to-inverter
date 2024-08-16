@@ -33,7 +33,7 @@ public abstract class Inverter {
     private InverterConfig config;
     @Inject
     private EnergyStorage energyStorage;
-    private final BatteryPack presetPack = new BatteryPack();
+    private BatteryPack aggregatedPack = new BatteryPack();
     private InverterPlugin plugin;
 
     /**
@@ -139,7 +139,7 @@ public abstract class Inverter {
 
         if (energyStorage.getBatteryPacks().size() > 0) {
             try {
-                updateAggregatedBatteryInfo();
+                aggregatedPack = getAggregatedBatteryInfo();
                 final Port port = PortAllocator.allocate(getPortLocator());
                 ByteBuffer requestFrame = readRequest(port);
 
@@ -154,10 +154,10 @@ public abstract class Inverter {
                 // if a plugin is set
                 if (getPlugin() != null) {
                     // call the the plugin to manipulate the frame
-                    getPlugin().onBatteryAggregation(presetPack);
+                    getPlugin().onBatteryAggregation(aggregatedPack);
                 }
 
-                final List<ByteBuffer> sendFrames = createSendFrames(requestFrame, presetPack);
+                final List<ByteBuffer> sendFrames = createSendFrames(requestFrame, aggregatedPack);
 
                 if (sendFrames != null && !sendFrames.isEmpty()) {
                     for (ByteBuffer frame : sendFrames) {
@@ -225,84 +225,98 @@ public abstract class Inverter {
      * Aggregates all {@link BatteryPack}s listed in the {@link EnergyStorage} into one
      * {@link BatteryPack} which data will be sent to the {@link Inverter}.
      */
-    protected void updateAggregatedBatteryInfo() {
-        presetPack.maxPackChargeCurrent = Integer.MAX_VALUE;
-        presetPack.maxPackDischargeCurrent = Integer.MAX_VALUE;
+    protected BatteryPack getAggregatedBatteryInfo() {
+        final BatteryPack result = new BatteryPack();
+        result.maxPackChargeCurrent = Integer.MAX_VALUE;
+        result.maxPackDischargeCurrent = Integer.MIN_VALUE;
+        result.maxPackVoltageLimit = Integer.MAX_VALUE;
+        result.minPackVoltageLimit = Integer.MIN_VALUE;
+        result.maxCellmV = Integer.MIN_VALUE;
+        result.minCellmV = Integer.MAX_VALUE;
+        result.tempMax = Integer.MIN_VALUE;
+        result.tempMin = Integer.MAX_VALUE;
+        result.maxModulemV = Integer.MIN_VALUE;
+        result.minModulemV = Integer.MAX_VALUE;
+        result.maxModuleTemp = Integer.MIN_VALUE;
+        result.minModuleTemp = Integer.MAX_VALUE;
 
         // sum all values
         for (final BatteryPack pack : energyStorage.getBatteryPacks()) {
-            presetPack.ratedCapacitymAh += pack.ratedCapacitymAh;
-            presetPack.ratedCellmV += pack.ratedCellmV;
-            presetPack.maxPackVoltageLimit += pack.maxPackVoltageLimit;
-            presetPack.minPackVoltageLimit += pack.minPackVoltageLimit;
-            presetPack.maxPackChargeCurrent = Math.min(presetPack.maxPackChargeCurrent, pack.maxPackChargeCurrent);
-            presetPack.maxPackDischargeCurrent = Math.max(presetPack.maxPackDischargeCurrent, pack.maxPackDischargeCurrent);
-            presetPack.packVoltage += pack.packVoltage;
-            presetPack.packCurrent += pack.packCurrent;
-            presetPack.packSOC += pack.packSOC;
-            presetPack.packSOH += pack.packSOH;
-            presetPack.maxCellmV = Math.max(presetPack.maxCellmV, pack.maxCellmV);
-            presetPack.maxCellVNum = pack.maxCellmV == presetPack.maxCellmV ? pack.maxCellVNum : presetPack.maxCellVNum;
-            presetPack.minCellmV = Math.min(presetPack.minCellmV, pack.minCellmV);
-            presetPack.minCellVNum = pack.minCellmV == presetPack.minCellmV ? pack.minCellVNum : presetPack.minCellVNum;
-            presetPack.tempMax = Math.max(presetPack.tempMax, pack.tempMax);
-            presetPack.tempMin = Math.min(presetPack.tempMin, pack.tempMin);
+            result.ratedCapacitymAh += pack.ratedCapacitymAh;
+
+            result.ratedCellmV += pack.ratedCellmV;
+            result.maxPackVoltageLimit = Math.min(result.maxPackVoltageLimit, pack.maxPackVoltageLimit);
+            result.minPackVoltageLimit = Math.max(result.minPackVoltageLimit, pack.minPackVoltageLimit);
+            result.maxPackChargeCurrent = Math.min(result.maxPackChargeCurrent, pack.maxPackChargeCurrent);
+            result.maxPackDischargeCurrent = Math.max(result.maxPackDischargeCurrent, pack.maxPackDischargeCurrent);
+            result.packVoltage += pack.packVoltage;
+            result.packCurrent += pack.packCurrent;
+            result.packSOC += pack.packSOC;
+            result.packSOH += pack.packSOH;
+            result.maxCellmV = Math.max(result.maxCellmV, pack.maxCellmV);
+            result.maxCellVNum = pack.maxCellmV == result.maxCellmV ? pack.maxCellVNum : result.maxCellVNum;
+            result.minCellmV = Math.min(result.minCellmV, pack.minCellmV);
+            result.minCellVNum = pack.minCellmV == result.minCellmV ? pack.minCellVNum : result.minCellVNum;
+            result.tempMax = Math.max(result.tempMax, pack.tempMax);
+            result.tempMin = Math.min(result.tempMin, pack.tempMin);
 
             // result.chargeDischargeStatus = pack.chargeDischargeStatus;
-            presetPack.chargeMOSState |= pack.chargeMOSState;
-            presetPack.dischargeMOSState |= pack.dischargeMOSState;
-            presetPack.forceCharge |= pack.forceCharge;
-            presetPack.remainingCapacitymAh += pack.remainingCapacitymAh;
-            presetPack.numberOfCells += pack.numberOfCells;
-            presetPack.chargerState |= pack.chargerState;
-            presetPack.loadState |= pack.loadState;
-            presetPack.bmsCycles = Math.max(presetPack.bmsCycles, pack.bmsCycles);
+            result.chargeMOSState |= pack.chargeMOSState;
+            result.dischargeMOSState |= pack.dischargeMOSState;
+            result.forceCharge |= pack.forceCharge;
+            result.remainingCapacitymAh += pack.remainingCapacitymAh;
+            result.numberOfCells += pack.numberOfCells;
+            result.chargerState |= pack.chargerState;
+            result.loadState |= pack.loadState;
+            result.bmsCycles = Math.max(result.bmsCycles, pack.bmsCycles);
             // cellVmV
             // cellTemperature
             // cellBalanceState
-            presetPack.cellBalanceActive |= pack.cellBalanceActive;
+            result.cellBalanceActive |= pack.cellBalanceActive;
 
-            aggregateAlarms(presetPack, pack.getAlarms(AlarmLevel.WARNING, AlarmLevel.ALARM));
+            aggregateAlarms(result, pack.getAlarms(AlarmLevel.WARNING, AlarmLevel.ALARM));
 
-            presetPack.tempMaxCellNum = Math.max(presetPack.tempMaxCellNum, pack.tempMaxCellNum);
-            presetPack.tempMinCellNum = Math.min(presetPack.tempMinCellNum, pack.tempMinCellNum);
-            presetPack.maxModulemV = Math.max(presetPack.maxModulemV, pack.maxModulemV);
-            presetPack.minModulemV = Math.min(presetPack.minModulemV, pack.minModulemV);
-            presetPack.maxModulemVNum = pack.maxModulemV == presetPack.maxModulemV ? pack.maxModulemVNum : presetPack.maxModulemVNum;
-            presetPack.minModulemVNum = pack.minModulemV == presetPack.minModulemV ? pack.minModulemVNum : presetPack.minModulemVNum;
-            presetPack.maxModuleTemp = Math.max(presetPack.maxModuleTemp, pack.maxModuleTemp);
-            presetPack.minModuleTemp = Math.min(presetPack.minModuleTemp, pack.minModuleTemp);
-            presetPack.maxModuleTempNum = pack.maxModuleTemp == presetPack.maxModuleTemp ? pack.maxModuleTempNum : presetPack.maxModuleTempNum;
-            presetPack.minModuleTempNum = pack.minModuleTemp == presetPack.minModuleTemp ? pack.minModuleTempNum : presetPack.minModuleTempNum;
-            presetPack.modulesInSeries += pack.modulesInSeries;
-            presetPack.moduleNumberOfCells += pack.moduleNumberOfCells;
-            presetPack.moduleVoltage += pack.moduleVoltage;
-            presetPack.moduleRatedCapacityAh += pack.moduleRatedCapacityAh;
+            result.tempMaxCellNum = result.tempMax == pack.tempMax ? pack.tempMaxCellNum : result.tempMaxCellNum;
+            result.tempMinCellNum = result.tempMin == pack.tempMin ? pack.tempMinCellNum : result.tempMinCellNum;
+            result.maxModulemV = Math.max(result.maxModulemV, pack.maxModulemV);
+            result.minModulemV = Math.min(result.minModulemV, pack.minModulemV);
+            result.maxModulemVNum = pack.maxModulemV == result.maxModulemV ? pack.maxModulemVNum : result.maxModulemVNum;
+            result.minModulemVNum = pack.minModulemV == result.minModulemV ? pack.minModulemVNum : result.minModulemVNum;
+            result.maxModuleTemp = Math.max(result.maxModuleTemp, pack.maxModuleTemp);
+            result.minModuleTemp = Math.min(result.minModuleTemp, pack.minModuleTemp);
+            result.maxModuleTempNum = pack.maxModuleTemp == result.maxModuleTemp ? pack.maxModuleTempNum : result.maxModuleTempNum;
+            result.minModuleTempNum = pack.minModuleTemp == result.minModuleTemp ? pack.minModuleTempNum : result.minModuleTempNum;
+            result.modulesInSeries += pack.modulesInSeries;
+            result.moduleNumberOfCells += pack.moduleNumberOfCells;
+            result.moduleVoltage += pack.moduleVoltage;
+            result.moduleRatedCapacityAh += pack.moduleRatedCapacityAh;
         }
 
         // calculate averages
         final int count = energyStorage.getBatteryPacks().size();
 
         if (count > 0) {
-            presetPack.ratedCapacitymAh = presetPack.ratedCapacitymAh / count;
-            presetPack.ratedCellmV = presetPack.ratedCellmV / count;
-            presetPack.maxPackVoltageLimit = presetPack.maxPackVoltageLimit / count;
-            presetPack.minPackVoltageLimit = presetPack.minPackVoltageLimit / count;
-            presetPack.packVoltage = presetPack.packVoltage / count;
-            presetPack.packSOC = presetPack.packSOC / count;
-            presetPack.packSOH = presetPack.packSOH / count;
-            presetPack.tempAverage = presetPack.tempAverage / count;
-            presetPack.bmsCycles = presetPack.bmsCycles / count;
-            presetPack.moduleVoltage = presetPack.moduleVoltage / count;
-            presetPack.moduleRatedCapacityAh = presetPack.moduleRatedCapacityAh / count;
+            result.ratedCapacitymAh = result.ratedCapacitymAh / count;
+            result.ratedCellmV = result.ratedCellmV / count;
+            result.maxPackVoltageLimit = result.maxPackVoltageLimit / count;
+            result.minPackVoltageLimit = result.minPackVoltageLimit / count;
+            result.packVoltage = result.packVoltage / count;
+            result.packSOC = result.packSOC / count;
+            result.packSOH = result.packSOH / count;
+            result.tempAverage = result.tempAverage / count;
+            result.bmsCycles = result.bmsCycles / count;
+            result.moduleVoltage = result.moduleVoltage / count;
+            result.moduleRatedCapacityAh = result.moduleRatedCapacityAh / count;
 
             // other calculations
-            presetPack.cellDiffmV = presetPack.maxCellmV - presetPack.minCellmV;
-            presetPack.type = energyStorage.getBatteryPack(0).type;
-            presetPack.manufacturerCode = energyStorage.getBatteryPack(0).manufacturerCode;
-            presetPack.hardwareVersion = energyStorage.getBatteryPack(0).hardwareVersion;
-            presetPack.softwareVersion = energyStorage.getBatteryPack(0).softwareVersion;
+            result.cellDiffmV = result.maxCellmV - result.minCellmV;
+            result.type = energyStorage.getBatteryPack(0).type;
+            result.manufacturerCode = energyStorage.getBatteryPack(0).manufacturerCode;
+            result.hardwareVersion = energyStorage.getBatteryPack(0).hardwareVersion;
+            result.softwareVersion = energyStorage.getBatteryPack(0).softwareVersion;
         }
+
+        return result;
     }
 
 
@@ -361,8 +375,8 @@ public abstract class Inverter {
         };
         inverter.energyStorage = storage;
 
-        inverter.updateAggregatedBatteryInfo();
-        System.out.println(inverter.presetPack.chargeMOSState);
+        final BatteryPack aggregatedPack = inverter.getAggregatedBatteryInfo();
+        System.out.println(aggregatedPack.chargeMOSState);
 
     }
 }

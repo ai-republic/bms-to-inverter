@@ -182,6 +182,13 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- ####################  SMA Sunny Island (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-sma-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 
 		<!-- #################### !!!!!!!!	Inverters 	!!!!!!!! #################### -->
 
@@ -189,13 +196,6 @@
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>inverter-dummy</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<!-- ####################  SMA Sunny Island (CAN)  ################### -->
-		<dependency>
-			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>inverter-sma-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -224,6 +224,13 @@
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>inverter-pylon-hv-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- ####################  SMA Sunny Island (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-sma-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
