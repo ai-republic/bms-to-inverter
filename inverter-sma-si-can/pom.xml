@@ -9,10 +9,10 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>bms-sma-can</artifactId>
+	<artifactId>inverter-sma-si-can</artifactId>
 
 	<name>${project.artifactId}-${project.version}</name>
-	<description>Module for the SMA BMS CAN support</description>
+	<description>Module for the SMA inverter CAN support</description>
 
 	<properties>
 		<encoding>UTF-8</encoding>
@@ -22,8 +22,15 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>core-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>protocol-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
 	</dependencies>
 </project>

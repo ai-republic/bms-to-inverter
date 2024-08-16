@@ -399,9 +399,9 @@ public class Configurator extends JFrame {
 
 
     private void generatePOMs(final Path tempDirectory) throws IOException {
-        final Path parentPomTemplate = tempDirectory.resolve("bms-to-inverter-main/configurator/src/main/resources/pom-templates/parent-pom.xml");
+        final Path parentPomTemplate = tempDirectory.resolve("bms-to-inverter-main/configurator/src/main/resources/templates/parent-pom.xml");
         final String parentPom = Files.readString(parentPomTemplate);
-        final Path mainPomTempplate = tempDirectory.resolve("bms-to-inverter-main/configurator/src/main/resources/pom-templates/main-pom.xml");
+        final Path mainPomTempplate = tempDirectory.resolve("bms-to-inverter-main/configurator/src/main/resources/templates/main-pom.xml");
         final String mainPom = Files.readString(mainPomTempplate);
         final StringBuffer bmsDependencies = new StringBuffer();
         final List<String> modules = new ArrayList<>();

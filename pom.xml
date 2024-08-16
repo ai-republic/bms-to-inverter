@@ -32,7 +32,7 @@
 		<module>bms-pylon-rs485</module>
 		<module>bms-samsung-can</module>
 		<module>bms-seplos-can</module>
-		<module>bms-sma-can</module>
+		<module>bms-sma-si-can</module>
 		<module>bms-to-inverter-main</module>
 		<module>inverter-deye-can</module>
 		<module>inverter-dummy</module>
@@ -42,7 +42,7 @@
 		<module>inverter-pylon-hv-can</module>
 		<module>inverter-pylon-rs485</module>
 		<module>inverter-solark-can</module>
-		<module>inverter-sma-can</module>
+		<module>inverter-sma-si-can</module>
 		<module>service-mqtt-broker</module>
 		<module>service-mqtt-client</module>
 		<module>webserver</module>
