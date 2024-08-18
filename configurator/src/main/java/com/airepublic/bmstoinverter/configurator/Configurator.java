@@ -374,19 +374,6 @@ public class Configurator extends JFrame {
         Files.writeString(linuxStart, "#!/bin/bash\njava -DconfigFile=config/config.properties -Dlog4j2.configurationFile=file:config/log4j2.xml -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar\n", StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         setFilePermissions(linuxStart, true, true, true);
 
-        if (servicesPanel.isWebserverEnabled()) {
-            final Path windowsStartWebserver = installDirectory.resolve("startWebserver.cmd");
-            Files.deleteIfExists(windowsStartWebserver);
-            Files.writeString(windowsStartWebserver, "start java -jar lib/webserver-0.0.1-SNAPSHOT.jar --spring.config.location=file:config/config.properties\n", StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-            setFilePermissions(windowsStartWebserver, true, true, true);
-
-            final Path linuxStartWebServer = installDirectory.resolve("startWebserver.sh");
-            Files.deleteIfExists(linuxStartWebServer);
-            Files.writeString(linuxStartWebServer, "#!/bin/bash\njava -jar lib/webserver-0.0.1-SNAPSHOT.jar --spring.config.location=file:config/config.properties\n", StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-            setFilePermissions(linuxStartWebServer, true, true, true);
-
-        }
-
         final Path windowsConfigStart = installDirectory.resolve("configurator.cmd");
         final Path linuxConfigStart = installDirectory.resolve("configurator.sh");
         Files.deleteIfExists(windowsConfigStart);

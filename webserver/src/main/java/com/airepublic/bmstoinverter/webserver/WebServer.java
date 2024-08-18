@@ -27,6 +27,7 @@ import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.service.IWebServerService;
 import com.google.gson.Gson;
@@ -70,9 +71,9 @@ public class WebServer implements IWebServerService {
         sslContextFactory.setKeyManagerPassword("changeit");
         sslContextFactory.setSniRequired(false);
         sslContextFactory.setWantClientAuth(true); // Turn on
-                                                   // javax.net.ssl.SSLEngine.wantClientAuth
+        // javax.net.ssl.SSLEngine.wantClientAuth
         sslContextFactory.setNeedClientAuth(false); // Turn on
-                                                    // javax.net.ssl.SSLEngine.needClientAuth
+        // javax.net.ssl.SSLEngine.needClientAuth
 
         // Setup HTTPS Configuration
         final HttpConfiguration httpsConf = new HttpConfiguration();
@@ -103,21 +104,27 @@ public class WebServer implements IWebServerService {
                     final Path indexHtml = ResourceFactory.of(server).newClassLoaderResource("static/index.html").getPath();
                     final String content = Files.readString(indexHtml, StandardCharsets.UTF_8);
                     response.getHeaders().put(HttpHeader.CONTENT_TYPE, "text/html; charset=utf-8");
+                    response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
                     response.write(true, BufferUtil.toBuffer(content, StandardCharsets.UTF_8), callback);
                     return true;
                 } else if (path.contains("/styles.css")) {
                     final Path indexHtml = ResourceFactory.of(server).newClassLoaderResource("static/styles.css").getPath();
                     final String content = Files.readString(indexHtml, StandardCharsets.UTF_8);
                     response.getHeaders().put(HttpHeader.CONTENT_TYPE, "text/css; charset=utf-8");
+                    response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
                     response.write(true, BufferUtil.toBuffer(content, StandardCharsets.UTF_8), callback);
+                    return true;
+                } else if (path.contains("/favicon.ico")) {
                     return true;
                 } else if (path.contains("/data")) {
                     final String content = energyStorage.toJson();
                     response.getHeaders().put(HttpHeader.CONTENT_TYPE, "text/json; charset=utf-8");
+                    response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
                     response.write(true, BufferUtil.toBuffer(content, StandardCharsets.UTF_8), callback);
                     return true;
                 } else if (path.contains("/alarmMessages")) {
                     response.getHeaders().put(HttpHeader.CONTENT_TYPE, "text/json; charset=utf-8");
+                    response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
                     response.write(true, BufferUtil.toBuffer(alarmMessages, StandardCharsets.UTF_8), callback);
                     return true;
                 }
@@ -155,6 +162,12 @@ public class WebServer implements IWebServerService {
 
 
     public static void main(final String[] args) throws Exception {
-        new WebServer().start(8080, 8443, new EnergyStorage());
+        final EnergyStorage energyStorage = new EnergyStorage();
+        energyStorage.getBatteryPacks().add(new BatteryPack());
+        energyStorage.getBatteryPacks().add(new BatteryPack());
+        energyStorage.getBatteryPacks().add(new BatteryPack());
+        energyStorage.getBatteryPacks().add(new BatteryPack());
+        energyStorage.getBatteryPacks().add(new BatteryPack());
+        new WebServer().start(8080, 8443, energyStorage);
     }
 }
