@@ -31,6 +31,7 @@ import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.service.IMQTTBrokerService;
 import com.airepublic.bmstoinverter.core.service.IMQTTProducerService;
+import com.airepublic.bmstoinverter.core.service.IWebServerService;
 import com.airepublic.bmstoinverter.core.util.Util;
 import com.airepublic.email.api.Email;
 import com.airepublic.email.api.EmailAccount;
@@ -65,6 +66,7 @@ public class BmsToInverter implements AutoCloseable {
     private IMQTTProducerService mqttProducer;
     private IMQTTProducerService mqttExternalProducer;
     private IEmailService emailService;
+    private IWebServerService webServerService;
     private EmailAccount account;
     private final List<String> emailRecipients = new ArrayList<>();
     private List<String> lastAlarms = new ArrayList<>();
@@ -114,6 +116,11 @@ public class BmsToInverter implements AutoCloseable {
         if (System.getProperty("mail.service.enabled") != null && System.getProperty("mail.service.enabled").equals("true")) {
             initializeEmailService();
         }
+
+        // check for Webserver service module
+        if (System.getProperty("webserver.service.enabled") != null && System.getProperty("webserver.service.enabled").equals("true")) {
+            initializeWebserverService();
+        }
     }
 
 
@@ -160,6 +167,7 @@ public class BmsToInverter implements AutoCloseable {
 
         if (mqttProducer == null) {
             LOG.error("Error in project configuration - no MQTT internal producer service implementation found!");
+            return;
         }
 
         final String locator = System.getProperty("mqtt.broker.locator");
@@ -181,6 +189,7 @@ public class BmsToInverter implements AutoCloseable {
 
         if (mqttExternalProducer == null) {
             LOG.error("Error in project configuration - no MQTT external producer service implementation found!");
+            return;
         }
 
         final String locator = System.getProperty("mqtt.producer.locator");
@@ -203,7 +212,8 @@ public class BmsToInverter implements AutoCloseable {
         emailService = ServiceLoader.load(IEmailService.class).findFirst().orElse(null);
 
         if (emailService == null) {
-            LOG.error("Error in project configuration - no email provider was found be email service is activated!");
+            LOG.error("Error in project configuration - no email provider was found but email service is activated!");
+            return;
         }
 
         account = new EmailAccount(System.getProperties());
@@ -217,6 +227,25 @@ public class BmsToInverter implements AutoCloseable {
 
         while (tokenizer.hasMoreTokens()) {
             emailRecipients.add(tokenizer.nextToken());
+        }
+    }
+
+
+    /**
+     * Initialize webserver service.
+     */
+    protected void initializeWebserverService() {
+        webServerService = ServiceLoader.load(IWebServerService.class).findFirst().orElse(null);
+
+        if (webServerService == null) {
+            LOG.error("Error in project configuration - no webserver was found but webserver service is activated!");
+            return;
+        }
+
+        try {
+            webServerService.start(Integer.parseInt(System.getProperty("webserver.http.port", "8080")), Integer.parseInt(System.getProperty("webserver.https.port", "8443")), energyStorage);
+        } catch (final Exception e) {
+            LOG.error("Could not start webserver service!", e);
         }
     }
 
@@ -411,6 +440,15 @@ public class BmsToInverter implements AutoCloseable {
                 LOG.info("Shutting down MQTT broker threads...OK");
             } catch (final Throwable e) {
                 LOG.info("Shutting down MQTT broker threads...FAILED");
+            }
+        }
+
+        if (webServerService != null) {
+            try {
+                webServerService.stop();
+                LOG.info("Shutting down webserver threads...OK");
+            } catch (final Exception e) {
+                LOG.info("Shutting down webserver threads...FAILED");
             }
         }
 

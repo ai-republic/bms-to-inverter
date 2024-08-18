@@ -22,48 +22,72 @@ import javax.swing.border.EmptyBorder;
 
 public class WebserverServicePanel extends JPanel {
     private static final long serialVersionUID = 1L;
-    private final JTextField webserverPortField;
+    private final JTextField webserverHttpPortField;
+    private final JTextField webserverHttpsPortField;
     private final NumberInputVerifier numberInputVerifier = new NumberInputVerifier();
 
     public WebserverServicePanel() {
         setBorder(new EmptyBorder(0, 20, 0, 0));
 
         final GridBagLayout gbl_webserverPanel = new GridBagLayout();
-        gbl_webserverPanel.columnWidths = new int[] { 80, 0 };
+        gbl_webserverPanel.columnWidths = new int[] { 80, 80, 80, 80 };
         gbl_webserverPanel.rowHeights = new int[] { 30 };
-        gbl_webserverPanel.columnWeights = new double[] { 1.0, 1.0 };
+        gbl_webserverPanel.columnWeights = new double[] { 1.0, 1.0, 1.0, 1.0 };
         gbl_webserverPanel.rowWeights = new double[] { 1.0 };
         setLayout(gbl_webserverPanel);
 
-        final JLabel webserverPortLabel = new JLabel("Port");
-        final GridBagConstraints gbc_webserverPortLabel = new GridBagConstraints();
-        gbc_webserverPortLabel.anchor = GridBagConstraints.EAST;
-        gbc_webserverPortLabel.insets = new Insets(0, 0, 5, 5);
-        gbc_webserverPortLabel.gridx = 0;
-        gbc_webserverPortLabel.gridy = 0;
-        add(webserverPortLabel, gbc_webserverPortLabel);
+        final JLabel webserverPortLabel = new JLabel("HTTP Port");
+        final GridBagConstraints gbc_webserverHttpPortLabel = new GridBagConstraints();
+        gbc_webserverHttpPortLabel.anchor = GridBagConstraints.EAST;
+        gbc_webserverHttpPortLabel.insets = new Insets(0, 0, 5, 5);
+        gbc_webserverHttpPortLabel.gridx = 0;
+        gbc_webserverHttpPortLabel.gridy = 0;
+        add(webserverPortLabel, gbc_webserverHttpPortLabel);
 
-        webserverPortField = new JTextField("8080");
-        final GridBagConstraints gbc_webserverPortField = new GridBagConstraints();
-        gbc_webserverPortField.fill = GridBagConstraints.BOTH;
-        gbc_webserverPortField.insets = new Insets(0, 0, 5, 0);
-        gbc_webserverPortField.gridx = 1;
-        gbc_webserverPortField.gridy = 0;
-        add(webserverPortField, gbc_webserverPortField);
-        webserverPortField.setColumns(10);
+        webserverHttpPortField = new JTextField("8080");
+        final GridBagConstraints gbc_webserverHttpPortField = new GridBagConstraints();
+        gbc_webserverHttpPortField.fill = GridBagConstraints.BOTH;
+        gbc_webserverHttpPortField.insets = new Insets(0, 0, 5, 0);
+        gbc_webserverHttpPortField.gridx = 1;
+        gbc_webserverHttpPortField.gridy = 0;
+        add(webserverHttpPortField, gbc_webserverHttpPortField);
+        webserverHttpPortField.setColumns(10);
+
+        final JLabel webserverHttpsPortLabel = new JLabel("HTTPS Port");
+        final GridBagConstraints gbc_webserverHttpsPortLabel = new GridBagConstraints();
+        gbc_webserverHttpsPortLabel.anchor = GridBagConstraints.EAST;
+        gbc_webserverHttpsPortLabel.insets = new Insets(0, 0, 5, 5);
+        gbc_webserverHttpsPortLabel.gridx = 2;
+        gbc_webserverHttpsPortLabel.gridy = 0;
+        add(webserverHttpsPortLabel, gbc_webserverHttpsPortLabel);
+
+        webserverHttpsPortField = new JTextField("8443");
+        final GridBagConstraints gbc_webserverHttpsPortField = new GridBagConstraints();
+        gbc_webserverHttpsPortField.fill = GridBagConstraints.BOTH;
+        gbc_webserverHttpsPortField.insets = new Insets(0, 0, 5, 0);
+        gbc_webserverHttpsPortField.gridx = 3;
+        gbc_webserverHttpsPortField.gridy = 0;
+        add(webserverHttpsPortField, gbc_webserverHttpsPortField);
+        webserverHttpsPortField.setColumns(10);
+
     }
 
 
-    public int getPort() {
-        return Integer.valueOf(webserverPortField.getText());
+    public int getHttpPort() {
+        return Integer.valueOf(webserverHttpPortField.getText());
+    }
+
+
+    public int getHttpsPort() {
+        return Integer.valueOf(webserverHttpsPortField.getText());
     }
 
 
     public boolean verify(final StringBuffer errors) {
-        if (webserverPortField.getText().isBlank()) {
+        if (webserverHttpPortField.getText().isBlank()) {
             errors.append("Missing webserver port!\n");
             return false;
-        } else if (!numberInputVerifier.verify(webserverPortField.getText())) {
+        } else if (!numberInputVerifier.verify(webserverHttpPortField.getText())) {
             errors.append("Non-numeric webserver port!\n");
             return false;
         }
@@ -71,20 +95,18 @@ public class WebserverServicePanel extends JPanel {
     }
 
 
-    protected void generateConfiguration(final String mqttLocator, final String mqttTopic, final StringBuffer config) {
+    protected void generateConfiguration(final StringBuffer config) {
         config.append("#### Webserver properties ####\n");
         config.append("webserver.service.enabled=true\n");
         config.append("# The webserver port\n");
-        config.append("server.port=" + getPort() + "\n");
-        config.append("# The webserver MQTT server to connect to\n");
-        config.append("server.mqtt.locator=" + mqttLocator + "\n");
-        config.append("# The webserver MQTT topic to connect to\n");
-        config.append("server.mqtt.topic=" + mqttTopic + "\n");
+        config.append("webserver.http.port=" + getHttpPort() + "\n");
+        config.append("webserver.https.port=" + getHttpsPort() + "\n");
     }
 
 
     void setConfiguration(final Properties config) {
-
+        webserverHttpPortField.setText(config.getProperty("webserver.http.port"));
+        webserverHttpsPortField.setText(config.getProperty("webserver.https.port"));
     }
 
 }

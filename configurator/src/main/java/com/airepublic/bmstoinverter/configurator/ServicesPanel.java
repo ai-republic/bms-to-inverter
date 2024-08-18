@@ -77,7 +77,7 @@ public class ServicesPanel extends JPanel {
         add(mqttPanel, gbc_mqttPanel);
 
         webserverCheckBox = new JCheckBox("Webserver");
-        webserverCheckBox.setToolTipText("Enabling the webserver will automatically enabled the required MQTT broker");
+        webserverCheckBox.setToolTipText("Enabling the webserver");
         final GridBagConstraints gbc_webserverCheckBox = new GridBagConstraints();
         gbc_webserverCheckBox.anchor = GridBagConstraints.WEST;
         gbc_webserverCheckBox.insets = new Insets(0, 0, 5, 5);
@@ -96,7 +96,6 @@ public class ServicesPanel extends JPanel {
 
         enableComponent(webserverPanel, false);
         webserverCheckBox.addActionListener(t -> {
-            mqttPanel.enableMQTTBroker(webserverCheckBox.isSelected());
             enableComponent(webserverPanel, webserverCheckBox.isSelected());
             configurator.disableUpdateConfiguration();
         });
@@ -147,7 +146,7 @@ public class ServicesPanel extends JPanel {
         }
 
         if (webserverCheckBox.isSelected()) {
-            webserverPanel.generateConfiguration(mqttPanel.getMQTTBrokerLocator(), mqttPanel.getMQTTBrokerTopic(), config);
+            webserverPanel.generateConfiguration(config);
         }
     }
 
@@ -162,8 +161,13 @@ public class ServicesPanel extends JPanel {
     }
 
 
-    public boolean isMQTTEnabled() {
+    public boolean isMQTTProducerEnabled() {
         return mqttPanel.isMQTTProducerEnabled();
+    }
+
+
+    public boolean isMQTTBrokerEnabled() {
+        return mqttPanel.isMQTTBrokerEnabled();
     }
 
 

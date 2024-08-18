@@ -480,7 +480,7 @@ public class Configurator extends JFrame {
 
         final StringBuffer serviceDependencies = new StringBuffer();
         // add optional services
-        if (servicesPanel.isMQTTEnabled()) {
+        if (servicesPanel.isMQTTProducerEnabled()) {
             // add MQTT client dependencies
             modules.add("<module>service-mqtt-client</module>");
 
@@ -488,6 +488,19 @@ public class Configurator extends JFrame {
                     + "         <dependency>\r\n"
                     + "            <groupId>com.ai-republic.bms-to-inverter</groupId>\r\n"
                     + "            <artifactId>service-mqtt-client</artifactId>\r\n"
+                    + "            <version>${project.version}</version>\r\n"
+                    + "        </dependency>\r\n"
+                    + "");
+        }
+
+        if (servicesPanel.isMQTTBrokerEnabled()) {
+            // add MQTT client dependencies
+            modules.add("<module>service-mqtt-broker</module>");
+
+            serviceDependencies.append("        <!-- ####################  MQTT Broker ################### -->\r\n"
+                    + "         <dependency>\r\n"
+                    + "            <groupId>com.ai-republic.bms-to-inverter</groupId>\r\n"
+                    + "            <artifactId>service-mqtt-broker</artifactId>\r\n"
                     + "            <version>${project.version}</version>\r\n"
                     + "        </dependency>\r\n"
                     + "");
@@ -505,31 +518,16 @@ public class Configurator extends JFrame {
         }
 
         if (servicesPanel.isWebserverEnabled()) {
-            // add webserver and broker dependencies
-            modules.add("<module>service-mqtt-broker</module>");
+            // add webserver dependency
             modules.add("<module>webserver</module>");
 
-            serviceDependencies.append("        <!-- ####################  MQTT Broker  ################### -->\r\n"
+            serviceDependencies.append("        <!-- ####################  Webserver  ################### -->\r\n"
                     + "         <dependency>\r\n"
                     + "            <groupId>com.ai-republic.bms-to-inverter</groupId>\r\n"
-                    + "            <artifactId>service-mqtt-broker</artifactId>\r\n"
+                    + "            <artifactId>webserver</artifactId>\r\n"
                     + "            <version>${project.version}</version>\r\n"
                     + "        </dependency>\r\n"
                     + "");
-
-            if (!servicesPanel.isMQTTEnabled()) {
-                // add MQTT client dependencies
-                modules.add("<module>service-mqtt-client</module>");
-
-                serviceDependencies.append("        <!-- ####################  MQTT Producer ################### -->\r\n"
-                        + "         <dependency>\r\n"
-                        + "            <groupId>com.ai-republic.bms-to-inverter</groupId>\r\n"
-                        + "            <artifactId>service-mqtt-client</artifactId>\r\n"
-                        + "            <version>${project.version}</version>\r\n"
-                        + "        </dependency>\r\n"
-                        + "");
-            }
-
         }
 
         // append all dependencies to the parent pom
