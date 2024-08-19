@@ -104,14 +104,14 @@ public class WebServer implements IWebServerService {
                     final Path indexHtml = ResourceFactory.of(server).newClassLoaderResource("static/index.html").getPath();
                     final String content = Files.readString(indexHtml, StandardCharsets.UTF_8);
                     response.getHeaders().put(HttpHeader.CONTENT_TYPE, "text/html; charset=utf-8");
-                    response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+                    response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN, "http://localhost, https://localhost");
                     response.write(true, BufferUtil.toBuffer(content, StandardCharsets.UTF_8), callback);
                     return true;
                 } else if (path.contains("/styles.css")) {
                     final Path indexHtml = ResourceFactory.of(server).newClassLoaderResource("static/styles.css").getPath();
                     final String content = Files.readString(indexHtml, StandardCharsets.UTF_8);
                     response.getHeaders().put(HttpHeader.CONTENT_TYPE, "text/css; charset=utf-8");
-                    response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+                    response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN, "http://localhost, https://localhost");
                     response.write(true, BufferUtil.toBuffer(content, StandardCharsets.UTF_8), callback);
                     return true;
                 } else if (path.contains("/favicon.ico")) {
@@ -119,12 +119,12 @@ public class WebServer implements IWebServerService {
                 } else if (path.contains("/data")) {
                     final String content = energyStorage.toJson();
                     response.getHeaders().put(HttpHeader.CONTENT_TYPE, "text/json; charset=utf-8");
-                    response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+                    response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN, "http://localhost, https://localhost");
                     response.write(true, BufferUtil.toBuffer(content, StandardCharsets.UTF_8), callback);
                     return true;
                 } else if (path.contains("/alarmMessages")) {
                     response.getHeaders().put(HttpHeader.CONTENT_TYPE, "text/json; charset=utf-8");
-                    response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN, "*");
+                    response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN, "http://localhost, https://localhost");
                     response.write(true, BufferUtil.toBuffer(alarmMessages, StandardCharsets.UTF_8), callback);
                     return true;
                 }

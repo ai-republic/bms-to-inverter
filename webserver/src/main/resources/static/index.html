@@ -18,8 +18,8 @@
 	var selectedBMSNo = 0;
 	var bmsData = '';
 	var alarmMessages;
-	var dataURL = 'http://' + window.location.host + '/data';
-	var alarmsURL = 'http://' + window.location.host + '/alarmMessages';
+	var dataURL = location.protocol + '//' + location.host + '/data';
+	var alarmsURL = location.protocol + '//' + location.host + '/alarmMessages';
 	
 	function init() {
 		fetchAsync(dataURL)
@@ -39,7 +39,7 @@
 	}
 	
 	async function fetchAsync(url) {
-		const response = await fetch(url, {mode: 'no-cors'});
+		const response = await fetch(url);
 		const data = await response.json();
 		return data;
 	}
