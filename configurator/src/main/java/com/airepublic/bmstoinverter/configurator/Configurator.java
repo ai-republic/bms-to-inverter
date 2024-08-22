@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -28,7 +29,6 @@ import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -197,9 +197,10 @@ public class Configurator extends JFrame {
         Files.deleteIfExists(configDirectory.resolve("config.properties"));
         Files.write(configDirectory.resolve("config.properties"), config.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         Files.deleteIfExists(configDirectory.resolve("log4j2.xml"));
-        final String logConfig = Files.readString(Paths.get(this.getClass().getClassLoader().getResource("templates/main-log4j2.xml").toURI()));
-        Files.writeString(configDirectory.resolve("log4j2.xml"), logConfig.replace("<Root level=\"info\">", "<Root level=\"" + generalPanel.getLogLevel() + "\">"), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
-
+        try (InputStream is = getClass().getClassLoader().getResourceAsStream("templates/main-log4j2.xml")) {
+            final String logConfig = new String(is.readAllBytes());
+            Files.writeString(configDirectory.resolve("log4j2.xml"), logConfig.replace("<Root level=\"info\">", "<Root level=\"" + generalPanel.getLogLevel() + "\">"), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
+        }
     }
 
 
@@ -628,29 +629,42 @@ public class Configurator extends JFrame {
         final Path configFilePath = installDirectory.resolve("config/config.properties");
         final Path logFilePath = installDirectory.resolve("config/log4j2.xml");
 
-        final Properties config = new Properties();
-        try {
-            config.load(Files.newInputStream(configFilePath));
-        } catch (final IOException e) {
-            // no existing configuration found
-            return;
+        // log config.properties and set configuration
+        if (Files.exists(configFilePath)) {
+            final Properties config = new Properties();
+            try {
+                config.load(Files.newInputStream(configFilePath));
+            } catch (final IOException e) {
+                // no existing configuration found
+                return;
+            }
+
+            try {
+                generalPanel.setConfiguration(config);
+                bmsPanel.setConfiguration(config);
+                inverterPanel.setConfiguration(config);
+                servicesPanel.setConfiguration(config);
+
+                JOptionPane.showMessageDialog(Configurator.this, "Successfully loaded the configuration!", "Information", JOptionPane.INFORMATION_MESSAGE);
+                updateConfigButton.setEnabled(true);
+            } catch (final Exception e) {
+                JOptionPane.showMessageDialog(Configurator.this, "Failed to load the configuration!\n" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+            }
         }
 
-        try {
-            final String logXml = Files.readString(logFilePath);
-            final int idx = logXml.indexOf("<Root level=\"") + "<Root level=\"".length();
-            final String logLevel = logXml.substring(idx, logXml.indexOf('\"', idx + 1));
-            generalPanel.setLogLevel(logLevel);
-            generalPanel.setConfiguration(config);
-            bmsPanel.setConfiguration(config);
-            inverterPanel.setConfiguration(config);
-            servicesPanel.setConfiguration(config);
+        // load log4j2.xml and determine log level
+        if (Files.exists(logFilePath)) {
+            try {
+                final String logXml = Files.readString(logFilePath);
+                final int idx = logXml.indexOf("<Root level=\"") + "<Root level=\"".length();
+                final String logLevel = logXml.substring(idx, logXml.indexOf('\"', idx + 1));
+                generalPanel.setLogLevel(logLevel);
+            } catch (final IOException e) {
+                JOptionPane.showMessageDialog(Configurator.this, "Failed to load the log level!\n" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+                e.printStackTrace();
+            }
 
-            JOptionPane.showMessageDialog(Configurator.this, "Successfully loaded the configuration!", "Information", JOptionPane.INFORMATION_MESSAGE);
-            updateConfigButton.setEnabled(true);
-        } catch (final Exception e) {
-            JOptionPane.showMessageDialog(Configurator.this, "Failed to load the configuration!\n" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
         }
     }
 
