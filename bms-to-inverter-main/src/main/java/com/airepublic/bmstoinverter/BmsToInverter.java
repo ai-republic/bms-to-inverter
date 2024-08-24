@@ -38,6 +38,7 @@ import com.airepublic.email.api.EmailAccount;
 import com.airepublic.email.api.EmailException;
 import com.airepublic.email.api.IEmailService;
 
+import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.se.SeContainer;
 import jakarta.enterprise.inject.se.SeContainerInitializer;
@@ -93,13 +94,13 @@ public class BmsToInverter implements AutoCloseable {
      */
     public BmsToInverter() {
         Runtime.getRuntime().addShutdownHook(new Thread(() -> close()));
-        initializeServices();
     }
 
 
     /**
      * Initialize all optional configured services.
      */
+    @PostConstruct
     protected void initializeServices() {
         // check for MQTT broker service module
         if (System.getProperty("mqtt.broker.enabled") != null && System.getProperty("mqtt.broker.enabled").equals("true")) {
