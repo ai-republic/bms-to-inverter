@@ -7,10 +7,13 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
+import org.eclipse.jetty.ee10.servlet.security.ConstraintMapping;
+import org.eclipse.jetty.ee10.servlet.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.security.Constraint;
+import org.eclipse.jetty.security.Constraint.Authorization;
 import org.eclipse.jetty.security.HashLoginService;
-import org.eclipse.jetty.security.SecurityHandler;
+import org.eclipse.jetty.security.UserStore;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
@@ -21,14 +24,13 @@ import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
-import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.SecuredRedirectHandler;
-import org.eclipse.jetty.session.SessionHandler;
 import org.eclipse.jetty.util.BufferUtil;
 import org.eclipse.jetty.util.Callback;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.util.resource.ResourceFactory;
 import org.eclipse.jetty.util.resource.Resources;
+import org.eclipse.jetty.util.security.Credential;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,8 +101,20 @@ public class WebServer implements IWebServerService {
 
         // Add a Handlers for requests
         final Handler.Sequence handlers = new Handler.Sequence();
+        Handler finalHandler = handlers;
+
+        final String username = System.getProperty("webserver.username", "");
+        final String password = System.getProperty("webserver.password", "");
+
+        if (!username.isBlank() && !password.isBlank()) {
+            // Set up security and wrap all other handlers with security
+            final ConstraintSecurityHandler securityHandler = createSecurityHandler(username, password);
+            securityHandler.setHandler(handlers);
+            finalHandler = securityHandler;
+        }
+
         handlers.addHandler(new SecuredRedirectHandler());
-        // handlers.addHandler(configureSecurity(server));
+
         handlers.addHandler(new Handler.Abstract() {
             @Override
             public boolean handle(final Request request, final Response response, final Callback callback) throws Exception {
@@ -138,7 +152,8 @@ public class WebServer implements IWebServerService {
                 return false;
             }
         });
-        server.setHandler(handlers);
+
+        server.setHandler(finalHandler);
 
         LOG.info("Starting webserver on ports " + httpPort + ":" + httpsPort);
         try {
@@ -147,6 +162,33 @@ public class WebServer implements IWebServerService {
         } catch (final Exception e) {
             LOG.error("FAILED to start webserver on ports " + httpPort + ":" + httpsPort + "!", e);
         }
+    }
+
+
+    private static ConstraintSecurityHandler createSecurityHandler(final String username, final String password) {
+        // Create a UserStore
+        final UserStore userStore = new UserStore();
+        userStore.addUser(username, Credential.getCredential(password), new String[] { "user" });
+
+        // Create a LoginService and associate it with the UserStore
+        final HashLoginService loginService = new HashLoginService();
+        loginService.setName("MyRealm");
+        loginService.setUserStore(userStore);
+
+        // Create a ConstraintSecurityHandler and set authenticator
+        final ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
+        securityHandler.setAuthenticator(new BasicAuthenticator());
+        securityHandler.setLoginService(loginService);
+
+        // Set up constraint mapping for all paths
+        // Set up constraint mapping
+        final ConstraintMapping cm = new ConstraintMapping();
+        cm.setConstraint(Constraint.from("/*", Authorization.SPECIFIC_ROLE, "user"));
+        cm.setPathSpec("/*");
+        cm.setMethod("GET");
+        securityHandler.addConstraintMapping(cm);
+
+        return securityHandler;
     }
 
 
@@ -172,30 +214,9 @@ public class WebServer implements IWebServerService {
     }
 
 
-    private SecurityHandler configureSecurity(final Server server) {
-        final ContextHandler contextHandler = new ContextHandler();
-        final SessionHandler sessionHandler = new SessionHandler();
-
-        contextHandler.setContextPath("/");
-        server.setHandler(contextHandler);
-        contextHandler.setHandler(sessionHandler);
-
-        final SecurityHandler.PathMapped securityHandler = new SecurityHandler.PathMapped();
-        sessionHandler.setHandler(securityHandler);
-
-        securityHandler.put("/admin/*", Constraint.from("admin"));
-        securityHandler.put("/any/*", Constraint.ANY_USER);
-        securityHandler.put("/known/*", Constraint.KNOWN_ROLE);
-        securityHandler.setAuthenticator(new BasicAuthenticator());
-
-        securityHandler.setLoginService(new HashLoginService());
-        // securityHandler.setHandler(new AuthenticationTestHandler());
-
-        return securityHandler;
-    }
-
-
     public static void main(final String[] args) throws Exception {
+        System.setProperty("webserver.username", "username");
+        System.setProperty("webserver.password", "password");
         final EnergyStorage energyStorage = new EnergyStorage();
         energyStorage.getBatteryPacks().add(new BatteryPack());
         energyStorage.getBatteryPacks().add(new BatteryPack());
