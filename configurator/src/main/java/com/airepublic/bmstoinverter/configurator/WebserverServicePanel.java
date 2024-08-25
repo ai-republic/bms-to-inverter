@@ -17,6 +17,7 @@ import java.util.Properties;
 
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
@@ -24,6 +25,8 @@ public class WebserverServicePanel extends JPanel {
     private static final long serialVersionUID = 1L;
     private final JTextField webserverHttpPortField;
     private final JTextField webserverHttpsPortField;
+    private final JTextField webserverUsernameField;
+    private final JPasswordField webserverPasswordField;
     private final NumberInputVerifier numberInputVerifier = new NumberInputVerifier();
 
     public WebserverServicePanel() {
@@ -31,9 +34,9 @@ public class WebserverServicePanel extends JPanel {
 
         final GridBagLayout gbl_webserverPanel = new GridBagLayout();
         gbl_webserverPanel.columnWidths = new int[] { 80, 80, 80, 80 };
-        gbl_webserverPanel.rowHeights = new int[] { 30 };
+        gbl_webserverPanel.rowHeights = new int[] { 30, 30 };
         gbl_webserverPanel.columnWeights = new double[] { 1.0, 1.0, 1.0, 1.0 };
-        gbl_webserverPanel.rowWeights = new double[] { 1.0 };
+        gbl_webserverPanel.rowWeights = new double[] { 1.0, 1.0 };
         setLayout(gbl_webserverPanel);
 
         final JLabel webserverPortLabel = new JLabel("HTTP Port");
@@ -70,6 +73,43 @@ public class WebserverServicePanel extends JPanel {
         add(webserverHttpsPortField, gbc_webserverHttpsPortField);
         webserverHttpsPortField.setColumns(10);
 
+        final JLabel webserverUsernameLabel = new JLabel("Username");
+        webserverUsernameLabel.setToolTipText("Username to view data on webserver (optional)");
+        final GridBagConstraints gbc_webserverUsernameLabel = new GridBagConstraints();
+        gbc_webserverUsernameLabel.anchor = GridBagConstraints.EAST;
+        gbc_webserverUsernameLabel.insets = new Insets(0, 0, 5, 5);
+        gbc_webserverUsernameLabel.gridx = 0;
+        gbc_webserverUsernameLabel.gridy = 1;
+        add(webserverUsernameLabel, gbc_webserverUsernameLabel);
+
+        webserverUsernameField = new JTextField("");
+        webserverUsernameField.setToolTipText("Username to view data on webserver (optional)");
+        final GridBagConstraints gbc_webserverUsernameField = new GridBagConstraints();
+        gbc_webserverUsernameField.fill = GridBagConstraints.BOTH;
+        gbc_webserverUsernameField.insets = new Insets(0, 0, 5, 0);
+        gbc_webserverUsernameField.gridx = 1;
+        gbc_webserverUsernameField.gridy = 1;
+        add(webserverUsernameField, gbc_webserverUsernameField);
+        webserverUsernameField.setColumns(20);
+
+        final JLabel webserverPasswordLabel = new JLabel("Password");
+        webserverPasswordLabel.setToolTipText("Password to view data on webserver (optional)");
+        final GridBagConstraints gbc_webserverPasswordLabel = new GridBagConstraints();
+        gbc_webserverPasswordLabel.anchor = GridBagConstraints.EAST;
+        gbc_webserverPasswordLabel.insets = new Insets(0, 0, 5, 5);
+        gbc_webserverPasswordLabel.gridx = 2;
+        gbc_webserverPasswordLabel.gridy = 1;
+        add(webserverPasswordLabel, gbc_webserverPasswordLabel);
+
+        webserverPasswordField = new JPasswordField("");
+        webserverPasswordField.setToolTipText("Password to view data on webserver (optional)");
+        final GridBagConstraints gbc_webserverPasswordField = new GridBagConstraints();
+        gbc_webserverPasswordField.fill = GridBagConstraints.BOTH;
+        gbc_webserverPasswordField.insets = new Insets(0, 0, 5, 0);
+        gbc_webserverPasswordField.gridx = 3;
+        gbc_webserverPasswordField.gridy = 1;
+        add(webserverPasswordField, gbc_webserverPasswordField);
+        webserverPasswordField.setColumns(20);
     }
 
 
@@ -101,12 +141,16 @@ public class WebserverServicePanel extends JPanel {
         config.append("# The webserver port\n");
         config.append("webserver.http.port=" + getHttpPort() + "\n");
         config.append("webserver.https.port=" + getHttpsPort() + "\n");
+        config.append("webserver.username=" + webserverUsernameField.getText() + "\n");
+        config.append("webserver.password=" + new String(webserverPasswordField.getPassword()) + "\n");
     }
 
 
     void setConfiguration(final Properties config) {
         webserverHttpPortField.setText(config.getProperty("webserver.http.port"));
         webserverHttpsPortField.setText(config.getProperty("webserver.https.port"));
+        webserverUsernameField.setText(config.getProperty("webserver.username"));
+        webserverPasswordField.setText(config.getProperty("webserver.password"));
     }
 
 }

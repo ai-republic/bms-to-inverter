@@ -7,12 +7,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import org.eclipse.jetty.ee10.servlet.security.ConstraintMapping;
-import org.eclipse.jetty.ee10.servlet.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.http.HttpHeader;
 import org.eclipse.jetty.security.Constraint;
-import org.eclipse.jetty.security.Constraint.Authorization;
 import org.eclipse.jetty.security.HashLoginService;
+import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.security.UserStore;
 import org.eclipse.jetty.security.authentication.BasicAuthenticator;
 import org.eclipse.jetty.server.Handler;
@@ -108,7 +106,7 @@ public class WebServer implements IWebServerService {
 
         if (!username.isBlank() && !password.isBlank()) {
             // Set up security and wrap all other handlers with security
-            final ConstraintSecurityHandler securityHandler = createSecurityHandler(username, password);
+            final SecurityHandler securityHandler = createSecurityHandler(username, password);
             securityHandler.setHandler(handlers);
             finalHandler = securityHandler;
         }
@@ -165,7 +163,7 @@ public class WebServer implements IWebServerService {
     }
 
 
-    private static ConstraintSecurityHandler createSecurityHandler(final String username, final String password) {
+    private static SecurityHandler createSecurityHandler(final String username, final String password) {
         // Create a UserStore
         final UserStore userStore = new UserStore();
         userStore.addUser(username, Credential.getCredential(password), new String[] { "user" });
@@ -176,17 +174,11 @@ public class WebServer implements IWebServerService {
         loginService.setUserStore(userStore);
 
         // Create a ConstraintSecurityHandler and set authenticator
-        final ConstraintSecurityHandler securityHandler = new ConstraintSecurityHandler();
+        final SecurityHandler.PathMapped securityHandler = new SecurityHandler.PathMapped();
+        // Set up constraint mapping for all paths
+        securityHandler.put("/*", Constraint.from("user"));
         securityHandler.setAuthenticator(new BasicAuthenticator());
         securityHandler.setLoginService(loginService);
-
-        // Set up constraint mapping for all paths
-        // Set up constraint mapping
-        final ConstraintMapping cm = new ConstraintMapping();
-        cm.setConstraint(Constraint.from("/*", Authorization.SPECIFIC_ROLE, "user"));
-        cm.setPathSpec("/*");
-        cm.setMethod("GET");
-        securityHandler.addConstraintMapping(cm);
 
         return securityHandler;
     }
