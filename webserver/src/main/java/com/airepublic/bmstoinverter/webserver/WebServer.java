@@ -1,8 +1,6 @@
 package com.airepublic.bmstoinverter.webserver;
 
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -12,7 +10,7 @@ import org.eclipse.jetty.security.Constraint;
 import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.security.UserStore;
-import org.eclipse.jetty.security.authentication.BasicAuthenticator;
+import org.eclipse.jetty.security.authentication.FormAuthenticator;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
@@ -22,7 +20,9 @@ import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.server.handler.SecuredRedirectHandler;
+import org.eclipse.jetty.session.SessionHandler;
 import org.eclipse.jetty.util.BufferUtil;
 import org.eclipse.jetty.util.Callback;
 import org.eclipse.jetty.util.resource.Resource;
@@ -101,6 +101,8 @@ public class WebServer implements IWebServerService {
         final Handler.Sequence handlers = new Handler.Sequence();
         Handler finalHandler = handlers;
 
+        final SessionHandler sessionHandler = new SessionHandler();
+
         final String username = System.getProperty("webserver.username", "");
         final String password = System.getProperty("webserver.password", "");
 
@@ -113,28 +115,61 @@ public class WebServer implements IWebServerService {
 
         handlers.addHandler(new SecuredRedirectHandler());
 
+        final ResourceFactory resourceFactory = ResourceFactory.of(server);
+        final Resource rootResourceDir = resourceFactory.newClassLoaderResource("/static/");
+
+        if (!Resources.isReadableDirectory(rootResourceDir)) {
+            LOG.error("Unable to find /static/ classloader directory!");
+            stop();
+            return;
+        }
+
+        final ResourceHandler rootResourceHandler = new ResourceHandler();
+        rootResourceHandler.setBaseResource(rootResourceDir);
+        rootResourceHandler.setDirAllowed(false);
+        rootResourceHandler.setWelcomeFiles("index.html");
+
+        handlers.addHandler(rootResourceHandler);
+
         handlers.addHandler(new Handler.Abstract() {
             @Override
             public boolean handle(final Request request, final Response response, final Callback callback) throws Exception {
                 final String path = request.getHttpURI().getPath();
 
-                if (path.isBlank() || path.equals("/") || path.equals("/index.html")) {
-                    final Path indexHtml = ResourceFactory.of(server).newClassLoaderResource("static/index.html").getPath();
-                    final String content = Files.readString(indexHtml, StandardCharsets.UTF_8);
-                    response.getHeaders().put(HttpHeader.CONTENT_TYPE, "text/html; charset=utf-8");
-                    response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN, "http://localhost, https://localhost");
-                    response.write(true, BufferUtil.toBuffer(content, StandardCharsets.UTF_8), callback);
-                    return true;
-                } else if (path.contains("/styles.css")) {
-                    final Path indexHtml = ResourceFactory.of(server).newClassLoaderResource("static/styles.css").getPath();
-                    final String content = Files.readString(indexHtml, StandardCharsets.UTF_8);
-                    response.getHeaders().put(HttpHeader.CONTENT_TYPE, "text/css; charset=utf-8");
-                    response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN, "http://localhost, https://localhost");
-                    response.write(true, BufferUtil.toBuffer(content, StandardCharsets.UTF_8), callback);
-                    return true;
-                } else if (path.contains("/favicon.ico")) {
-                    return true;
-                } else if (path.contains("/data")) {
+                // if (path.isBlank() || path.equals("/") || path.equals("/index.html")) {
+                // final Path indexHtml =
+                // ResourceFactory.of(server).newClassLoaderResource("static/index.html").getPath();
+                // final String content = Files.readString(indexHtml, StandardCharsets.UTF_8);
+                // response.getHeaders().put(HttpHeader.CONTENT_TYPE, "text/html; charset=utf-8");
+                // response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN,
+                // "http://localhost, https://localhost");
+                // response.write(true, BufferUtil.toBuffer(content, StandardCharsets.UTF_8),
+                // callback);
+                // return true;
+                // } else if (path.contains("/login.html")) {
+                // final Path indexHtml =
+                // ResourceFactory.of(server).newClassLoaderResource("static/login.html").getPath();
+                // final String content = Files.readString(indexHtml, StandardCharsets.UTF_8);
+                // response.getHeaders().put(HttpHeader.CONTENT_TYPE, "text/html; charset=utf-8");
+                // response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN,
+                // "http://localhost, https://localhost");
+                // response.write(true, BufferUtil.toBuffer(content, StandardCharsets.UTF_8),
+                // callback);
+                // return true;
+                // } else if (path.contains("/styles.css")) {
+                // final Path indexHtml =
+                // ResourceFactory.of(server).newClassLoaderResource("static/styles.css").getPath();
+                // final String content = Files.readString(indexHtml, StandardCharsets.UTF_8);
+                // response.getHeaders().put(HttpHeader.CONTENT_TYPE, "text/css; charset=utf-8");
+                // response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN,
+                // "http://localhost, https://localhost");
+                // response.write(true, BufferUtil.toBuffer(content, StandardCharsets.UTF_8),
+                // callback);
+                // return true;
+                // } else if (path.contains("/favicon.ico")) {
+                // return true;
+                // } else
+                if (path.contains("/data")) {
                     final String content = energyStorage.toJson();
                     response.getHeaders().put(HttpHeader.CONTENT_TYPE, "text/json; charset=utf-8");
                     response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN, "http://localhost, https://localhost");
@@ -143,7 +178,8 @@ public class WebServer implements IWebServerService {
                 } else if (path.contains("/alarmMessages")) {
                     response.getHeaders().put(HttpHeader.CONTENT_TYPE, "text/json; charset=utf-8");
                     response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN, "http://localhost, https://localhost");
-                    response.write(true, BufferUtil.toBuffer(alarmMessages, StandardCharsets.UTF_8), callback);
+                    response.write(true, BufferUtil.toBuffer(alarmMessages, StandardCharsets.UTF_8),
+                            callback);
                     return true;
                 }
 
@@ -151,7 +187,8 @@ public class WebServer implements IWebServerService {
             }
         });
 
-        server.setHandler(finalHandler);
+        sessionHandler.setHandler(finalHandler);
+        server.setHandler(sessionHandler);
 
         LOG.info("Starting webserver on ports " + httpPort + ":" + httpsPort);
         try {
@@ -177,7 +214,9 @@ public class WebServer implements IWebServerService {
         final SecurityHandler.PathMapped securityHandler = new SecurityHandler.PathMapped();
         // Set up constraint mapping for all paths
         securityHandler.put("/*", Constraint.from("user"));
-        securityHandler.setAuthenticator(new BasicAuthenticator());
+        securityHandler.put("/login.html", Constraint.ALLOWED_ANY_TRANSPORT);
+        securityHandler.put("/styles.css", Constraint.ALLOWED_ANY_TRANSPORT);
+        securityHandler.setAuthenticator(new FormAuthenticator("/login.html", "/login.html", true));
         securityHandler.setLoginService(loginService);
 
         return securityHandler;

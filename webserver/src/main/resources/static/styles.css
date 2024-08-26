@@ -1,11 +1,66 @@
-
 body {
-  	margin: 15px;
+	margin: 15px;
+	font-family: Arial, sans-serif; background-color : #f4f4f4;
 	display: flex;
+	background-color: #f4f4f4;
+}
+
+.login-container {
+	background-color: #ffffff;
+	padding: 20px;
+	border-radius: 8px;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+	width: 300px;
+	margin: 0;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	-ms-transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%);
+}
+
+.login-container h2 {
+	text-align: center;
+	margin-bottom: 20px;
+}
+
+.login-container label {
+	display: block;
+	margin-bottom: 8px;
+	font-weight: bold;
+}
+
+.login-container input[type="text"], .login-container input[type="password"]
+	{
+	width: 100%;
+	height: 40px;
+	margin-bottom: 20px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+}
+
+.login-container input[type="submit"] {
+	width: 100%;
+	background-color: #007bff;
+	color: white;
+	border: 1px solid #007bff;
+	border-radius: 4px;
+	cursor: pointer;
+	font-size: 16px;
+	height: 40px;
+}
+
+.login-container input[type="submit"]:hover {
+	background-color: #0056b3;
+}
+
+.error-message {
+	color: red;
+	text-align: center;
 }
 
 #mainPanel {
-	margin:auto;
+	margin: auto;
 	height: 800px;
 }
 
@@ -13,20 +68,39 @@ body {
 	float: left;
 	width: 200px;
 	height: 100%;
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+	
+	border: 1px solid #ccc;
 	border-radius: 10px;
 	padding: 5px;
-	background-color: rgb(192, 192, 192);
+	background-color: white;
 }
 
-.bmsMenu{
+.bmsMenu {
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 14pt;
 	margin: 5px;
 	padding: 5px;
 	border-radius: 10px;
 	text-align: center;
-	background-color: rgb(148, 148, 148);
+	color: white;
+	background-color: #007bff;
+	box-shadow: 0 2px 5px rgb(0, 0, 0, 0.3);
 	cursor: pointer;
+}
+
+.bmsMenu-selected {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 14pt;
+	margin: 5px;
+	padding: 5px;
+	border-radius: 10px;
+	text-align: center;
+	color: white;
+	background-color: #007bff;
+	cursor: pointer;
+	border-color: #9ecaed;
+    box-shadow: 0 0 15px rgb(255, 28, 0);
 }
 
 #viewPanel {
@@ -36,25 +110,32 @@ body {
 	padding: 5px;
 	margin-left: 10px;
 	border-radius: 10px;
-	background-color: rgb(170, 170, 170);
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+	background-color: white;
 }
 
 .table {
-	padding-top: 20px;	
+	padding-top: 20px;
 }
 
 .tableHeader {
 	border-top: 20px;
-	background-color: rgb(192, 192, 192);
+	color: white;
+	background-color: rgb(0, 80, 180);
 }
 
 .tableHeaderCell {
-	padding: 5px;	
+	padding: 5px;
 	text-align: center;
 	font-family: Arial, Helvetica, sans-serif;
 	font-size: 14pt;
 	font-weight: bold;
 }
+
+th, td {
+	padding-right: 15px;
+}
+
 .overviewDataFieldName {
 	width: 120px;
 	font-family: Arial, Helvetica, sans-serif;
@@ -72,7 +153,8 @@ body {
 	border-spacing: 20px;
 	border-radius: 10px;
 	text-align: right;
-	background-color: rgb(210, 210, 210);
+	color: white;
+	background-color: #007bff;
 }
 
 .bmsDataFieldName {
@@ -92,7 +174,8 @@ body {
 	border-spacing: 20px;
 	border-radius: 10px;
 	text-align: right;
-	background-color: rgb(210, 210, 210);
+	color: white;
+	background-color: #007bff;
 }
 
 #cellPanel {

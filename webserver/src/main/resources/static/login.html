@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta http-equiv="Access-Control-Allow-Origin" content="*">
+<meta name="description" content="">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="stylesheet" href="styles.css">
+<title>Bms-To-Inverter</title>
+</head>
+
+<body>
+    <div class="login-container">
+        <h2>Login</h2>
+        <form action='/j_security_check'" method="post">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="j_username" required>
+
+            <label for="password">Password</label>
+            <input type="password" id="password" name="j_password" required>
+
+            <input type="submit" value="Login">
+        </form>
+        <div class="error-message">
+            <!-- Display error message here if login fails -->
+        </div>
+    </div>
+</body>
+</html>

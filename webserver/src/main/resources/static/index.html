@@ -13,7 +13,10 @@
 </head>
 
 <script type="text/javascript">
-	const selectedColor = 'beige';
+	const selectedBackgroundColor = 'rgb(120, 120, 255)';
+	const selectedColor = 'white';
+	const normalMenuClass = 'bmsMenu';
+	const selectedMenuClass = 'bmsMenu-selected';
 	var selectedBMS = null;
 	var selectedBMSNo = 0;
 	var bmsData = '';
@@ -93,17 +96,17 @@
 		var alarms = new Array();
 		var content= '<table>' +
 		'<tr>' +
-		'<td class="overviewDataFieldName" style="text-align:right">SOC</td><td class="overviewDataFieldValue">' + (averageSOC / 10).toFixed(1) + ' %</td>' +
-		'<td class="overviewDataFieldName" style="text-align:right">Voltage</td><td class="overviewDataFieldValue">' + (averageVoltage / 10).toFixed(1) + ' %</td>' +
-		'<td class="overviewDataFieldName" style="text-align:right">Current</td><td class="overviewDataFieldValue">' + (totalCurrent / 10).toFixed(1) + ' A</td>' +
+		'<td class="overviewDataFieldName" style="text-align:right; width: 50px">SOC</td><td class="overviewDataFieldValue">' + (averageSOC / 10).toFixed(1) + ' %</td>' +
+		'<td class="overviewDataFieldName" style="text-align:right; width: 90px">Voltage</td><td class="overviewDataFieldValue">' + (averageVoltage / 10).toFixed(1) + ' %</td>' +
+		'<td class="overviewDataFieldName" style="text-align:right; width: 90px">Current</td><td class="overviewDataFieldValue">' + (totalCurrent / 10).toFixed(1) + ' A</td>' +
 		'<td class="overviewDataFieldName" style="text-align:right">Charge-State</td><td class="overviewDataFieldValue">' + chargeState + '</td>' +
 		'</tr>' +
 		'</table><br/>';
 		
 		content += '<table>' +
 				'<tr>' +
-					'<td class="overviewDataFieldName" style="text-align: center; width:50px">BMS</td>' +
-					'<td class="overviewDataFieldName" style="text-align: center">SOC</td>' +
+					'<td class="overviewDataFieldName" style="text-align: center; width: 50px">BMS</td>' +
+					'<td class="overviewDataFieldName" style="text-align: center; width: 50px">SOC</td>' +
 					'<td class="overviewDataFieldName" style="text-align: center">Voltage</td>' +
 					'<td class="overviewDataFieldName" style="text-align: center">Current</td>' +
 					'<td class="overviewDataFieldName" style="text-align: center">MinCellV</td>' +
@@ -114,7 +117,7 @@
 			for (var i = 0; i < bmsData.batteryPacks.length; i++) {		
 				var pack = bmsData.batteryPacks[i];
 				content += '<tr>' +
-					'<td class="overviewDataFieldValue" style="text-align: center; width:50px">' + (i + 1) + '</td>' +
+					'<td class="overviewDataFieldValue" style="text-align: center">' + (i + 1) + '</td>' +
 					'<td class="overviewDataFieldValue">' + (pack.packSOC / 10).toFixed(1) + ' %</td>' +
 					'<td class="overviewDataFieldValue">' + (pack.packVoltage / 10).toFixed(1) + ' V</td>' +
 					'<td class="overviewDataFieldValue">' + (pack.packCurrent / 10).toFixed(1) + ' A</td>' +
@@ -142,11 +145,12 @@
 	function selectBMS(element) {
 		if (element != selectedBMS) {
 			if (selectedBMS != null) {
-				selectedBMS.removeAttribute("style");
+				selectedBMS.className= normalMenuClass;
 			}
 
-			element.style.backgroundColor = selectedColor;
-			
+			//element.style.backgroundColor = selectedBackgroundColor;
+			//element.style.color= selectedColor;
+			element.className= selectedMenuClass;
 			selectedBMS = element;
 		}
 		
