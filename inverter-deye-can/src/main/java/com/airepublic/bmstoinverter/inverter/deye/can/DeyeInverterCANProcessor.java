@@ -82,7 +82,7 @@ public class DeyeInverterCANProcessor extends Inverter {
         // Charge current limit (0.1A) - sint_16
         frame.putShort((short) pack.maxPackChargeCurrent);
         // Discharge current limit (0.1A) - sint_16
-        frame.putShort((short) pack.maxPackDischargeCurrent);
+        frame.putShort((short) (pack.maxPackDischargeCurrent * -1));
         // Battery discharge voltage (0.1V) - uint_16
         frame.putChar((char) pack.minPackVoltageLimit);
 
