@@ -48,6 +48,8 @@
 		<module>webserver</module>
 		<module>configurator</module>
 		<module>bms-jbd-rs485</module>
+		<module>bms-huawei-modbus</module>
+		<module>inverter-huawei-modbus</module>
 	</modules>
 
 	<build>

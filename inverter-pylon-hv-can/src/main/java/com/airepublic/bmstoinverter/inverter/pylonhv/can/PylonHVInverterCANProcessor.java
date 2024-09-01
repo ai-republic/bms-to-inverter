@@ -30,7 +30,7 @@ import com.airepublic.bmstoinverter.core.util.Util;
 import jakarta.enterprise.context.ApplicationScoped;
 
 /**
- * The class to handle CAN messages for a Growatt low voltage (12V/24V/48V) {@link Inverter}.
+ * The class to handle CAN messages for a Pylon HV {@link Inverter}.
  */
 @ApplicationScoped
 public class PylonHVInverterCANProcessor extends Inverter {

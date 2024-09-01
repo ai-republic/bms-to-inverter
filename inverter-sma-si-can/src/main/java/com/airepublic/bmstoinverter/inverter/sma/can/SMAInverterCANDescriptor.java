@@ -17,7 +17,7 @@ import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.protocol.can.JavaCANPort;
 
 /**
- * The {@link InverterDescriptor} for the Daly BMS using the CAN protocol.
+ * The {@link InverterDescriptor} for the SMA {@link Inverter} using the CAN protocol.
  */
 public class SMAInverterCANDescriptor implements InverterDescriptor {
     @Override

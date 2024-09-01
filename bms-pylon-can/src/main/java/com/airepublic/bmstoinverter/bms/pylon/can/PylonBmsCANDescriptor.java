@@ -13,7 +13,6 @@ package com.airepublic.bmstoinverter.bms.pylon.can;
 import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.BMSConfig;
 import com.airepublic.bmstoinverter.core.BMSDescriptor;
-import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.protocol.can.JavaCANPort;
 
 /**
@@ -39,8 +38,8 @@ public class PylonBmsCANDescriptor implements BMSDescriptor {
 
 
     @Override
-    public Port createPort(final BMSConfig config) {
-        final Port port = new JavaCANPort(config.getPortLocator(), config.getBaudRate());
+    public JavaCANPort createPort(final BMSConfig config) {
+        final JavaCANPort port = new JavaCANPort(config.getPortLocator(), config.getBaudRate());
         return port;
     }
 

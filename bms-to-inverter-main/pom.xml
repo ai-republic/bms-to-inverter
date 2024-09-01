@@ -126,24 +126,10 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<!-- ####################  PACE (CAN)  ################### -->
+		<!-- ####################  HUAWEI (MODBUS)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>bms-pace-can</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<!-- ####################  PYLONTECH (CAN)  ################### -->
-		<dependency>
-			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>bms-pylon-can</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<!-- ####################  PYLONTECH HV (CAN)  ################### -->
-		<dependency>
-			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>bms-pylon-hv-can</artifactId>
+			<artifactId>bms-huawei-modbus</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -165,6 +151,27 @@
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>bms-jk-rs485</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- ####################  PACE (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-pace-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- ####################  PYLONTECH (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-pylon-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- ####################  PYLONTECH HV (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-pylon-hv-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -196,6 +203,13 @@
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>inverter-dummy</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- ####################  HUAWEI (MODBUS)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-huawei-modbus</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

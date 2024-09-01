@@ -12,7 +12,7 @@
 	<artifactId>bms-jbd-rs485</artifactId>
 
 	<name>${project.artifactId}-${project.version}</name>
-	<description>Module for the Daly BMS RS485 support</description>
+	<description>Module for the JBD BMS RS485 support</description>
 
 	<properties>
 		<encoding>UTF-8</encoding>

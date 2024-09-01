@@ -88,6 +88,13 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- ####################  HUAWEI (MODBUS)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-huawei-modbus</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- ####################  JBD (RS485)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
@@ -165,6 +172,13 @@
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>inverter-dummy</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- ####################  HUAWEI (MODBUS)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-huawei-modbus</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

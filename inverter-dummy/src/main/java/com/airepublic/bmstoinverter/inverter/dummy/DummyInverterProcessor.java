@@ -23,7 +23,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Default;
 
 /**
- * The class to handle CAN messages for a SMA {@link Inverter}.
+ * The processor class for a Dummy {@link Inverter}.
  */
 @ApplicationScoped
 @Default

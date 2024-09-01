@@ -14,7 +14,7 @@ import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.InverterConfig;
 import com.airepublic.bmstoinverter.core.InverterDescriptor;
 import com.airepublic.bmstoinverter.core.Port;
-import com.airepublic.bmstoinverter.protocol.modbus.J2ModPort;
+import com.airepublic.bmstoinverter.protocol.modbus.J2ModMasterPort;
 
 /**
  * The {@link InverterDescriptor} for the Daly BMS using the CAN protocol.
@@ -40,7 +40,7 @@ public class GrowattInverterRS485Descriptor implements InverterDescriptor {
 
     @Override
     public Port createPort(final InverterConfig config) {
-        final Port port = new J2ModPort(config.getPortLocator(), config.getBaudRate());
+        final Port port = new J2ModMasterPort(config.getPortLocator(), config.getBaudRate());
         return port;
     }
 
