@@ -55,7 +55,7 @@ _**NOTE:** If you would like me to add a BMS or inverter module just let me know
 * **and any other inverters supporting any of the above listed BMS protocols!**
 
 
-**NOTE:** **If your BMS or inverter is not in the list just open an issue!**
+**NOTE:** **If your BMS or inverter is not in the list it is likely to work with one of these bindings (like Pylon). Just open an issue and we'll see what I can do!**
 
 ----------
 
