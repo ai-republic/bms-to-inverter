@@ -141,6 +141,7 @@ public class PluginDialog extends JDialog {
             final PluginProperty p = it.next();
             final JLabel label = new JLabel();
             label.setText(p.getName());
+            label.setToolTipText(p.getDescription());
             GridBagConstraints gbc = new GridBagConstraints();
             gbc.gridx = 0;
             gbc.gridy = i;
@@ -150,6 +151,7 @@ public class PluginDialog extends JDialog {
 
             final JTextField field = new JTextField();
             field.setText(p.getValue() != null ? p.getValue().toString() : "");
+            field.setToolTipText(p.getDescription());
             gbc = new GridBagConstraints();
             gbc.gridx = 1;
             gbc.gridy = i;

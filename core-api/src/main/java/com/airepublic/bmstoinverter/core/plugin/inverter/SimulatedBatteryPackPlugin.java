@@ -31,15 +31,15 @@ public class SimulatedBatteryPackPlugin extends InverterPlugin {
      * Constructor.
      */
     public SimulatedBatteryPackPlugin() {
-        addProperty(new PluginProperty(PROPERTY_PRESET_SOC, "500", "The configured preset batterypack SOC"));
-        addProperty(new PluginProperty(PROPERTY_PRESET_SOH, "990", "The configured preset batterypack SOH"));
-        addProperty(new PluginProperty(PROPERTY_PRESET_CURRENT, "0", "The configured preset batterypack current"));
-        addProperty(new PluginProperty(PROPERTY_PRESET_VOLTAGE, "520", "The configured preset batterypack voltage"));
-        addProperty(new PluginProperty(PROPERTY_PRESET_MAX_CHARGE_CURRENT, "200", "The configured preset batterypack maximum charge current"));
-        addProperty(new PluginProperty(PROPERTY_PRESET_MAX_DISCHARGE_CURRENT, "200", "The configured preset batterypack maximum discharge current"));
-        addProperty(new PluginProperty(PROPERTY_PRESET_MAX_VOLTAGE, "540", "The configured preset batterypack maximum voltage limit"));
-        addProperty(new PluginProperty(PROPERTY_PRESET_MIN_VOLTAGE, "480", "The configured preset batterypack minimum voltage limit"));
-        addProperty(new PluginProperty(PROPERTY_PRESET_AVG_TEMPERATURE, "250", "The configured preset batterypack average temperature"));
+        addProperty(new PluginProperty(PROPERTY_PRESET_SOC, "500", "The configured preset batterypack SOC (unit 0.1%)"));
+        addProperty(new PluginProperty(PROPERTY_PRESET_SOH, "990", "The configured preset batterypack SOH (unit 0.1%)"));
+        addProperty(new PluginProperty(PROPERTY_PRESET_CURRENT, "0", "The configured preset batterypack current (unit 0.1A)"));
+        addProperty(new PluginProperty(PROPERTY_PRESET_VOLTAGE, "520", "The configured preset batterypack voltage (unit 0.1V)"));
+        addProperty(new PluginProperty(PROPERTY_PRESET_MAX_CHARGE_CURRENT, "200", "The configured preset batterypack maximum charge current (unit 0.1A)"));
+        addProperty(new PluginProperty(PROPERTY_PRESET_MAX_DISCHARGE_CURRENT, "200", "The configured preset batterypack maximum discharge current (unit 0.1A)"));
+        addProperty(new PluginProperty(PROPERTY_PRESET_MAX_VOLTAGE, "540", "The configured preset batterypack maximum voltage limit (unit 0.1V)"));
+        addProperty(new PluginProperty(PROPERTY_PRESET_MIN_VOLTAGE, "480", "The configured preset batterypack minimum voltage limit (unit 0.1V)"));
+        addProperty(new PluginProperty(PROPERTY_PRESET_AVG_TEMPERATURE, "250", "The configured preset batterypack average temperature (unit 0.1C)"));
     }
 
 
