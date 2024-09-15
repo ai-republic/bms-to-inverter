@@ -10,7 +10,7 @@ import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
  * (positive value). If its negative (not yet read), then the preset battery information will be
  * written to the aggregated battery information.
  */
-public class PresetBatteryPackDataPlugin extends InverterPlugin {
+public class SimulatedBatteryPackPlugin extends InverterPlugin {
     public final static String PROPERTY_PRESET_SOC = "SOC";
     public final static String PROPERTY_PRESET_SOH = "SOH";
     public final static String PROPERTY_PRESET_CURRENT = "Current";
@@ -23,14 +23,14 @@ public class PresetBatteryPackDataPlugin extends InverterPlugin {
 
     @Override
     public String getName() {
-        return "PresetBatteryPackDataPlugin";
+        return "SimulatedBatteryPackPlugin";
     }
 
 
     /**
      * Constructor.
      */
-    public PresetBatteryPackDataPlugin() {
+    public SimulatedBatteryPackPlugin() {
         addProperty(new PluginProperty(PROPERTY_PRESET_SOC, "500", "The configured preset batterypack SOC"));
         addProperty(new PluginProperty(PROPERTY_PRESET_SOH, "990", "The configured preset batterypack SOH"));
         addProperty(new PluginProperty(PROPERTY_PRESET_CURRENT, "0", "The configured preset batterypack current"));
@@ -45,18 +45,15 @@ public class PresetBatteryPackDataPlugin extends InverterPlugin {
 
     @Override
     public void onBatteryAggregation(final BatteryPack aggregatedPack) {
-        // if the SOC has not yet been set
-        if (aggregatedPack.packSOC < 0) {
-            // set configured or default values
-            aggregatedPack.packSOC = getPropertyValue(PROPERTY_PRESET_SOC, 500);
-            aggregatedPack.packSOH = getPropertyValue(PROPERTY_PRESET_SOH, 990);
-            aggregatedPack.packCurrent = getPropertyValue(PROPERTY_PRESET_CURRENT, 0);
-            aggregatedPack.packVoltage = getPropertyValue(PROPERTY_PRESET_VOLTAGE, 520);
-            aggregatedPack.maxPackChargeCurrent = getPropertyValue(PROPERTY_PRESET_MAX_CHARGE_CURRENT, 200);
-            aggregatedPack.maxPackDischargeCurrent = getPropertyValue(PROPERTY_PRESET_MAX_DISCHARGE_CURRENT, 200);
-            aggregatedPack.maxPackVoltageLimit = getPropertyValue(PROPERTY_PRESET_MAX_VOLTAGE, 540);
-            aggregatedPack.minPackVoltageLimit = getPropertyValue(PROPERTY_PRESET_MIN_VOLTAGE, 480);
-            aggregatedPack.tempAverage = getPropertyValue(PROPERTY_PRESET_AVG_TEMPERATURE, 250);
-        }
+        // set configured or default values
+        aggregatedPack.packSOC = getPropertyValue(PROPERTY_PRESET_SOC, 500);
+        aggregatedPack.packSOH = getPropertyValue(PROPERTY_PRESET_SOH, 990);
+        aggregatedPack.packCurrent = getPropertyValue(PROPERTY_PRESET_CURRENT, 0);
+        aggregatedPack.packVoltage = getPropertyValue(PROPERTY_PRESET_VOLTAGE, 520);
+        aggregatedPack.maxPackChargeCurrent = getPropertyValue(PROPERTY_PRESET_MAX_CHARGE_CURRENT, 200);
+        aggregatedPack.maxPackDischargeCurrent = getPropertyValue(PROPERTY_PRESET_MAX_DISCHARGE_CURRENT, 200);
+        aggregatedPack.maxPackVoltageLimit = getPropertyValue(PROPERTY_PRESET_MAX_VOLTAGE, 540);
+        aggregatedPack.minPackVoltageLimit = getPropertyValue(PROPERTY_PRESET_MIN_VOLTAGE, 480);
+        aggregatedPack.tempAverage = getPropertyValue(PROPERTY_PRESET_AVG_TEMPERATURE, 250);
     }
 }

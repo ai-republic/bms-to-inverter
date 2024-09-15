@@ -56,6 +56,7 @@ public class Configurator extends JFrame {
     private final BMSPanel bmsPanel;
     private final InverterPanel inverterPanel;
     private final ServicesPanel servicesPanel;
+    private final PluginsPanel pluginsPanel;
 
     public Configurator() {
         super("BMS-to-Inverter Configurator");
@@ -76,6 +77,9 @@ public class Configurator extends JFrame {
 
         inverterPanel = new InverterPanel(this);
         tabbedPane.addTab("Inverter", null, inverterPanel, null);
+
+        pluginsPanel = new PluginsPanel(this);
+        tabbedPane.addTab("Plugins", null, pluginsPanel, null);
 
         final JScrollPane servicesScrollPane = new JScrollPane();
         tabbedPane.addTab("Services", null, servicesScrollPane, null);
@@ -181,6 +185,7 @@ public class Configurator extends JFrame {
                 + "\n");
         bmsPanel.generateConfiguration(config);
         inverterPanel.generateConfiguration(config);
+        pluginsPanel.generateConfiguration(config);
         servicesPanel.generateConfiguration(config);
 
         return config.toString();
@@ -401,15 +406,21 @@ public class Configurator extends JFrame {
             // check if dependency for the BMS is already added
             if (!bmses.contains(bmsName)) {
                 // otherwise create the artifactId from the BMS binding name
-                final String[] parts = bmsName.split("_");
                 final StringBuffer artifactId = new StringBuffer("bms");
-                Stream.of(parts).forEach(part -> artifactId.append("-" + part.toLowerCase()));
 
-                final String protocolModule = getProtocolModule(artifactId.substring(artifactId.lastIndexOf("-") + 1));
+                // check if its the dummy BMS
+                if (bmsName.equals("NONE")) {
+                    artifactId.append("-dummy");
+                } else {
+                    final String[] parts = bmsName.split("_");
+                    Stream.of(parts).forEach(part -> artifactId.append("-" + part.toLowerCase()));
 
-                // add protocol module if not yet added
-                if (protocolModule != null && !modules.contains(protocolModule)) {
-                    modules.add(0, protocolModule);
+                    final String protocolModule = getProtocolModule(artifactId.substring(artifactId.lastIndexOf("-") + 1));
+
+                    // add protocol module if not yet added
+                    if (protocolModule != null && !modules.contains(protocolModule)) {
+                        modules.add(0, protocolModule);
+                    }
                 }
 
                 // add BMS module
@@ -643,6 +654,7 @@ public class Configurator extends JFrame {
                 generalPanel.setConfiguration(config);
                 bmsPanel.setConfiguration(config);
                 inverterPanel.setConfiguration(config);
+                pluginsPanel.setConfiguration(config);
                 servicesPanel.setConfiguration(config);
 
                 JOptionPane.showMessageDialog(Configurator.this, "Successfully loaded the configuration!", "Information", JOptionPane.INFORMATION_MESSAGE);

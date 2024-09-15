@@ -268,6 +268,11 @@ public class BMSDialog extends JDialog {
     }
 
 
+    /**
+     * Creates the list of {@link BMSDescriptor}s.
+     *
+     * @return the list of {@link BMSDescriptor}s
+     */
     Vector<MenuItem<BMSDescriptor>> createBMSDescriptors() {
         final Vector<MenuItem<BMSDescriptor>> items = new Vector<>();
         ServiceLoader.load(BMSDescriptor.class).forEach(descriptor -> items.add(new MenuItem<>(descriptor.getName(), descriptor)));
@@ -291,7 +296,7 @@ public class BMSDialog extends JDialog {
         }
 
         if (idField.getText().isBlank()) {
-            errors.append("Missing BMS port locator!\r\n");
+            errors.append("Missing BMS id!\r\n");
             fail = true;
         } else if (!numberInputVerifier.verify(idField.getText())) {
             errors.append("Non-numeric BMS id!\r\n");

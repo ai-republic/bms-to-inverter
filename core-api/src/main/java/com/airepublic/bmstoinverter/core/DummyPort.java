@@ -8,12 +8,10 @@
  *
  * @author Torsten Oltmanns - bms-to-inverter''AT''gmail.com
  */
-package com.airepublic.bmstoinverter.inverter.dummy;
+package com.airepublic.bmstoinverter.core;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-
-import com.airepublic.bmstoinverter.core.Port;
 
 /**
  * Dummy {@link Port} implementation.

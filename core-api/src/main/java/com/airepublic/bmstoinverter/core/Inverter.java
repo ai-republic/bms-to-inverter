@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
-import com.airepublic.bmstoinverter.core.plugin.inverter.InverterPlugin;
 
 import jakarta.inject.Inject;
 
@@ -58,14 +57,15 @@ public abstract class Inverter {
      * port parameters from the system properties.
      */
     public void initialize(final InverterConfig config) {
+        this.config = config;
+
         if (getPlugin() != null) {
-            getPlugin().onInitialize(this, config);
+            getPlugin().onInitialize(this);
         }
 
         if (!PortAllocator.hasPort(config.getPortLocator())) {
             PortAllocator.addPort(config.getPortLocator(), config.getDescriptor().createPort(config));
         }
-        this.config = config;
     }
 
 

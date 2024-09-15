@@ -50,7 +50,7 @@ public class SMAInverterCANProcessor extends Inverter {
         presetPack.minPackVoltageLimit = 480; // 48.0V
         presetPack.tempAverage = 250; // 25.0C
 
-        setPlugin(new PresetBatteryPackDataPlugin(presetPack));
+        setPlugin(new PresetBatteryPackDataPlugin());
     }
 
 

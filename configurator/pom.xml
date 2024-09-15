@@ -67,6 +67,13 @@
 
 		<!-- ####################          !!!!!!!!	BMSes 	!!!!!!!!           ###################### -->
 
+		<!-- ####################  Dummy BMS  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-dummy</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- ####################  BYD (CAN) ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>

@@ -92,7 +92,6 @@ public class BMSPanel extends JPanel {
             final BMSConfig config = dlg.getBMSConfig();
 
             if (config != null) {
-                config.setBmsId(bmsListModel.getSize());
                 bmsListModel.addElement(new MenuItem<>(createBMSDisplayName(config), config));
 
                 // see if the same BMS type is already present

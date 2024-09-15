@@ -8,9 +8,9 @@
 		<artifactId>bms-to-inverter-parent</artifactId>
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
-
-	<artifactId>inverter-dummy</artifactId>
-
+	
+	<artifactId>bms-dummy</artifactId>
+	
 	<name>${project.artifactId}-${project.version}</name>
 	<description>Module for the dummy inverter</description>
 
@@ -25,6 +25,6 @@
 			<artifactId>core-api</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-
 	</dependencies>
+
 </project>

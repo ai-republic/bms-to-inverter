@@ -50,6 +50,7 @@
 		<module>bms-jbd-rs485</module>
 		<module>bms-huawei-modbus</module>
 		<module>inverter-huawei-modbus</module>
+		<module>bms-dummy</module>
 	</modules>
 
 	<build>

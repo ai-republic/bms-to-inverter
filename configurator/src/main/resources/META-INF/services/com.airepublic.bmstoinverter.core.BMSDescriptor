@@ -1,6 +1,7 @@
 com.airepublic.bmstoinverter.bms.byd.can.BYDBmsCANDescriptor
 com.airepublic.bmstoinverter.bms.daly.can.DalyBmsCANDescriptor
 com.airepublic.bmstoinverter.bms.daly.rs485.DalyBmsRS485Descriptor
+com.airepublic.bmstoinverter.bms.dummy.DummyBmsDescriptor
 com.airepublic.bmstoinverter.bms.huawei.modbus.HuaweiBmsModbusDescriptor
 com.airepublic.bmstoinverter.bms.jbd.rs485.JBDBmsRS485Descriptor
 com.airepublic.bmstoinverter.bms.jk.can.JKBmsCANDescriptor

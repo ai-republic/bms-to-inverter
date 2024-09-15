@@ -8,18 +8,18 @@
  *
  * @author Torsten Oltmanns - bms-to-inverter''AT''gmail.com
  */
-package com.airepublic.bmstoinverter.inverter.dummy;
+package com.airepublic.bmstoinverter.bms.dummy;
 
+import com.airepublic.bmstoinverter.core.BMS;
+import com.airepublic.bmstoinverter.core.BMSConfig;
+import com.airepublic.bmstoinverter.core.BMSDescriptor;
 import com.airepublic.bmstoinverter.core.DummyPort;
-import com.airepublic.bmstoinverter.core.Inverter;
-import com.airepublic.bmstoinverter.core.InverterConfig;
-import com.airepublic.bmstoinverter.core.InverterDescriptor;
 import com.airepublic.bmstoinverter.core.Port;
 
 /**
- * The {@link InverterDescriptor} for the Dummy {@link Inverter}.
+ * The {@link BMSDescriptor} for the BYD BMS using the CAN protocol.
  */
-public class DummyInverterDescriptor implements InverterDescriptor {
+public class DummyBmsDescriptor implements BMSDescriptor {
     @Override
     public String getName() {
         return "NONE";
@@ -33,13 +33,13 @@ public class DummyInverterDescriptor implements InverterDescriptor {
 
 
     @Override
-    public Class<? extends Inverter> getInverterClass() {
-        return DummyInverterProcessor.class;
+    public Class<? extends BMS> getBMSClass() {
+        return DummyBmsProcessor.class;
     }
 
 
     @Override
-    public Port createPort(final InverterConfig config) {
+    public Port createPort(final BMSConfig config) {
         final Port port = new DummyPort();
         return port;
     }
