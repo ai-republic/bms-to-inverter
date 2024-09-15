@@ -80,6 +80,8 @@ _**NOTE:** There are restrictions using CAN on Windows as SocketCAN library is *
 
 See the Wiki page [How to use](https://github.com/ai-republic/bms-to-inverter/wiki/How-to-use) for details on how to install and configure your system using the [Configurator](https://github.com/ai-republic/bms-to-inverter/blob/main/configurator/current/configurator.jar).
 
+**IMPORTANT**: If you use the dummy BMS ( _NONE_ ) binding together with the inverter plugin _SimulatedBatteryPackPlugin_ you **MUST (!!!!!!!!!!) disconnect any _load_ and _PV DC input_**to prevent possible damage!!!
+
 ----------
 
 ## Notes
