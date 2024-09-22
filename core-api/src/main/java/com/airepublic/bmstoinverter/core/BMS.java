@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,7 @@ public abstract class BMS {
     private final static Logger LOG = LoggerFactory.getLogger(BMS.class);
     private final Map<Integer, BatteryPack> batteryPacks = new LinkedHashMap<>();
     private BMSConfig config;
+    private Set<BmsPlugin> plugins;
     @Inject
     private transient EnergyStorage energyStorage;
 
@@ -40,11 +42,16 @@ public abstract class BMS {
      * @param config the {@link BMSConfig}
      */
     public void initialize(final BMSConfig config) {
+        this.config = config;
+
+        if (getPlugins() != null) {
+            getPlugins().stream().forEach(p -> p.onInitialize(this));
+        }
+
         if (!PortAllocator.hasPort(config.getPortLocator())) {
             final Port port = config.getDescriptor().createPort(config);
             PortAllocator.addPort(config.getPortLocator(), port);
         }
-        this.config = config;
     }
 
 
@@ -120,6 +127,26 @@ public abstract class BMS {
 
 
     /**
+     * Gets the {@link BmsPlugin}s.
+     *
+     * @return the {@link BmsPlugin}s
+     */
+    public Set<BmsPlugin> getPlugins() {
+        return plugins;
+    }
+
+
+    /**
+     * Sets the {@link BmsPlugin}s.
+     * 
+     * @param plugins the {@link BmsPlugin}s to set
+     */
+    public void setPlugins(final Set<BmsPlugin> plugins) {
+        this.plugins = plugins;
+    }
+
+
+    /**
      * Processes the collection of data for each configured {@link BatteryPack}.
      * 
      * @param callback the function will be called after successfully collecting data from all
@@ -134,7 +161,16 @@ public abstract class BMS {
             try {
                 port.ensureOpen();
                 port.clearBuffers();
+
+                if (getPlugins() != null) {
+                    getPlugins().stream().forEach(p -> p.beforeCollectData(this));
+                }
+
                 collectData(port);
+
+                if (getPlugins() != null) {
+                    getPlugins().stream().forEach(p -> p.afterCollectData(this));
+                }
             } catch (final NoDataAvailableException e) {
                 LOG.error("Received no bytes too many times - trying to close and re-open port!");
                 // try to close and re-open the port

@@ -10,12 +10,8 @@
  */
 package com.airepublic.bmstoinverter.core;
 
-import java.nio.ByteBuffer;
 import java.util.LinkedHashSet;
 import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * The abstract super class for the {@link BmsPlugin} and {@link InverterPlugin} allowing for
@@ -24,7 +20,6 @@ import org.slf4j.LoggerFactory;
  * @param <DEVICE> the device class, e.g. {@link BMS} or {@link Inverter}
  */
 public abstract class AbstractPlugin<DEVICE> {
-    private final static Logger LOG = LoggerFactory.getLogger(AbstractPlugin.class);
     private Set<PluginProperty> properties = new LinkedHashSet<>();
 
     /**
@@ -111,29 +106,6 @@ public abstract class AbstractPlugin<DEVICE> {
      * @param device the device that can be changed before initialization
      */
     public void onInitialize(final DEVICE device) {
-    }
-
-
-    /**
-     * Called before the the frame is sent to the {@link BMS} and can be used to modify the frame
-     * data.
-     *
-     * @param frame the frame data
-     * @return the (optionally) modified frame data
-     */
-    public ByteBuffer onSend(final ByteBuffer frame) {
-        return frame;
-    }
-
-
-    /**
-     * Called after a frame is received from the {@link BMS} and can be used to modify the frame.
-     *
-     * @param frame the frame data
-     * @return the (optionally) modified frame
-     */
-    public ByteBuffer onReceive(final ByteBuffer frame) {
-        return frame;
     }
 
 

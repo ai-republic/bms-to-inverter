@@ -10,6 +10,8 @@
  */
 package com.airepublic.bmstoinverter.core;
 
+import java.nio.ByteBuffer;
+
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 
 /**
@@ -17,6 +19,26 @@ import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
  * or receive-frames.
  */
 public abstract class InverterPlugin extends AbstractPlugin<Inverter> {
+
+    /**
+     * Called before the the frame is sent to the {@link Inverter} and can be used to modify the
+     * frame data.
+     *
+     * @param frame the frame data
+     */
+    public void onSend(final ByteBuffer frame) {
+    }
+
+
+    /**
+     * Called after a frame is received from the {@link Inverter} and can be used to modify the
+     * frame.
+     *
+     * @param frame the frame data
+     */
+    public void onReceive(final ByteBuffer frame) {
+    }
+
 
     /**
      * Called after the battery information has been aggregated but before creating send frames to

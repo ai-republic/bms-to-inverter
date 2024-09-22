@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,7 +34,7 @@ public abstract class Inverter {
     @Inject
     private EnergyStorage energyStorage;
     private BatteryPack aggregatedPack = new BatteryPack();
-    private InverterPlugin plugin;
+    private Set<InverterPlugin> plugins;
 
     /**
      * Constructor.
@@ -45,10 +46,10 @@ public abstract class Inverter {
     /**
      * Constructor.
      *
-     * @param plugin the {@link InverterPlugin} to use
+     * @param plugins the {@link InverterPlugin}s to use
      */
-    public Inverter(final InverterPlugin plugin) {
-        setPlugin(plugin);
+    public Inverter(final Set<InverterPlugin> plugins) {
+        setPlugins(plugins);
     }
 
 
@@ -59,8 +60,8 @@ public abstract class Inverter {
     public void initialize(final InverterConfig config) {
         this.config = config;
 
-        if (getPlugin() != null) {
-            getPlugin().onInitialize(this);
+        if (getPlugins() != null) {
+            getPlugins().stream().forEach(p -> p.onInitialize(this));
         }
 
         if (!PortAllocator.hasPort(config.getPortLocator())) {
@@ -110,22 +111,22 @@ public abstract class Inverter {
 
 
     /**
-     * Gets the configured {@link InverterPlugin} or null.
+     * Gets the {@link InverterPlugin}s.
      *
-     * @return the plugin the {@link InverterPlugin}
+     * @return the {@link InverterPlugin}s
      */
-    public InverterPlugin getPlugin() {
-        return plugin;
+    public Set<InverterPlugin> getPlugins() {
+        return plugins;
     }
 
 
     /**
-     * Sets the {@link InverterPlugin}.
-     *
-     * @param plugin the plugin to set
+     * Sets the {@link InverterPlugin}s.
+     * 
+     * @param plugins the {@link InverterPlugin}s to set
      */
-    public void setPlugin(final InverterPlugin plugin) {
-        this.plugin = plugin;
+    public void setPlugins(final Set<InverterPlugin> plugins) {
+        this.plugins = plugins;
     }
 
 
@@ -141,33 +142,33 @@ public abstract class Inverter {
             try {
                 aggregatedPack = getAggregatedBatteryInfo();
                 final Port port = PortAllocator.allocate(getPortLocator());
-                ByteBuffer requestFrame = readRequest(port);
+                final ByteBuffer requestFrame = readRequest(port);
 
                 // if a plugin is set
-                if (getPlugin() != null) {
-                    // call the the plugin to manipulate the frame
-                    requestFrame = getPlugin().onReceive(requestFrame);
+                if (getPlugins() != null) {
+                    // call the plugin to manipulate the frame
+                    getPlugins().stream().forEach(p -> p.onReceive(requestFrame));
                 }
 
                 LOG.debug("Inverter received: " + Port.printBuffer(requestFrame));
 
                 // if a plugin is set
-                if (getPlugin() != null) {
-                    // call the the plugin to manipulate the frame
-                    getPlugin().onBatteryAggregation(aggregatedPack);
+                if (getPlugins() != null) {
+                    // call the plugin to manipulate the frame
+                    getPlugins().stream().forEach(p -> p.onBatteryAggregation(aggregatedPack));
                 }
 
                 final List<ByteBuffer> sendFrames = createSendFrames(requestFrame, aggregatedPack);
 
                 if (sendFrames != null && !sendFrames.isEmpty()) {
-                    for (ByteBuffer frame : sendFrames) {
+                    for (final ByteBuffer frame : sendFrames) {
                         // keep a reference on the frame being processed for the error log
                         currentFrame = frame;
 
                         // if a plugin is set
-                        if (getPlugin() != null) {
-                            // call the the plugin to manipulate the frame
-                            frame = getPlugin().onSend(frame);
+                        if (getPlugins() != null) {
+                            // call the plugin to manipulate the frame
+                            getPlugins().stream().forEach(p -> p.onSend(frame));
                         }
 
                         LOG.debug("Inverter send: {}", Port.printBuffer(frame));

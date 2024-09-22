@@ -387,9 +387,17 @@ public class PylonInverterRS485Processor extends Inverter {
 
 
     public static void main(final String[] args) {
-        final PylonInverterRS485Processor p = new PylonInverterRS485Processor();
-        p.printAscii("34 36 36 46 37 32 36 33 36 35 35 46 34 43 30 30 30 30 30 30");
+        final BitSet b = new BitSet(8);
+        b.set(0, true);
+        b.set(1, true);
+        b.set(2, true);
+        b.set(3, true);
+        b.set(4, true);
+        b.set(5, true);
+        b.set(6, true);
+        b.set(7, false);
 
-        System.out.println(Port.printBytes(p.convertStringToAsciiBytes("Force_L", 10)));
+        System.out.println(b.toByteArray()[0]);
+
     }
 }

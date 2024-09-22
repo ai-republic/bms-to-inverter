@@ -14,6 +14,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +26,7 @@ import jakarta.enterprise.inject.Produces;
 import jakarta.enterprise.inject.spi.CDI;
 
 @ApplicationScoped
-public class InverterProducer {
+public class InverterProducer extends PluginProducer {
     private final static Logger LOG = LoggerFactory.getLogger(InverterProducer.class);
     private static Inverter inverter = null;
     private final Map<String, InverterDescriptor> descriptors = new HashMap<>();
@@ -53,6 +54,9 @@ public class InverterProducer {
     @InverterQualifier
     public synchronized Inverter createInverter() {
         if (inverter == null) {
+            // load configured plugins for the BMSes
+            final Set<InverterPlugin> plugins = loadPlugins(InverterPlugin.class);
+
             String type = System.getProperty("inverter.type");
 
             // if no inverter is found, probably the config.properties have not been read
@@ -72,6 +76,8 @@ public class InverterProducer {
             final int baudRate = Integer.valueOf(System.getProperty("inverter.baudRate"));
             final int sendInterval = Integer.valueOf(System.getProperty("inverter.sendInterval"));
             final InverterConfig config = new InverterConfig(portLocator, baudRate, sendInterval, descriptor);
+
+            inverter.setPlugins(plugins);
             inverter.initialize(config);
         }
 

@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +29,7 @@ import jakarta.enterprise.inject.Produces;
 import jakarta.enterprise.inject.spi.CDI;
 
 @ApplicationScoped
-public class BMSListProducer {
+public class BMSListProducer extends PluginProducer {
     private final static Logger LOG = LoggerFactory.getLogger(BMSListProducer.class);
     private static EnergyStorage energyStorage = new EnergyStorage();
     private static List<BMS> bmsList = null;
@@ -70,10 +71,14 @@ public class BMSListProducer {
                 }
             }
 
+            // load configured plugins for the BMSes
+            final Set<BmsPlugin> plugins = loadPlugins(BmsPlugin.class);
+
             int index = 1;
 
             while (type != null) {
-                bmsList.add(createBMS(index, type));
+                final BMS bms = createBMS(index, type, plugins);
+                bmsList.add(bms);
 
                 index++;
                 type = System.getProperty("bms." + index + ".type");
@@ -84,7 +89,7 @@ public class BMSListProducer {
     }
 
 
-    private BMS createBMS(final int index, final String name) {
+    private BMS createBMS(final int index, final String name, final Set<BmsPlugin> plugins) {
         final BMSDescriptor bmsDescriptor = getBMSDescriptor(name);
         final BMS bms = CDI.current().select(bmsDescriptor.getBMSClass()).get();
         energyStorage.getBatteryPacks().addAll(bms.getBatteryPacks());
@@ -93,6 +98,8 @@ public class BMSListProducer {
         final int baudRate = Integer.valueOf(System.getProperty("bms." + index + ".baudRate"));
         final int delayAfterNoBytes = Integer.valueOf(System.getProperty("bms." + index + ".delayAfterNoBytes"));
         final BMSConfig config = new BMSConfig(bmsId, portLocator, baudRate, delayAfterNoBytes, bmsDescriptor);
+
+        bms.setPlugins(plugins);
         bms.initialize(config);
 
         LOG.info("Intialized BMS #" + config.getBmsId() + "[" + config.getDescriptor().getName() + "] on port " + portLocator);

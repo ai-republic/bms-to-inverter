@@ -15,6 +15,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +51,7 @@ public class SMAInverterCANProcessor extends Inverter {
         presetPack.minPackVoltageLimit = 480; // 48.0V
         presetPack.tempAverage = 250; // 25.0C
 
-        setPlugin(new PresetBatteryPackDataPlugin());
+        setPlugins(Set.of(new PresetBatteryPackDataPlugin()));
     }
 
 

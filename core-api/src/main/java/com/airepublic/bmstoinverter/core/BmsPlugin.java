@@ -15,4 +15,21 @@ package com.airepublic.bmstoinverter.core;
  * receive-frames.
  */
 public abstract class BmsPlugin extends AbstractPlugin<BMS> {
+
+    /**
+     * Called before calling the {@link BMS#collectData(Port)} method.
+     * 
+     * @param bms the {@link BMS}
+     */
+    public void beforeCollectData(final BMS bms) {
+    }
+
+
+    /**
+     * Called after calling the {@link BMS#collectData(Port)} method.
+     * 
+     * @param bms the {@link BMS}
+     */
+    public void afterCollectData(final BMS bms) {
+    }
 }
