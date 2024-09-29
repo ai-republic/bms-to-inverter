@@ -23,9 +23,10 @@ public class PluginProducer {
                     final AbstractPlugin<?> plugin = (AbstractPlugin<?>) Class.forName(className).getConstructor().newInstance();
                     LOG.info("Registering " + type + " plugin '" + plugin.getName() + "'...");
                     int propertyIndex = 1;
-                    PluginProperty property = null;
+                    PluginProperty property;
 
                     do {
+                        property = null;
                         final String name = System.getProperty("plugin." + type + "." + pluginIndex + ".property." + propertyIndex + ".name");
 
                         if (name != null) {
@@ -37,7 +38,7 @@ public class PluginProducer {
                         }
 
                         propertyIndex++;
-                    } while (property == null);
+                    } while (property != null);
                 } catch (final Throwable t) {
                     LOG.error("Failed to find plugin class for type: " + className);
                 }
