@@ -88,15 +88,14 @@ public abstract class AbstractPlugin<DEVICE> {
      * @param defaultValue the default value if the property doesn't exist
      * @return the value
      */
-    @SuppressWarnings("unchecked")
-    public <T> T getPropertyValue(final String name, final T defaultValue) {
+    public String getPropertyValue(final String name, final String defaultValue) {
         final PluginProperty p = getProperty(name);
 
         if (p == null) {
             return defaultValue;
         }
 
-        return (T) p.getValue();
+        return p.getValue();
     }
 
 
