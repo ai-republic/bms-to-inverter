@@ -38,18 +38,6 @@ public class SMAInverterCANProcessor extends Inverter {
     private final static Logger LOG = LoggerFactory.getLogger(SMAInverterCANProcessor.class);
 
     public SMAInverterCANProcessor() {
-        final BatteryPack presetPack = new BatteryPack();
-        // set some default values
-        presetPack.packSOC = 500; // 50%
-        presetPack.packSOH = 1000; // 100%
-        presetPack.packCurrent = 0; // 0A
-        presetPack.packVoltage = 550;// 55.0V
-        presetPack.maxPackChargeCurrent = 500; // 50.0A
-        presetPack.maxPackDischargeCurrent = -500; // -50.0A
-        presetPack.maxPackVoltageLimit = 560; // 56.0V
-        presetPack.minPackVoltageLimit = 480; // 48.0V
-        presetPack.tempAverage = 250; // 25.0C
-
         setPlugins(Set.of(new PresetBatteryPackDataPlugin()));
     }
 
