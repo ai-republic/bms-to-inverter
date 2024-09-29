@@ -154,8 +154,6 @@ public abstract class BMS {
      */
     public final void process(final Runnable callback) {
         try {
-            LOG.info("---------------------------------> Thread " + Thread.currentThread().getId());
-
             final Port port = PortAllocator.allocate(getPortLocator());
 
             try {
