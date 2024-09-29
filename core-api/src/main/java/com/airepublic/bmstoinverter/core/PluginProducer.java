@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 public class PluginProducer {
     private final static Logger LOG = LoggerFactory.getLogger(PluginProducer.class);
 
+    @SuppressWarnings("unchecked")
     protected <T extends AbstractPlugin<?>> Set<T> loadPlugins(final Class<T> pluginClass) {
         int pluginIndex = 1;
         final String type = BmsPlugin.class.isAssignableFrom(pluginClass) ? "bms" : "inverter";
@@ -20,7 +21,7 @@ public class PluginProducer {
 
             if (className != null) {
                 try {
-                    final AbstractPlugin<?> plugin = (AbstractPlugin<?>) Class.forName(className).getConstructor().newInstance();
+                    final T plugin = (T) Class.forName(className).getConstructor().newInstance();
                     LOG.info("Registering " + type + " plugin '" + plugin.getName() + "'...");
                     int propertyIndex = 1;
                     PluginProperty property;
@@ -39,6 +40,8 @@ public class PluginProducer {
 
                         propertyIndex++;
                     } while (property != null);
+
+                    plugins.add(plugin);
                 } catch (final Throwable t) {
                     LOG.error("Failed to find plugin class for type: " + className);
                 }
