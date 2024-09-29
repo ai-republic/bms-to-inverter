@@ -12,7 +12,6 @@ package com.airepublic.bmstoinverter.bms.dummy;
 
 import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.Port;
-import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 
 import jakarta.annotation.PostConstruct;
 
@@ -26,7 +25,7 @@ public class DummyBmsProcessor extends BMS {
      */
     @PostConstruct
     public void init() {
-        getBatteryPacks().add(new BatteryPack());
+        getBatteryPack(0);
     }
 
 
