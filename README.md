@@ -76,6 +76,16 @@ _**NOTE:** There are restrictions using CAN on Windows as SocketCAN library is *
 
 ----------
 
+## Requirements
+
+This project explicitly supports Java 8 because its the latest version with 32-bit JDK 8 support that many microcontrollers support.
+If you're using a Raspberry PI 3B, 4B or above I recommend to use a 64-bit Java JDK and 64-bit operating system like Raspian OS or Ubuntu.
+
+* JDK 8 or above (see https://jdk.java.net/) (JDK 8 is only recommended for 32-bit microcontroller otherwise JDK 21+ is recommended) 
+* A PC or microcontroller running a Linux derivate like Raspian OS or Ubuntu (CAN/RS485/ModBus/Serial) or Windows (RS485/Modbus/Serial)
+* Communication adapters to use CAN, RS485, Modbus or Serial depending on your battery management system (BMS) and/or inverter
+----------
+
 ## How to use
 
 See the Wiki page [How to use](https://github.com/ai-republic/bms-to-inverter/wiki/How-to-use) for details on how to install and configure your system using the [Configurator](https://github.com/ai-republic/bms-to-inverter/blob/main/configurator/current/configurator.jar).
