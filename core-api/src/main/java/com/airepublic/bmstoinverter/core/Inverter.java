@@ -61,7 +61,10 @@ public abstract class Inverter {
         this.config = config;
 
         if (getPlugins() != null) {
-            getPlugins().stream().forEach(p -> p.onInitialize(this));
+            getPlugins().stream().forEach(p -> {
+                LOG.debug("Calling inverter plugin (onInitialize): {}", p.getName());
+                p.onInitialize(this);
+            });
         }
 
         if (!PortAllocator.hasPort(config.getPortLocator())) {
@@ -147,7 +150,10 @@ public abstract class Inverter {
                 // if a plugin is set
                 if (getPlugins() != null) {
                     // call the plugin to manipulate the frame
-                    getPlugins().stream().forEach(p -> p.onReceive(requestFrame));
+                    getPlugins().stream().forEach(p -> {
+                        LOG.debug("Calling inverter plugin (onReceive): {}", p.getName());
+                        p.onReceive(requestFrame);
+                    });
                 }
 
                 LOG.debug("Inverter received: " + Port.printBuffer(requestFrame));
@@ -155,7 +161,10 @@ public abstract class Inverter {
                 // if a plugin is set
                 if (getPlugins() != null) {
                     // call the plugin to manipulate the frame
-                    getPlugins().stream().forEach(p -> p.onBatteryAggregation(aggregatedPack));
+                    getPlugins().stream().forEach(p -> {
+                        LOG.debug("Calling inverter plugin (onBatteryAggregation): {}", p.getName());
+                        p.onBatteryAggregation(aggregatedPack);
+                    });
                 }
 
                 final List<ByteBuffer> sendFrames = createSendFrames(requestFrame, aggregatedPack);
@@ -168,7 +177,10 @@ public abstract class Inverter {
                         // if a plugin is set
                         if (getPlugins() != null) {
                             // call the plugin to manipulate the frame
-                            getPlugins().stream().forEach(p -> p.onSend(frame));
+                            getPlugins().stream().forEach(p -> {
+                                LOG.debug("Calling inverter plugin (onSend): {}", p.getName());
+                                p.onSend(frame);
+                            });
                         }
 
                         LOG.debug("Inverter send: {}", Port.printBuffer(frame));

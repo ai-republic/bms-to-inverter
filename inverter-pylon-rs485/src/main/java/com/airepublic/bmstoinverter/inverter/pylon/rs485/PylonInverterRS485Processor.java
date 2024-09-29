@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.HexFormat;
 import java.util.List;
 
@@ -164,58 +163,58 @@ public class PylonInverterRS485Processor extends Inverter {
         final byte[] alarms = new byte[8];
 
         // warning alarms 1
-        BitSet bits = new BitSet(8);
-        bits.set(7, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_HIGH) == AlarmLevel.WARNING);
-        bits.set(6, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_LOW) == AlarmLevel.WARNING);
-        bits.set(5, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_HIGH) == AlarmLevel.WARNING);
-        bits.set(4, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_LOW) == AlarmLevel.WARNING);
-        bits.set(3, pack.getAlarmLevel(Alarm.CELL_TEMPERATURE_HIGH) == AlarmLevel.WARNING);
-        bits.set(2, pack.getAlarmLevel(Alarm.CELL_TEMPERATURE_LOW) == AlarmLevel.WARNING);
-        bits.set(1, false);
-        bits.set(0, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH) == AlarmLevel.WARNING);
-        byte[] bytes = convertByteToAsciiBytes(bits.toByteArray()[0]);
+        byte value = 0;
+        value = Util.setBit(value, 7, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_HIGH) == AlarmLevel.WARNING);
+        value = Util.setBit(value, 6, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_LOW) == AlarmLevel.WARNING);
+        value = Util.setBit(value, 5, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_HIGH) == AlarmLevel.WARNING);
+        value = Util.setBit(value, 4, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_LOW) == AlarmLevel.WARNING);
+        value = Util.setBit(value, 3, pack.getAlarmLevel(Alarm.CELL_TEMPERATURE_HIGH) == AlarmLevel.WARNING);
+        value = Util.setBit(value, 2, pack.getAlarmLevel(Alarm.CELL_TEMPERATURE_LOW) == AlarmLevel.WARNING);
+        value = Util.setBit(value, 1, false);
+        value = Util.setBit(value, 0, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH) == AlarmLevel.WARNING);
+        byte[] bytes = convertByteToAsciiBytes(value);
         alarms[0] = bytes[0];
         alarms[1] = bytes[1];
 
         // warning alarms 2
-        bits = new BitSet(8);
-        bits.set(7, pack.getAlarmLevel(Alarm.TEMPERATURE_SENSOR_DIFFERENCE_HIGH) == AlarmLevel.WARNING);
-        bits.set(6, pack.getAlarmLevel(Alarm.CHARGE_CURRENT_HIGH) == AlarmLevel.WARNING);
-        bits.set(5, pack.getAlarmLevel(Alarm.DISCHARGE_CURRENT_HIGH) == AlarmLevel.WARNING);
-        bits.set(4, pack.getAlarmLevel(Alarm.FAILURE_COMMUNICATION_INTERNAL) == AlarmLevel.WARNING);
-        bits.set(3, false);
-        bits.set(2, false);
-        bits.set(1, false);
-        bits.set(0, false);
-        bytes = convertByteToAsciiBytes(bits.toByteArray()[0]);
+        value = 0;
+        value = Util.setBit(value, 7, pack.getAlarmLevel(Alarm.TEMPERATURE_SENSOR_DIFFERENCE_HIGH) == AlarmLevel.WARNING);
+        value = Util.setBit(value, 6, pack.getAlarmLevel(Alarm.CHARGE_CURRENT_HIGH) == AlarmLevel.WARNING);
+        value = Util.setBit(value, 5, pack.getAlarmLevel(Alarm.DISCHARGE_CURRENT_HIGH) == AlarmLevel.WARNING);
+        value = Util.setBit(value, 4, pack.getAlarmLevel(Alarm.FAILURE_COMMUNICATION_INTERNAL) == AlarmLevel.WARNING);
+        value = Util.setBit(value, 3, false);
+        value = Util.setBit(value, 2, false);
+        value = Util.setBit(value, 1, false);
+        value = Util.setBit(value, 0, false);
+        bytes = convertByteToAsciiBytes(value);
         alarms[2] = bytes[0];
         alarms[3] = bytes[1];
 
         // protection alarms 1
-        bits = new BitSet(8);
-        bits.set(7, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_HIGH) == AlarmLevel.ALARM);
-        bits.set(6, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_LOW) == AlarmLevel.ALARM);
-        bits.set(5, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_HIGH) == AlarmLevel.ALARM);
-        bits.set(4, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_LOW) == AlarmLevel.ALARM);
-        bits.set(3, pack.getAlarmLevel(Alarm.CELL_TEMPERATURE_HIGH) == AlarmLevel.ALARM);
-        bits.set(2, pack.getAlarmLevel(Alarm.CELL_TEMPERATURE_LOW) == AlarmLevel.ALARM);
-        bits.set(1, false);
-        bits.set(0, false);
-        bytes = convertByteToAsciiBytes(bits.toByteArray()[0]);
+        value = 0;
+        value = Util.setBit(value, 7, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_HIGH) == AlarmLevel.ALARM);
+        value = Util.setBit(value, 6, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_LOW) == AlarmLevel.ALARM);
+        value = Util.setBit(value, 5, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_HIGH) == AlarmLevel.ALARM);
+        value = Util.setBit(value, 4, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_LOW) == AlarmLevel.ALARM);
+        value = Util.setBit(value, 3, pack.getAlarmLevel(Alarm.CELL_TEMPERATURE_HIGH) == AlarmLevel.ALARM);
+        value = Util.setBit(value, 2, pack.getAlarmLevel(Alarm.CELL_TEMPERATURE_LOW) == AlarmLevel.ALARM);
+        value = Util.setBit(value, 1, false);
+        value = Util.setBit(value, 0, false);
+        bytes = convertByteToAsciiBytes(value);
         alarms[4] = bytes[0];
         alarms[5] = bytes[1];
 
         // protection alarms 2
-        bits = new BitSet(8);
-        bits.set(7, false);
-        bits.set(6, pack.getAlarmLevel(Alarm.CHARGE_CURRENT_HIGH) == AlarmLevel.ALARM);
-        bits.set(5, pack.getAlarmLevel(Alarm.DISCHARGE_CURRENT_HIGH) == AlarmLevel.ALARM);
-        bits.set(4, false);
-        bits.set(3, pack.getAlarmLevel(Alarm.FAILURE_OTHER) == AlarmLevel.ALARM);
-        bits.set(2, false);
-        bits.set(1, false);
-        bits.set(0, false);
-        bytes = convertByteToAsciiBytes(bits.toByteArray()[0]);
+        value = 0;
+        value = Util.setBit(value, 7, false);
+        value = Util.setBit(value, 6, pack.getAlarmLevel(Alarm.CHARGE_CURRENT_HIGH) == AlarmLevel.ALARM);
+        value = Util.setBit(value, 5, pack.getAlarmLevel(Alarm.DISCHARGE_CURRENT_HIGH) == AlarmLevel.ALARM);
+        value = Util.setBit(value, 4, false);
+        value = Util.setBit(value, 3, pack.getAlarmLevel(Alarm.FAILURE_OTHER) == AlarmLevel.ALARM);
+        Util.setBit(value, 2, false);
+        value = Util.setBit(value, 1, false);
+        value = Util.setBit(value, 0, false);
+        bytes = convertByteToAsciiBytes(value);
         alarms[6] = bytes[0];
         alarms[7] = bytes[1];
 
@@ -387,17 +386,32 @@ public class PylonInverterRS485Processor extends Inverter {
 
 
     public static void main(final String[] args) {
-        final BitSet b = new BitSet(8);
-        b.set(0, true);
-        b.set(1, true);
-        b.set(2, true);
-        b.set(3, true);
-        b.set(4, true);
-        b.set(5, true);
-        b.set(6, true);
-        b.set(7, false);
+        byte value;
+        value = 0;
 
-        System.out.println(b.toByteArray()[0]);
+        // System.out.println(value &= ~(1 << 7));
+        value = Util.setBit(value, 0, false);
+        value = Util.setBit(value, 1, false);
+        value = Util.setBit(value, 2, false);
+        value = Util.setBit(value, 3, false);
+        value = Util.setBit(value, 4, false);
+        value = Util.setBit(value, 5, false);
+        value = Util.setBit(value, 6, false);
+        value = Util.setBit(value, 7, true);
+
+        System.out.println(value);
+
+        final BatteryPack pack = new BatteryPack();
+        value = 0;
+        Util.setBit(value, 7, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_HIGH) == AlarmLevel.WARNING);
+        Util.setBit(value, 6, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_LOW) == AlarmLevel.WARNING);
+        Util.setBit(value, 5, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_HIGH) == AlarmLevel.WARNING);
+        Util.setBit(value, 4, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_LOW) == AlarmLevel.WARNING);
+        Util.setBit(value, 3, pack.getAlarmLevel(Alarm.CELL_TEMPERATURE_HIGH) == AlarmLevel.WARNING);
+        Util.setBit(value, 2, pack.getAlarmLevel(Alarm.CELL_TEMPERATURE_LOW) == AlarmLevel.WARNING);
+        Util.setBit(value, 1, false);
+        Util.setBit(value, 0, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH) == AlarmLevel.WARNING);
+        System.out.println(value);
 
     }
 }

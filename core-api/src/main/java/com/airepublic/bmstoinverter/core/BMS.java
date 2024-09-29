@@ -45,7 +45,10 @@ public abstract class BMS {
         this.config = config;
 
         if (getPlugins() != null) {
-            getPlugins().stream().forEach(p -> p.onInitialize(this));
+            getPlugins().stream().forEach(p -> {
+                LOG.debug("Calling BMS plugin (onInitialize): {}", p.getName());
+                p.onInitialize(this);
+            });
         }
 
         if (!PortAllocator.hasPort(config.getPortLocator())) {
@@ -161,13 +164,19 @@ public abstract class BMS {
                 port.clearBuffers();
 
                 if (getPlugins() != null) {
-                    getPlugins().stream().forEach(p -> p.beforeCollectData(this));
+                    getPlugins().stream().forEach(p -> {
+                        LOG.debug("Calling BMS plugin (afterCollectData): {}", p.getName());
+                        p.beforeCollectData(this);
+                    });
                 }
 
                 collectData(port);
 
                 if (getPlugins() != null) {
-                    getPlugins().stream().forEach(p -> p.afterCollectData(this));
+                    getPlugins().stream().forEach(p -> {
+                        LOG.debug("Calling BMS plugin (afterCollectData): {}", p.getName());
+                        p.beforeCollectData(this);
+                    });
                 }
             } catch (final NoDataAvailableException e) {
                 LOG.error("Received no bytes too many times - trying to close and re-open port!");

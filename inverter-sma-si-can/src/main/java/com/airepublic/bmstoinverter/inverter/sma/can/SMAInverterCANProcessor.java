@@ -130,133 +130,133 @@ public class SMAInverterCANProcessor extends Inverter {
     // 0x35A
     private ByteBuffer createAlarms(final BatteryPack pack) {
         final ByteBuffer frame = prepareFrame(0x359);
-        final byte alarm1 = 0;
-        final byte alarm2 = 0;
-        final byte alarm3 = 0;
-        final byte alarm4 = 0;
-        final byte warning1 = 0;
-        final byte warning2 = 0;
-        final byte warning3 = 0;
-        final byte warning4 = 0;
+        byte alarm1 = 0;
+        byte alarm2 = 0;
+        byte alarm3 = 0;
+        byte alarm4 = 0;
+        byte warning1 = 0;
+        byte warning2 = 0;
+        byte warning3 = 0;
+        byte warning4 = 0;
 
         // alarms
-        Util.setBit(alarm1, 0, false);
-        Util.setBit(alarm1, 1, false);
+        alarm1 = Util.setBit(alarm1, 0, false);
+        alarm1 = Util.setBit(alarm1, 1, false);
 
-        Util.setBit(alarm1, 2, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_HIGH) == AlarmLevel.ALARM);
-        Util.setBit(alarm1, 3, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_HIGH) == AlarmLevel.NONE); // pack
-                                                                                                // voltage
+        alarm1 = Util.setBit(alarm1, 2, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_HIGH) == AlarmLevel.ALARM);
+        alarm1 = Util.setBit(alarm1, 3, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_HIGH) == AlarmLevel.NONE); // pack
+        // voltage
         // to high
-        Util.setBit(alarm1, 4, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_LOW) == AlarmLevel.ALARM); // pack
-                                                                                                // voltage
+        alarm1 = Util.setBit(alarm1, 4, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_LOW) == AlarmLevel.ALARM); // pack
+        // voltage
         // to low
-        Util.setBit(alarm1, 5, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_LOW) == AlarmLevel.NONE);
-        Util.setBit(alarm1, 6, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_HIGH) == AlarmLevel.ALARM);// pack
+        alarm1 = Util.setBit(alarm1, 5, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_LOW) == AlarmLevel.NONE);
+        alarm1 = Util.setBit(alarm1, 6, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_HIGH) == AlarmLevel.ALARM);// pack
         // temp to
         // high
-        Util.setBit(alarm1, 7, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_HIGH) == AlarmLevel.NONE);
+        alarm1 = Util.setBit(alarm1, 7, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_HIGH) == AlarmLevel.NONE);
 
         frame.put(alarm1);
 
-        Util.setBit(alarm2, 0, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_LOW) == AlarmLevel.ALARM); // pack
+        alarm2 = Util.setBit(alarm2, 0, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_LOW) == AlarmLevel.ALARM); // pack
         // temp to
         // low
-        Util.setBit(alarm2, 1, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_LOW) == AlarmLevel.NONE);
-        Util.setBit(alarm2, 2, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_HIGH) == AlarmLevel.ALARM);// charge
+        alarm2 = Util.setBit(alarm2, 1, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_LOW) == AlarmLevel.NONE);
+        alarm2 = Util.setBit(alarm2, 2, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_HIGH) == AlarmLevel.ALARM);// charge
         // temp
         // to
         // high
-        Util.setBit(alarm2, 3, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_HIGH) == AlarmLevel.NONE);
-        Util.setBit(alarm2, 4, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_LOW) == AlarmLevel.ALARM); // charge
+        alarm2 = Util.setBit(alarm2, 3, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_HIGH) == AlarmLevel.NONE);
+        alarm2 = Util.setBit(alarm2, 4, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_LOW) == AlarmLevel.ALARM); // charge
         // temp
         // to low
-        Util.setBit(alarm2, 5, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_LOW) == AlarmLevel.NONE);
-        Util.setBit(alarm2, 6, pack.getAlarmLevel(Alarm.PACK_CURRENT_HIGH) == AlarmLevel.ALARM); // pack
+        alarm2 = Util.setBit(alarm2, 5, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_LOW) == AlarmLevel.NONE);
+        alarm2 = Util.setBit(alarm2, 6, pack.getAlarmLevel(Alarm.PACK_CURRENT_HIGH) == AlarmLevel.ALARM); // pack
         // current to
         // high
-        Util.setBit(alarm2, 7, pack.getAlarmLevel(Alarm.PACK_CURRENT_HIGH) == AlarmLevel.NONE);
+        alarm2 = Util.setBit(alarm2, 7, pack.getAlarmLevel(Alarm.PACK_CURRENT_HIGH) == AlarmLevel.NONE);
 
         frame.put(alarm2);
 
-        Util.setBit(alarm3, 0, pack.getAlarmLevel(Alarm.CHARGE_CURRENT_HIGH) == AlarmLevel.ALARM); // charge
+        alarm3 = Util.setBit(alarm3, 0, pack.getAlarmLevel(Alarm.CHARGE_CURRENT_HIGH) == AlarmLevel.ALARM); // charge
         // current
         // to high
-        Util.setBit(alarm3, 1, pack.getAlarmLevel(Alarm.CHARGE_CURRENT_HIGH) == AlarmLevel.ALARM);
-        Util.setBit(alarm3, 2, false); // contactor
-        Util.setBit(alarm3, 3, false);
-        Util.setBit(alarm3, 4, pack.getAlarmLevel(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION) == AlarmLevel.ALARM); // short
+        alarm3 = Util.setBit(alarm3, 1, pack.getAlarmLevel(Alarm.CHARGE_CURRENT_HIGH) == AlarmLevel.ALARM);
+        alarm3 = Util.setBit(alarm3, 2, false); // contactor
+        alarm3 = Util.setBit(alarm3, 3, false);
+        alarm3 = Util.setBit(alarm3, 4, pack.getAlarmLevel(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION) == AlarmLevel.ALARM); // short
         // circuit
-        Util.setBit(alarm3, 5, pack.getAlarmLevel(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION) == AlarmLevel.NONE);
-        Util.setBit(alarm3, 6, false); // other bms internal error
-        Util.setBit(alarm3, 7, false);
+        alarm3 = Util.setBit(alarm3, 5, pack.getAlarmLevel(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION) == AlarmLevel.NONE);
+        alarm3 = Util.setBit(alarm3, 6, false); // other bms internal error
+        alarm3 = Util.setBit(alarm3, 7, false);
 
         frame.put(alarm3);
 
-        Util.setBit(alarm4, 0, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH) == AlarmLevel.ALARM); // cell
+        alarm4 = Util.setBit(alarm4, 0, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH) == AlarmLevel.ALARM); // cell
         // difference
         // to
         // high
-        Util.setBit(alarm4, 1, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH) == AlarmLevel.NONE);
+        alarm4 = Util.setBit(alarm4, 1, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH) == AlarmLevel.NONE);
         frame.put(alarm4);
 
         // warnings
-        Util.setBit(warning1, 0, false);
+        warning1 = Util.setBit(warning1, 0, false);
         Util.setBit(warning1, 1, false);
 
-        Util.setBit(warning1, 2, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_HIGH) == AlarmLevel.ALARM);
-        Util.setBit(warning1, 3, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_HIGH) == AlarmLevel.NONE); // pack
-                                                                                                  // voltage
+        warning1 = Util.setBit(warning1, 2, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_HIGH) == AlarmLevel.ALARM);
+        warning1 = Util.setBit(warning1, 3, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_HIGH) == AlarmLevel.NONE); // pack
+        // voltage
         // to high
-        Util.setBit(warning1, 4, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_LOW) == AlarmLevel.ALARM); // pack
-                                                                                                  // voltage
+        warning1 = Util.setBit(warning1, 4, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_LOW) == AlarmLevel.ALARM); // pack
+        // voltage
         // to low
-        Util.setBit(warning1, 5, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_LOW) == AlarmLevel.NONE);
-        Util.setBit(warning1, 6, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_HIGH) == AlarmLevel.ALARM);// pack
+        warning1 = Util.setBit(warning1, 5, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_LOW) == AlarmLevel.NONE);
+        warning1 = Util.setBit(warning1, 6, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_HIGH) == AlarmLevel.ALARM);// pack
         // temp to
         // high
-        Util.setBit(warning1, 7, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_HIGH) == AlarmLevel.NONE);
+        warning1 = Util.setBit(warning1, 7, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_HIGH) == AlarmLevel.NONE);
 
         frame.put(warning1);
 
-        Util.setBit(warning2, 0, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_LOW) == AlarmLevel.ALARM); // pack
+        warning2 = Util.setBit(warning2, 0, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_LOW) == AlarmLevel.ALARM); // pack
         // temp to
         // low
-        Util.setBit(warning2, 1, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_LOW) == AlarmLevel.NONE);
-        Util.setBit(warning2, 2, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_HIGH) == AlarmLevel.ALARM);// charge
+        warning2 = Util.setBit(warning2, 1, pack.getAlarmLevel(Alarm.PACK_TEMPERATURE_LOW) == AlarmLevel.NONE);
+        warning2 = Util.setBit(warning2, 2, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_HIGH) == AlarmLevel.ALARM);// charge
         // temp
         // to
         // high
-        Util.setBit(warning2, 3, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_HIGH) == AlarmLevel.NONE);
-        Util.setBit(warning2, 4, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_LOW) == AlarmLevel.ALARM); // charge
+        warning2 = Util.setBit(warning2, 3, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_HIGH) == AlarmLevel.NONE);
+        warning2 = Util.setBit(warning2, 4, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_LOW) == AlarmLevel.ALARM); // charge
         // temp
         // to low
-        Util.setBit(warning2, 5, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_LOW) == AlarmLevel.NONE);
-        Util.setBit(warning2, 6, pack.getAlarmLevel(Alarm.PACK_CURRENT_HIGH) == AlarmLevel.ALARM); // pack
+        warning2 = Util.setBit(warning2, 5, pack.getAlarmLevel(Alarm.CHARGE_TEMPERATURE_LOW) == AlarmLevel.NONE);
+        warning2 = Util.setBit(warning2, 6, pack.getAlarmLevel(Alarm.PACK_CURRENT_HIGH) == AlarmLevel.ALARM); // pack
         // current to
         // high
-        Util.setBit(warning2, 7, pack.getAlarmLevel(Alarm.PACK_CURRENT_HIGH) == AlarmLevel.NONE);
+        warning2 = Util.setBit(warning2, 7, pack.getAlarmLevel(Alarm.PACK_CURRENT_HIGH) == AlarmLevel.NONE);
 
         frame.put(warning2);
 
-        Util.setBit(warning3, 0, pack.getAlarmLevel(Alarm.CHARGE_CURRENT_HIGH) == AlarmLevel.ALARM); // charge
+        warning3 = Util.setBit(warning3, 0, pack.getAlarmLevel(Alarm.CHARGE_CURRENT_HIGH) == AlarmLevel.ALARM); // charge
         // current
         // to high
-        Util.setBit(warning3, 1, pack.getAlarmLevel(Alarm.CHARGE_CURRENT_HIGH) == AlarmLevel.ALARM);
-        Util.setBit(warning3, 2, false); // contactor
-        Util.setBit(warning3, 3, false);
-        Util.setBit(warning3, 4, pack.getAlarmLevel(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION) == AlarmLevel.ALARM); // short
+        warning3 = Util.setBit(warning3, 1, pack.getAlarmLevel(Alarm.CHARGE_CURRENT_HIGH) == AlarmLevel.ALARM);
+        warning3 = Util.setBit(warning3, 2, false); // contactor
+        warning3 = Util.setBit(warning3, 3, false);
+        warning3 = Util.setBit(warning3, 4, pack.getAlarmLevel(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION) == AlarmLevel.ALARM); // short
         // circuit
-        Util.setBit(warning3, 5, pack.getAlarmLevel(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION) == AlarmLevel.NONE);
-        Util.setBit(warning3, 6, false); // other bms internal error
-        Util.setBit(warning3, 7, false);
+        warning3 = Util.setBit(warning3, 5, pack.getAlarmLevel(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION) == AlarmLevel.NONE);
+        warning3 = Util.setBit(warning3, 6, false); // other bms internal error
+        warning3 = Util.setBit(warning3, 7, false);
 
         frame.put(warning3);
 
-        Util.setBit(warning4, 0, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH) == AlarmLevel.ALARM); // cell
+        warning4 = Util.setBit(warning4, 0, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH) == AlarmLevel.ALARM); // cell
         // difference
         // to
         // high
-        Util.setBit(warning4, 1, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH) == AlarmLevel.NONE);
+        warning4 = Util.setBit(warning4, 1, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH) == AlarmLevel.NONE);
         frame.put(warning4);
         return frame;
     }

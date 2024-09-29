@@ -121,15 +121,15 @@ public class PylonInverterCANProcessor extends Inverter {
     // 0x35C
     private ByteBuffer createChargeDischargeFlags(final BatteryPack pack) {
         final ByteBuffer frame = prepareSendFrame(0x035E);
-        final byte flags = 0x00;
+        byte flags = 0x00;
 
         // request full charge
-        Util.setBit(flags, 3, false);
+        flags = Util.setBit(flags, 3, false);
         // request force charge
-        Util.setBit(flags, 4, pack.forceCharge);
-        Util.setBit(flags, 5, pack.forceCharge);
-        Util.setBit(flags, 6, pack.dischargeMOSState);
-        Util.setBit(flags, 7, pack.chargeMOSState);
+        flags = Util.setBit(flags, 4, pack.forceCharge);
+        flags = Util.setBit(flags, 5, pack.forceCharge);
+        flags = Util.setBit(flags, 6, pack.dischargeMOSState);
+        flags = Util.setBit(flags, 7, pack.chargeMOSState);
 
         frame.put(flags);
 

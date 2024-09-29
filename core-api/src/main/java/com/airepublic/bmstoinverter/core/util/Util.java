@@ -97,12 +97,14 @@ public class Util {
      * @param index the index
      * @param on the flag whether to set the bit to 1 (on) or 0 (off)
      */
-    public static void setBit(byte value, final int index, final boolean on) {
+    public static byte setBit(byte value, final int index, final boolean on) {
         if (on) {
             value |= 1 << index;
         } else {
             value &= ~(1 << index);
         }
+
+        return value;
     }
 
 
@@ -113,12 +115,14 @@ public class Util {
      * @param index the index
      * @param on the flag whether to set the bit to 1 (on) or 0 (off)
      */
-    public static void setBit(short value, final int index, final boolean on) {
+    public static short setBit(short value, final int index, final boolean on) {
         if (on) {
             value |= 1 << index;
         } else {
             value &= ~(1 << index);
         }
+
+        return value;
     }
 
 
@@ -129,12 +133,14 @@ public class Util {
      * @param index the index
      * @param on the flag whether to set the bit to 1 (on) or 0 (off)
      */
-    public static void setBit(char value, final int index, final boolean on) {
+    public static char setBit(char value, final int index, final boolean on) {
         if (on) {
             value |= 1 << index;
         } else {
             value &= ~(1 << index);
         }
+
+        return value;
     }
 
 
@@ -145,12 +151,14 @@ public class Util {
      * @param index the index
      * @param on the flag whether to set the bit to 1 (on) or 0 (off)
      */
-    public static void setBit(int value, final int index, final boolean on) {
+    public static int setBit(int value, final int index, final boolean on) {
         if (on) {
             value |= 1 << index;
         } else {
             value &= ~(1 << index);
         }
+
+        return value;
     }
 
 
@@ -161,12 +169,14 @@ public class Util {
      * @param index the index
      * @param on the flag whether to set the bit to 1 (on) or 0 (off)
      */
-    public static void setBit(long value, final int index, final boolean on) {
+    public static long setBit(long value, final int index, final boolean on) {
         if (on) {
             value |= 1 << index;
         } else {
             value &= ~(1 << index);
         }
+
+        return value;
     }
 
 }
