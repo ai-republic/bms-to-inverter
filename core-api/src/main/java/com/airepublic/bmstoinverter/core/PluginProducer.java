@@ -16,7 +16,7 @@ public class PluginProducer {
         String className;
 
         do {
-            className = System.getProperty(type + ".plugin." + pluginIndex + ".class");
+            className = System.getProperty("plugin." + type + "." + pluginIndex + ".class");
 
             if (className != null) {
                 try {
@@ -26,11 +26,11 @@ public class PluginProducer {
                     PluginProperty property = null;
 
                     do {
-                        final String name = System.getProperty(type + ".plugin." + propertyIndex + ".name");
+                        final String name = System.getProperty("plugin." + type + "." + pluginIndex + ".property." + propertyIndex + ".name");
 
                         if (name != null) {
-                            final String value = System.getProperty(type + ".plugin." + propertyIndex + ".value");
-                            final String description = System.getProperty(type + ".plugin." + propertyIndex + ".description");
+                            final String value = System.getProperty("plugin." + type + "." + pluginIndex + ".property." + propertyIndex + ".value");
+                            final String description = System.getProperty("plugin." + type + "." + pluginIndex + ".property." + propertyIndex + ".description");
                             property = new PluginProperty(name, value, description);
                             LOG.info("Registering plugin-property for plugin '{}':\n\t{}=\"{}\" - {}", plugin.getName(), name, description);
                             plugin.addProperty(property);
