@@ -46,14 +46,14 @@ public class SimulatedBatteryPackPlugin extends InverterPlugin {
     @Override
     public void onBatteryAggregation(final BatteryPack aggregatedPack) {
         // set configured or default values
-        aggregatedPack.packSOC = getPropertyValue(PROPERTY_PRESET_SOC, 500);
-        aggregatedPack.packSOH = getPropertyValue(PROPERTY_PRESET_SOH, 990);
-        aggregatedPack.packCurrent = getPropertyValue(PROPERTY_PRESET_CURRENT, 0);
-        aggregatedPack.packVoltage = getPropertyValue(PROPERTY_PRESET_VOLTAGE, 520);
-        aggregatedPack.maxPackChargeCurrent = getPropertyValue(PROPERTY_PRESET_MAX_CHARGE_CURRENT, 200);
-        aggregatedPack.maxPackDischargeCurrent = getPropertyValue(PROPERTY_PRESET_MAX_DISCHARGE_CURRENT, 200);
-        aggregatedPack.maxPackVoltageLimit = getPropertyValue(PROPERTY_PRESET_MAX_VOLTAGE, 540);
-        aggregatedPack.minPackVoltageLimit = getPropertyValue(PROPERTY_PRESET_MIN_VOLTAGE, 480);
-        aggregatedPack.tempAverage = getPropertyValue(PROPERTY_PRESET_AVG_TEMPERATURE, 250);
+        aggregatedPack.packSOC = Integer.parseInt(getPropertyValue(PROPERTY_PRESET_SOC, "500"));
+        aggregatedPack.packSOH = Integer.parseInt(getPropertyValue(PROPERTY_PRESET_SOH, "990"));
+        aggregatedPack.packCurrent = Integer.parseInt(getPropertyValue(PROPERTY_PRESET_CURRENT, "0"));
+        aggregatedPack.packVoltage = Integer.parseInt(getPropertyValue(PROPERTY_PRESET_VOLTAGE, "520"));
+        aggregatedPack.maxPackChargeCurrent = Integer.parseInt(getPropertyValue(PROPERTY_PRESET_MAX_CHARGE_CURRENT, "200"));
+        aggregatedPack.maxPackDischargeCurrent = Integer.parseInt(getPropertyValue(PROPERTY_PRESET_MAX_DISCHARGE_CURRENT, "200"));
+        aggregatedPack.maxPackVoltageLimit = Integer.parseInt(getPropertyValue(PROPERTY_PRESET_MAX_VOLTAGE, "540"));
+        aggregatedPack.minPackVoltageLimit = Integer.parseInt(getPropertyValue(PROPERTY_PRESET_MIN_VOLTAGE, "480"));
+        aggregatedPack.tempAverage = Integer.parseInt(getPropertyValue(PROPERTY_PRESET_AVG_TEMPERATURE, "250"));
     }
 }
