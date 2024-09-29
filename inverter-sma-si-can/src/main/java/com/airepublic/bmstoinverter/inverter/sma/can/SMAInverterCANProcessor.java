@@ -15,7 +15,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +24,6 @@ import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
-import com.airepublic.bmstoinverter.core.plugin.inverter.PresetBatteryPackDataPlugin;
 import com.airepublic.bmstoinverter.core.util.Util;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -36,11 +34,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class SMAInverterCANProcessor extends Inverter {
     private final static Logger LOG = LoggerFactory.getLogger(SMAInverterCANProcessor.class);
-
-    public SMAInverterCANProcessor() {
-        setPlugins(Set.of(new PresetBatteryPackDataPlugin()));
-    }
-
 
     @Override
     protected List<ByteBuffer> createSendFrames(final ByteBuffer requestFrame, final BatteryPack aggregatedPack) {

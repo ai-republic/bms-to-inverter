@@ -44,16 +44,6 @@ public abstract class Inverter {
 
 
     /**
-     * Constructor.
-     *
-     * @param plugins the {@link InverterPlugin}s to use
-     */
-    public Inverter(final Set<InverterPlugin> plugins) {
-        setPlugins(plugins);
-    }
-
-
-    /**
      * Initializes the {@link Inverter} with the specified {@link InverterConfig}, initializing the
      * port parameters from the system properties.
      */
