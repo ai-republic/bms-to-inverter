@@ -130,6 +130,10 @@ public abstract class Inverter {
      */
     public void setPlugins(final Set<InverterPlugin> plugins) {
         this.plugins = plugins;
+
+        if (plugins != null) {
+            plugins.forEach(p -> LOG.info("Inverter using plugin: " + p.getName()));
+        }
     }
 
 
