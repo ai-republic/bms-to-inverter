@@ -67,16 +67,16 @@ public class InverterProducer extends PluginProducer {
                 }
             }
 
-            // load configured plugins for the inverter
-            final Set<InverterPlugin> plugins = loadPlugins(InverterPlugin.class);
-
             final InverterDescriptor descriptor = descriptors.get(System.getProperty("inverter.type"));
             inverter = CDI.current().select(descriptor.getInverterClass()).get();
             final String portLocator = System.getProperty("inverter.portLocator");
             final int baudRate = Integer.valueOf(System.getProperty("inverter.baudRate"));
             final int sendInterval = Integer.valueOf(System.getProperty("inverter.sendInterval"));
             final InverterConfig config = new InverterConfig(portLocator, baudRate, sendInterval, descriptor);
+            LOG.info("Created inverter binding: " + descriptor.getName());
 
+            // load configured plugins for the inverter
+            final Set<InverterPlugin> plugins = loadPlugins(InverterPlugin.class);
             inverter.setPlugins(plugins);
             inverter.initialize(config);
         }

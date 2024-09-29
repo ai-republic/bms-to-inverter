@@ -50,6 +50,7 @@ public abstract class Inverter {
     public void initialize(final InverterConfig config) {
         this.config = config;
 
+        LOG.info("Using plugins: " + plugins);
         if (getPlugins() != null) {
             getPlugins().stream().forEach(p -> {
                 LOG.debug("Calling inverter plugin (onInitialize): {}", p.getName());
