@@ -22,7 +22,6 @@ import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
-import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 import com.airepublic.bmstoinverter.core.util.Util;
 
 import jakarta.enterprise.context.ApplicationScoped;
@@ -56,7 +55,7 @@ public class PylonInverterCANProcessor extends Inverter {
 
     @Override
     protected void sendFrame(final Port port, final ByteBuffer frame) throws IOException {
-        ((CANPort) port).sendExtendedFrame(frame);
+        port.sendFrame(frame);
     }
 
 
