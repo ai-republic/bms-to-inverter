@@ -21,6 +21,7 @@ public class PluginProducer {
             if (className != null) {
                 try {
                     final AbstractPlugin<?> plugin = (AbstractPlugin<?>) Class.forName(className).getConstructor().newInstance();
+                    LOG.info("Registering " + type + " plugin '" + plugin.getName() + "'...");
                     int propertyIndex = 1;
                     PluginProperty property = null;
 
@@ -31,6 +32,7 @@ public class PluginProducer {
                             final String value = System.getProperty(type + ".plugin." + propertyIndex + ".value");
                             final String description = System.getProperty(type + ".plugin." + propertyIndex + ".description");
                             property = new PluginProperty(name, value, description);
+                            LOG.info("Registering plugin-property for plugin '{}':\n\t{}=\"{}\" - {}", plugin.getName(), name, description);
                             plugin.addProperty(property);
                         }
 
