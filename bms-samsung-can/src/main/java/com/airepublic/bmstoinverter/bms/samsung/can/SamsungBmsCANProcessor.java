@@ -87,7 +87,7 @@ public class SamsungBmsCANProcessor extends BMS {
         // Battery voltage (0.01V) - uint_16
         pack.packVoltage = data.getChar() / 10;
         // Battery current (1A) - sint_16
-        pack.packCurrent = data.getShort();
+        pack.packCurrent = data.getShort() * 10;
         // SOC (1%) - uint_8
         pack.packSOC = data.get() * 10;
         // SOH (1%) - uint_8
