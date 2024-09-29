@@ -62,6 +62,8 @@ public class SMAInverterCANProcessor extends Inverter {
         frames.add(createSOC(aggregatedPack)); // 0x355
         frames.add(createBatteryVoltage(aggregatedPack)); // 0x356
         frames.add(createAlarms(aggregatedPack)); // 0x35A
+        frames.add(createManufacturer(aggregatedPack)); // 0x35E
+        frames.add(createBatteryTypeAndVersion(aggregatedPack)); // 0x35F
 
         LOG.info("Sending SMA frame: Batt(V)={}, Batt(A)={}, SOC={}", aggregatedPack.packVoltage / 10f, aggregatedPack.packCurrent / 10f, aggregatedPack.packSOC / 10f);
 
@@ -258,6 +260,36 @@ public class SMAInverterCANProcessor extends Inverter {
         // high
         warning4 = Util.setBit(warning4, 1, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH) == AlarmLevel.NONE);
         frame.put(warning4);
+        return frame;
+    }
+
+
+    // 0x35E
+    private ByteBuffer createManufacturer(final BatteryPack aggregatedPack) {
+        final ByteBuffer frame = prepareFrame(0x35E);
+
+        // write manufacturer
+        frame.putChar('S');
+        frame.putChar('M');
+        frame.putChar('A');
+
+        return frame;
+    }
+
+
+    // 0x35F
+    private ByteBuffer createBatteryTypeAndVersion(final BatteryPack aggregatedPack) {
+        final ByteBuffer frame = prepareFrame(0x35F);
+
+        // battery type
+        frame.putShort((short) 3); // LiFePo4
+        // hardware version
+        frame.putShort((short) 0x0000);
+        // capacity
+        frame.putShort((short) aggregatedPack.ratedCapacitymAh);
+        // software version
+        frame.putShort((short) 0x0000);
+
         return frame;
     }
 

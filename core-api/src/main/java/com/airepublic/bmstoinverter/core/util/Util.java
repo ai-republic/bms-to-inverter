@@ -96,6 +96,7 @@ public class Util {
      * @param value the byte value
      * @param index the index
      * @param on the flag whether to set the bit to 1 (on) or 0 (off)
+     * @return the changed value
      */
     public static byte setBit(byte value, final int index, final boolean on) {
         if (on) {
@@ -114,6 +115,7 @@ public class Util {
      * @param value the short value
      * @param index the index
      * @param on the flag whether to set the bit to 1 (on) or 0 (off)
+     * @return the changed value
      */
     public static short setBit(short value, final int index, final boolean on) {
         if (on) {
@@ -132,6 +134,7 @@ public class Util {
      * @param value the short value
      * @param index the index
      * @param on the flag whether to set the bit to 1 (on) or 0 (off)
+     * @return the changed value
      */
     public static char setBit(char value, final int index, final boolean on) {
         if (on) {
@@ -150,6 +153,7 @@ public class Util {
      * @param value the integer value
      * @param index the index
      * @param on the flag whether to set the bit to 1 (on) or 0 (off)
+     * @return the changed value
      */
     public static int setBit(int value, final int index, final boolean on) {
         if (on) {
@@ -168,6 +172,7 @@ public class Util {
      * @param value the long value
      * @param index the index
      * @param on the flag whether to set the bit to 1 (on) or 0 (off)
+     * @return the changed value
      */
     public static long setBit(long value, final int index, final boolean on) {
         if (on) {
