@@ -88,6 +88,8 @@ public class JavaCANPort extends CANPort {
     public void sendFrame(final ByteBuffer frame) throws IOException {
         ensureOpen();
 
+        frame.rewind();
+
         final CanFrame sendFrame = CanFrame.create(frame);
         canChannel.write(sendFrame);
     }

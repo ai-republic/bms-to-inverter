@@ -32,7 +32,7 @@ public class PluginProducer {
                             final String value = System.getProperty("plugin." + type + "." + pluginIndex + ".property." + propertyIndex + ".value");
                             final String description = System.getProperty("plugin." + type + "." + pluginIndex + ".property." + propertyIndex + ".description");
                             property = new PluginProperty(name, value, description);
-                            LOG.info("Registering plugin-property for plugin '{}':\n\t{}=\"{}\" - {}", plugin.getName(), name, description);
+                            LOG.info("Registering plugin-property for plugin '{}': {}=\"{}\" - {}", plugin.getName(), name, value, description);
                             plugin.addProperty(property);
                         }
 

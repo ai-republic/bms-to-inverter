@@ -84,39 +84,4 @@ public class InverterProducer extends PluginProducer {
         return inverter;
     }
 
-
-    public static void main(final String[] args) {
-        System.setProperty("plugin.inverter.1.class", "com.airepublic.bmstoinverter.core.plugin.inverter.SimulatedBatteryPackPlugin");
-        System.setProperty("plugin.inverter.1.property.1.name", "SOC");
-        System.setProperty("plugin.inverter.1.property.1.value", "500");
-        System.setProperty("plugin.inverter.1.property.1.description", "The configured preset batterypack SOC (unit 0.1%)");
-        System.setProperty("plugin.inverter.1.property.2.name", "SOH");
-        System.setProperty("plugin.inverter.1.property.2.value", "990");
-        System.setProperty("plugin.inverter.1.property.2.description", "The configured preset batterypack SOH (unit 0.1%)");
-        System.setProperty("plugin.inverter.1.property.3.name", "Current");
-        System.setProperty("plugin.inverter.1.property.3.value", "0");
-        System.setProperty("plugin.inverter.1.property.3.description", "The configured preset batterypack current (unit 0.1A)");
-        System.setProperty("plugin.inverter.1.property.4.name", "Voltage");
-        System.setProperty("plugin.inverter.1.property.4.value", "520");
-        System.setProperty("plugin.inverter.1.property.4.description", "The configured preset batterypack voltage (unit 0.1V)");
-        System.setProperty("plugin.inverter.1.property.5.name", "Max. charge current");
-        System.setProperty("plugin.inverter.1.property.5.value", "200");
-        System.setProperty("plugin.inverter.1.property.5.description", "The configured preset batterypack maximum charge current (unit 0.1A)");
-        System.setProperty("plugin.inverter.1.property.6.name", "Max. discharge current");
-        System.setProperty("plugin.inverter.1.property.6.value", "200");
-        System.setProperty("plugin.inverter.1.property.6.description", "The configured preset batterypack maximum discharge current (unit 0.1A)");
-        System.setProperty("plugin.inverter.1.property.7.name", "Max. voltage limit");
-        System.setProperty("plugin.inverter.1.property.7.value", "540");
-        System.setProperty("plugin.inverter.1.property.7.description", "The configured preset batterypack maximum voltage limit (unit 0.1V)");
-        System.setProperty("plugin.inverter.1.property.8.name", "Min. voltage lime");
-        System.setProperty("plugin.inverter.1.property.8.value", "480");
-        System.setProperty("plugin.inverter.1.property.8.description", "The configured preset batterypack minimum voltage limit (unit 0.1V)");
-        System.setProperty("plugin.inverter.1.property.9.name", "Average Temperature");
-        System.setProperty("plugin.inverter.1.property.9.value", "250");
-        System.setProperty("plugin.inverter.1.property.9.description", "The configured preset batterypack average temperature (unit 0.1C)");
-
-        final InverterProducer p = new InverterProducer();
-        final Set<?> plugin = p.loadPlugins(InverterPlugin.class);
-
-    }
 }
