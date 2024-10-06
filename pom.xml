@@ -25,6 +25,7 @@
 		<module>bms-daly-can</module>
 		<module>bms-daly-rs485</module>
 		<module>bms-jk-can</module>
+		<module>bms-jk-modbus</module>
 		<module>bms-jk-rs485</module>
 		<module>bms-pace-can</module>
 		<module>bms-pylon-can</module>

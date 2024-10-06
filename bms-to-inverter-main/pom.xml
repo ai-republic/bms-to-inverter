@@ -154,6 +154,13 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- ####################  JK (MODBUS)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-jk-modbus</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- ####################  JK (RS485)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>

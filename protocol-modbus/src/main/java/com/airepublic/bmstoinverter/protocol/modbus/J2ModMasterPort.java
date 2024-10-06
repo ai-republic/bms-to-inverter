@@ -103,7 +103,7 @@ public class J2ModMasterPort extends ModBusPort {
 
     /**
      * The buffer represents a custom format specified as follows:<br>
-     * Byte1-4 (int): start address<br>
+     * Byte1-4 (int): function code<br>
      * Byte5-8 (int): start address<br>
      * Byte9-12 (int): number of registers to request<br>
      * Byte13-16 (int): unit id<br>

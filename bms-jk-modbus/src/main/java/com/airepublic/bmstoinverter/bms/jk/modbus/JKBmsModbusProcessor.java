@@ -8,7 +8,7 @@
  *
  * @author Torsten Oltmanns - bms-to-inverter''AT''gmail.com
  */
-package com.airepublic.bmstoinverter.bms.huawei.modbus;
+package com.airepublic.bmstoinverter.bms.jk.modbus;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -30,18 +30,18 @@ import com.airepublic.bmstoinverter.protocol.modbus.ModbusUtil.RegisterCode;
 import jakarta.inject.Inject;
 
 /**
- * The class to handle Modbus messages from a Huawei {@link BMS}.
+ * The class to handle Modbus messages from a JK {@link BMS}.
  */
-public class HuaweiBmsModbusProcessor extends BMS {
-    private final static Logger LOG = LoggerFactory.getLogger(HuaweiBmsModbusProcessor.class);
+public class JKBmsModbusProcessor extends BMS {
+    private final static Logger LOG = LoggerFactory.getLogger(JKBmsModbusProcessor.class);
     @Inject
     private EnergyStorage energyStorage;
 
     @Override
     protected void collectData(final Port port) {
         try {
-            sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, 30101, 83, getBmsId(), this::readBatteryStatus);
-            sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, 39014, 4, getBmsId(), this::readAlarms);
+            sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, 0x106C, 5, getBmsId(), this::readBatteryStatus);
+            sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, 0x12A6, 4, getBmsId(), this::readSOC);
         } catch (final IOException e) {
             LOG.error("Error reading from modbus!", e);
         }
@@ -60,25 +60,21 @@ public class HuaweiBmsModbusProcessor extends BMS {
         final int unitId = frame.getInt();
         final BatteryPack pack = energyStorage.getBatteryPack(unitId);
 
-        pack.numberOfCells = frame.getChar();
-        frame.getShort(); // device status
-        pack.packVoltage = frame.getShort(); // 0.1V
-        pack.packCurrent = frame.getShort(); // 0.1A
-        pack.packSOC = frame.getChar() * 10; // 1%
-        pack.packSOH = frame.getChar() * 10; // 1%
-        frame.getInt(); // dis-/charge power kWh
-        frame.getShort(); // SOE
-        frame.getShort(); // DOD
-        frame.getInt(); // chargeable capacity
-        frame.getInt(); // dischargeable capacity
-        pack.tempMax = frame.getShort() * 10; // 100C
-        pack.tempMaxCellNum = frame.getChar();
-        pack.tempMin = frame.getShort() * 10; // 100C
-        pack.tempMinCellNum = frame.getChar();
-        pack.minCellmV = frame.getChar() / 100; // 0.1V
-        pack.minCellVNum = frame.getChar(); //
-        pack.maxCellmV = frame.getChar() / 100; // 0.1V
-        pack.maxCellVNum = frame.getChar(); //
+        pack.numberOfCells = frame.getInt();
+        pack.chargeMOSState = frame.getInt() == 1;
+        pack.dischargeMOSState = frame.getInt() == 1;
+        pack.cellBalanceActive = frame.getInt() == 1;
+        pack.ratedCapacitymAh = frame.getInt();
+    }
+
+
+    protected void readSOC(final ByteBuffer frame) {
+        frame.getInt(); // functionCode
+        frame.getInt(); // numRegisters
+        final int unitId = frame.getInt();
+        final BatteryPack pack = energyStorage.getBatteryPack(unitId);
+
+        pack.packSOC = (frame.getInt() & 0xF0) >> 8;
     }
 
 

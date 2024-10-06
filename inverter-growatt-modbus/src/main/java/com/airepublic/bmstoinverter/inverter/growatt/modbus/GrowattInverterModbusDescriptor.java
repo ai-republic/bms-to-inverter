@@ -8,7 +8,7 @@
  *
  * @author Torsten Oltmanns - bms-to-inverter''AT''gmail.com
  */
-package com.airepublic.bmstoinverter.inverter.huawei.modbus;
+package com.airepublic.bmstoinverter.inverter.growatt.modbus;
 
 import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.InverterConfig;

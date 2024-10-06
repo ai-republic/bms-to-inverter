@@ -142,16 +142,20 @@ public abstract class Inverter {
                 final Port port = PortAllocator.allocate(getPortLocator());
                 final ByteBuffer requestFrame = readRequest(port);
 
-                // if a plugin is set
-                if (getPlugins() != null) {
-                    // call the plugin to manipulate the frame
-                    getPlugins().stream().forEach(p -> {
-                        LOG.debug("Calling inverter plugin (onReceive): {}", p.getName());
-                        p.onReceive(requestFrame);
-                    });
-                }
+                if (requestFrame != null) {
+                    LOG.debug("Inverter received: " + Port.printBuffer(requestFrame));
 
-                LOG.debug("Inverter received: " + Port.printBuffer(requestFrame));
+                    // if a plugin is set
+                    if (getPlugins() != null) {
+                        // call the plugin to manipulate the frame
+                        getPlugins().stream().forEach(p -> {
+                            LOG.debug("Calling inverter plugin (onReceive): {}", p.getName());
+                            p.onReceive(requestFrame);
+                        });
+
+                        LOG.debug("Inverter received (after running plugins): " + Port.printBuffer(requestFrame));
+                    }
+                }
 
                 // if a plugin is set
                 if (getPlugins() != null) {

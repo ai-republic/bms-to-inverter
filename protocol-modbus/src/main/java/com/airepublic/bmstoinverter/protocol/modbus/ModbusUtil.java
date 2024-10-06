@@ -1,3 +1,13 @@
+/**
+ * This software is free to use and to distribute in its unchanged form for private use.
+ * Commercial use is prohibited without an explicit license agreement of the copyright holder.
+ * Any changes to this software must be made solely in the project repository at https://github.com/ai-republic/bms-to-inverter.
+ * The copyright holder is not liable for any damages in whatever form that may occur by using this software.
+ *
+ * (c) Copyright 2022 and onwards - Torsten Oltmanns
+ *
+ * @author Torsten Oltmanns - bms-to-inverter''AT''gmail.com
+ */
 package com.airepublic.bmstoinverter.protocol.modbus;
 
 import java.nio.ByteBuffer;
@@ -10,11 +20,39 @@ import com.ghgande.j2mod.modbus.msg.WriteSingleRegisterResponse;
 import com.ghgande.j2mod.modbus.procimg.InputRegister;
 import com.ghgande.j2mod.modbus.procimg.Register;
 
+/**
+ * Utility for handling ModBus communication.
+ */
 public class ModbusUtil {
+    /**
+     * The register types definition;
+     */
+    public enum RegisterCode {
+        READ_HOLDING_REGISTERS(0x03),
+        READ_INPUT_REGISTERS(0x04),
+        WRITE_SINGLE_REGISTER(0x06),
+        WRITE_MULTIPLE_REGISTERS(0x10);
 
-    public static ByteBuffer createRequestBuffer(final int functionCode, final int startAddress, final int numRegisters, final int unitId) {
+        private final int functionCode;
+
+        RegisterCode(final int functionCode) {
+            this.functionCode = functionCode;
+        }
+
+
+        /**
+         * Gets the function code for the {@link RegisterCode}.
+         *
+         * @return the function code
+         */
+        public int getFunctionCode() {
+            return functionCode;
+        }
+    }
+
+    public static ByteBuffer createRequestBuffer(final RegisterCode register, final int startAddress, final int numRegisters, final int unitId) {
         final ByteBuffer buffer = ByteBuffer.allocate(16);
-        buffer.putInt(functionCode);
+        buffer.putInt(register.getFunctionCode());
         buffer.putInt(startAddress);
         buffer.putInt(numRegisters);
         buffer.putInt(unitId);

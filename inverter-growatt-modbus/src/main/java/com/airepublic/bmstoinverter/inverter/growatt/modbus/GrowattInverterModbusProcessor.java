@@ -8,7 +8,7 @@
  *
  * @author Torsten Oltmanns - bms-to-inverter''AT''gmail.com
  */
-package com.airepublic.bmstoinverter.inverter.huawei.modbus;
+package com.airepublic.bmstoinverter.inverter.growatt.modbus;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
