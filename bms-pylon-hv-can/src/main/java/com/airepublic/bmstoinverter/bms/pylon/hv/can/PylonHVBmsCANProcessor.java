@@ -247,19 +247,19 @@ public class PylonHVBmsCANProcessor extends BMS {
 
         switch (Util.bits(status, 0, 3)) {
             case 0:
-                pack.chargeDischargeStatus = "Sleep";
+                pack.chargeDischargeStatus = 3; // Sleep
             break;
             case 1:
-                pack.chargeDischargeStatus = "Charge";
+                pack.chargeDischargeStatus = 1; // Charge
             break;
             case 2:
-                pack.chargeDischargeStatus = "Discharge";
+                pack.chargeDischargeStatus = 2; // Discharge
             break;
             case 3:
-                pack.chargeDischargeStatus = "Idle";
+                pack.chargeDischargeStatus = 0; // Idle/Stationary
             break;
             default:
-                pack.chargeDischargeStatus = null;
+                pack.chargeDischargeStatus = 0;
         }
 
         pack.forceCharge = Util.bit(status, 3);

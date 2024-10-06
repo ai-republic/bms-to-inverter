@@ -182,6 +182,13 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- ####################  DEYE (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-deye-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- ####################  HUAWEI (MODBUS)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
@@ -193,6 +200,13 @@
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>inverter-growatt-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- ####################  GROWATT (MODBUS)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-growatt-modbus</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
@@ -214,13 +228,6 @@
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>inverter-pylon-rs485</artifactId>
-			<version>${project.version}</version>
-		</dependency>
-
-		<!-- ####################  DEYE (CAN)  ################### -->
-		<dependency>
-			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>inverter-deye-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

@@ -27,7 +27,7 @@ public class BatteryPack {
     /** Battery type: 0=lithium iron, 1=ternary lithium, 2=lithium titanate */
     public int type;
     // data from 0x50
-    /** Capacity of the each cell (1mAh) */
+    /** Capacity of each cell (1mAh) */
     public int ratedCapacitymAh;
     /** Nominal cell voltage (1mV) */
     public int ratedCellmV;
@@ -78,8 +78,8 @@ public class BatteryPack {
     public int tempAverage;
 
     // data from 0x93
-    /** charge/discharge status (0 stationary, 1 charge, 2 discharge) */
-    public String chargeDischargeStatus = "";
+    /** charge/discharge status (0 idle/stationary, 1 charge, 2 discharge; 3 sleep) */
+    public int chargeDischargeStatus = 0;
     /** charging MOSFET status */
     public boolean chargeMOSState;
     /** discharge MOSFET state */

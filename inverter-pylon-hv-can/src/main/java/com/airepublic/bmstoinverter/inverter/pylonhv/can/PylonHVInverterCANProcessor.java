@@ -213,27 +213,26 @@ public class PylonHVInverterCANProcessor extends Inverter {
         byte status = 0x00;
 
         switch (pack.chargeDischargeStatus) {
-            case "Sleep":
-                status = Util.setBit(status, 0, false);
-                status = Util.setBit(status, 1, false);
-                status = Util.setBit(status, 2, false);
-            break;
-            case "Charge":
-                status = Util.setBit(status, 0, true);
-                status = Util.setBit(status, 1, false);
-                status = Util.setBit(status, 2, false);
-            break;
-            case "Discharge":
-                status = Util.setBit(status, 0, false);
-                status = Util.setBit(status, 1, true);
-                status = Util.setBit(status, 2, false);
-            break;
-            case "Idle":
+            case 0: // Idle/Stationary
                 status = Util.setBit(status, 0, true);
                 status = Util.setBit(status, 1, true);
                 status = Util.setBit(status, 2, false);
             break;
-
+            case 1: // Charge
+                status = Util.setBit(status, 0, true);
+                status = Util.setBit(status, 1, false);
+                status = Util.setBit(status, 2, false);
+            break;
+            case 2: // Discharge
+                status = Util.setBit(status, 0, false);
+                status = Util.setBit(status, 1, true);
+                status = Util.setBit(status, 2, false);
+            break;
+            case 3: // Sleep
+                status = Util.setBit(status, 0, false);
+                status = Util.setBit(status, 1, false);
+                status = Util.setBit(status, 2, false);
+            break;
         }
 
         status = Util.setBit(status, 3, pack.forceCharge);

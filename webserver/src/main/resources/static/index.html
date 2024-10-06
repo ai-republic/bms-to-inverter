@@ -74,7 +74,7 @@
 		var averageSOC = 0;
 		var averageVoltage = 0;
 		var totalCurrent = 0;
-		var chargeState = 'Charge';
+		var chargeState = 'Idle';
 		
 		for (var i = 0; i < bmsData.batteryPacks.length; i++) {
 			var pack = bmsData.batteryPacks[i];
@@ -83,8 +83,12 @@
 			averageSOC += pack.packSOC;
 			averageVoltage += pack.packVoltage;
 			
-			if (pack.chargeDischargeStatus === 'Discharge') {
+			if (pack.chargeDischargeStatus == 1) {
 				chargeState = 'Discharge';
+			} else if (pack.chargeDischargeStatus == 2 && (chargeState === 'Idile' || chargeState === 'Sleep')) {
+				chargeState = 'Charge';
+			} else if (pack.chargeDischargeStatus == 3 && chargeState === 'Idle') {
+				chargeState = 'Sleep';
 			}
 		}
 		
@@ -172,6 +176,15 @@
 	
 	function updateBMS() {
 		var bmsNo = selectedBMSNo;
+		var chargeState = 'Idle';
+		
+		switch (bmsData.batteryPacks[bmsNo].chargeDischargeStatus) {
+			case 0: chargeState = 'Idle'; break;
+			case 1: chargeState = 'Charge'; break;
+			case 2: chargeState = 'Discharge'; break;
+			case 3: chargeState = 'Sleep'; break;
+			default: chargeState = 'Idle';
+		}
 		
 		//bms panel
 		document.getElementById('bmsPanel').innerHTML = 
@@ -187,7 +200,7 @@
 					'<td class="bmsDataFieldName">Cell Diff.</td><td id="cellDiffValue" class="bmsDataFieldValue">' + ((bmsData.batteryPacks[bmsNo].maxCellmV - bmsData.batteryPacks[bmsNo].minCellmV) / 1000).toFixed(3) + ' V</td>' +
 				'</tr>' +
 				'<tr>' +
-					'<td class="bmsDataFieldName">Dis-/Charge Status</td><td id="chargeDischargeStatusValue" class="bmsDataFieldValue">' + bmsData.batteryPacks[bmsNo].chargeDischargeStatus + '</td>' +
+					'<td class="bmsDataFieldName">Dis-/Charge Status</td><td id="chargeDischargeStatusValue" class="bmsDataFieldValue">' + chargeState + '</td>' +
 					'<td class="bmsDataFieldName">Charge MOS</td><td id="chargeMOSStateValue" class="bmsDataFieldValue">' + (bmsData.batteryPacks[bmsNo].chargeMOSState ? 'ON' : 'OFF') + '</td>' +
 					'<td class="bmsDataFieldName">Discharge MOS</td><td id="dischargeMOSStateValue" class="bmsDataFieldValue">' + (bmsData.batteryPacks[bmsNo].dischargeMOSState ? 'ON' : 'OFF') + '</td>' +
 				'</tr>' +

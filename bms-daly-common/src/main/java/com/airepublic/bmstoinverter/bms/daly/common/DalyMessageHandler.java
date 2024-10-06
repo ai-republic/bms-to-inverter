@@ -217,14 +217,16 @@ public class DalyMessageHandler {
         // read data byte 0 MOS status
         switch (msg.data.get()) {
             case 0:
-                battery.chargeDischargeStatus = "Stationary";
+                battery.chargeDischargeStatus = 0; // Stationary
             break;
             case 1:
-                battery.chargeDischargeStatus = "Charge";
+                battery.chargeDischargeStatus = 1; // Charge
             break;
             case 2:
-                battery.chargeDischargeStatus = "Discharge";
+                battery.chargeDischargeStatus = 2; // Discharge
             break;
+            default:
+                battery.chargeDischargeStatus = 0; // Stationary
         }
 
         // data byte 1 charge MOS state
