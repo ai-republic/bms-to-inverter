@@ -25,7 +25,8 @@ public class DummyBmsProcessor extends BMS {
      */
     @PostConstruct
     public void init() {
-        getBatteryPack(0);
+        getBatteryPacks().clear();
+        getBatteryPack(getBmsId());
     }
 
 
