@@ -13,25 +13,13 @@ package com.airepublic.bmstoinverter.bms.dummy;
 import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.Port;
 
-import jakarta.annotation.PostConstruct;
-
 /**
  * The class to to use for a dummy {@link BMS}.
  */
 public class DummyBmsProcessor extends BMS {
-
-    /**
-     * Initializes the dummy {@link BMS} with one battery pack.
-     */
-    @PostConstruct
-    public void init() {
-        getBatteryPacks().clear();
-        getBatteryPack(getBmsId());
-    }
-
-
     @Override
     public void collectData(final Port port) {
+        getBatteryPack(getBmsId());
     }
 
 }
