@@ -15,7 +15,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.List;
 
 import com.airepublic.bmstoinverter.core.AlarmLevel;
@@ -80,39 +79,40 @@ public class GrowattInverterCANProcessor extends Inverter {
 
 
     private byte[] get311Status(final BatteryPack pack) {
-        final BitSet bits = new BitSet(12);
+        final byte[] status = new byte[2];
+
         // charging status
         final boolean charging = pack.chargeMOSState;
-        bits.set(0, charging);
-        bits.set(1, false);
+        status[0] = Util.setBit(status[0], 0, charging);
+        status[0] = Util.setBit(status[0], 1, false);
 
         // error bit flag
-        bits.set(2, false);
+        status[0] = Util.setBit(status[0], 2, false);
 
         // balancing status
-        bits.set(3, pack.cellBalanceActive);
+        status[0] = Util.setBit(status[0], 3, pack.cellBalanceActive);
 
         // sleep status
-        bits.set(4, false);
+        status[0] = Util.setBit(status[0], 4, false);
 
         // output discharge status
-        bits.set(5, false);
+        status[0] = Util.setBit(status[0], 5, false);
 
         // output charge status
-        bits.set(6, false);
+        status[0] = Util.setBit(status[0], 6, false);
 
         // battery terminal status
-        bits.set(7, false);
+        status[0] = Util.setBit(status[0], 7, false);
 
         // master box operation mode 00-standalone, 01-parallel, 10-parallel ready
-        bits.set(8, false);
-        bits.set(9, false);
+        status[1] = Util.setBit(status[1], 0, false);
+        status[1] = Util.setBit(status[1], 1, false);
 
         // SP status 00-none, 01-standby, 10-charging, 11-discharging
-        bits.set(10, true);
-        bits.set(11, !charging);
+        status[1] = Util.setBit(status[1], 2, true);
+        status[1] = Util.setBit(status[1], 3, !charging);
 
-        return bits.toByteArray();
+        return status;
     }
 
 
@@ -182,31 +182,30 @@ public class GrowattInverterCANProcessor extends Inverter {
      * @return the bitset
      */
     private byte getChargeStates(final BatteryPack pack) {
-        final BitSet bits = new BitSet(8);
-
+        byte value = 0;
         // 0x319 table 5
-        bits.set(7, pack.chargeMOSState);
-        bits.set(6, pack.dischargeMOSState);
-        bits.set(5, false);
-        bits.set(4, false);
-        bits.set(3, false);
-        bits.set(2, false);
+        value = Util.setBit(value, 7, pack.chargeMOSState);
+        value = Util.setBit(value, 6, pack.dischargeMOSState);
+        value = Util.setBit(value, 5, false);
+        value = Util.setBit(value, 4, false);
+        value = Util.setBit(value, 3, false);
+        value = Util.setBit(value, 2, false);
         switch (pack.type) {
             case 0:
-                bits.set(1, 0);
-                bits.set(0, 0);
+                value = Util.setBit(value, 1, false);
+                value = Util.setBit(value, 0, false);
             break;
             case 1:
-                bits.set(1, 0);
-                bits.set(0, 1);
+                value = Util.setBit(value, 1, false);
+                value = Util.setBit(value, 0, true);
             break;
             case 2:
-                bits.set(1, 1);
-                bits.set(0, 0);
+                value = Util.setBit(value, 1, true);
+                value = Util.setBit(value, 0, false);
             break;
         }
 
-        return bits.toByteArray()[0];
+        return value;
     }
 
 
@@ -295,59 +294,60 @@ public class GrowattInverterCANProcessor extends Inverter {
 
 
     private byte[] getDateTimeBits() {
-        final BitSet bits = new BitSet(32);
         final LocalDateTime time = LocalDateTime.now();
+        final byte[] dateTime = new byte[4];
+
         // seconds
         int value = time.getSecond();
-        bits.set(0, bitRead(value, 0));
-        bits.set(1, bitRead(value, 1));
-        bits.set(2, bitRead(value, 2));
-        bits.set(3, bitRead(value, 3));
-        bits.set(4, bitRead(value, 4));
-        bits.set(5, bitRead(value, 5));
+        dateTime[0] = Util.setBit(dateTime[0], 0, bitRead(value, 0));
+        dateTime[0] = Util.setBit(dateTime[0], 1, bitRead(value, 1));
+        dateTime[0] = Util.setBit(dateTime[0], 2, bitRead(value, 2));
+        dateTime[0] = Util.setBit(dateTime[0], 3, bitRead(value, 3));
+        dateTime[0] = Util.setBit(dateTime[0], 4, bitRead(value, 4));
+        dateTime[0] = Util.setBit(dateTime[0], 5, bitRead(value, 5));
 
         // minutes
         value = time.getMinute();
-        bits.set(6, bitRead(value, 0));
-        bits.set(7, bitRead(value, 1));
-        bits.set(8, bitRead(value, 2));
-        bits.set(9, bitRead(value, 3));
-        bits.set(10, bitRead(value, 4));
-        bits.set(11, bitRead(value, 5));
+        dateTime[0] = Util.setBit(dateTime[0], 6, bitRead(value, 0));
+        dateTime[0] = Util.setBit(dateTime[0], 7, bitRead(value, 1));
+        dateTime[1] = Util.setBit(dateTime[1], 0, bitRead(value, 2));
+        dateTime[1] = Util.setBit(dateTime[1], 1, bitRead(value, 3));
+        dateTime[1] = Util.setBit(dateTime[1], 2, bitRead(value, 4));
+        dateTime[1] = Util.setBit(dateTime[1], 3, bitRead(value, 5));
 
         // hours
         value = time.getHour();
-        bits.set(12, bitRead(value, 0));
-        bits.set(13, bitRead(value, 1));
-        bits.set(14, bitRead(value, 2));
-        bits.set(15, bitRead(value, 3));
-        bits.set(16, bitRead(value, 4));
+        dateTime[1] = Util.setBit(dateTime[1], 4, bitRead(value, 0));
+        dateTime[1] = Util.setBit(dateTime[1], 5, bitRead(value, 1));
+        dateTime[1] = Util.setBit(dateTime[1], 6, bitRead(value, 2));
+        dateTime[1] = Util.setBit(dateTime[1], 7, bitRead(value, 3));
+        dateTime[2] = Util.setBit(dateTime[2], 0, bitRead(value, 4));
 
         // day
         value = time.getDayOfMonth();
-        bits.set(17, bitRead(value, 0));
-        bits.set(18, bitRead(value, 1));
-        bits.set(19, bitRead(value, 2));
-        bits.set(20, bitRead(value, 3));
-        bits.set(21, bitRead(value, 4));
+        dateTime[2] = Util.setBit(dateTime[2], 1, bitRead(value, 0));
+        dateTime[2] = Util.setBit(dateTime[2], 2, bitRead(value, 1));
+        dateTime[2] = Util.setBit(dateTime[2], 3, bitRead(value, 2));
+        dateTime[2] = Util.setBit(dateTime[2], 4, bitRead(value, 3));
+        dateTime[2] = Util.setBit(dateTime[2], 5, bitRead(value, 4));
 
         // month
         value = time.getMonthValue();
-        bits.set(22, bitRead(value, 0));
-        bits.set(23, bitRead(value, 1));
-        bits.set(24, bitRead(value, 2));
-        bits.set(25, bitRead(value, 3));
+        dateTime[2] = Util.setBit(dateTime[2], 6, bitRead(value, 0));
+        dateTime[2] = Util.setBit(dateTime[2], 7, bitRead(value, 1));
+        dateTime[3] = Util.setBit(dateTime[3], 0, bitRead(value, 2));
+        dateTime[3] = Util.setBit(dateTime[3], 1, bitRead(value, 3));
 
         // year
         value = time.getYear();
-        bits.set(26, bitRead(value, 0));
-        bits.set(27, bitRead(value, 1));
-        bits.set(28, bitRead(value, 2));
-        bits.set(29, bitRead(value, 3));
-        bits.set(30, bitRead(value, 4));
-        bits.set(31, bitRead(value, 5));
+        dateTime[3] = Util.setBit(dateTime[3], 2, bitRead(value, 0));
+        dateTime[3] = Util.setBit(dateTime[3], 3, bitRead(value, 1));
+        dateTime[3] = Util.setBit(dateTime[3], 4, bitRead(value, 2));
+        dateTime[3] = Util.setBit(dateTime[3], 5, bitRead(value, 3));
+        dateTime[3] = Util.setBit(dateTime[3], 6, bitRead(value, 4));
+        dateTime[3] = Util.setBit(dateTime[3], 7, bitRead(value, 5));
 
-        return bits.toByteArray();
+        return dateTime;
     }
 
 
