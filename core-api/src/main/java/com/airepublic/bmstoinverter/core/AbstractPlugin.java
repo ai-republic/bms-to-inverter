@@ -56,6 +56,10 @@ public abstract class AbstractPlugin<DEVICE> {
      * @param property the property
      */
     public void addProperty(final PluginProperty property) {
+        if (properties.contains(property)) {
+            removeProperty(property);
+        }
+
         properties.add(property);
     }
 

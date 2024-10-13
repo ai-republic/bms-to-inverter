@@ -10,6 +10,8 @@
  */
 package com.airepublic.bmstoinverter.core;
 
+import java.util.Objects;
+
 /**
  * A property for usage in an {@link AbstractPlugin}.
  */
@@ -89,5 +91,27 @@ public class PluginProperty {
      */
     public void setDescription(final String description) {
         this.description = description;
+    }
+
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(name);
+    }
+
+
+    @Override
+    public boolean equals(final Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final PluginProperty other = (PluginProperty) obj;
+        return Objects.equals(name, other.name);
     }
 }
