@@ -138,12 +138,12 @@ public abstract class Inverter {
 
         if (energyStorage.getBatteryPacks().size() > 0) {
             try {
-                aggregatedPack = getAggregatedBatteryInfo();
+                // read any request from the inverter
                 final Port port = PortAllocator.allocate(getPortLocator());
                 final ByteBuffer requestFrame = readRequest(port);
 
                 if (requestFrame != null) {
-                    LOG.debug("Inverter received: " + Port.printBuffer(requestFrame));
+                    LOG.debug("Inverter " + config.getDescriptor().getName() + " received: " + Port.printBuffer(requestFrame));
 
                     // if a plugin is set
                     if (getPlugins() != null) {
@@ -153,9 +153,12 @@ public abstract class Inverter {
                             p.onReceive(requestFrame);
                         });
 
-                        LOG.debug("Inverter received (after running plugins): " + Port.printBuffer(requestFrame));
+                        LOG.debug("Inverter " + config.getDescriptor().getName() + " received (after running plugins): " + Port.printBuffer(requestFrame));
                     }
                 }
+
+                // aggregate all battery packs into one
+                aggregatedPack = aggregatedBatteryInfo();
 
                 // if a plugin is set
                 if (getPlugins() != null) {
@@ -166,6 +169,7 @@ public abstract class Inverter {
                     });
                 }
 
+                // create send frames based on the aggregated data
                 final List<ByteBuffer> sendFrames = createSendFrames(requestFrame, aggregatedPack);
 
                 if (sendFrames != null && !sendFrames.isEmpty()) {
@@ -182,12 +186,12 @@ public abstract class Inverter {
                             });
                         }
 
-                        LOG.debug("Inverter send: {}", Port.printBuffer(frame));
+                        LOG.debug("Inverter " + config.getDescriptor().getName() + " send: {}", Port.printBuffer(frame));
                         sendFrame(port, frame);
                     }
                 }
             } catch (final Throwable e) {
-                LOG.error("Failed to send frame to inverter:" + Port.printBuffer(currentFrame), e);
+                LOG.error("Failed to send frame to inverter " + config.getDescriptor().getName() + " :" + Port.printBuffer(currentFrame), e);
             }
 
             try {
@@ -196,7 +200,7 @@ public abstract class Inverter {
                 LOG.error("Inverter process callback threw an exception!", e);
             }
         } else {
-            LOG.debug("No battery data yet received to send to inverter!");
+            LOG.debug("No battery data yet received to send to inverter " + config.getDescriptor().getName() + "!");
         }
     }
 
@@ -237,7 +241,7 @@ public abstract class Inverter {
      * Aggregates all {@link BatteryPack}s listed in the {@link EnergyStorage} into one
      * {@link BatteryPack} which data will be sent to the {@link Inverter}.
      */
-    protected BatteryPack getAggregatedBatteryInfo() {
+    protected BatteryPack aggregatedBatteryInfo() {
         final BatteryPack result = new BatteryPack();
         result.maxPackChargeCurrent = Integer.MAX_VALUE;
         result.maxPackDischargeCurrent = Integer.MIN_VALUE;
@@ -328,6 +332,45 @@ public abstract class Inverter {
             result.softwareVersion = energyStorage.getBatteryPack(0).softwareVersion;
         }
 
+        // check if values were not set and set them to some default
+        if (result.maxPackChargeCurrent == Integer.MAX_VALUE) {
+            result.maxPackChargeCurrent = 0;
+        }
+
+        if (result.maxPackDischargeCurrent == Integer.MIN_VALUE) {
+            result.maxPackDischargeCurrent = 0;
+        }
+        if (result.maxPackVoltageLimit == Integer.MAX_VALUE) {
+            result.maxPackVoltageLimit = 500;
+        }
+        if (result.minPackVoltageLimit == Integer.MIN_VALUE) {
+            result.minPackVoltageLimit = 500;
+        }
+        if (result.maxCellmV == Integer.MIN_VALUE) {
+            result.maxCellmV = 3000;
+        }
+        if (result.minCellmV == Integer.MAX_VALUE) {
+            result.minCellmV = 3000;
+        }
+        if (result.tempMax == Integer.MIN_VALUE) {
+            result.tempMax = 250;
+        }
+        if (result.tempMin == Integer.MAX_VALUE) {
+            result.tempMin = 250;
+        }
+        if (result.maxModulemV == Integer.MIN_VALUE) {
+            result.maxModulemV = 3000;
+        }
+        if (result.minModulemV == Integer.MAX_VALUE) {
+            result.minModulemV = 3000;
+        }
+        if (result.maxModuleTemp == Integer.MIN_VALUE) {
+            result.maxModuleTemp = 250;
+        }
+        if (result.minModuleTemp == Integer.MAX_VALUE) {
+            result.minModuleTemp = 250;
+        }
+
         return result;
     }
 
@@ -387,7 +430,7 @@ public abstract class Inverter {
         };
         inverter.energyStorage = storage;
 
-        final BatteryPack aggregatedPack = inverter.getAggregatedBatteryInfo();
+        final BatteryPack aggregatedPack = inverter.aggregatedBatteryInfo();
         System.out.println(aggregatedPack.chargeMOSState);
 
     }
