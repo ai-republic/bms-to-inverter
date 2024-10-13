@@ -106,11 +106,17 @@ public class PluginDialog extends JDialog {
         final JButton cancelButton = new JButton("Cancel");
         buttonPanel.add(cancelButton);
         cancelButton.addActionListener(e -> {
+            pluginComboBox.removeAllItems();
             dispose();
         });
 
         pluginComboBox.addActionListener(event -> {
-            buildPropertiesPanel(((PluginConfig) pluginComboBox.getSelectedItem()).getProperties());
+            final PluginConfig config = (PluginConfig) pluginComboBox.getSelectedItem();
+
+            if (config != null) {
+                buildPropertiesPanel(config.getProperties());
+            }
+
             propertiesScrollPane.validate();
         });
 

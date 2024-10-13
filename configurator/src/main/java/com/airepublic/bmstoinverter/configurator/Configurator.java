@@ -301,6 +301,17 @@ public class Configurator extends JFrame {
         Files.deleteIfExists(srcDirectory.resolve("protocol-can/src/main/resources/native/libjavacan-core.so"));
         Files.copy(srcDirectory.resolve("protocol-can/src/main/resources/native/" + canLibFolder + "/native/libjavacan-core.so"), srcDirectory.resolve("protocol-can/src/main/resources/native/libjavacan-core.so"));
 
+        if (Files.exists(installDirectory.resolve("lib"))) {
+            out.append("Deleting existing lib folder...\n");
+
+            Files.list(installDirectory.resolve("lib")).forEach(file -> {
+                try {
+                    Files.delete(file);
+                } catch (final IOException e) {
+                }
+            });
+        }
+
         // create a new poms with necessary dependencies only
         generatePOMs(tempDirectory);
 
