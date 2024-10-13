@@ -179,7 +179,7 @@ public class GrowattInverterCANProcessor extends Inverter {
     /**
      * See documentation Table 5.
      *
-     * @return the bitset
+     * @return the charge state bits
      */
     private byte getChargeStates(final BatteryPack pack) {
         byte value = 0;

@@ -12,7 +12,6 @@ package com.airepublic.bmstoinverter.bms.jk.modbus;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.util.BitSet;
 import java.util.function.Consumer;
 
 import org.slf4j.Logger;
@@ -24,6 +23,7 @@ import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
+import com.airepublic.bmstoinverter.core.util.Util;
 import com.airepublic.bmstoinverter.protocol.modbus.ModbusUtil;
 import com.airepublic.bmstoinverter.protocol.modbus.ModbusUtil.RegisterCode;
 
@@ -84,19 +84,18 @@ public class JKBmsModbusProcessor extends BMS {
         final int unitId = frame.getInt();
         final BatteryPack pack = energyStorage.getBatteryPack(unitId - 1);
 
-        final BitSet bits39014 = BitSet.valueOf(new byte[] { frame.get(), frame.get() });
-        final BitSet bits39015 = BitSet.valueOf(new byte[] { frame.get(), frame.get() });
-        final BitSet bits39016 = BitSet.valueOf(new byte[] { frame.get(), frame.get() });
+        final short bits39014 = frame.getShort();
+        final short bits39015 = frame.getShort();
+        final short bits39016 = frame.getShort();
 
-        pack.alarms.put(Alarm.FAILURE_COMMUNICATION_INTERNAL, bits39014.get(13) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.FAILURE_OTHER, bits39014.get(14) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.PACK_VOLTAGE_HIGH, bits39014.get(15) || bits39016.get(0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.PACK_VOLTAGE_LOW, bits39015.get(0) || bits39016.get(15) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.PACK_CURRENT_HIGH, bits39016.get(12) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, bits39015.get(1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.PACK_TEMPERATURE_HIGH, bits39015.get(6) || bits39015.get(7) || bits39015.get(8) || bits39016.get(13) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.PACK_TEMPERATURE_LOW, bits39016.get(14) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.TEMPERATURE_SENSOR_DIFFERENCE_HIGH, bits39015.get(15) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-
+        pack.alarms.put(Alarm.FAILURE_COMMUNICATION_INTERNAL, Util.bit(bits39014, 13) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_OTHER, Util.bit(bits39014, 14) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_VOLTAGE_HIGH, Util.bit(bits39014, 15) || Util.bit(bits39016, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_VOLTAGE_LOW, Util.bit(bits39015, 0) || Util.bit(bits39016, 15) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_CURRENT_HIGH, Util.bit(bits39016, 12) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, Util.bit(bits39015, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_TEMPERATURE_HIGH, Util.bit(bits39015, 6) || Util.bit(bits39015, 7) || Util.bit(bits39015, 8) || Util.bit(bits39016, 13) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_TEMPERATURE_LOW, Util.bit(bits39016, 14) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.TEMPERATURE_SENSOR_DIFFERENCE_HIGH, Util.bit(bits39015, 15) ? AlarmLevel.ALARM : AlarmLevel.NONE);
     }
 }

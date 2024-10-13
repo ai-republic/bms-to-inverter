@@ -13,7 +13,6 @@ package com.airepublic.bmstoinverter.bms.samsung.can;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.BitSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +22,7 @@ import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
+import com.airepublic.bmstoinverter.core.util.Util;
 
 /**
  * The class to handle CAN messages from a Pylon {@link BMS}.
@@ -106,34 +106,31 @@ public class SamsungBmsCANProcessor extends BMS {
         final byte protection2 = data.get();
 
         // alarms
-        BitSet bits = BitSet.valueOf(new byte[] { alarm1 });
-        pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, bits.get(0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, bits.get(1) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.PACK_TEMPERATURE_HIGH, bits.get(2) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.PACK_TEMPERATURE_LOW, bits.get(3) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.PACK_CURRENT_HIGH, bits.get(4) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.PACK_CURRENT_LOW, bits.get(5) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CHARGE_MODULE_TEMPERATURE_HIGH, bits.get(6) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, bits.get(7) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, Util.bit(alarm1, 0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, Util.bit(alarm1, 1) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_TEMPERATURE_HIGH, Util.bit(alarm1, 2) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_TEMPERATURE_LOW, Util.bit(alarm1, 3) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_CURRENT_HIGH, Util.bit(alarm1, 4) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_CURRENT_LOW, Util.bit(alarm1, 5) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_MODULE_TEMPERATURE_HIGH, Util.bit(alarm1, 6) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, Util.bit(alarm1, 7) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
         // protection
-        bits = BitSet.valueOf(new byte[] { protection1 });
-        pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, bits.get(0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, bits.get(1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.PACK_TEMPERATURE_HIGH, bits.get(2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.PACK_TEMPERATURE_LOW, bits.get(3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, bits.get(4) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, bits.get(5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CHARGE_MODULE_TEMPERATURE_HIGH, bits.get(6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, Util.bit(protection1, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, Util.bit(protection1, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_TEMPERATURE_HIGH, Util.bit(protection1, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_TEMPERATURE_LOW, Util.bit(protection1, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, Util.bit(protection1, 4) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, Util.bit(protection1, 5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_MODULE_TEMPERATURE_HIGH, Util.bit(protection1, 6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
-        bits = BitSet.valueOf(new byte[] { protection2 });
-        pack.setAlarm(Alarm.FAILURE_OTHER, bits.get(0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.FAILURE_COMMUNICATION_INTERNAL, bits.get(1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.FAILURE_CHARGE_BREAKER, bits.get(2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CHARGE_MODULE_TEMPERATURE_HIGH, bits.get(3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, bits.get(4) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, bits.get(5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, bits.get(6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.FAILURE_OTHER, Util.bit(protection2, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.FAILURE_COMMUNICATION_INTERNAL, Util.bit(protection2, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.FAILURE_CHARGE_BREAKER, Util.bit(protection2, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_MODULE_TEMPERATURE_HIGH, Util.bit(protection2, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, Util.bit(protection2, 4) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, Util.bit(protection2, 5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, Util.bit(protection2, 6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         // Number of total trays
         pack.modulesInSeries = data.get();
