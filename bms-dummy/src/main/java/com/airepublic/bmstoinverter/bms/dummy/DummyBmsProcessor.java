@@ -19,6 +19,7 @@ import com.airepublic.bmstoinverter.core.Port;
 public class DummyBmsProcessor extends BMS {
     @Override
     public void collectData(final Port port) {
+        // make sure there is one battery pack available for the inverter
         getBatteryPack(getBmsId());
     }
 
