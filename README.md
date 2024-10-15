@@ -1,6 +1,12 @@
 # BMS to Solar Inverter communication
 ## _*(Use, monitor and control any battery brand with any inverter)*_
 
+<p align="center" with="100%">
+  
+<img src="https://github.com/user-attachments/assets/2d2b18a8-843a-4094-8da3-e0244862e224"/> 
+
+</p>
+
 This application is reading data from a BMS and sending it to an inverter. This way you have no restriction on what battery brands you can use with your inverter. 
 Many inverter manufacturers only allow batteries from certain battery manufacturers and certain models.
 This project enables you to read your BMS's data via different protocols - RS485, RS232, UART, ModBus or CAN - and write the battery data to the inverter in a specification that the inverter supports - Pylontech, SMA, Growatt, Deye, SolArk, etc.
