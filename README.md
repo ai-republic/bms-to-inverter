@@ -2,8 +2,8 @@
 ## _*(Use, monitor and control any battery brand with any inverter)*_
 
 <p align="center" with="100%">
-  
-<img src="https://github.com/user-attachments/assets/2d2b18a8-843a-4094-8da3-e0244862e224"/> 
+
+<img src="https://github.com/user-attachments/assets/f0650c80-ef46-4b39-b63c-e64e172d1b6e"/> 
 
 </p>
 
