@@ -50,5 +50,5 @@ See the Wiki page [How to use](https://github.com/ai-republic/bms-to-inverter/wi
 If you have questions or need support feel free to contact me or raise an issue or discussion.
 If you like to support me testing the application on all different BMSes and inverters please contact me!
 
-_**=====>>>> Finally, if you like this project and like to support my work please consider sponsoring this project [`Sponsor`](https://github.com/sponsors/ai-republic) button on the right :)**_
+## _**=====>>>>   Finally, if you like this project and like to support my work please consider sponsoring this project [`Sponsor`](https://github.com/sponsors/ai-republic) button on the right ❤️   <<<<=====**_
 
