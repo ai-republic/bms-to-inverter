@@ -47,6 +47,7 @@ See the Wiki page [How to use](https://github.com/ai-republic/bms-to-inverter/wi
 
 ## Other Notes
 **DISCLAIMER** I do not take _any_ responsibility for _any_ kind of damage or injury that might be caused by using this software. Use at your own risk.
+
 If you have questions or need support feel free to contact me or raise an issue or discussion.
 If you like to support me testing the application on all different BMSes and inverters please contact me!
 
