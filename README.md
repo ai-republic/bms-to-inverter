@@ -7,17 +7,23 @@
 
 </p>
 
-This application is reading data from a BMS and sending it to an inverter. This way you have no restriction on what battery brands you can use with your inverter. 
+This application is reading data from one or multiple BMS(es) and sending it to an inverter using a microcontroller in between as a bridge. 
 Many inverter manufacturers only allow batteries from certain battery manufacturers and certain models.
+**With this application you have no restriction on what battery brands you can use with your inverter!!!** 
+
 This project enables you to read your BMS's data via different protocols - RS485, RS232, UART, ModBus or CAN - and write the battery data to the inverter in a specification that the inverter supports - Pylontech, SMA, Growatt, Deye, SolArk, etc.
 The appplication supports _multiple_ BMS (even mixes from different manufacturers), aggregating them and sending the data to the configurable inverter.
+
 You can monitor each of your battery packs cells and view alarm states on the included webserver or hook up via the MQTT broker on your smart home.
-It event let's you *manipulate* or *simulate* BMS data that get's sent to the inverter! Please see read plugin information in the [Wiki](https://github.com/ai-republic/bms-to-inverter/wiki/How-to-use).
-This way _you_ control what get's send to the inverter!
 
-The (reference) project uses a Raspberry Pi 4B with a [Waveshare RS485/CAN](https://www.waveshare.com/rs485-can-hat.htm) hat or [Waveshare 2-Channel CAN FD HAT](https://www.waveshare.com/2-ch-can-fd-hat.htm) module but you can use any CAN or RS485 module for your PI that provides ports like `can0` or `/dev/ttyS0` or similar. It will also work on older/newer PI's such as RPi 1 or RPi 5.
+It even let's you *manipulate* or *simulate* BMS data that get's sent to the inverter! Please see read plugin information in the [Wiki](https://github.com/ai-republic/bms-to-inverter/wiki/How-to-use).
 
-A wide range of BMS and inverters already supported, see [Supported-BMSes-and-Inverters](https://github.com/ai-republic/bms-to-inverter/wiki/Supported-BMSes-and-Inverters) in the Wiki.
+**This way _you_ control what get's send to the inverter!**
+
+This application will run on any microcontroller the can run a Java JDK (32 or 64bit) like PI's such as RPi 1 or RPi 5.
+The (reference) project uses a Raspberry Pi 4B with a [Waveshare RS485/CAN](https://www.waveshare.com/rs485-can-hat.htm) hat or [Waveshare 2-Channel CAN FD HAT](https://www.waveshare.com/2-ch-can-fd-hat.htm) module but you can use any CAN or RS485 module for your PI that provides ports like `can0` or `/dev/ttyS0` or similar. 
+
+A wide range of BMS and inverters are supported and new one's are added continuously on request, see [Supported-BMSes-and-Inverters](https://github.com/ai-republic/bms-to-inverter/wiki/Supported-BMSes-and-Inverters) in the Wiki.
 
 **NOTE:** **If your BMS or inverter is not in the list it is likely to work with one of these bindings (like Pylon). Just open an issue and we'll see what I can do!**
 **NOTE:** I would appreciate support to test the BMS and inverter bindings in all variations. Please let me know if you would like to support this project - Testers are very welcome! :)_
@@ -36,7 +42,7 @@ _**NOTE:** There are restrictions using CAN on Windows as SocketCAN library is *
 
 ## Requirements
 
-This project explicitly supports Java 8 because its the latest version with 32-bit JDK 8 support that many microcontrollers support.
+This project explicitly supports Java 8 because its the last version with 32-bit JDK 8 support that many microcontrollers support.
 If you're using a Raspberry PI 3B, 4B or above I recommend to use a 64-bit Java JDK and 64-bit operating system like Raspian OS or Ubuntu.
 The application has also been tested on Pi 1 - Pi5. Any microcontroller that can run a JDK 8+ can be used.
 For detailed requirements please refer to the [How-to-Use](https://github.com/ai-republic/bms-to-inverter/wiki/How-to-use) in the Wiki.
