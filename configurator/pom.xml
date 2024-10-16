@@ -179,6 +179,13 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- ####################  TIAN (MODBUS)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-tian-modbus</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 
 		<!-- ####################         !!!!!!!!	Inverters 	!!!!!!!!		#################### -->
 

@@ -34,6 +34,7 @@
 		<module>bms-samsung-can</module>
 		<module>bms-seplos-can</module>
 		<module>bms-sma-si-can</module>
+		<module>bms-tian-modbus</module>
 		<module>bms-to-inverter-main</module>
 		<module>inverter-deye-can</module>
 		<module>inverter-dummy</module>
