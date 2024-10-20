@@ -168,6 +168,13 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- ####################  NARADA (MODBUS)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-narada-modbus</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- ####################  PACE (CAN)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
