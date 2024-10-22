@@ -11,6 +11,7 @@
 package com.airepublic.bmstoinverter.protocol.modbus;
 
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import java.util.stream.Stream;
 
 import com.ghgande.j2mod.modbus.msg.ReadInputRegistersResponse;
@@ -51,11 +52,13 @@ public class ModbusUtil {
     }
 
     public static ByteBuffer createRequestBuffer(final RegisterCode register, final int startAddress, final int numRegisters, final int unitId) {
-        final ByteBuffer buffer = ByteBuffer.allocate(16);
+        final ByteBuffer buffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN);
         buffer.putInt(register.getFunctionCode());
         buffer.putInt(startAddress);
         buffer.putInt(numRegisters);
         buffer.putInt(unitId);
+
+        buffer.rewind();
 
         return buffer;
     }

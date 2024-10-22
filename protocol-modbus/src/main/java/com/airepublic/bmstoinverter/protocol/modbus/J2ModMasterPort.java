@@ -111,29 +111,29 @@ public class J2ModMasterPort extends ModBusPort {
     @Override
     public void sendFrame(final ByteBuffer frame) throws IOException {
         final int functionCode = frame.getInt();
+        // Modbus register addresses are 1-based, so subtract 1 for the j2mod library
+        final int startAddress = frame.getInt() - 1;
+        final int numRegisters = frame.getInt();
+        final int unitId = frame.getInt();
 
         switch (functionCode) {
             case Modbus.READ_INPUT_REGISTERS:
-                readInputRegisters(frame);
+                readInputRegisters(startAddress, numRegisters, unitId);
             break;
             case Modbus.READ_HOLDING_REGISTERS:
-                readHoldingRegisters(frame);
+                readHoldingRegisters(startAddress, numRegisters, unitId);
             break;
             case Modbus.WRITE_SINGLE_REGISTER:
-                writeSingleRegister(frame);
+                writeSingleRegister(startAddress, numRegisters, unitId, frame);
             break;
             case Modbus.WRITE_MULTIPLE_REGISTERS:
-                writeMultipleRegisters(frame);
+                writeMultipleRegisters(startAddress, numRegisters, unitId, frame);
             break;
         }
     }
 
 
-    private void readInputRegisters(final ByteBuffer frame) throws IOException {
-        // Modbus register addresses are 1-based, so subtract 1 for the j2mod library
-        final int startAddress = frame.getInt() - 1;
-        final int numRegisters = frame.getInt();
-        final int unitId = frame.getInt();
+    private void readInputRegisters(final int startAddress, final int numRegisters, final int unitId) throws IOException {
         ModbusSerialTransaction transaction = null;
         ReadInputRegistersResponse response = null;
         ReadInputRegistersRequest request = null;
@@ -157,11 +157,8 @@ public class J2ModMasterPort extends ModBusPort {
     }
 
 
-    private void readHoldingRegisters(final ByteBuffer frame) throws IOException {
+    private void readHoldingRegisters(final int startAddress, final int numRegisters, final int unitId) throws IOException {
         // Modbus register addresses are 1-based, so subtract 1 for the j2mod library
-        final int startAddress = frame.getInt() - 1;
-        final int numRegisters = frame.getInt();
-        final int unitId = frame.getInt();
         ModbusSerialTransaction transaction = null;
         ReadMultipleRegistersRequest request = null;
         ReadMultipleRegistersResponse response = null;
@@ -187,11 +184,7 @@ public class J2ModMasterPort extends ModBusPort {
     }
 
 
-    private void writeMultipleRegisters(final ByteBuffer frame) throws IOException {
-        // Modbus register addresses are 1-based, so subtract 1 for the j2mod library
-        final int startAddress = frame.getInt() - 1;
-        final int numRegisters = frame.getInt();
-        final int unitId = frame.getInt();
+    private void writeMultipleRegisters(final int startAddress, final int numRegisters, final int unitId, final ByteBuffer frame) throws IOException {
         final Register[] registers = new Register[numRegisters];
 
         for (int i = 0; i < numRegisters; i++) {
@@ -221,12 +214,7 @@ public class J2ModMasterPort extends ModBusPort {
     }
 
 
-    private void writeSingleRegister(final ByteBuffer frame) throws IOException {
-        // Modbus register addresses are 1-based, so subtract 1 for the j2mod library
-        final int startAddress = frame.getInt() - 1;
-        final int numRegisters = frame.getInt();
-        final int unitId = frame.getInt();
-
+    private void writeSingleRegister(final int startAddress, final int numRegisters, final int unitId, final ByteBuffer frame) throws IOException {
         ModbusSerialTransaction transaction = null;
         WriteSingleRegisterResponse response = null;
         WriteSingleRegisterRequest request = null;
