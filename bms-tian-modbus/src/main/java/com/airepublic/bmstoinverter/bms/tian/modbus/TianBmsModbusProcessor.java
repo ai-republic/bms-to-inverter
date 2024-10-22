@@ -22,20 +22,15 @@ import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
-import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.util.Util;
 import com.airepublic.bmstoinverter.protocol.modbus.ModbusUtil;
 import com.airepublic.bmstoinverter.protocol.modbus.ModbusUtil.RegisterCode;
-
-import jakarta.inject.Inject;
 
 /**
  * The class to handle Modbus messages from a Tian {@link BMS}.
  */
 public class TianBmsModbusProcessor extends BMS {
     private final static Logger LOG = LoggerFactory.getLogger(TianBmsModbusProcessor.class);
-    @Inject
-    private EnergyStorage energyStorage;
 
     @Override
     protected void collectData(final Port port) {
@@ -57,7 +52,7 @@ public class TianBmsModbusProcessor extends BMS {
         frame.getInt(); // functionCode
         frame.getInt(); // numRegisters
         final int unitId = frame.getInt();
-        final BatteryPack pack = energyStorage.getBatteryPack(unitId);
+        final BatteryPack pack = getBatteryPack(unitId);
 
         // pack voltage 0.01V
         pack.packVoltage = frame.getInt() / 10;

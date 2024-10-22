@@ -22,20 +22,15 @@ import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
-import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.util.Util;
 import com.airepublic.bmstoinverter.protocol.modbus.ModbusUtil;
 import com.airepublic.bmstoinverter.protocol.modbus.ModbusUtil.RegisterCode;
-
-import jakarta.inject.Inject;
 
 /**
  * The class to handle Modbus messages from a Huawei {@link BMS}.
  */
 public class HuaweiBmsModbusProcessor extends BMS {
     private final static Logger LOG = LoggerFactory.getLogger(HuaweiBmsModbusProcessor.class);
-    @Inject
-    private EnergyStorage energyStorage;
 
     @Override
     protected void collectData(final Port port) {
@@ -58,7 +53,7 @@ public class HuaweiBmsModbusProcessor extends BMS {
         frame.getInt(); // functionCode
         frame.getInt(); // numRegisters
         final int unitId = frame.getInt();
-        final BatteryPack pack = energyStorage.getBatteryPack(unitId);
+        final BatteryPack pack = getBatteryPack(unitId);
 
         pack.numberOfCells = frame.getChar();
         frame.getShort(); // device status
@@ -86,7 +81,7 @@ public class HuaweiBmsModbusProcessor extends BMS {
         frame.getInt(); // functionCode
         frame.getInt(); // numRegisters
         final int unitId = frame.getInt();
-        final BatteryPack pack = energyStorage.getBatteryPack(unitId - 1);
+        final BatteryPack pack = getBatteryPack(unitId);
 
         final short bits39014 = frame.getShort();
         final short bits39015 = frame.getShort();

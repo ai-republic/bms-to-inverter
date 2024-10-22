@@ -22,20 +22,15 @@ import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
-import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.util.Util;
 import com.airepublic.bmstoinverter.protocol.modbus.ModbusUtil;
 import com.airepublic.bmstoinverter.protocol.modbus.ModbusUtil.RegisterCode;
-
-import jakarta.inject.Inject;
 
 /**
  * The class to handle Modbus messages from a JK {@link BMS}.
  */
 public class JKBmsModbusProcessor extends BMS {
     private final static Logger LOG = LoggerFactory.getLogger(JKBmsModbusProcessor.class);
-    @Inject
-    private EnergyStorage energyStorage;
 
     @Override
     protected void collectData(final Port port) {
@@ -60,7 +55,7 @@ public class JKBmsModbusProcessor extends BMS {
         frame.getInt(); // functionCode
         frame.getInt(); // numRegisters
         final int unitId = frame.getInt();
-        final BatteryPack pack = energyStorage.getBatteryPack(unitId);
+        final BatteryPack pack = getBatteryPack(unitId);
 
         pack.numberOfCells = frame.getInt();
         pack.chargeMOSState = frame.getInt() == 1;
@@ -74,7 +69,7 @@ public class JKBmsModbusProcessor extends BMS {
         frame.getInt(); // functionCode
         frame.getInt(); // numRegisters
         final int unitId = frame.getInt();
-        final BatteryPack pack = energyStorage.getBatteryPack(unitId);
+        final BatteryPack pack = getBatteryPack(unitId);
 
         // voltage in mV
         pack.packVoltage = frame.getInt() / 100;
@@ -91,7 +86,7 @@ public class JKBmsModbusProcessor extends BMS {
         frame.getInt(); // functionCode
         frame.getInt(); // numRegisters
         final int unitId = frame.getInt();
-        final BatteryPack pack = energyStorage.getBatteryPack(unitId);
+        final BatteryPack pack = getBatteryPack(unitId);
 
         // SOC in 1%
         pack.packSOC = (frame.getInt() & 0xF0) >> 8;
@@ -102,7 +97,7 @@ public class JKBmsModbusProcessor extends BMS {
         frame.getInt(); // functionCode
         frame.getInt(); // numRegisters
         final int unitId = frame.getInt();
-        final BatteryPack pack = energyStorage.getBatteryPack(unitId - 1);
+        final BatteryPack pack = getBatteryPack(unitId);
 
         final int bits = frame.getInt();
 
