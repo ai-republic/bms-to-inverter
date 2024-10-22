@@ -111,8 +111,8 @@ public class J2ModMasterPort extends ModBusPort {
     @Override
     public void sendFrame(final ByteBuffer frame) throws IOException {
         final int functionCode = frame.getInt();
-        // Modbus register addresses are 1-based, so subtract 1 for the j2mod library
-        final int startAddress = frame.getInt() - 1;
+        // (Modbus register addresses are 1-based, so subtract 1 for the j2mod library)
+        final int startAddress = frame.getInt();// - 1;
         final int numRegisters = frame.getInt();
         final int unitId = frame.getInt();
 
@@ -145,7 +145,7 @@ public class J2ModMasterPort extends ModBusPort {
 
             // Prepare a transaction
             transaction = new ModbusSerialTransaction(request);
-
+            transaction.setSerialConnection(port.getConnection());
             transaction.setTransDelayMS(50);
             transaction.execute();
 
@@ -171,7 +171,7 @@ public class J2ModMasterPort extends ModBusPort {
 
             // Prepare a transaction
             transaction = new ModbusSerialTransaction(request);
-
+            transaction.setSerialConnection(port.getConnection());
             transaction.setTransDelayMS(50);
             transaction.execute();
 
@@ -202,7 +202,7 @@ public class J2ModMasterPort extends ModBusPort {
 
             // Prepare a transaction
             transaction = new ModbusSerialTransaction(request);
-
+            transaction.setSerialConnection(port.getConnection());
             transaction.setTransDelayMS(50);
             transaction.execute();
 
@@ -226,7 +226,7 @@ public class J2ModMasterPort extends ModBusPort {
 
             // Prepare a transaction
             transaction = new ModbusSerialTransaction(request);
-
+            transaction.setSerialConnection(port.getConnection());
             transaction.setTransDelayMS(50);
             transaction.execute();
 

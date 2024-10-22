@@ -40,8 +40,8 @@ public class HuaweiBmsModbusProcessor extends BMS {
     @Override
     protected void collectData(final Port port) {
         try {
-            sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, 30101, 83, getBmsId(), this::readBatteryStatus);
-            sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, 39014, 4, getBmsId(), this::readAlarms);
+            sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, 30100, 83, getBmsId(), this::readBatteryStatus);
+            sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, 39013, 4, getBmsId(), this::readAlarms);
         } catch (final IOException e) {
             LOG.error("Error reading from modbus!", e);
         }
