@@ -84,9 +84,9 @@
 			averageVoltage += pack.packVoltage;
 			
 			if (pack.chargeDischargeStatus == 1) {
-				chargeState = 'Discharge';
-			} else if (pack.chargeDischargeStatus == 2 && (chargeState === 'Idile' || chargeState === 'Sleep')) {
 				chargeState = 'Charge';
+			} else if (pack.chargeDischargeStatus == 2 && (chargeState === 'Idle' || chargeState === 'Sleep')) {
+				chargeState = 'Disharge';
 			} else if (pack.chargeDischargeStatus == 3 && chargeState === 'Idle') {
 				chargeState = 'Sleep';
 			}
