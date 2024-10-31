@@ -216,6 +216,7 @@ public class WebServer implements IWebServerService {
         securityHandler.put("/*", Constraint.from("user"));
         securityHandler.put("/login.html", Constraint.ALLOWED_ANY_TRANSPORT);
         securityHandler.put("/styles.css", Constraint.ALLOWED_ANY_TRANSPORT);
+        securityHandler.put("/.favicon", Constraint.ALLOWED_ANY_TRANSPORT);
         securityHandler.setAuthenticator(new FormAuthenticator("/login.html", "/login.html", true));
         securityHandler.setLoginService(loginService);
 

@@ -5,12 +5,27 @@ body {
 	background-color: #f4f4f4;
 }
 
+
+.title-container {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 20pt;
+	font-style: italic;
+	font-weight: bolder;
+	text-align: center;
+	color: rgb(0, 100, 200);
+	width: 500px;
+	padding-top:100px;
+	position: absolute;
+	left: 50%;
+	-ms-transform: translate(-50%, -50%);
+	transform: translate(-50%, -50%);
+}
+
 .login-container {
 	background-color: #ffffff;
 	padding: 20px;
 	border-radius: 8px;
 	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-	width: 300px;
 	margin: 0;
 	position: absolute;
 	top: 50%;
@@ -62,8 +77,19 @@ body {
 #mainPanel {
 	margin: auto;
 	height: 800px;
+	color: #0056b3;
 }
 
+.headerPanel {
+	font-family: Arial, Helvetica, sans-serif;
+	font-size: 20pt;
+	font-style: italic;
+	font-weight: bolder;
+	text-align: center;
+	color: rgb(0, 100, 200);
+	padding: 10px 50px 50px 50px;
+}
+	
 #menuPanel {
 	float: left;
 	width: 200px;

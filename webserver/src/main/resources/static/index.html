@@ -86,7 +86,7 @@
 			if (pack.chargeDischargeStatus == 1) {
 				chargeState = 'Charge';
 			} else if (pack.chargeDischargeStatus == 2 && (chargeState === 'Idle' || chargeState === 'Sleep')) {
-				chargeState = 'Disharge';
+				chargeState = 'Discharge';
 			} else if (pack.chargeDischargeStatus == 3 && chargeState === 'Idle') {
 				chargeState = 'Sleep';
 			}
@@ -257,6 +257,7 @@
 
 <body onload="init()">
 	<div id="mainPanel" class="mainPanel">
+		<div id="headerPanel" class="headerPanel">BMS-to-Inverter</div>
 		<div id="menuPanel" ></div>
 		<div id="viewPanel">
 			<div id="overviewPanel"></div>
