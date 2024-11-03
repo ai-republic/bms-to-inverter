@@ -216,9 +216,7 @@ public class PaceBmsCANProcessor extends BMS {
                 .putShort((short) 0); // skip 2 bytes
 
         // data
-        for (final byte element : data) {
-            sendFrame.put(element);
-        }
+        sendFrame.put(data);
 
         sendFrame.rewind();
 

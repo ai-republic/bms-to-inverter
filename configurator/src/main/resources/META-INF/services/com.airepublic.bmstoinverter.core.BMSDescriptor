@@ -7,6 +7,7 @@ com.airepublic.bmstoinverter.bms.jbd.rs485.JBDBmsRS485Descriptor
 com.airepublic.bmstoinverter.bms.jk.can.JKBmsCANDescriptor
 com.airepublic.bmstoinverter.bms.jk.modbus.JKBmsModbusDescriptor
 com.airepublic.bmstoinverter.bms.jk.rs485.JKBmsRS485Descriptor
+com.airepublic.bmstoinverter.bms.lia.can.LiaBmsCANDescriptor
 com.airepublic.bmstoinverter.bms.narada.modbus.NaradaBmsModbusDescriptor
 com.airepublic.bmstoinverter.bms.pace.can.PaceBmsCANDescriptor
 com.airepublic.bmstoinverter.bms.pylon.can.PylonBmsCANDescriptor

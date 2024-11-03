@@ -27,6 +27,7 @@
 		<module>bms-jk-can</module>
 		<module>bms-jk-modbus</module>
 		<module>bms-jk-rs485</module>
+		<module>bms-lia-can</module>
 		<module>bms-narada-modbus</module>
 		<module>bms-pace-can</module>
 		<module>bms-pylon-can</module>

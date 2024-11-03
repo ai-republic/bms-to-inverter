@@ -168,6 +168,13 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- ####################  LIA (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-lia-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- ####################  NARADA (MODBUS)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
