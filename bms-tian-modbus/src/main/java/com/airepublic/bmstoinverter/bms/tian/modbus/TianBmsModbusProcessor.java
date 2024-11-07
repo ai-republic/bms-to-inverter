@@ -57,7 +57,7 @@ public class TianBmsModbusProcessor extends BMS {
         // pack voltage 0.01V
         pack.packVoltage = frame.getInt() / 10;
         // pack current 0.01A
-        pack.packCurrent = frame.getInt() / 10;
+        pack.packCurrent = ((short) frame.getInt()) / 10;
         // remaining capacity 0.01AH
         pack.remainingCapacitymAh = frame.getInt() * 10;
         // average temperature 0.1C
