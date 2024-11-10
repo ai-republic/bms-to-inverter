@@ -14,9 +14,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.HexFormat;
 import java.util.List;
-import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +24,6 @@ import com.airepublic.bmstoinverter.core.NoDataAvailableException;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.TooManyInvalidFramesException;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
-import com.airepublic.bmstoinverter.core.util.BitUtil;
 import com.airepublic.bmstoinverter.core.util.ByteAsciiConverter;
 
 /**
@@ -34,41 +31,19 @@ import com.airepublic.bmstoinverter.core.util.ByteAsciiConverter;
  */
 public class SacredsunBmsRS485Processor extends BMS {
     private final static Logger LOG = LoggerFactory.getLogger(SacredsunBmsRS485Processor.class);
-    private final Predicate<ByteBuffer> validator = buffer -> {
-        // check if null
-        if (buffer == null) {
-            return false;
-        }
-
-        final byte[] checksumBytes = new byte[4];
-        buffer.get(buffer.capacity() - 5, checksumBytes);
-        System.out.println(Port.printBytes(checksumBytes));
-        byte high = ByteAsciiConverter.convertAsciiBytesToByte(checksumBytes[0], checksumBytes[1]);
-        byte low = ByteAsciiConverter.convertAsciiBytesToByte(checksumBytes[2], checksumBytes[3]);
-        int checksum = high;
-        checksum = checksum << 8 & low;
-
-        final byte[] checkBytes = createChecksum(buffer);
-        System.out.println(Port.printBytes(checkBytes));
-        high = ByteAsciiConverter.convertAsciiBytesToByte(checkBytes[0], checkBytes[1]);
-        low = ByteAsciiConverter.convertAsciiBytesToByte(checkBytes[2], checkBytes[3]);
-        int check = high;
-        check = check << 8 & low;
-
-        return check == checksum;
-    };
 
     @Override
     protected void collectData(final Port port) throws TooManyInvalidFramesException, NoDataAvailableException, IOException {
-        sendMessage(port, (byte) 0x46, (byte) 0x60); // system information
-        sendMessage(port, (byte) 0x46, (byte) 0x61); // battery information
-        sendMessage(port, (byte) 0x46, (byte) 0x62); // alarm information
+        sendMessage(port); // battery information
     }
 
 
-    private List<ByteBuffer> sendMessage(final Port port, final byte cid1, final byte cid2) throws TooManyInvalidFramesException, NoDataAvailableException, IOException {
+    private List<ByteBuffer> sendMessage(final Port port) throws TooManyInvalidFramesException, NoDataAvailableException, IOException {
+        // first convert the bmsId to ascii bytes
         final String bmsId = new String(ByteAsciiConverter.convertByteToAsciiBytes((byte) getBmsId()));
-        final ByteBuffer sendBuffer = ByteBuffer.wrap(("~22" + bmsId + "4A42E00201FD28\r").getBytes()).order(ByteOrder.LITTLE_ENDIAN);
+        // insert the ascii byte bmsId into the request bytes
+        final String command = "~22" + bmsId + "4A42E00201FD" + String.format("%02X", 0x28 - (getBmsId() - 1)) + "\r";
+        final ByteBuffer sendBuffer = ByteBuffer.wrap(command.getBytes()).order(ByteOrder.LITTLE_ENDIAN);
         final List<ByteBuffer> readBuffers = new ArrayList<>();
         int failureCount = 0;
         int noDataReceived = 0;
@@ -94,7 +69,8 @@ public class SacredsunBmsRS485Processor extends BMS {
             try {
                 receiveBuffer = port.receiveFrame();
 
-                valid = validator.test(receiveBuffer);
+                // check start and end flag
+                valid = receiveBuffer.get(0) == 0x7E && receiveBuffer.get(receiveBuffer.capacity() - 1) == 0x0D;
 
                 if (valid) {
                     LOG.debug("RECEIVED: {}", Port.printBuffer(receiveBuffer));
@@ -107,10 +83,10 @@ public class SacredsunBmsRS485Processor extends BMS {
 
                     // extract length
                     final byte[] lengthAscii = new byte[2];
-                    receiveBuffer.get(10, lengthAscii);
-                    final short length = (short) (ByteAsciiConverter.convertAsciiBytesToShort(lengthAscii) & 0x0FFF);
+                    receiveBuffer.get(11, lengthAscii);
+                    final short length = ByteAsciiConverter.convertAsciiBytesToShort(lengthAscii);
 
-                    final ByteBuffer data = receiveBuffer.slice(13, receiveBuffer.capacity() - 18);
+                    final ByteBuffer data = receiveBuffer.slice(15, length);
 
                     readBatteryInformation(pack, data);
                     done = true;
@@ -159,7 +135,7 @@ public class SacredsunBmsRS485Processor extends BMS {
             }
         } while (!done);
 
-        LOG.warn("Command {} to sent to BMS successfully and received!", HexFormat.of().withPrefix("0x").formatHex(new byte[] { cid1, cid2 }));
+        LOG.warn("Command {} to sent to BMS successfully and received!", command);
 
         return readBuffers;
     }
@@ -169,104 +145,63 @@ public class SacredsunBmsRS485Processor extends BMS {
     private void readBatteryInformation(final BatteryPack aggregatedPack, final ByteBuffer data) {
         final byte[] shortAsciiBuffer = new byte[4];
         data.get(shortAsciiBuffer);
-        aggregatedPack.packVoltage = ByteAsciiConverter.convertAsciiBytesToShort(shortAsciiBuffer) / 100;
+        // SOC 0.01%
+        aggregatedPack.packSOC = ByteAsciiConverter.convertAsciiBytesToShort(shortAsciiBuffer) / 10;
         data.get(shortAsciiBuffer);
-        aggregatedPack.packCurrent = ByteAsciiConverter.convertAsciiBytesToShort(shortAsciiBuffer) / 10;
-        aggregatedPack.packSOC = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get()) * 10;
-        data.get(shortAsciiBuffer);
-        aggregatedPack.bmsCycles = ByteAsciiConverter.convertAsciiBytesToShort(shortAsciiBuffer);
-        data.get(shortAsciiBuffer); // maximum cycles
-        aggregatedPack.packSOH = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get()) * 10;
-        data.getShort(); // lowest SOH
-        data.get(shortAsciiBuffer);
-        aggregatedPack.maxCellmV = ByteAsciiConverter.convertAsciiBytesToShort(shortAsciiBuffer);
-        data.getShort(); // battery pack with highest voltage
-        aggregatedPack.maxCellVNum = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
-        data.get(shortAsciiBuffer);
-        aggregatedPack.minCellmV = ByteAsciiConverter.convertAsciiBytesToShort(shortAsciiBuffer);
-        data.getShort(); // battery pack with lowest voltage
-        aggregatedPack.minCellVNum = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
-        data.get(shortAsciiBuffer);
-        aggregatedPack.tempAverage = ByteAsciiConverter.convertAsciiBytesToShort(shortAsciiBuffer) - 2731;
+        // pack voltage 0.01V
+        aggregatedPack.packVoltage = ByteAsciiConverter.convertAsciiBytesToShort(shortAsciiBuffer) / 10;
+        // number of cells
+        aggregatedPack.numberOfCells = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
 
-        data.get(shortAsciiBuffer);
-        aggregatedPack.tempMax = ByteAsciiConverter.convertAsciiBytesToShort(shortAsciiBuffer) - 2731;
-        data.getShort(); // battery pack with lowest temp
-        aggregatedPack.tempMaxCellNum = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
-        data.get(shortAsciiBuffer);
-        aggregatedPack.tempMin = ByteAsciiConverter.convertAsciiBytesToShort(shortAsciiBuffer) - 2731;
-        data.getShort(); // battery pack with lowest temp
-        aggregatedPack.tempMinCellNum = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
-    }
-
-
-    private byte[] createChecksum(final ByteBuffer sendFrame) {
-        long checksum = 0;
-
-        // add all values except SOI, checksum and EOI
-        for (int i = 1; i < sendFrame.capacity() - 5; i++) {
-            checksum += sendFrame.get(i);
+        for (int cellNo = 0; cellNo < aggregatedPack.numberOfCells; cellNo++) {
+            data.get(shortAsciiBuffer);
+            aggregatedPack.cellVmV[cellNo] = ByteAsciiConverter.convertAsciiBytesToShort(shortAsciiBuffer);
         }
 
-        // modulo remainder of 65535
-        checksum %= 65535;
+        // Temperature (avg, max, min) 0.1C
+        data.get(shortAsciiBuffer);
+        aggregatedPack.tempAverage = ByteAsciiConverter.convertAsciiBytesToShort(shortAsciiBuffer);
+        data.get(shortAsciiBuffer);
+        aggregatedPack.tempMax = ByteAsciiConverter.convertAsciiBytesToShort(shortAsciiBuffer);
+        data.get(shortAsciiBuffer);
+        aggregatedPack.tempMin = ByteAsciiConverter.convertAsciiBytesToShort(shortAsciiBuffer);
 
-        // invert
-        checksum = ~checksum;
-        // add 1
-        checksum++;
+        // number of temperature sensors
+        aggregatedPack.numOfTempSensors = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
 
-        // extract the high and low bytes
-        final byte high = (byte) (checksum >> 8);
-        final byte low = (byte) (checksum & 0x000000FF);
-        // convert them to ascii
-        final byte[] highBytes = ByteAsciiConverter.convertByteToAsciiBytes(high);
-        final byte[] lowBytes = ByteAsciiConverter.convertByteToAsciiBytes(low);
-        final byte[] data = new byte[4];
-        data[0] = highBytes[0];
-        data[1] = highBytes[1];
-        data[2] = lowBytes[0];
-        data[3] = lowBytes[1];
+        // cell temperature 0.1C
+        for (int tempSensor = 0; tempSensor < aggregatedPack.numOfTempSensors; tempSensor++) {
+            data.get(shortAsciiBuffer);
+            aggregatedPack.cellTemperature[tempSensor] = ByteAsciiConverter.convertAsciiBytesToShort(shortAsciiBuffer);
+        }
 
-        return data;
+        // current 0.1A
+        data.get(shortAsciiBuffer);
+        aggregatedPack.packCurrent = ByteAsciiConverter.convertAsciiBytesToShort(shortAsciiBuffer);
 
-    }
+        data.getInt(); // ???
 
+        // SOH %
+        data.get(shortAsciiBuffer);
+        aggregatedPack.packSOH = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get()) * 10;
 
-    private byte[] createLengthCheckSum(final int length) {
+        data.getShort(); // ???
 
-        // spit the first 12 bits into groups of 4 bits and accumulate
-        int chksum = (byte) BitUtil.bits(length, 0, 4) + (byte) BitUtil.bits(length, 4, 4) + (byte) BitUtil.bits(length, 8, 4);
-        // modulo 16 remainder
-        chksum %= 16;
-        // invert
-        chksum = ~chksum & 0xff;
-        chksum &= 0x0000000f;
-        // and finally +1
-        chksum++;
+        // nominal capacity 0.01A
+        data.get(shortAsciiBuffer);
+        aggregatedPack.ratedCapacitymAh = ByteAsciiConverter.convertAsciiBytesToShort(shortAsciiBuffer) * 10;
 
-        // combine the checksum and length
-        int dataValue = chksum;
-        dataValue = dataValue << 12;
-        dataValue += length;
+        // remaining capacity 0.01A
+        data.get(shortAsciiBuffer);
+        aggregatedPack.remainingCapacitymAh = ByteAsciiConverter.convertAsciiBytesToShort(shortAsciiBuffer) * 10;
 
-        // extract the high and low bytes
-        final byte high = (byte) (dataValue >> 8);
-        final byte low = (byte) (dataValue & 0x000000FF);
-        // convert them to ascii
-        final byte[] highBytes = ByteAsciiConverter.convertByteToAsciiBytes(high);
-        final byte[] lowBytes = ByteAsciiConverter.convertByteToAsciiBytes(low);
-        final byte[] data = new byte[4];
-        data[0] = highBytes[0];
-        data[1] = highBytes[1];
-        data[2] = lowBytes[0];
-        data[3] = lowBytes[1];
-
-        return data;
+        // bms cycles
+        data.get(shortAsciiBuffer);
+        aggregatedPack.bmsCycles = ByteAsciiConverter.convertAsciiBytesToShort(shortAsciiBuffer);
     }
 
 
     public static void main(final String[] args) {
-        System.out.println(new String(ByteAsciiConverter.convertByteToAsciiBytes((byte) 12)));
+        System.out.println((byte) '~');
     }
 }
