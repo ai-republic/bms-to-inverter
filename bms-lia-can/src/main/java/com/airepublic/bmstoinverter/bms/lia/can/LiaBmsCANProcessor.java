@@ -30,7 +30,7 @@ import com.airepublic.bmstoinverter.core.TooManyInvalidFramesException;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
-import com.airepublic.bmstoinverter.core.util.Util;
+import com.airepublic.bmstoinverter.core.util.BitUtil;
 
 /**
  * The class to handle CAN messages from a LIA {@link BMS}.
@@ -299,9 +299,9 @@ public class LiaBmsCANProcessor extends BMS {
 
         final byte status = receiveFrame.get();
 
-        if (Util.bit(status, 7)) {
+        if (BitUtil.bit(status, 7)) {
             pack.chargeDischargeStatus = 1;
-        } else if (Util.bit(status, 6)) {
+        } else if (BitUtil.bit(status, 6)) {
             pack.chargeDischargeStatus = 2;
         }
 

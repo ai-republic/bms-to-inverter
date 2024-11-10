@@ -26,7 +26,7 @@ public class TestUtil {
         for (int i = 0; i < Integer.BYTES * 8; i++) {
 
             // THEN each bit must be 0 (false)
-            assertFalse(Util.bit(value, i));
+            assertFalse(BitUtil.bit(value, i));
         }
     }
 
@@ -40,7 +40,7 @@ public class TestUtil {
         for (int i = 0; i < Integer.BYTES * 8; i++) {
 
             // THEN each bit must be 1 (true)
-            assertTrue(Util.bit(value, i));
+            assertTrue(BitUtil.bit(value, i));
         }
     }
 
@@ -52,7 +52,7 @@ public class TestUtil {
 
         // WHEN reading first bit
         // THEN the first bit must be 1 (true)
-        assertTrue(Util.bit(value, 0));
+        assertTrue(BitUtil.bit(value, 0));
     }
 
 
@@ -65,8 +65,8 @@ public class TestUtil {
         // THEN
         // - the first bit must be 0 (false)
         // - the second bit must be 1 (true)
-        assertFalse(Util.bit(value, 0));
-        assertTrue(Util.bit(value, 1));
+        assertFalse(BitUtil.bit(value, 0));
+        assertTrue(BitUtil.bit(value, 1));
     }
 
 
@@ -77,7 +77,7 @@ public class TestUtil {
 
         // WHEN reading first bit
         // THEN the first bit must be 1 (true)
-        assertTrue(Util.bit(value, 31));
+        assertTrue(BitUtil.bit(value, 31));
     }
 
 
@@ -88,7 +88,7 @@ public class TestUtil {
 
         // WHEN reading first bit
         // THEN the first bit must be 1 (true)
-        assertTrue(Util.bit(value, 7));
+        assertTrue(BitUtil.bit(value, 7));
     }
 
 
@@ -101,9 +101,9 @@ public class TestUtil {
         // -reading the first 3 bits must be 0
         // -reading the bits 5 - 8 must be 8
         // -reading the last bit must be 1
-        assertEquals(0, Util.bits(value, 0, 3));
-        assertEquals(8, Util.bits(value, 4, 4));
-        assertEquals(1, Util.bits(value, 7, 1));
+        assertEquals(0, BitUtil.bits(value, 0, 3));
+        assertEquals(8, BitUtil.bits(value, 4, 4));
+        assertEquals(1, BitUtil.bits(value, 7, 1));
     }
 
 }

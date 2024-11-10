@@ -21,7 +21,7 @@ import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
-import com.airepublic.bmstoinverter.core.util.Util;
+import com.airepublic.bmstoinverter.core.util.BitUtil;
 
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -123,12 +123,12 @@ public class PylonInverterCANProcessor extends Inverter {
         byte flags = 0x00;
 
         // request full charge
-        flags = Util.setBit(flags, 3, false);
+        flags = BitUtil.setBit(flags, 3, false);
         // request force charge
-        flags = Util.setBit(flags, 4, pack.forceCharge);
-        flags = Util.setBit(flags, 5, pack.forceCharge);
-        flags = Util.setBit(flags, 6, pack.dischargeMOSState);
-        flags = Util.setBit(flags, 7, pack.chargeMOSState);
+        flags = BitUtil.setBit(flags, 4, pack.forceCharge);
+        flags = BitUtil.setBit(flags, 5, pack.forceCharge);
+        flags = BitUtil.setBit(flags, 6, pack.dischargeMOSState);
+        flags = BitUtil.setBit(flags, 7, pack.chargeMOSState);
 
         frame.put(flags);
 
@@ -162,22 +162,22 @@ public class PylonInverterCANProcessor extends Inverter {
 
         // protection alarms
 
-        bits = Util.setBit(bits, 1, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_HIGH) == AlarmLevel.ALARM);
-        bits = Util.setBit(bits, 2, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_LOW) == AlarmLevel.ALARM);
-        bits = Util.setBit(bits, 3, pack.getAlarmLevel(Alarm.CELL_TEMPERATURE_HIGH) == AlarmLevel.ALARM);
-        bits = Util.setBit(bits, 4, pack.getAlarmLevel(Alarm.CELL_TEMPERATURE_LOW) == AlarmLevel.ALARM);
-        bits = Util.setBit(bits, 7, pack.getAlarmLevel(Alarm.DISCHARGE_CURRENT_HIGH) == AlarmLevel.ALARM);
-        bits = Util.setBit(bits, 8, pack.getAlarmLevel(Alarm.CHARGE_CURRENT_HIGH) == AlarmLevel.ALARM);
-        bits = Util.setBit(bits, 11, pack.getAlarmLevel(Alarm.FAILURE_OTHER) == AlarmLevel.ALARM);
+        bits = BitUtil.setBit(bits, 1, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_HIGH) == AlarmLevel.ALARM);
+        bits = BitUtil.setBit(bits, 2, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_LOW) == AlarmLevel.ALARM);
+        bits = BitUtil.setBit(bits, 3, pack.getAlarmLevel(Alarm.CELL_TEMPERATURE_HIGH) == AlarmLevel.ALARM);
+        bits = BitUtil.setBit(bits, 4, pack.getAlarmLevel(Alarm.CELL_TEMPERATURE_LOW) == AlarmLevel.ALARM);
+        bits = BitUtil.setBit(bits, 7, pack.getAlarmLevel(Alarm.DISCHARGE_CURRENT_HIGH) == AlarmLevel.ALARM);
+        bits = BitUtil.setBit(bits, 8, pack.getAlarmLevel(Alarm.CHARGE_CURRENT_HIGH) == AlarmLevel.ALARM);
+        bits = BitUtil.setBit(bits, 11, pack.getAlarmLevel(Alarm.FAILURE_OTHER) == AlarmLevel.ALARM);
 
         // warning alarms
-        bits = Util.setBit(bits, 17, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_HIGH) == AlarmLevel.WARNING);
-        bits = Util.setBit(bits, 18, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_LOW) == AlarmLevel.WARNING);
-        bits = Util.setBit(bits, 19, pack.getAlarmLevel(Alarm.CELL_TEMPERATURE_HIGH) == AlarmLevel.WARNING);
-        bits = Util.setBit(bits, 20, pack.getAlarmLevel(Alarm.CELL_TEMPERATURE_LOW) == AlarmLevel.WARNING);
-        bits = Util.setBit(bits, 23, pack.getAlarmLevel(Alarm.DISCHARGE_CURRENT_HIGH) == AlarmLevel.WARNING);
-        bits = Util.setBit(bits, 24, pack.getAlarmLevel(Alarm.CHARGE_CURRENT_HIGH) == AlarmLevel.WARNING);
-        bits = Util.setBit(bits, 27, pack.getAlarmLevel(Alarm.FAILURE_COMMUNICATION_INTERNAL) == AlarmLevel.WARNING);
+        bits = BitUtil.setBit(bits, 17, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_HIGH) == AlarmLevel.WARNING);
+        bits = BitUtil.setBit(bits, 18, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_LOW) == AlarmLevel.WARNING);
+        bits = BitUtil.setBit(bits, 19, pack.getAlarmLevel(Alarm.CELL_TEMPERATURE_HIGH) == AlarmLevel.WARNING);
+        bits = BitUtil.setBit(bits, 20, pack.getAlarmLevel(Alarm.CELL_TEMPERATURE_LOW) == AlarmLevel.WARNING);
+        bits = BitUtil.setBit(bits, 23, pack.getAlarmLevel(Alarm.DISCHARGE_CURRENT_HIGH) == AlarmLevel.WARNING);
+        bits = BitUtil.setBit(bits, 24, pack.getAlarmLevel(Alarm.CHARGE_CURRENT_HIGH) == AlarmLevel.WARNING);
+        bits = BitUtil.setBit(bits, 27, pack.getAlarmLevel(Alarm.FAILURE_COMMUNICATION_INTERNAL) == AlarmLevel.WARNING);
 
         frame.putInt((int) bits);
         frame.put((byte) 0); // module number
@@ -187,4 +187,18 @@ public class PylonInverterCANProcessor extends Inverter {
         return frame;
     }
 
+
+    public static void main(final String[] args) {
+        final PylonInverterCANProcessor p = new PylonInverterCANProcessor();
+        final BatteryPack pack1 = new BatteryPack();
+        pack1.packSOC = 1000;
+        pack1.packSOH = 1000;
+        final BatteryPack pack2 = new BatteryPack();
+        pack2.packSOC = 1000;
+        pack2.packSOH = 1000;
+        p.getEnergyStorage().getBatteryPacks().add(pack1);
+        p.getEnergyStorage().getBatteryPacks().add(pack2);
+        final BatteryPack pack = p.aggregatedBatteryInfo();
+        System.out.println(Port.printBuffer(p.createSOC(pack)));
+    }
 }

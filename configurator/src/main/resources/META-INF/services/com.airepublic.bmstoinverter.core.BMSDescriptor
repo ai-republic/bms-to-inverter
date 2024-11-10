@@ -13,6 +13,7 @@ com.airepublic.bmstoinverter.bms.pace.can.PaceBmsCANDescriptor
 com.airepublic.bmstoinverter.bms.pylon.can.PylonBmsCANDescriptor
 com.airepublic.bmstoinverter.bms.pylon.hv.can.PylonHVBmsCANDescriptor
 com.airepublic.bmstoinverter.bms.pylon.rs485.PylonBmsRS485Descriptor
+com.airepublic.bmstoinverter.bms.sacredsun.rs485.SacredsunBmsRS485Descriptor
 com.airepublic.bmstoinverter.bms.samsung.can.SamsungBmsCANDescriptor
 com.airepublic.bmstoinverter.bms.seplos.can.SeplosBmsCANDescriptor
 com.airepublic.bmstoinverter.bms.sma.can.SMABmsCANDescriptor

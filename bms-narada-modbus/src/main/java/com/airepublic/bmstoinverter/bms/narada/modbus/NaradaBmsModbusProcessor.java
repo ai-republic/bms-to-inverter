@@ -23,7 +23,7 @@ import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
-import com.airepublic.bmstoinverter.core.util.Util;
+import com.airepublic.bmstoinverter.core.util.BitUtil;
 import com.airepublic.bmstoinverter.protocol.modbus.ModbusUtil;
 import com.airepublic.bmstoinverter.protocol.modbus.ModbusUtil.RegisterCode;
 
@@ -114,39 +114,39 @@ public class NaradaBmsModbusProcessor extends BMS {
 
     private void readAlarms(final BatteryPack pack, final int warningFlag, final int protectionFlag, final int faultStatus, final int cellUVStatus) {
         // warnings
-        pack.alarms.put(Alarm.CELL_VOLTAGE_HIGH, Util.bit(warningFlag, 0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.CELL_VOLTAGE_LOW, Util.bit(warningFlag, 1) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.PACK_VOLTAGE_HIGH, Util.bit(warningFlag, 2) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.PACK_VOLTAGE_LOW, Util.bit(warningFlag, 3) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.CHARGE_CURRENT_HIGH, Util.bit(warningFlag, 4) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.DISCHARGE_CURRENT_HIGH, Util.bit(warningFlag, 5) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.CELL_TEMPERATURE_HIGH, Util.bit(warningFlag, 6) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.CELL_TEMPERATURE_LOW, Util.bit(warningFlag, 7) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.ENCASING_TEMPERATURE_HIGH, Util.bit(warningFlag, 8) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CELL_VOLTAGE_HIGH, BitUtil.bit(warningFlag, 0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CELL_VOLTAGE_LOW, BitUtil.bit(warningFlag, 1) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_VOLTAGE_HIGH, BitUtil.bit(warningFlag, 2) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_VOLTAGE_LOW, BitUtil.bit(warningFlag, 3) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CHARGE_CURRENT_HIGH, BitUtil.bit(warningFlag, 4) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.DISCHARGE_CURRENT_HIGH, BitUtil.bit(warningFlag, 5) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CELL_TEMPERATURE_HIGH, BitUtil.bit(warningFlag, 6) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CELL_TEMPERATURE_LOW, BitUtil.bit(warningFlag, 7) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.ENCASING_TEMPERATURE_HIGH, BitUtil.bit(warningFlag, 8) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
-        pack.alarms.put(Alarm.CHARGE_MODULE_TEMPERATURE_HIGH, Util.bit(warningFlag, 10) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.SOC_LOW, Util.bit(warningFlag, 11) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, Util.bit(warningFlag, 12) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CHARGE_MODULE_TEMPERATURE_HIGH, BitUtil.bit(warningFlag, 10) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.SOC_LOW, BitUtil.bit(warningFlag, 11) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, BitUtil.bit(warningFlag, 12) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
         // alarms
-        pack.alarms.put(Alarm.CELL_VOLTAGE_HIGH, Util.bit(protectionFlag, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.CELL_VOLTAGE_LOW, Util.bit(protectionFlag, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.PACK_VOLTAGE_HIGH, Util.bit(protectionFlag, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.PACK_VOLTAGE_LOW, Util.bit(protectionFlag, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, Util.bit(protectionFlag, 4) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CELL_VOLTAGE_HIGH, BitUtil.bit(protectionFlag, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CELL_VOLTAGE_LOW, BitUtil.bit(protectionFlag, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_VOLTAGE_HIGH, BitUtil.bit(protectionFlag, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_VOLTAGE_LOW, BitUtil.bit(protectionFlag, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, BitUtil.bit(protectionFlag, 4) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
-        pack.alarms.put(Alarm.CHARGE_TEMPERATURE_HIGH, Util.bit(protectionFlag, 6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.CHARGE_TEMPERATURE_LOW, Util.bit(protectionFlag, 7) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.DISCHARGE_TEMPERATURE_HIGH, Util.bit(protectionFlag, 8) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.DISCHARGE_TEMPERATURE_LOW, Util.bit(protectionFlag, 9) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CHARGE_TEMPERATURE_HIGH, BitUtil.bit(protectionFlag, 6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CHARGE_TEMPERATURE_LOW, BitUtil.bit(protectionFlag, 7) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.DISCHARGE_TEMPERATURE_HIGH, BitUtil.bit(protectionFlag, 8) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.DISCHARGE_TEMPERATURE_LOW, BitUtil.bit(protectionFlag, 9) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         // fault
-        pack.alarms.put(Alarm.FAILURE_COMMUNICATION_INTERNAL, Util.bit(faultStatus, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.FAILURE_SENSOR_PACK_TEMPERATURE, Util.bit(faultStatus, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_COMMUNICATION_INTERNAL, BitUtil.bit(faultStatus, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_SENSOR_PACK_TEMPERATURE, BitUtil.bit(faultStatus, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
-        pack.chargeDischargeStatus = Util.bit(faultStatus, 8) ? 1 : Util.bit(faultStatus, 9) ? 2 : 0;
-        pack.chargeMOSState = Util.bit(faultStatus, 9);
-        pack.dischargeMOSState = Util.bit(faultStatus, 10);
+        pack.chargeDischargeStatus = BitUtil.bit(faultStatus, 8) ? 1 : BitUtil.bit(faultStatus, 9) ? 2 : 0;
+        pack.chargeMOSState = BitUtil.bit(faultStatus, 9);
+        pack.dischargeMOSState = BitUtil.bit(faultStatus, 10);
 
     }
 }

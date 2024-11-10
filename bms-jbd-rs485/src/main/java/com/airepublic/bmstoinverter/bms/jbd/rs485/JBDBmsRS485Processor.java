@@ -26,7 +26,7 @@ import com.airepublic.bmstoinverter.core.NoDataAvailableException;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.TooManyInvalidFramesException;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
-import com.airepublic.bmstoinverter.core.util.Util;
+import com.airepublic.bmstoinverter.core.util.BitUtil;
 import com.airepublic.bmstoinverter.protocol.rs485.JSerialCommPort;
 
 /**
@@ -224,7 +224,7 @@ public class JBDBmsRS485Processor extends BMS {
         final int balanceStates = data.getInt();
 
         for (int idx = 0; idx < 32; idx++) {
-            pack.cellBalanceState[idx] = Util.bit(balanceStates, idx);
+            pack.cellBalanceState[idx] = BitUtil.bit(balanceStates, idx);
         }
 
         // protection status
@@ -237,8 +237,8 @@ public class JBDBmsRS485Processor extends BMS {
         pack.packSOC = data.get() * 10;
 
         final byte mosState = data.get();
-        pack.chargeMOSState = Util.bit(mosState, 0);
-        pack.dischargeMOSState = Util.bit(mosState, 1);
+        pack.chargeMOSState = BitUtil.bit(mosState, 0);
+        pack.dischargeMOSState = BitUtil.bit(mosState, 1);
 
         // number of battery strings
         data.get();

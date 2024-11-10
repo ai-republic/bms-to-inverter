@@ -21,7 +21,7 @@ import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
-import com.airepublic.bmstoinverter.core.util.Util;
+import com.airepublic.bmstoinverter.core.util.BitUtil;
 
 /**
  * The class to handle CAN messages from a BYD {@link BMS}.
@@ -104,210 +104,210 @@ public class BYDBmsCANProcessor extends BMS {
         // warnings
         byte bits = data.get(4);
 
-        if (Util.bit(bits, 0)) {
+        if (BitUtil.bit(bits, 0)) {
             pack.setAlarm(Alarm.FAILURE_OTHER, AlarmLevel.WARNING);
         }
 
-        if (Util.bit(bits, 1)) {
+        if (BitUtil.bit(bits, 1)) {
             pack.setAlarm(Alarm.FAILURE_OTHER, AlarmLevel.NONE);
         }
 
-        if (Util.bit(bits, 2)) {
+        if (BitUtil.bit(bits, 2)) {
             pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, AlarmLevel.WARNING);
         }
 
-        if (Util.bit(bits, 3)) {
+        if (BitUtil.bit(bits, 3)) {
             pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, AlarmLevel.NONE);
         }
 
-        if (Util.bit(bits, 4)) {
+        if (BitUtil.bit(bits, 4)) {
             pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, AlarmLevel.WARNING);
         }
 
-        if (Util.bit(bits, 5)) {
+        if (BitUtil.bit(bits, 5)) {
             pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, AlarmLevel.NONE);
         }
 
-        if (Util.bit(bits, 6)) {
+        if (BitUtil.bit(bits, 6)) {
             pack.setAlarm(Alarm.PACK_TEMPERATURE_HIGH, AlarmLevel.WARNING);
         }
 
-        if (Util.bit(bits, 7)) {
+        if (BitUtil.bit(bits, 7)) {
             pack.setAlarm(Alarm.PACK_TEMPERATURE_HIGH, AlarmLevel.NONE);
         }
 
         bits = data.get(5);
 
-        if (Util.bit(bits, 0)) {
+        if (BitUtil.bit(bits, 0)) {
             pack.setAlarm(Alarm.PACK_TEMPERATURE_LOW, AlarmLevel.WARNING);
         }
 
-        if (Util.bit(bits, 1)) {
+        if (BitUtil.bit(bits, 1)) {
             pack.setAlarm(Alarm.PACK_TEMPERATURE_LOW, AlarmLevel.NONE);
         }
 
-        if (Util.bit(bits, 2)) {
+        if (BitUtil.bit(bits, 2)) {
             pack.setAlarm(Alarm.CHARGE_TEMPERATURE_HIGH, AlarmLevel.WARNING);
         }
 
-        if (Util.bit(bits, 3)) {
+        if (BitUtil.bit(bits, 3)) {
             pack.setAlarm(Alarm.CHARGE_TEMPERATURE_HIGH, AlarmLevel.NONE);
         }
 
-        if (Util.bit(bits, 4)) {
+        if (BitUtil.bit(bits, 4)) {
             pack.setAlarm(Alarm.CHARGE_TEMPERATURE_LOW, AlarmLevel.WARNING);
         }
 
-        if (Util.bit(bits, 5)) {
+        if (BitUtil.bit(bits, 5)) {
             pack.setAlarm(Alarm.CHARGE_TEMPERATURE_LOW, AlarmLevel.NONE);
         }
 
-        if (Util.bit(bits, 6)) {
+        if (BitUtil.bit(bits, 6)) {
             pack.setAlarm(Alarm.PACK_CURRENT_HIGH, AlarmLevel.WARNING);
         }
 
-        if (Util.bit(bits, 7)) {
+        if (BitUtil.bit(bits, 7)) {
             pack.setAlarm(Alarm.PACK_CURRENT_HIGH, AlarmLevel.NONE);
         }
 
         bits = data.get(6);
 
-        if (Util.bit(bits, 0)) {
+        if (BitUtil.bit(bits, 0)) {
             pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, AlarmLevel.WARNING);
         }
 
-        if (Util.bit(bits, 1)) {
+        if (BitUtil.bit(bits, 1)) {
             pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, AlarmLevel.NONE);
         }
 
-        if (Util.bit(bits, 4)) {
+        if (BitUtil.bit(bits, 4)) {
             pack.setAlarm(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, AlarmLevel.WARNING);
         }
 
-        if (Util.bit(bits, 5)) {
+        if (BitUtil.bit(bits, 5)) {
             pack.setAlarm(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, AlarmLevel.NONE);
         }
 
-        if (Util.bit(bits, 6) && pack.getAlarmLevel(Alarm.FAILURE_OTHER) != AlarmLevel.WARNING) {
+        if (BitUtil.bit(bits, 6) && pack.getAlarmLevel(Alarm.FAILURE_OTHER) != AlarmLevel.WARNING) {
             pack.setAlarm(Alarm.FAILURE_OTHER, AlarmLevel.WARNING);
         }
 
-        if (Util.bit(bits, 7)) {
+        if (BitUtil.bit(bits, 7)) {
             pack.setAlarm(Alarm.FAILURE_OTHER, AlarmLevel.NONE);
         }
 
         bits = data.get(7);
 
-        if (Util.bit(bits, 0)) {
+        if (BitUtil.bit(bits, 0)) {
             pack.setAlarm(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, AlarmLevel.WARNING);
         }
 
-        if (Util.bit(bits, 1)) {
+        if (BitUtil.bit(bits, 1)) {
             pack.setAlarm(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, AlarmLevel.NONE);
         }
 
         // alarms
         bits = data.get(0);
 
-        if (Util.bit(bits, 0)) {
+        if (BitUtil.bit(bits, 0)) {
             pack.setAlarm(Alarm.FAILURE_OTHER, AlarmLevel.ALARM);
         }
 
-        if (Util.bit(bits, 1)) {
+        if (BitUtil.bit(bits, 1)) {
             pack.setAlarm(Alarm.FAILURE_OTHER, AlarmLevel.NONE);
         }
 
-        if (Util.bit(bits, 2)) {
+        if (BitUtil.bit(bits, 2)) {
             pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, AlarmLevel.ALARM);
         }
 
-        if (Util.bit(bits, 3)) {
+        if (BitUtil.bit(bits, 3)) {
             pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, AlarmLevel.NONE);
         }
 
-        if (Util.bit(bits, 4)) {
+        if (BitUtil.bit(bits, 4)) {
             pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, AlarmLevel.ALARM);
         }
 
-        if (Util.bit(bits, 5)) {
+        if (BitUtil.bit(bits, 5)) {
             pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, AlarmLevel.NONE);
         }
 
-        if (Util.bit(bits, 6)) {
+        if (BitUtil.bit(bits, 6)) {
             pack.setAlarm(Alarm.PACK_TEMPERATURE_HIGH, AlarmLevel.ALARM);
         }
 
-        if (Util.bit(bits, 7)) {
+        if (BitUtil.bit(bits, 7)) {
             pack.setAlarm(Alarm.PACK_TEMPERATURE_HIGH, AlarmLevel.NONE);
         }
 
         bits = data.get(1);
 
-        if (Util.bit(bits, 0)) {
+        if (BitUtil.bit(bits, 0)) {
             pack.setAlarm(Alarm.PACK_TEMPERATURE_LOW, AlarmLevel.ALARM);
         }
 
-        if (Util.bit(bits, 1)) {
+        if (BitUtil.bit(bits, 1)) {
             pack.setAlarm(Alarm.PACK_TEMPERATURE_LOW, AlarmLevel.NONE);
         }
 
-        if (Util.bit(bits, 2)) {
+        if (BitUtil.bit(bits, 2)) {
             pack.setAlarm(Alarm.CHARGE_TEMPERATURE_HIGH, AlarmLevel.ALARM);
         }
 
-        if (Util.bit(bits, 3)) {
+        if (BitUtil.bit(bits, 3)) {
             pack.setAlarm(Alarm.CHARGE_TEMPERATURE_HIGH, AlarmLevel.NONE);
         }
 
-        if (Util.bit(bits, 4)) {
+        if (BitUtil.bit(bits, 4)) {
             pack.setAlarm(Alarm.CHARGE_TEMPERATURE_LOW, AlarmLevel.ALARM);
         }
 
-        if (Util.bit(bits, 5)) {
+        if (BitUtil.bit(bits, 5)) {
             pack.setAlarm(Alarm.CHARGE_TEMPERATURE_LOW, AlarmLevel.NONE);
         }
 
-        if (Util.bit(bits, 6)) {
+        if (BitUtil.bit(bits, 6)) {
             pack.setAlarm(Alarm.PACK_CURRENT_HIGH, AlarmLevel.ALARM);
         }
 
-        if (Util.bit(bits, 7)) {
+        if (BitUtil.bit(bits, 7)) {
             pack.setAlarm(Alarm.PACK_CURRENT_HIGH, AlarmLevel.NONE);
         }
 
         bits = data.get(2);
 
-        if (Util.bit(bits, 0)) {
+        if (BitUtil.bit(bits, 0)) {
             pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, AlarmLevel.ALARM);
         }
 
-        if (Util.bit(bits, 1)) {
+        if (BitUtil.bit(bits, 1)) {
             pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, AlarmLevel.NONE);
         }
 
-        if (Util.bit(bits, 4)) {
+        if (BitUtil.bit(bits, 4)) {
             pack.setAlarm(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, AlarmLevel.ALARM);
         }
 
-        if (Util.bit(bits, 5)) {
+        if (BitUtil.bit(bits, 5)) {
             pack.setAlarm(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, AlarmLevel.NONE);
         }
 
-        if (Util.bit(bits, 6) && pack.getAlarmLevel(Alarm.FAILURE_OTHER) != AlarmLevel.ALARM) {
+        if (BitUtil.bit(bits, 6) && pack.getAlarmLevel(Alarm.FAILURE_OTHER) != AlarmLevel.ALARM) {
             pack.setAlarm(Alarm.FAILURE_OTHER, AlarmLevel.ALARM);
         }
 
-        if (Util.bit(bits, 7)) {
+        if (BitUtil.bit(bits, 7)) {
             pack.setAlarm(Alarm.FAILURE_OTHER, AlarmLevel.NONE);
         }
 
         bits = data.get(3);
 
-        if (Util.bit(bits, 0)) {
+        if (BitUtil.bit(bits, 0)) {
             pack.setAlarm(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, AlarmLevel.ALARM);
         }
 
-        if (Util.bit(bits, 1)) {
+        if (BitUtil.bit(bits, 1)) {
             pack.setAlarm(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, AlarmLevel.NONE);
         }
     }

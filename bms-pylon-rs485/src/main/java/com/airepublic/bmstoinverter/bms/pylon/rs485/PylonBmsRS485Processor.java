@@ -28,7 +28,7 @@ import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.TooManyInvalidFramesException;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
-import com.airepublic.bmstoinverter.core.util.Util;
+import com.airepublic.bmstoinverter.core.util.BitUtil;
 
 /**
  * The class to handle RS485 messages from a Pylon BMS.
@@ -239,35 +239,35 @@ public class PylonBmsRS485Processor extends BMS {
     private void readAlarms(final BatteryPack pack, final ByteBuffer data) {
         // warning alarms 1
         byte bits = convertAsciiBytesToByte(data.get(), data.get());
-        pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, Util.bit(bits, 7) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, Util.bit(bits, 6) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CELL_VOLTAGE_HIGH, Util.bit(bits, 5) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CELL_VOLTAGE_LOW, Util.bit(bits, 4) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CELL_TEMPERATURE_HIGH, Util.bit(bits, 3) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CELL_TEMPERATURE_LOW, Util.bit(bits, 2) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, Util.bit(bits, 0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, BitUtil.bit(bits, 7) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, BitUtil.bit(bits, 6) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CELL_VOLTAGE_HIGH, BitUtil.bit(bits, 5) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CELL_VOLTAGE_LOW, BitUtil.bit(bits, 4) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CELL_TEMPERATURE_HIGH, BitUtil.bit(bits, 3) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CELL_TEMPERATURE_LOW, BitUtil.bit(bits, 2) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, BitUtil.bit(bits, 0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
         // warning alarms 2
         bits = convertAsciiBytesToByte(data.get(), data.get());
-        pack.setAlarm(Alarm.TEMPERATURE_SENSOR_DIFFERENCE_HIGH, Util.bit(bits, 7) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, Util.bit(bits, 6) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, Util.bit(bits, 5) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.FAILURE_COMMUNICATION_INTERNAL, Util.bit(bits, 4) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.TEMPERATURE_SENSOR_DIFFERENCE_HIGH, BitUtil.bit(bits, 7) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, BitUtil.bit(bits, 6) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, BitUtil.bit(bits, 5) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.FAILURE_COMMUNICATION_INTERNAL, BitUtil.bit(bits, 4) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
         // protection alarms 1
         bits = convertAsciiBytesToByte(data.get(), data.get());
-        pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, Util.bit(bits, 7) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, Util.bit(bits, 6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CELL_VOLTAGE_HIGH, Util.bit(bits, 5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CELL_VOLTAGE_LOW, Util.bit(bits, 4) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CELL_TEMPERATURE_HIGH, Util.bit(bits, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CELL_TEMPERATURE_LOW, Util.bit(bits, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, BitUtil.bit(bits, 7) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, BitUtil.bit(bits, 6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CELL_VOLTAGE_HIGH, BitUtil.bit(bits, 5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CELL_VOLTAGE_LOW, BitUtil.bit(bits, 4) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CELL_TEMPERATURE_HIGH, BitUtil.bit(bits, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CELL_TEMPERATURE_LOW, BitUtil.bit(bits, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         // protection alarms 2
         bits = convertAsciiBytesToByte(data.get(), data.get());
-        pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, Util.bit(bits, 6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, Util.bit(bits, 5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.FAILURE_OTHER, Util.bit(bits, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, BitUtil.bit(bits, 6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, BitUtil.bit(bits, 5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.FAILURE_OTHER, BitUtil.bit(bits, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
     }
 
 
@@ -327,7 +327,7 @@ public class PylonBmsRS485Processor extends BMS {
     private byte[] createLengthCheckSum(final int length) {
 
         // spit the first 12 bits into groups of 4 bits and accumulate
-        int chksum = (byte) Util.bits(length, 0, 4) + (byte) Util.bits(length, 4, 4) + (byte) Util.bits(length, 8, 4);
+        int chksum = (byte) BitUtil.bits(length, 0, 4) + (byte) BitUtil.bits(length, 4, 4) + (byte) BitUtil.bits(length, 8, 4);
         // modulo 16 remainder
         chksum %= 16;
         // invert

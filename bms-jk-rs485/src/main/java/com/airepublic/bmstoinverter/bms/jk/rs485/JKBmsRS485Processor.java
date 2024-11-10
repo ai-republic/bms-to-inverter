@@ -25,7 +25,7 @@ import com.airepublic.bmstoinverter.core.NoDataAvailableException;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
-import com.airepublic.bmstoinverter.core.util.Util;
+import com.airepublic.bmstoinverter.core.util.BitUtil;
 import com.airepublic.bmstoinverter.protocol.rs485.JSerialCommPort;
 
 /**
@@ -368,7 +368,7 @@ public class JKBmsRS485Processor extends BMS {
 
         // or C 0:0 x 01 redefines highest bit 0 = charge
         char value = data.getChar();
-        final boolean charging = Util.bit(value, 15);
+        final boolean charging = BitUtil.bit(value, 15);
         value &= 0x7FFF;
 
         pack.packCurrent = (int) (charging ? value / 10f : -(value / 10f));
@@ -423,28 +423,28 @@ public class JKBmsRS485Processor extends BMS {
 
         // alarms
         byte value = data.get();
-        pack.setAlarm(Alarm.SOC_LOW, Util.bit(value, 0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CHARGE_MODULE_TEMPERATURE_HIGH, Util.bit(value, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.DISCHARGE_MODULE_TEMPERATURE_HIGH, Util.bit(value, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CHARGE_VOLTAGE_HIGH, Util.bit(value, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.DISCHARGE_VOLTAGE_LOW, Util.bit(value, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.PACK_TEMPERATURE_HIGH, Util.bit(value, 4) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, Util.bit(value, 5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, Util.bit(value, 6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, Util.bit(value, 7) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.SOC_LOW, BitUtil.bit(value, 0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_MODULE_TEMPERATURE_HIGH, BitUtil.bit(value, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.DISCHARGE_MODULE_TEMPERATURE_HIGH, BitUtil.bit(value, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_VOLTAGE_HIGH, BitUtil.bit(value, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.DISCHARGE_VOLTAGE_LOW, BitUtil.bit(value, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_TEMPERATURE_HIGH, BitUtil.bit(value, 4) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, BitUtil.bit(value, 5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, BitUtil.bit(value, 6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, BitUtil.bit(value, 7) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         value = data.get();
-        pack.setAlarm(Alarm.ENCASING_TEMPERATURE_HIGH, Util.bit(value, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.PACK_TEMPERATURE_LOW, Util.bit(value, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, Util.bit(value, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, Util.bit(value, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.ENCASING_TEMPERATURE_HIGH, BitUtil.bit(value, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_TEMPERATURE_LOW, BitUtil.bit(value, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, BitUtil.bit(value, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, BitUtil.bit(value, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         if (pack.getAlarmLevel(Alarm.FAILURE_OTHER) != AlarmLevel.ALARM) {
-            pack.setAlarm(Alarm.FAILURE_OTHER, Util.bit(value, 4) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+            pack.setAlarm(Alarm.FAILURE_OTHER, BitUtil.bit(value, 4) ? AlarmLevel.ALARM : AlarmLevel.NONE);
         }
 
         if (pack.getAlarmLevel(Alarm.FAILURE_OTHER) != AlarmLevel.ALARM) {
-            pack.setAlarm(Alarm.FAILURE_OTHER, Util.bit(value, 5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+            pack.setAlarm(Alarm.FAILURE_OTHER, BitUtil.bit(value, 5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
         }
     }
 
@@ -452,9 +452,9 @@ public class JKBmsRS485Processor extends BMS {
     // 0x8C
     private void readBatteryStatus(final BatteryPack pack, final ByteBuffer data) {
         final byte value = data.get(1);
-        pack.chargeMOSState = Util.bit(value, 0);
-        pack.dischargeMOSState = Util.bit(value, 1);
-        pack.cellBalanceActive = Util.bit(value, 2);
+        pack.chargeMOSState = BitUtil.bit(value, 0);
+        pack.dischargeMOSState = BitUtil.bit(value, 1);
+        pack.cellBalanceActive = BitUtil.bit(value, 2);
         LOG.debug("Battery status: \n\tCharge MOS={}\n\tDischarge MOS={}\n\tBalancing={}", pack.chargeMOSState ? "ON" : "OFF", pack.dischargeMOSState ? "ON" : "OFF", pack.cellBalanceActive ? "ON" : "OFF");
     }
 

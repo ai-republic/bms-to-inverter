@@ -30,7 +30,7 @@ import com.airepublic.bmstoinverter.core.TooManyInvalidFramesException;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
-import com.airepublic.bmstoinverter.core.util.Util;
+import com.airepublic.bmstoinverter.core.util.BitUtil;
 
 /**
  * The class to handle CAN messages from a PACE {@link BMS}.
@@ -287,7 +287,7 @@ public class PaceBmsCANProcessor extends BMS {
                     return;
                 }
 
-                pack.cellBalanceState[cellNo] = Util.bit(value, bitNo);
+                pack.cellBalanceState[cellNo] = BitUtil.bit(value, bitNo);
             }
         }
     }
@@ -300,49 +300,49 @@ public class PaceBmsCANProcessor extends BMS {
         byte value = data.get();
 
         // cell overvoltage
-        pack.setAlarm(Alarm.CELL_VOLTAGE_HIGH, Util.bit(value, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CELL_VOLTAGE_HIGH, BitUtil.bit(value, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         // cell undervoltage
-        pack.setAlarm(Alarm.CELL_VOLTAGE_LOW, Util.bit(value, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CELL_VOLTAGE_LOW, BitUtil.bit(value, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         // total voltage overvoltage
-        pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, Util.bit(value, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, BitUtil.bit(value, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         // total voltage undervoltage
-        pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, Util.bit(value, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, BitUtil.bit(value, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         // charge overcurrent
-        pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, Util.bit(value, 4) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, BitUtil.bit(value, 4) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         // discharge overcurrent
-        pack.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, Util.bit(value, 5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, BitUtil.bit(value, 5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         // short circut
-        pack.setAlarm(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, Util.bit(value, 6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, BitUtil.bit(value, 6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         // read next 8 bits (protect states 2)
         value = data.get();
 
         // charge temperature too high
-        pack.setAlarm(Alarm.CHARGE_TEMPERATURE_HIGH, Util.bit(value, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_TEMPERATURE_HIGH, BitUtil.bit(value, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         // Large pressure difference in cell
-        pack.setAlarm(Alarm.DISCHARGE_TEMPERATURE_HIGH, Util.bit(value, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.DISCHARGE_TEMPERATURE_HIGH, BitUtil.bit(value, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         // charge temperature too low
-        pack.setAlarm(Alarm.CHARGE_TEMPERATURE_LOW, Util.bit(value, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_TEMPERATURE_LOW, BitUtil.bit(value, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         // discharge temperature too low
-        pack.setAlarm(Alarm.DISCHARGE_TEMPERATURE_LOW, Util.bit(value, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.DISCHARGE_TEMPERATURE_LOW, BitUtil.bit(value, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         // MOS temperature too high
-        pack.setAlarm(Alarm.CHARGE_MODULE_TEMPERATURE_HIGH, Util.bit(value, 4) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_MODULE_TEMPERATURE_HIGH, BitUtil.bit(value, 4) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         // environment temperature too high
-        pack.setAlarm(Alarm.PACK_TEMPERATURE_HIGH, Util.bit(value, 5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_TEMPERATURE_HIGH, BitUtil.bit(value, 5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         // environment temperature too low
-        pack.setAlarm(Alarm.PACK_TEMPERATURE_LOW, Util.bit(value, 6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_TEMPERATURE_LOW, BitUtil.bit(value, 6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         // read next 16 bits (indicate and control states)
         data.getShort();
@@ -351,13 +351,13 @@ public class PaceBmsCANProcessor extends BMS {
         value = data.get();
 
         // charge MOS fault
-        pack.setAlarm(Alarm.FAILURE_CHARGE_BREAKER, Util.bit(value, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.FAILURE_CHARGE_BREAKER, BitUtil.bit(value, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         // discharge MOS fault
-        pack.setAlarm(Alarm.FAILURE_DISCHARGE_BREAKER, Util.bit(value, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.FAILURE_DISCHARGE_BREAKER, BitUtil.bit(value, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         // NTC fault
-        pack.setAlarm(Alarm.FAILURE_CLOCK_MODULE, Util.bit(value, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.FAILURE_CLOCK_MODULE, BitUtil.bit(value, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         // read next 8 bits (reserved)
         data.get();
@@ -365,48 +365,48 @@ public class PaceBmsCANProcessor extends BMS {
         value = data.get();
 
         // cell overvoltage
-        pack.setAlarm(Alarm.CELL_VOLTAGE_HIGH, Util.bit(value, 0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CELL_VOLTAGE_HIGH, BitUtil.bit(value, 0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
         // cell undervoltage
-        pack.setAlarm(Alarm.CELL_VOLTAGE_LOW, Util.bit(value, 1) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CELL_VOLTAGE_LOW, BitUtil.bit(value, 1) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
         // total voltage overvoltage
-        pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, Util.bit(value, 2) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, BitUtil.bit(value, 2) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
         // total voltage undervoltage
-        pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, Util.bit(value, 3) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, BitUtil.bit(value, 3) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
         // charge overcurrent
-        pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, Util.bit(value, 4) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, BitUtil.bit(value, 4) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
         // discharge overcurrent
-        pack.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, Util.bit(value, 5) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, BitUtil.bit(value, 5) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
         // read next 8 bits (warn states 2)
         value = data.get();
 
         // charge temperature too high
-        pack.setAlarm(Alarm.CHARGE_TEMPERATURE_HIGH, Util.bit(value, 0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_TEMPERATURE_HIGH, BitUtil.bit(value, 0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
         // Large pressure difference in cell
-        pack.setAlarm(Alarm.DISCHARGE_TEMPERATURE_HIGH, Util.bit(value, 1) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.DISCHARGE_TEMPERATURE_HIGH, BitUtil.bit(value, 1) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
         // charge temperature too low
-        pack.setAlarm(Alarm.CHARGE_TEMPERATURE_LOW, Util.bit(value, 2) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_TEMPERATURE_LOW, BitUtil.bit(value, 2) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
         // discharge temperature too low
-        pack.setAlarm(Alarm.DISCHARGE_TEMPERATURE_LOW, Util.bit(value, 3) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.DISCHARGE_TEMPERATURE_LOW, BitUtil.bit(value, 3) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
         // environment temperature too high
-        pack.setAlarm(Alarm.PACK_TEMPERATURE_HIGH, Util.bit(value, 4) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_TEMPERATURE_HIGH, BitUtil.bit(value, 4) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
         // environment temperature too low
-        pack.setAlarm(Alarm.PACK_TEMPERATURE_LOW, Util.bit(value, 5) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_TEMPERATURE_LOW, BitUtil.bit(value, 5) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
         // MOS temperature too high
-        pack.setAlarm(Alarm.CHARGE_MODULE_TEMPERATURE_HIGH, Util.bit(value, 6) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_MODULE_TEMPERATURE_HIGH, BitUtil.bit(value, 6) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
         // SOC low
-        pack.setAlarm(Alarm.SOC_LOW, Util.bit(value, 7) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.SOC_LOW, BitUtil.bit(value, 7) ? AlarmLevel.WARNING : AlarmLevel.NONE);
     }
 }

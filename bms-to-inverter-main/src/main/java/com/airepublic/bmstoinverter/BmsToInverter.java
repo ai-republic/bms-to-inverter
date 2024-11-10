@@ -32,7 +32,7 @@ import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.service.IMQTTBrokerService;
 import com.airepublic.bmstoinverter.core.service.IMQTTProducerService;
 import com.airepublic.bmstoinverter.core.service.IWebServerService;
-import com.airepublic.bmstoinverter.core.util.Util;
+import com.airepublic.bmstoinverter.core.util.SystemProperties;
 import com.airepublic.email.api.Email;
 import com.airepublic.email.api.EmailAccount;
 import com.airepublic.email.api.EmailException;
@@ -80,7 +80,7 @@ public class BmsToInverter implements AutoCloseable {
      */
     public static void main(final String[] args) throws IOException {
         // update all non-specified system parameters from "config.properties"
-        Util.updateSystemProperties(Path.of(System.getProperty("configFile", "config.properties")));
+        SystemProperties.updateSystemProperties(Path.of(System.getProperty("configFile", "config.properties")));
 
         final SeContainerInitializer initializer = SeContainerInitializer.newInstance();
         final SeContainer container = initializer.initialize();

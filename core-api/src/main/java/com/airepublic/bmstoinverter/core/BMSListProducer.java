@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
-import com.airepublic.bmstoinverter.core.util.Util;
+import com.airepublic.bmstoinverter.core.util.SystemProperties;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.inject.Produces;
@@ -62,7 +62,7 @@ public class BMSListProducer extends PluginProducer {
 
             // if no bms is found, probably the config.properties have not been read
             if (type == null) {
-                Util.updateSystemProperties(Path.of(System.getProperty("configFile", "config.properties")));
+                SystemProperties.updateSystemProperties(Path.of(System.getProperty("configFile", "config.properties")));
                 type = System.getProperty("bms.1.type");
 
                 if (type == null) {

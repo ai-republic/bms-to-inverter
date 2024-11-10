@@ -22,7 +22,7 @@ import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
-import com.airepublic.bmstoinverter.core.util.Util;
+import com.airepublic.bmstoinverter.core.util.BitUtil;
 import com.airepublic.bmstoinverter.protocol.modbus.ModbusUtil;
 import com.airepublic.bmstoinverter.protocol.modbus.ModbusUtil.RegisterCode;
 
@@ -55,72 +55,77 @@ public class TianBmsModbusProcessor extends BMS {
         final BatteryPack pack = getBatteryPack(unitId);
 
         // pack voltage 0.01V
-        pack.packVoltage = frame.getInt() / 10;
+        pack.packVoltage = frame.getChar() / 10;
         // pack current 0.01A
-        pack.packCurrent = frame.getInt() / 10;
+        pack.packCurrent = frame.getShort() / 10;
         // remaining capacity 0.01AH
-        pack.remainingCapacitymAh = frame.getInt() * 10;
+        pack.remainingCapacitymAh = frame.getChar() * 10;
         // average temperature 0.1C
-        pack.tempAverage = frame.getInt();
+        pack.tempAverage = frame.getShort();
         // environment temperature 0.1C
-        frame.getInt();
-        final int warningFlag = frame.getInt();
-        final int protectionFlag = frame.getInt();
-        final int faultStatus = frame.getInt();
+        frame.getShort();
+        final int warningFlag = frame.getShort();
+        final int protectionFlag = frame.getShort();
+        final int faultStatus = frame.getShort();
 
         readAlarms(pack, warningFlag, protectionFlag, faultStatus);
 
         // SOC 0.1%
-        pack.packSOC = frame.getInt();
+        pack.packSOC = frame.getChar();
         // SOH 0.1%
-        pack.packSOH = frame.getInt();
+        pack.packSOH = frame.getChar();
         // rated capacity 0.01Ah
-        pack.ratedCapacitymAh = frame.getInt() * 10;
-        pack.bmsCycles = frame.getInt();
+        pack.ratedCapacitymAh = frame.getChar() * 10;
+        pack.bmsCycles = frame.getChar();
         // max charge current 0.01A
-        pack.maxPackChargeCurrent = frame.getInt() / 10;
+        pack.maxPackChargeCurrent = frame.getChar() / 10;
         // max cell voltage 1mV
-        pack.maxCellmV = frame.getInt();
+        pack.maxCellmV = frame.getChar();
         // min cell voltage 1mV
-        pack.minCellmV = frame.getInt();
+        pack.minCellmV = frame.getChar();
+        frame.getShort();
+        // max cell temperature 0.1C
+        pack.tempMax = frame.getShort();
+        // min cell temperature 0.1C
+        pack.tempMin = frame.getShort();
     }
 
 
     private void readAlarms(final BatteryPack pack, final int warningFlag, final int protectionFlag, final int faultStatus) {
         // warnings
-        pack.alarms.put(Alarm.CELL_VOLTAGE_HIGH, Util.bit(warningFlag, 0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.CELL_VOLTAGE_LOW, Util.bit(warningFlag, 1) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.PACK_VOLTAGE_HIGH, Util.bit(warningFlag, 2) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.PACK_VOLTAGE_LOW, Util.bit(warningFlag, 3) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.CHARGE_CURRENT_HIGH, Util.bit(warningFlag, 4) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.DISCHARGE_CURRENT_HIGH, Util.bit(warningFlag, 5) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CELL_VOLTAGE_HIGH, BitUtil.bit(warningFlag, 0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CELL_VOLTAGE_LOW, BitUtil.bit(warningFlag, 1) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_VOLTAGE_HIGH, BitUtil.bit(warningFlag, 2) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_VOLTAGE_LOW, BitUtil.bit(warningFlag, 3) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CHARGE_CURRENT_HIGH, BitUtil.bit(warningFlag, 4) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.DISCHARGE_CURRENT_HIGH, BitUtil.bit(warningFlag, 5) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
-        pack.alarms.put(Alarm.PACK_TEMPERATURE_HIGH, Util.bit(warningFlag, 6) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.PACK_TEMPERATURE_LOW, Util.bit(warningFlag, 7) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.ENCASING_TEMPERATURE_HIGH, Util.bit(warningFlag, 8) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_TEMPERATURE_HIGH, BitUtil.bit(warningFlag, 6) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_TEMPERATURE_LOW, BitUtil.bit(warningFlag, 7) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.ENCASING_TEMPERATURE_HIGH, BitUtil.bit(warningFlag, 8) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
-        pack.alarms.put(Alarm.CHARGE_MODULE_TEMPERATURE_HIGH, Util.bit(warningFlag, 10) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.PACK_VOLTAGE_LOW, Util.bit(warningFlag, 11) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CHARGE_MODULE_TEMPERATURE_HIGH, BitUtil.bit(warningFlag, 10) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_VOLTAGE_LOW, BitUtil.bit(warningFlag, 11) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
         // alarms
-        pack.alarms.put(Alarm.CELL_VOLTAGE_HIGH, Util.bit(protectionFlag, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.CELL_VOLTAGE_LOW, Util.bit(protectionFlag, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.PACK_VOLTAGE_HIGH, Util.bit(protectionFlag, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.PACK_VOLTAGE_LOW, Util.bit(protectionFlag, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CELL_VOLTAGE_HIGH, BitUtil.bit(protectionFlag, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CELL_VOLTAGE_LOW, BitUtil.bit(protectionFlag, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_VOLTAGE_HIGH, BitUtil.bit(protectionFlag, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_VOLTAGE_LOW, BitUtil.bit(protectionFlag, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
-        pack.alarms.put(Alarm.CHARGE_CURRENT_HIGH, Util.bit(protectionFlag, 5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.CHARGE_TEMPERATURE_HIGH, Util.bit(protectionFlag, 6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.CHARGE_TEMPERATURE_LOW, Util.bit(protectionFlag, 7) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.DISCHARGE_TEMPERATURE_HIGH, Util.bit(protectionFlag, 8) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.DISCHARGE_TEMPERATURE_LOW, Util.bit(protectionFlag, 9) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CHARGE_CURRENT_HIGH, BitUtil.bit(protectionFlag, 5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CHARGE_TEMPERATURE_HIGH, BitUtil.bit(protectionFlag, 6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CHARGE_TEMPERATURE_LOW, BitUtil.bit(protectionFlag, 7) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.DISCHARGE_TEMPERATURE_HIGH, BitUtil.bit(protectionFlag, 8) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.DISCHARGE_TEMPERATURE_LOW, BitUtil.bit(protectionFlag, 9) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         // fault
-        pack.alarms.put(Alarm.FAILURE_COMMUNICATION_INTERNAL, Util.bit(faultStatus, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.FAILURE_SENSOR_PACK_TEMPERATURE, Util.bit(faultStatus, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_COMMUNICATION_INTERNAL, BitUtil.bit(faultStatus, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_SENSOR_PACK_TEMPERATURE, BitUtil.bit(faultStatus, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
-        pack.chargeDischargeStatus = Util.bit(faultStatus, 8) ? 1 : Util.bit(faultStatus, 9) ? 2 : 0;
-        pack.chargeMOSState = Util.bit(faultStatus, 9);
-        pack.dischargeMOSState = Util.bit(faultStatus, 10);
+        pack.chargeDischargeStatus = BitUtil.bit(faultStatus, 8) ? 1 : BitUtil.bit(faultStatus, 9) ? 2 : 0;
+        pack.chargeMOSState = BitUtil.bit(faultStatus, 9);
+        pack.dischargeMOSState = BitUtil.bit(faultStatus, 10);
 
     }
 }

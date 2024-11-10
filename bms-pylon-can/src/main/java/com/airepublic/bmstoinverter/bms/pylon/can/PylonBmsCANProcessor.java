@@ -22,7 +22,7 @@ import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
-import com.airepublic.bmstoinverter.core.util.Util;
+import com.airepublic.bmstoinverter.core.util.BitUtil;
 
 /**
  * The class to handle CAN messages from a Pylon {@link BMS}.
@@ -116,19 +116,19 @@ public class PylonBmsCANProcessor extends BMS {
     protected void requestChargeDischargeConfigChange(final BatteryPack pack, final ByteBuffer data) {
         final byte bits = data.get();
 
-        if (Util.bit(bits, 4)) {
+        if (BitUtil.bit(bits, 4)) {
             // request force-charge II
         }
 
-        if (Util.bit(bits, 5)) {
+        if (BitUtil.bit(bits, 5)) {
             // request force-charge I
         }
 
-        if (Util.bit(bits, 6)) {
+        if (BitUtil.bit(bits, 6)) {
             // request discharge enable
         }
 
-        if (Util.bit(bits, 7)) {
+        if (BitUtil.bit(bits, 7)) {
             // request charge enable
         }
     }
@@ -195,14 +195,14 @@ public class PylonBmsCANProcessor extends BMS {
         final int alarm2 = data.get();
 
         // protection and alarms
-        pack.setAlarm(Alarm.CELL_VOLTAGE_HIGH, getAlarmLevel(Util.bit(protection1, 1), Util.bit(alarm1, 1)));
-        pack.setAlarm(Alarm.CELL_VOLTAGE_LOW, getAlarmLevel(Util.bit(protection1, 2), Util.bit(alarm1, 2)));
-        pack.setAlarm(Alarm.CELL_TEMPERATURE_HIGH, getAlarmLevel(Util.bit(protection1, 3), Util.bit(alarm1, 3)));
-        pack.setAlarm(Alarm.CELL_TEMPERATURE_LOW, getAlarmLevel(Util.bit(protection1, 4), Util.bit(alarm1, 4)));
-        pack.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, getAlarmLevel(Util.bit(protection1, 7), Util.bit(alarm1, 7)));
-        pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, getAlarmLevel(Util.bit(protection2, 0), Util.bit(alarm2, 7)));
-        pack.setAlarm(Alarm.CELL_TEMPERATURE_HIGH, Util.bit(protection2, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.FAILURE_COMMUNICATION_INTERNAL, Util.bit(alarm2, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CELL_VOLTAGE_HIGH, getAlarmLevel(BitUtil.bit(protection1, 1), BitUtil.bit(alarm1, 1)));
+        pack.setAlarm(Alarm.CELL_VOLTAGE_LOW, getAlarmLevel(BitUtil.bit(protection1, 2), BitUtil.bit(alarm1, 2)));
+        pack.setAlarm(Alarm.CELL_TEMPERATURE_HIGH, getAlarmLevel(BitUtil.bit(protection1, 3), BitUtil.bit(alarm1, 3)));
+        pack.setAlarm(Alarm.CELL_TEMPERATURE_LOW, getAlarmLevel(BitUtil.bit(protection1, 4), BitUtil.bit(alarm1, 4)));
+        pack.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, getAlarmLevel(BitUtil.bit(protection1, 7), BitUtil.bit(alarm1, 7)));
+        pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, getAlarmLevel(BitUtil.bit(protection2, 0), BitUtil.bit(alarm2, 7)));
+        pack.setAlarm(Alarm.CELL_TEMPERATURE_HIGH, BitUtil.bit(protection2, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.FAILURE_COMMUNICATION_INTERNAL, BitUtil.bit(alarm2, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         pack.numberOfCells = data.get();
 

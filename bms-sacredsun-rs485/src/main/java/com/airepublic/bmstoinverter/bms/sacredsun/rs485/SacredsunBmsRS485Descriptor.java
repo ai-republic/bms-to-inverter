@@ -8,7 +8,7 @@
  *
  * @author Torsten Oltmanns - bms-to-inverter''AT''gmail.com
  */
-package com.airepublic.bmstoinverter.bms.pylon.rs485;
+package com.airepublic.bmstoinverter.bms.sacredsun.rs485;
 
 import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.BMSConfig;
@@ -19,12 +19,12 @@ import com.airepublic.bmstoinverter.protocol.rs485.JSerialCommPort;
 import com.fazecast.jSerialComm.SerialPort;
 
 /**
- * The {@link BMSDescriptor} for the JBD BMS using the RS485 protocol.
+ * The {@link BMSDescriptor} for the SacredSun (TIAN) BMS using the RS485 protocol.
  */
-public class PylonBmsRS485Descriptor implements BMSDescriptor {
+public class SacredsunBmsRS485Descriptor implements BMSDescriptor {
     @Override
     public String getName() {
-        return "PYLON_RS485";
+        return "SACREDSUN_RS485";
     }
 
 
@@ -36,13 +36,13 @@ public class PylonBmsRS485Descriptor implements BMSDescriptor {
 
     @Override
     public Class<? extends BMS> getBMSClass() {
-        return PylonBmsRS485Processor.class;
+        return SacredsunBmsRS485Processor.class;
     }
 
 
     @Override
     public Port createPort(final BMSConfig config) {
-        final Port port = new JSerialCommPort(config.getPortLocator(), config.getBaudRate(), 8, 1, SerialPort.NO_PARITY, new byte[] { (byte) 165 }, FrameDefinition.create("SOACCLDVO"));
+        final Port port = new JSerialCommPort(config.getPortLocator(), config.getBaudRate(), 8, 1, SerialPort.NO_PARITY, new byte[] { (byte) 126 }, FrameDefinition.create("SOOOOAAAAOOOOOOOOOOOOLLLLOOOODOOOOCCCCOO"));
         return port;
     }
 

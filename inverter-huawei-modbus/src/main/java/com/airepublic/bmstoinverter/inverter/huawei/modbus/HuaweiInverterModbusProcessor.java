@@ -20,7 +20,7 @@ import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.PortAllocator;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
-import com.airepublic.bmstoinverter.core.util.Util;
+import com.airepublic.bmstoinverter.core.util.BitUtil;
 import com.airepublic.bmstoinverter.protocol.modbus.J2ModSlavePort;
 import com.ghgande.j2mod.modbus.procimg.SimpleInputRegister;
 import com.ghgande.j2mod.modbus.procimg.SimpleProcessImage;
@@ -68,15 +68,15 @@ public class HuaweiInverterModbusProcessor extends Inverter {
         int bits39015 = 0;
         int bits39016 = 0;
 
-        bits39014 = Util.setBit(bits39014, 13, aggregatedPack.alarms.get(Alarm.FAILURE_COMMUNICATION_INTERNAL) == AlarmLevel.ALARM);
-        bits39014 = Util.setBit(bits39014, 15, aggregatedPack.alarms.get(Alarm.FAILURE_OTHER) == AlarmLevel.ALARM);
-        bits39016 = Util.setBit(bits39016, 0, aggregatedPack.alarms.get(Alarm.PACK_VOLTAGE_HIGH) == AlarmLevel.ALARM);
-        bits39016 = Util.setBit(bits39016, 15, aggregatedPack.alarms.get(Alarm.PACK_VOLTAGE_LOW) == AlarmLevel.ALARM);
-        bits39016 = Util.setBit(bits39016, 12, aggregatedPack.alarms.get(Alarm.PACK_CURRENT_HIGH) == AlarmLevel.ALARM);
-        bits39015 = Util.setBit(bits39015, 1, aggregatedPack.alarms.get(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION) == AlarmLevel.ALARM);
-        bits39016 = Util.setBit(bits39016, 13, aggregatedPack.alarms.get(Alarm.PACK_TEMPERATURE_HIGH) == AlarmLevel.ALARM);
-        bits39016 = Util.setBit(bits39016, 14, aggregatedPack.alarms.get(Alarm.PACK_TEMPERATURE_LOW) == AlarmLevel.ALARM);
-        bits39015 = Util.setBit(bits39015, 15, aggregatedPack.alarms.get(Alarm.TEMPERATURE_SENSOR_DIFFERENCE_HIGH) == AlarmLevel.ALARM);
+        bits39014 = BitUtil.setBit(bits39014, 13, aggregatedPack.alarms.get(Alarm.FAILURE_COMMUNICATION_INTERNAL) == AlarmLevel.ALARM);
+        bits39014 = BitUtil.setBit(bits39014, 15, aggregatedPack.alarms.get(Alarm.FAILURE_OTHER) == AlarmLevel.ALARM);
+        bits39016 = BitUtil.setBit(bits39016, 0, aggregatedPack.alarms.get(Alarm.PACK_VOLTAGE_HIGH) == AlarmLevel.ALARM);
+        bits39016 = BitUtil.setBit(bits39016, 15, aggregatedPack.alarms.get(Alarm.PACK_VOLTAGE_LOW) == AlarmLevel.ALARM);
+        bits39016 = BitUtil.setBit(bits39016, 12, aggregatedPack.alarms.get(Alarm.PACK_CURRENT_HIGH) == AlarmLevel.ALARM);
+        bits39015 = BitUtil.setBit(bits39015, 1, aggregatedPack.alarms.get(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION) == AlarmLevel.ALARM);
+        bits39016 = BitUtil.setBit(bits39016, 13, aggregatedPack.alarms.get(Alarm.PACK_TEMPERATURE_HIGH) == AlarmLevel.ALARM);
+        bits39016 = BitUtil.setBit(bits39016, 14, aggregatedPack.alarms.get(Alarm.PACK_TEMPERATURE_LOW) == AlarmLevel.ALARM);
+        bits39015 = BitUtil.setBit(bits39015, 15, aggregatedPack.alarms.get(Alarm.TEMPERATURE_SENSOR_DIFFERENCE_HIGH) == AlarmLevel.ALARM);
 
         return new int[] { bits39014, bits39015, bits39016 };
     }

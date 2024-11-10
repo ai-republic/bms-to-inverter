@@ -20,7 +20,7 @@ import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
-import com.airepublic.bmstoinverter.core.util.Util;
+import com.airepublic.bmstoinverter.core.util.BitUtil;
 
 /**
  * The handler to interpret the {@link DalyMessage} and update the application wide
@@ -266,7 +266,7 @@ public class DalyMessageHandler {
         // data byte 4 represents the 8 bits as booleans of the states of the Digital IO
         final byte dioBits = msg.data.get();
         for (int i = 0; i < 8; i++) {
-            battery.dIO[i] = Util.bit(dioBits, i);
+            battery.dIO[i] = BitUtil.bit(dioBits, i);
         }
 
         // data bytes 5-6 BMS cycles
@@ -356,7 +356,7 @@ public class DalyMessageHandler {
 
             // read the cell balance state of the next 8 cells
             for (int j = 0; j < 8; j++) {
-                final boolean state = Util.bit(byteValue, j);
+                final boolean state = BitUtil.bit(byteValue, j);
                 battery.cellBalanceState[cellNo] = state;
                 cellNo++;
 
@@ -395,65 +395,65 @@ public class DalyMessageHandler {
 
         byte byteValue = msg.data.get(0);
         /* 0x00 */
-        battery.setAlarm(Alarm.CELL_VOLTAGE_HIGH, getAlarmLevel(Util.bits(byteValue, 0, 2)));
-        battery.setAlarm(Alarm.CELL_VOLTAGE_LOW, getAlarmLevel(Util.bits(byteValue, 2, 2)));
-        battery.setAlarm(Alarm.PACK_VOLTAGE_HIGH, getAlarmLevel(Util.bits(byteValue, 4, 2)));
-        battery.setAlarm(Alarm.PACK_VOLTAGE_LOW, getAlarmLevel(Util.bits(byteValue, 6, 2)));
+        battery.setAlarm(Alarm.CELL_VOLTAGE_HIGH, getAlarmLevel(BitUtil.bits(byteValue, 0, 2)));
+        battery.setAlarm(Alarm.CELL_VOLTAGE_LOW, getAlarmLevel(BitUtil.bits(byteValue, 2, 2)));
+        battery.setAlarm(Alarm.PACK_VOLTAGE_HIGH, getAlarmLevel(BitUtil.bits(byteValue, 4, 2)));
+        battery.setAlarm(Alarm.PACK_VOLTAGE_LOW, getAlarmLevel(BitUtil.bits(byteValue, 6, 2)));
 
         /* 0x01 */
         byteValue = msg.data.get(1);
-        battery.setAlarm(Alarm.CHARGE_TEMPERATURE_HIGH, getAlarmLevel(Util.bits(byteValue, 0, 2)));
-        battery.setAlarm(Alarm.CHARGE_TEMPERATURE_LOW, getAlarmLevel(Util.bits(byteValue, 2, 2)));
-        battery.setAlarm(Alarm.DISCHARGE_TEMPERATURE_HIGH, getAlarmLevel(Util.bits(byteValue, 4, 2)));
-        battery.setAlarm(Alarm.DISCHARGE_TEMPERATURE_LOW, getAlarmLevel(Util.bits(byteValue, 6, 2)));
+        battery.setAlarm(Alarm.CHARGE_TEMPERATURE_HIGH, getAlarmLevel(BitUtil.bits(byteValue, 0, 2)));
+        battery.setAlarm(Alarm.CHARGE_TEMPERATURE_LOW, getAlarmLevel(BitUtil.bits(byteValue, 2, 2)));
+        battery.setAlarm(Alarm.DISCHARGE_TEMPERATURE_HIGH, getAlarmLevel(BitUtil.bits(byteValue, 4, 2)));
+        battery.setAlarm(Alarm.DISCHARGE_TEMPERATURE_LOW, getAlarmLevel(BitUtil.bits(byteValue, 6, 2)));
 
         /* 0x02 */
         byteValue = msg.data.get(2);
-        battery.setAlarm(Alarm.CHARGE_CURRENT_HIGH, getAlarmLevel(Util.bits(byteValue, 0, 2)));
-        battery.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, getAlarmLevel(Util.bits(byteValue, 2, 2)));
-        battery.setAlarm(Alarm.SOC_HIGH, getAlarmLevel(Util.bits(byteValue, 4, 2)));
-        battery.setAlarm(Alarm.SOC_LOW, getAlarmLevel(Util.bits(byteValue, 6, 2)));
+        battery.setAlarm(Alarm.CHARGE_CURRENT_HIGH, getAlarmLevel(BitUtil.bits(byteValue, 0, 2)));
+        battery.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, getAlarmLevel(BitUtil.bits(byteValue, 2, 2)));
+        battery.setAlarm(Alarm.SOC_HIGH, getAlarmLevel(BitUtil.bits(byteValue, 4, 2)));
+        battery.setAlarm(Alarm.SOC_LOW, getAlarmLevel(BitUtil.bits(byteValue, 6, 2)));
 
         /* 0x03 */
         byteValue = msg.data.get(3);
-        battery.setAlarm(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, getAlarmLevel(Util.bits(byteValue, 0, 2)));
-        battery.setAlarm(Alarm.TEMPERATURE_SENSOR_DIFFERENCE_HIGH, getAlarmLevel(Util.bits(byteValue, 2, 2)));
+        battery.setAlarm(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, getAlarmLevel(BitUtil.bits(byteValue, 0, 2)));
+        battery.setAlarm(Alarm.TEMPERATURE_SENSOR_DIFFERENCE_HIGH, getAlarmLevel(BitUtil.bits(byteValue, 2, 2)));
 
         /* 0x04 */
         byteValue = msg.data.get(4);
-        battery.setAlarm(Alarm.CHARGE_MODULE_TEMPERATURE_HIGH, Util.bit(byteValue, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        battery.setAlarm(Alarm.DISCHARGE_MODULE_TEMPERATURE_HIGH, Util.bit(byteValue, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        battery.setAlarm(Alarm.FAILURE_SENSOR_CHARGE_MODULE_TEMPERATURE, Util.bit(byteValue, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        battery.setAlarm(Alarm.FAILURE_SENSOR_DISCHARGE_MODULE_TEMPERATURE, Util.bit(byteValue, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        battery.setAlarm(Alarm.FAILURE_OTHER, Util.bits(byteValue, 4, 2) != 0 ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        battery.setAlarm(Alarm.FAILURE_CHARGE_BREAKER, Util.bit(byteValue, 6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        battery.setAlarm(Alarm.FAILURE_DISCHARGE_BREAKER, Util.bit(byteValue, 7) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        battery.setAlarm(Alarm.CHARGE_MODULE_TEMPERATURE_HIGH, BitUtil.bit(byteValue, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        battery.setAlarm(Alarm.DISCHARGE_MODULE_TEMPERATURE_HIGH, BitUtil.bit(byteValue, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        battery.setAlarm(Alarm.FAILURE_SENSOR_CHARGE_MODULE_TEMPERATURE, BitUtil.bit(byteValue, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        battery.setAlarm(Alarm.FAILURE_SENSOR_DISCHARGE_MODULE_TEMPERATURE, BitUtil.bit(byteValue, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        battery.setAlarm(Alarm.FAILURE_OTHER, BitUtil.bits(byteValue, 4, 2) != 0 ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        battery.setAlarm(Alarm.FAILURE_CHARGE_BREAKER, BitUtil.bit(byteValue, 6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        battery.setAlarm(Alarm.FAILURE_DISCHARGE_BREAKER, BitUtil.bit(byteValue, 7) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         /* 0x05 */
         byteValue = msg.data.get(5);
 
         if (battery.getAlarmLevel(Alarm.FAILURE_OTHER) != AlarmLevel.ALARM) {
-            battery.setAlarm(Alarm.FAILURE_OTHER, Util.bit(byteValue, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+            battery.setAlarm(Alarm.FAILURE_OTHER, BitUtil.bit(byteValue, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
         }
 
-        battery.setAlarm(Alarm.FAILURE_SENSOR_PACK_VOLTAGE, Util.bit(byteValue, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        battery.setAlarm(Alarm.FAILURE_SENSOR_PACK_TEMPERATURE, Util.bit(byteValue, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        battery.setAlarm(Alarm.FAILURE_EEPROM_MODULE, Util.bit(byteValue, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        battery.setAlarm(Alarm.FAILURE_CLOCK_MODULE, Util.bit(byteValue, 4) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        battery.setAlarm(Alarm.FAILURE_PRECHARGE_MODULE, Util.bit(byteValue, 5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        battery.setAlarm(Alarm.FAILURE_COMMUNICATION_INTERNAL, Util.bit(byteValue, 6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        battery.setAlarm(Alarm.FAILURE_COMMUNICATION_EXTERNAL, Util.bit(byteValue, 7) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        battery.setAlarm(Alarm.FAILURE_SENSOR_PACK_VOLTAGE, BitUtil.bit(byteValue, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        battery.setAlarm(Alarm.FAILURE_SENSOR_PACK_TEMPERATURE, BitUtil.bit(byteValue, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        battery.setAlarm(Alarm.FAILURE_EEPROM_MODULE, BitUtil.bit(byteValue, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        battery.setAlarm(Alarm.FAILURE_CLOCK_MODULE, BitUtil.bit(byteValue, 4) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        battery.setAlarm(Alarm.FAILURE_PRECHARGE_MODULE, BitUtil.bit(byteValue, 5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        battery.setAlarm(Alarm.FAILURE_COMMUNICATION_INTERNAL, BitUtil.bit(byteValue, 6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        battery.setAlarm(Alarm.FAILURE_COMMUNICATION_EXTERNAL, BitUtil.bit(byteValue, 7) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         /* 0x06 */
         byteValue = msg.data.get(6);
-        battery.setAlarm(Alarm.FAILURE_SENSOR_PACK_CURRENT, Util.bit(byteValue, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        battery.setAlarm(Alarm.FAILURE_SENSOR_PACK_CURRENT, BitUtil.bit(byteValue, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
         if (battery.getAlarmLevel(Alarm.FAILURE_OTHER) != AlarmLevel.ALARM) {
-            battery.setAlarm(Alarm.FAILURE_OTHER, Util.bit(byteValue, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+            battery.setAlarm(Alarm.FAILURE_OTHER, BitUtil.bit(byteValue, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
         }
 
-        battery.setAlarm(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, Util.bit(byteValue, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        battery.setAlarm(Alarm.FAILURE_NOT_CHARGING_DUE_TO_LOW_VOLTAGE, Util.bit(byteValue, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        battery.setAlarm(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, BitUtil.bit(byteValue, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        battery.setAlarm(Alarm.FAILURE_NOT_CHARGING_DUE_TO_LOW_VOLTAGE, BitUtil.bit(byteValue, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
     }
 
 }

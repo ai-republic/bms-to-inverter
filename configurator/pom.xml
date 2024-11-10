@@ -172,6 +172,13 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- ####################  SACREDSUN (RS485)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-sacredsun-rs485</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
 		<!-- ####################  SAMSUNG (CAN)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>

@@ -21,7 +21,7 @@ import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
-import com.airepublic.bmstoinverter.core.util.Util;
+import com.airepublic.bmstoinverter.core.util.BitUtil;
 
 /**
  * The class to handle CAN messages from a JK {@link BMS}.
@@ -116,58 +116,58 @@ public class JKBmsCANProcessor extends BMS {
         byte value = data.get();
 
         // unit overvoltage
-        pack.setAlarm(Alarm.CELL_VOLTAGE_HIGH, getAlarmLevel(Util.bits(value, 0, 2)));
+        pack.setAlarm(Alarm.CELL_VOLTAGE_HIGH, getAlarmLevel(BitUtil.bits(value, 0, 2)));
 
         // unit undervoltage
-        pack.setAlarm(Alarm.CELL_VOLTAGE_LOW, getAlarmLevel(Util.bits(value, 2, 2)));
+        pack.setAlarm(Alarm.CELL_VOLTAGE_LOW, getAlarmLevel(BitUtil.bits(value, 2, 2)));
 
         // total voltage overvoltage
-        pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, getAlarmLevel(Util.bits(value, 4, 2)));
+        pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, getAlarmLevel(BitUtil.bits(value, 4, 2)));
 
         // total voltage undervoltage
-        pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, getAlarmLevel(Util.bits(value, 6, 2)));
+        pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, getAlarmLevel(BitUtil.bits(value, 6, 2)));
 
         // read next 8 bits
         value = data.get();
 
         // Large pressure difference in cell
-        pack.setAlarm(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, getAlarmLevel(Util.bits(value, 0, 2)));
+        pack.setAlarm(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, getAlarmLevel(BitUtil.bits(value, 0, 2)));
 
         // discharge overcurrent
-        pack.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, getAlarmLevel(Util.bits(value, 2, 2)));
+        pack.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, getAlarmLevel(BitUtil.bits(value, 2, 2)));
 
         // charge overcurrent
-        pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, getAlarmLevel(Util.bits(value, 4, 2)));
+        pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, getAlarmLevel(BitUtil.bits(value, 4, 2)));
 
         // temperature too high
-        pack.setAlarm(Alarm.PACK_TEMPERATURE_HIGH, getAlarmLevel(Util.bits(value, 6, 2)));
+        pack.setAlarm(Alarm.PACK_TEMPERATURE_HIGH, getAlarmLevel(BitUtil.bits(value, 6, 2)));
 
         // read next 8 bits
         value = data.get();
 
         // temperature too low
-        pack.setAlarm(Alarm.PACK_TEMPERATURE_LOW, getAlarmLevel(Util.bits(value, 0, 2)));
+        pack.setAlarm(Alarm.PACK_TEMPERATURE_LOW, getAlarmLevel(BitUtil.bits(value, 0, 2)));
 
         // excessive temperature difference
-        pack.setAlarm(Alarm.TEMPERATURE_SENSOR_DIFFERENCE_HIGH, getAlarmLevel(Util.bits(value, 2, 2)));
+        pack.setAlarm(Alarm.TEMPERATURE_SENSOR_DIFFERENCE_HIGH, getAlarmLevel(BitUtil.bits(value, 2, 2)));
 
         // SOC too low
-        pack.setAlarm(Alarm.SOC_LOW, getAlarmLevel(Util.bits(value, 4, 2)));
+        pack.setAlarm(Alarm.SOC_LOW, getAlarmLevel(BitUtil.bits(value, 4, 2)));
 
         // insulation too low (not mapped)
-        pack.setAlarm(Alarm.FAILURE_OTHER, getAlarmLevel(Util.bits(value, 6, 2)));
+        pack.setAlarm(Alarm.FAILURE_OTHER, getAlarmLevel(BitUtil.bits(value, 6, 2)));
 
         // read next 8 bits
         value = data.get();
 
         // high voltage interlock fault
-        pack.setAlarm(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, getAlarmLevel(Util.bits(value, 0, 2)));
+        pack.setAlarm(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, getAlarmLevel(BitUtil.bits(value, 0, 2)));
 
         // external communication failure
-        pack.setAlarm(Alarm.FAILURE_COMMUNICATION_EXTERNAL, getAlarmLevel(Util.bits(value, 2, 2)));
+        pack.setAlarm(Alarm.FAILURE_COMMUNICATION_EXTERNAL, getAlarmLevel(BitUtil.bits(value, 2, 2)));
 
         // internal communication failure
-        pack.setAlarm(Alarm.FAILURE_COMMUNICATION_INTERNAL, getAlarmLevel(Util.bits(value, 4, 2)));
+        pack.setAlarm(Alarm.FAILURE_COMMUNICATION_INTERNAL, getAlarmLevel(BitUtil.bits(value, 4, 2)));
 
     }
 }
