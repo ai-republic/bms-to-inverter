@@ -100,6 +100,10 @@ public abstract class Inverter {
      * @return the {@link EnergyStorage}
      */
     public EnergyStorage getEnergyStorage() {
+        if (energyStorage == null) {
+            energyStorage = new EnergyStorage();
+        }
+
         return energyStorage;
     }
 
@@ -243,6 +247,7 @@ public abstract class Inverter {
      */
     protected BatteryPack aggregatedBatteryInfo() {
         final BatteryPack result = new BatteryPack();
+        result.packSOC = 0;
         result.maxPackChargeCurrent = Integer.MAX_VALUE;
         result.maxPackDischargeCurrent = Integer.MIN_VALUE;
         result.maxPackVoltageLimit = Integer.MAX_VALUE;
