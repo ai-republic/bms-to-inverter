@@ -55,39 +55,34 @@ public class TianBmsModbusProcessor extends BMS {
         final BatteryPack pack = getBatteryPack(unitId);
 
         // pack voltage 0.01V
-        pack.packVoltage = frame.getChar() / 10;
+        pack.packVoltage = frame.getInt() / 10;
         // pack current 0.01A
-        pack.packCurrent = frame.getShort() / 10;
+        pack.packCurrent = (short) (frame.getInt() / 10);
         // remaining capacity 0.01AH
-        pack.remainingCapacitymAh = frame.getChar() * 10;
+        pack.remainingCapacitymAh = frame.getInt() * 10;
         // average temperature 0.1C
-        pack.tempAverage = frame.getShort();
+        pack.tempAverage = frame.getInt();
         // environment temperature 0.1C
-        frame.getShort();
-        final int warningFlag = frame.getShort();
-        final int protectionFlag = frame.getShort();
-        final int faultStatus = frame.getShort();
+        frame.getInt();
+        final int warningFlag = frame.getInt();
+        final int protectionFlag = frame.getInt();
+        final int faultStatus = frame.getInt();
 
         readAlarms(pack, warningFlag, protectionFlag, faultStatus);
 
         // SOC 0.1%
-        pack.packSOC = frame.getChar();
+        pack.packSOC = frame.getInt();
         // SOH 0.1%
-        pack.packSOH = frame.getChar();
+        pack.packSOH = frame.getInt();
         // rated capacity 0.01Ah
-        pack.ratedCapacitymAh = frame.getChar() * 10;
-        pack.bmsCycles = frame.getChar();
+        pack.ratedCapacitymAh = frame.getInt() * 10;
+        pack.bmsCycles = frame.getInt();
         // max charge current 0.01A
-        pack.maxPackChargeCurrent = frame.getChar() / 10;
+        pack.maxPackChargeCurrent = frame.getInt() / 10;
         // max cell voltage 1mV
-        pack.maxCellmV = frame.getChar();
+        pack.maxCellmV = frame.getInt();
         // min cell voltage 1mV
-        pack.minCellmV = frame.getChar();
-        frame.getShort();
-        // max cell temperature 0.1C
-        pack.tempMax = frame.getShort();
-        // min cell temperature 0.1C
-        pack.tempMin = frame.getShort();
+        pack.minCellmV = frame.getInt();
     }
 
 
@@ -127,5 +122,10 @@ public class TianBmsModbusProcessor extends BMS {
         pack.chargeMOSState = BitUtil.bit(faultStatus, 9);
         pack.dischargeMOSState = BitUtil.bit(faultStatus, 10);
 
+    }
+
+
+    public static void main(final String[] args) {
+        System.out.println((short) 0xFD4D);
     }
 }
