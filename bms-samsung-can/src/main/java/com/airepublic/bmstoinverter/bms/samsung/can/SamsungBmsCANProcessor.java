@@ -92,6 +92,8 @@ public class SamsungBmsCANProcessor extends BMS {
         pack.packSOC = data.get() * 10;
         // SOH (1%) - uint_8
         pack.packSOH = data.get() * 10;
+        // BMS cycles
+        pack.bmsCycles = data.getChar();
 
         LOG.debug("\nPack V \t Pack A \t Avg \nSOC \tSOH\\n{} \t{}  {}\t\t  {}", pack.packVoltage / 10f, pack.packCurrent / 10f, pack.packSOC / 10f, pack.packSOH / 10f);
     }
@@ -143,10 +145,10 @@ public class SamsungBmsCANProcessor extends BMS {
     protected void readChargeDischargeInfo(final BatteryPack pack, final ByteBuffer data) {
         // Battery charge voltage (0.1V) - uint_16
         pack.maxPackVoltageLimit = data.getChar();
-        // Charge current limit (0.1A) - sint_16
-        pack.maxPackChargeCurrent = data.getShort();
-        // Discharge current limit (0.1A) - sint_16
-        pack.maxPackDischargeCurrent = data.getShort() * -1;
+        // Charge current limit (0.1A) - uint_16
+        pack.maxPackChargeCurrent = data.getChar();
+        // Discharge current limit (0.1A) - uint_16
+        pack.maxPackDischargeCurrent = data.getChar() * -1;
         // Battery discharge voltage (0.1V) - uint_16
         pack.minPackVoltageLimit = data.getChar();
 
@@ -159,13 +161,13 @@ public class SamsungBmsCANProcessor extends BMS {
         // Average cell voltage (1mV) - uint_16
         data.getShort();
         // Maximum cell voltage (1mV) - uint_16
-        pack.maxCellmV = data.getShort();
+        pack.maxCellmV = data.getChar();
         // Minimum cell voltage (1mV) - uint_16
-        pack.minCellmV = data.getShort();
+        pack.minCellmV = data.getChar();
         // Average tray voltage (1mV) - uint_16
         data.getShort();
 
-        LOG.debug("\nMax Cell mV \tMin Cell mV\n{}\t{}", pack.maxCellmV * 1000f, pack.minCellmV * 1000f);
+        LOG.debug("\nMax Cell mV \tMin Cell mV\n{}\t{}", pack.maxCellmV / 1000f, pack.minCellmV / 1000f);
     }
 
 
@@ -202,13 +204,14 @@ public class SamsungBmsCANProcessor extends BMS {
         // Tray id
         final int tray = data.getShort() - 1;
         // Cell voltage (1mV)
-        pack.cellVmV[cellNoStart + tray * 3] = data.getShort();
+        pack.cellVmV[cellNoStart + tray * 3] = data.getChar();
         // Cell voltage (1mV)
-        pack.cellVmV[cellNoStart + tray * 3 + 1] = data.getShort();
+        pack.cellVmV[cellNoStart + tray * 3 + 1] = data.getChar();
 
         if (cellNoStart != 80) {
             // Cell voltage (1mV)
-            pack.cellVmV[cellNoStart + tray * 3 + 2] = data.getShort();
+            pack.cellVmV[cellNoStart + tray * 3 + 2] = data.getChar();
         }
     }
+
 }
