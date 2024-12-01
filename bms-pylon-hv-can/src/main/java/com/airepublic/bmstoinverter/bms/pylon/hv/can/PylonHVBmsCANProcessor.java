@@ -172,11 +172,11 @@ public class PylonHVBmsCANProcessor extends BMS {
     private void readBatteryStatus(final BatteryPack pack, final ByteBuffer data) {
         // frame id is already read, so start at the first data byte
         // Battery voltage (0.1V)
-        pack.packVoltage = data.getShort();
+        pack.packVoltage = data.getChar();
         // Battery current (0.1A) offset -3000A
-        pack.packCurrent = data.getShort() - 30000;
+        pack.packCurrent = data.getChar() - 30000;
         // second level temperature (0.1 Celcius) offset -100C
-        pack.tempAverage = data.getShort() - 1000;
+        pack.tempAverage = data.getChar() - 1000;
         // Battery SOC (1%)
         pack.packSOC = data.get() * 10;
         // Battery SOH (1%)
@@ -189,15 +189,15 @@ public class PylonHVBmsCANProcessor extends BMS {
     // 0x4220
     private void readChargeDischargeValues(final BatteryPack pack, final ByteBuffer data) {
         // Charge cutoff voltage (0.1V)
-        pack.maxPackVoltageLimit = data.getShort();
+        pack.maxPackVoltageLimit = data.getChar();
         // Discharge cutoff voltage (0.1V)
-        pack.minPackVoltageLimit = data.getShort();
+        pack.minPackVoltageLimit = data.getChar();
 
         // TODO check if these should be swapped as described in Growatt_Battery_BMS.pdf
         // Max charge current (0.1A) offset -3000A
-        pack.maxPackChargeCurrent = data.getShort() - 30000;
+        pack.maxPackChargeCurrent = data.getChar() - 30000;
         // Max discharge current (0.1A) offset -3000A
-        pack.maxPackDischargeCurrent = data.getShort() - 30000;
+        pack.maxPackDischargeCurrent = data.getChar() - 30000;
 
         LOG.debug("\nMaxLimit V\tMinLimit V\tMaxCharge A\tMaxDischarge\n{}V\t\t{}V\t\t{}A\t\t\t{}A", pack.maxPackVoltageLimit / 10f, pack.minPackVoltageLimit / 10f, pack.maxPackChargeCurrent / 10f, pack.maxPackDischargeCurrent / 10);
     }
@@ -207,13 +207,13 @@ public class PylonHVBmsCANProcessor extends BMS {
     private void readCellVoltage(final BatteryPack pack, final ByteBuffer data) {
         // frame id is already read, so start at the first data byte
         // Maximum cell voltage (1mV)
-        pack.maxCellmV = data.getShort();
+        pack.maxCellmV = data.getChar();
         // Minimum cell voltage (1mV)
-        pack.minCellmV = data.getShort();
+        pack.minCellmV = data.getChar();
         // Maximum cell voltage cell number
-        pack.maxCellVNum = data.getShort();
+        pack.maxCellVNum = data.getChar();
         // Minimum cell voltage cell number
-        pack.minCellVNum = data.getShort();
+        pack.minCellVNum = data.getChar();
 
         LOG.debug("\nMaxCell V\tMinCell V\n{} (#{})\t{} (#{})", pack.maxCellmV / 1000f, pack.maxCellVNum, pack.minCellmV / 1000f, pack.minCellVNum);
     }
@@ -223,13 +223,13 @@ public class PylonHVBmsCANProcessor extends BMS {
     private void readCellTemperature(final BatteryPack pack, final ByteBuffer data) {
         // frame id is already read, so start at the first data byte
         // Maximum cell temperature (0.1C) offset -100C
-        pack.tempMax = data.getShort() - 1000;
+        pack.tempMax = data.getChar() - 1000;
         // Minimum cell temperature (0.1C) offset -100C
-        pack.tempMin = data.getShort() - 1000;
+        pack.tempMin = data.getChar() - 1000;
         // Maximum cell temperature cell number
-        pack.tempMaxCellNum = data.getShort();
+        pack.tempMaxCellNum = data.getChar();
         // Minimum cell temperature cell number
-        pack.tempMinCellNum = data.getShort();
+        pack.tempMinCellNum = data.getChar();
 
         LOG.debug("\nMaxCell C\tMinCell C\n{}C (#{})\t{}C (#{})", pack.tempMax / 10f, pack.tempMaxCellNum, pack.tempMin / 10f, pack.tempMinCellNum);
     }
@@ -304,9 +304,9 @@ public class PylonHVBmsCANProcessor extends BMS {
         // minimum module voltage (0.001V)
         pack.minModulemV = data.getChar();
         // pack number with maximum module voltage
-        pack.maxModulemVNum = data.getShort();
+        pack.maxModulemVNum = data.getChar();
         // pack number with minimum module voltage
-        pack.minModulemVNum = data.getShort();
+        pack.minModulemVNum = data.getChar();
 
         LOG.debug("\nMaxModule V\tMinModule V\n{}V (#{})\t{}V (#{})", pack.maxModulemV / 1000f, pack.maxModulemVNum, pack.minModulemV / 1000f, pack.minModulemVNum);
     }
@@ -315,13 +315,13 @@ public class PylonHVBmsCANProcessor extends BMS {
     // 0x4270
     private void readModuleTemperature(final BatteryPack pack, final ByteBuffer data) {
         // maximum module temperature (0.1C) offset -100C
-        pack.maxModuleTemp = data.getShort() - 1000;
+        pack.maxModuleTemp = data.getChar() - 1000;
         // minimum module temperature (0.1C) offset -100C
-        pack.minModuleTemp = data.getShort() - 1000;
+        pack.minModuleTemp = data.getChar() - 1000;
         // pack number with maximum module temperature
-        pack.maxModuleTempNum = data.getShort();
+        pack.maxModuleTempNum = data.getChar();
         // pack number with minimum module temperature
-        pack.minModuleTempNum = data.getShort();
+        pack.minModuleTempNum = data.getChar();
 
         LOG.debug("\nMaxModule C\tMinModule C\n{}C (#{})\t{}C (#{})", pack.maxModuleTemp / 10f, pack.maxModuleTempNum, pack.minModuleTemp / 10f, pack.minModuleTempNum);
     }
@@ -380,15 +380,15 @@ public class PylonHVBmsCANProcessor extends BMS {
     // 0x7320
     private void readBatterModuleInfo(final BatteryPack pack, final ByteBuffer data) {
         // battery module quantity
-        pack.numberOfCells = data.getShort();
+        pack.numberOfCells = data.getChar();
         // battery modules in series
         pack.modulesInSeries = data.get();
         // cell quantity in battery module
         pack.moduleNumberOfCells = data.get();
         // battery cabinet voltage level (1V)
-        pack.moduleVoltage = data.getShort();
+        pack.moduleVoltage = data.getChar();
         // battery cabinet AH (1AH)
-        pack.moduleRatedCapacityAh = data.getShort();
+        pack.moduleRatedCapacityAh = data.getChar();
 
         LOG.debug("\nNo of cells\tModules in Series\tModule No of Cells\tModule V\tModule Capacity Ah\n{}\t\t\t\t{}\t\t\t\t{}\t\t\t\t{}\t\t{}", pack.numberOfCells, pack.modulesInSeries, pack.moduleNumberOfCells, pack.moduleVoltage, pack.moduleRatedCapacityAh);
     }
