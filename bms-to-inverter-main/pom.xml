@@ -304,6 +304,12 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- ####################  SOLIS HV (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-solis-hv-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 
 		<!-- #################### !!!!!!!!	Optional services  !!!!!!!! ###################### -->
 		<dependency>

@@ -8,3 +8,4 @@ com.airepublic.bmstoinverter.inverter.pylonhv.can.PylonHVInverterCANDescriptor
 com.airepublic.bmstoinverter.inverter.pylon.rs485.PylonInverterRS485Descriptor
 com.airepublic.bmstoinverter.inverter.sma.can.SMAInverterCANDescriptor
 com.airepublic.bmstoinverter.inverter.solark.can.SolArkInverterCANDescriptor
+com.airepublic.bmstoinverter.inverter.solishv.can.SolisHVInverterCANDescriptor
