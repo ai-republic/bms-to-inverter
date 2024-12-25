@@ -395,48 +395,48 @@ public abstract class Inverter {
         }
     }
 
-
-    public static void main(final String[] args) {
-        final EnergyStorage storage = new EnergyStorage();
-
-        final BatteryPack pack1 = new BatteryPack();
-        pack1.chargeMOSState = false;
-        storage.getBatteryPacks().add(pack1);
-
-        final BatteryPack pack2 = new BatteryPack();
-        pack2.chargeMOSState = true;
-        storage.getBatteryPacks().add(pack2);
-
-        final BatteryPack pack3 = new BatteryPack();
-        pack3.chargeMOSState = false;
-        storage.getBatteryPacks().add(pack3);
-
-        final Inverter inverter = new Inverter() {
-
-            @Override
-            protected void sendFrame(final Port port, final ByteBuffer frame) throws IOException {
-                // TODO Auto-generated method stub
-
-            }
-
-
-            @Override
-            protected ByteBuffer readRequest(final Port port) throws IOException {
-                // TODO Auto-generated method stub
-                return null;
-            }
-
-
-            @Override
-            protected List<ByteBuffer> createSendFrames(final ByteBuffer requestFrame, final BatteryPack aggregatedPack) {
-                // TODO Auto-generated method stub
-                return null;
-            }
-        };
-        inverter.energyStorage = storage;
-
-        final BatteryPack aggregatedPack = inverter.aggregatedBatteryInfo();
-        System.out.println(aggregatedPack.chargeMOSState);
-
-    }
+    // public static void main(final String[] args) {
+    // final EnergyStorage storage = new EnergyStorage();
+    //
+    // final BatteryPack pack1 = new BatteryPack();
+    // pack1.chargeMOSState = false;
+    // storage.getBatteryPacks().add(pack1);
+    //
+    // final BatteryPack pack2 = new BatteryPack();
+    // pack2.chargeMOSState = true;
+    // storage.getBatteryPacks().add(pack2);
+    //
+    // final BatteryPack pack3 = new BatteryPack();
+    // pack3.chargeMOSState = false;
+    // storage.getBatteryPacks().add(pack3);
+    //
+    // final Inverter inverter = new Inverter() {
+    //
+    // @Override
+    // protected void sendFrame(final Port port, final ByteBuffer frame) throws IOException {
+    // // TODO Auto-generated method stub
+    //
+    // }
+    //
+    //
+    // @Override
+    // protected ByteBuffer readRequest(final Port port) throws IOException {
+    // // TODO Auto-generated method stub
+    // return null;
+    // }
+    //
+    //
+    // @Override
+    // protected List<ByteBuffer> createSendFrames(final ByteBuffer requestFrame, final BatteryPack
+    // aggregatedPack) {
+    // // TODO Auto-generated method stub
+    // return null;
+    // }
+    // };
+    // inverter.energyStorage = storage;
+    //
+    // final BatteryPack aggregatedPack = inverter.aggregatedBatteryInfo();
+    // System.out.println(aggregatedPack.chargeMOSState);
+    //
+    // }
 }

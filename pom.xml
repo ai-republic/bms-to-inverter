@@ -41,6 +41,7 @@
 		<module>bms-to-inverter-main</module>
 		<module>inverter-deye-can</module>
 		<module>inverter-dummy</module>
+		<module>inverter-goodwe-hv-can</module>
 		<module>inverter-growatt-can</module>
 		<module>inverter-growatt-modbus</module>
 		<module>inverter-growatt-rs485</module>

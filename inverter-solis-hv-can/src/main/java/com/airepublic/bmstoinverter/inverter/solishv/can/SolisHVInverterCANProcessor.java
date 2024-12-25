@@ -136,9 +136,9 @@ public class SolisHVInverterCANProcessor extends Inverter {
         // Battery voltage (0.1V)
         frame.putShort((short) pack.packVoltage);
         // Battery current (0.1A) offset -3000A
-        frame.putShort((short) (pack.packCurrent - 3000));
+        frame.putShort((short) (pack.packCurrent + 30000));
         // second level temperature (0.1 Celcius) offset -100C
-        frame.putShort((short) (pack.tempAverage - 100));
+        frame.putShort((short) (pack.tempAverage + 1000));
         // Battery SOC (1%)
         frame.put((byte) (pack.packSOC / 10));
         // Battery SOH (1%)
@@ -160,9 +160,9 @@ public class SolisHVInverterCANProcessor extends Inverter {
 
         // TODO check if these should be swapped as described in Growatt_Battery_BMS.pdf
         // Max charge current (0.1A) offset -3000A
-        frame.putShort((short) (pack.maxPackChargeCurrent - 3000));
+        frame.putShort((short) (pack.maxPackChargeCurrent + 30000));
         // Max discharge current (0.1A) offset -3000A
-        frame.putShort((short) (pack.maxPackDischargeCurrent - 3000));
+        frame.putShort((short) (pack.maxPackDischargeCurrent + 30000));
 
         LOG.debug("Sending max/min voltage, current, charge and discharge limits: {}", Port.printBuffer(frame));
         return frame;
@@ -315,9 +315,9 @@ public class SolisHVInverterCANProcessor extends Inverter {
         final ByteBuffer frame = prepareSendFrame(0x00004270);
 
         // maximum module temperature (0.1C) offset -100C
-        frame.putShort((short) (pack.maxModuleTemp - 100));
+        frame.putShort((short) (pack.maxModuleTemp + 1000));
         // minimum module temperature (0.1C) offset -100C
-        frame.putShort((short) (pack.minModuleTemp - 100));
+        frame.putShort((short) (pack.minModuleTemp + 1000));
         // pack number with maximum module temperature
         frame.putShort((short) pack.maxModuleTempNum);
         // pack number with minimum module temperature
@@ -463,5 +463,19 @@ public class SolisHVInverterCANProcessor extends Inverter {
         }
 
         return sendFrames;
+    }
+
+
+    public static void main(final String[] args) throws Exception {
+        final SolisHVInverterCANProcessor processor = new SolisHVInverterCANProcessor();
+
+        final BatteryPack pack = new BatteryPack();
+        pack.packCurrent = 1840;
+        pack.tempAverage = 260;
+        pack.maxPackChargeCurrent = 500;
+        pack.maxPackDischargeCurrent = -500;
+        System.out.println(Port.printBuffer(processor.sendBatteryStatus(pack)));
+        System.out.println(Port.printBuffer(processor.sendChargeDischargeLimits(pack)));
+        System.out.println((short) 0x733C - (short) 30000);
     }
 }
