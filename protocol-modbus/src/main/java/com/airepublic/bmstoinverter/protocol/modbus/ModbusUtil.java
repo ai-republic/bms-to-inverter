@@ -51,6 +51,15 @@ public class ModbusUtil {
         }
     }
 
+    /**
+     * Creates a {@link ByteBuffer} that stores the header as integers.
+     *
+     * @param register the {@link RegisterCode}
+     * @param startAddress the start address
+     * @param numRegisters the number of registers
+     * @param unitId the unit id
+     * @return the created {@link ByteBuffer}
+     */
     public static ByteBuffer createRequestBuffer(final RegisterCode register, final int startAddress, final int numRegisters, final int unitId) {
         final ByteBuffer buffer = ByteBuffer.allocate(16).order(ByteOrder.LITTLE_ENDIAN);
         buffer.putInt(register.getFunctionCode());
@@ -64,6 +73,13 @@ public class ModbusUtil {
     }
 
 
+    /**
+     * Transforms the response into a {@link ByteBuffer} that stores the register values as
+     * integers.
+     *
+     * @param response the ModBus register response
+     * @return the ByteBuffer of int value registers
+     */
     public static ByteBuffer toBuffer(final ReadMultipleRegistersResponse response) {
         final Register[] registers = response.getRegisters();
         final ByteBuffer buffer = ByteBuffer.allocate(registers.length * 4 + 12);
@@ -76,6 +92,13 @@ public class ModbusUtil {
     }
 
 
+    /**
+     * Transforms the response into a {@link ByteBuffer} that stores the register values as
+     * integers.
+     *
+     * @param response the ModBus register response
+     * @return the ByteBuffer of int value registers
+     */
     public static ByteBuffer toBuffer(final ReadInputRegistersResponse response) {
         final InputRegister[] registers = response.getRegisters();
         final ByteBuffer buffer = ByteBuffer.allocate(registers.length * 4 + 12);
@@ -88,6 +111,13 @@ public class ModbusUtil {
     }
 
 
+    /**
+     * Transforms the response into a {@link ByteBuffer} that stores the register reference as an
+     * int.
+     *
+     * @param response the ModBus register response
+     * @return the ByteBuffer of int value registers
+     */
     public static ByteBuffer toBuffer(final WriteMultipleRegistersResponse response) {
         final ByteBuffer buffer = ByteBuffer.allocate(16);
         buffer.putInt(response.getFunctionCode());
@@ -99,6 +129,12 @@ public class ModbusUtil {
     }
 
 
+    /**
+     * Transforms the response into a {@link ByteBuffer} that stores the register value as an int.
+     *
+     * @param response the ModBus register response
+     * @return the ByteBuffer of int value registers
+     */
     public static ByteBuffer toBuffer(final WriteSingleRegisterResponse response) {
         final ByteBuffer buffer = ByteBuffer.allocate(20);
         buffer.putInt(response.getFunctionCode());
