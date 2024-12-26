@@ -77,13 +77,13 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
                     final byte receiver = (byte) (receiveFrame.getInt(0) >> 8 & 0x000000FF);
                     final byte command = (byte) (receiveFrame.getInt(0) >> 16 & 0x000000FF);
 
-                    if (receiver == (byte) 0x40 && command == (byte) cmd.id) {
-                        readBuffers.add(receiveFrame);
-                        framesToBeReceived--;
-
+                    if (receiver == (byte) 0x40) {
                         final DalyMessage dalyMsg = convertReceiveFrameToDalyMessage(receiveFrame);
 
                         if (dalyMsg != null) {
+                            readBuffers.add(receiveFrame);
+                            framesToBeReceived--;
+
                             getMessageHandler().handleMessage(this, dalyMsg);
                         } else {
                             LOG.warn("Message could not be interpreted " + Port.printBuffer(receiveFrame));
