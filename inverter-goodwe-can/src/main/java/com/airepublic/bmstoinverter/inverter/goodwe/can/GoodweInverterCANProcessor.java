@@ -8,7 +8,7 @@
  *
  * @author Torsten Oltmanns - bms-to-inverter''AT''gmail.com
  */
-package com.airepublic.bmstoinverter.inverter.goodwehv.can;
+package com.airepublic.bmstoinverter.inverter.goodwe.can;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -32,8 +32,8 @@ import jakarta.enterprise.context.ApplicationScoped;
  * The class to handle CAN messages for a Goodwe HV {@link Inverter}.
  */
 @ApplicationScoped
-public class GoodweHVInverterCANProcessor extends Inverter {
-    private final static Logger LOG = LoggerFactory.getLogger(GoodweHVInverterCANProcessor.class);
+public class GoodweInverterCANProcessor extends Inverter {
+    private final static Logger LOG = LoggerFactory.getLogger(GoodweInverterCANProcessor.class);
 
     @Override
     protected List<ByteBuffer> createSendFrames(final ByteBuffer requestFrame, final BatteryPack aggregatedPack) {

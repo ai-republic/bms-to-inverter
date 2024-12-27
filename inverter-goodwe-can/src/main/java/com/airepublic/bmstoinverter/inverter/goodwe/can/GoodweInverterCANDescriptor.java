@@ -8,7 +8,7 @@
  *
  * @author Torsten Oltmanns - bms-to-inverter''AT''gmail.com
  */
-package com.airepublic.bmstoinverter.inverter.goodwehv.can;
+package com.airepublic.bmstoinverter.inverter.goodwe.can;
 
 import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.InverterConfig;
@@ -19,10 +19,10 @@ import com.airepublic.bmstoinverter.protocol.can.JavaCANPort;
 /**
  * The {@link InverterDescriptor} for the Goodwe HV {@link Inverter} using the CAN protocol.
  */
-public class GoodweHVInverterCANDescriptor implements InverterDescriptor {
+public class GoodweInverterCANDescriptor implements InverterDescriptor {
     @Override
     public String getName() {
-        return "GOODWE_HV_CAN";
+        return "GOODWE_CAN";
     }
 
 
@@ -34,7 +34,7 @@ public class GoodweHVInverterCANDescriptor implements InverterDescriptor {
 
     @Override
     public Class<? extends Inverter> getInverterClass() {
-        return GoodweHVInverterCANProcessor.class;
+        return GoodweInverterCANProcessor.class;
     }
 
 

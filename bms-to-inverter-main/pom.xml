@@ -265,7 +265,7 @@
 		<!-- ####################  GOODWE HV (CAN)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>inverter-goodwe-hv-can</artifactId>
+			<artifactId>inverter-goodwe-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 		

@@ -9,7 +9,7 @@
 		<version>0.0.1-SNAPSHOT</version>
 	</parent>
 
-	<artifactId>inverter-goodwe-hv-can</artifactId>
+	<artifactId>inverter-goodwe-can</artifactId>
 
 	<name>${project.artifactId}-${project.version}</name>
 	<description>Module for the Goodwe HV inverter CAN support</description>
