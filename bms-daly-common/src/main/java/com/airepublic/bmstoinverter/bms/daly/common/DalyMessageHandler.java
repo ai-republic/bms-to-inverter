@@ -108,7 +108,7 @@ public class DalyMessageHandler {
 
         battery.type = msg.data.get();
 
-        LOG.debug("battery type={}=" + battery.type);
+        LOG.debug("battery type={}", battery.type);
     }
 
 
@@ -118,20 +118,20 @@ public class DalyMessageHandler {
         battery.ratedCellmV = msg.data.getInt(); // in mV
         battery.ratedCapacitymAh = msg.data.getInt(); // in mAh
 
-        LOG.debug("ratedCellmV={}, ratedCapacitymAh=" + battery.ratedCellmV, battery.ratedCapacitymAh);
+        LOG.debug("ratedCellmV={}, ratedCapacitymAh={}", battery.ratedCellmV, battery.ratedCapacitymAh);
     }
 
 
     private void getPackDischargeChargeLimits(final DalyMessage msg, final BMS bms) {
         final BatteryPack battery = bms.getBatteryPack(BATTERY_ID);
 
-        battery.maxPackDischargeCurrent = 30000 - msg.data.getShort(); // 30000 offset
+        battery.maxPackDischargeCurrent = msg.data.getShort() - 30000; // 30000 offset
         // skip the next 2 bytes because only reading level 1
         msg.data.getShort();
 
-        battery.maxPackChargeCurrent = 30000 - msg.data.getShort(); // 30000 offset
+        battery.maxPackChargeCurrent = msg.data.getShort() - 30000; // 30000 offset
 
-        LOG.debug("maxPackChargeCurrent={}, maxPackDischargeCurrent=" + battery.maxPackChargeCurrent, battery.maxPackDischargeCurrent);
+        LOG.debug("maxPackChargeCurrent={}, maxPackDischargeCurrent={}", battery.maxPackChargeCurrent, battery.maxPackDischargeCurrent);
     }
 
 
@@ -185,7 +185,7 @@ public class DalyMessageHandler {
                     + "\tMax Voltage: Cell {}({}mV)\n"
                     + "\tMin Voltage: Cell {}({}mV)\n"
                     + "\tDifference: {}mV",
-                    bms.getBmsId() + 1, battery.maxCellVNum, battery.maxCellmV, battery.minCellVNum, battery.minCellmV, battery.cellDiffmV);
+                    bms.getBmsId(), battery.maxCellVNum, battery.maxCellmV, battery.minCellVNum, battery.minCellmV, battery.cellDiffmV);
         }
     }
 
@@ -205,7 +205,7 @@ public class DalyMessageHandler {
                     + "\tMax: {}C\n"
                     + "\tMin: {}C\n"
                     + "\tAvg: {}C",
-                    bms.getBmsId() + 1, battery.tempMax / 10f, battery.tempMin / 10f, battery.tempAverage / 10f);
+                    bms.getBmsId(), battery.tempMax / 10f, battery.tempMin / 10f, battery.tempAverage / 10f);
         }
     }
 
