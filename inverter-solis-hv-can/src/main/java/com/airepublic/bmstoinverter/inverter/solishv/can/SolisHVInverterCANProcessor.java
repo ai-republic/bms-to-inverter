@@ -119,7 +119,7 @@ public class SolisHVInverterCANProcessor extends Inverter {
         // 0x7310
         sendFrames.add(sendHardwareSoftwareVersion(pack));
         // 0x7320
-        sendFrames.add(sendBatterModuleInfo(pack));
+        sendFrames.add(sendBatteryModuleInfo(pack));
         // 0x7340
         sendFrames.addAll(sendManufacturer(pack));
 
@@ -243,11 +243,11 @@ public class SolisHVInverterCANProcessor extends Inverter {
 
         // Error
         byte error = 0x00;
-        error = BitUtil.setBit(error, 0, pack.getAlarmLevel(Alarm.FAILURE_SENSOR_PACK_VOLTAGE) != AlarmLevel.NONE);
-        error = BitUtil.setBit(error, 1, pack.getAlarmLevel(Alarm.FAILURE_SENSOR_PACK_TEMPERATURE) != AlarmLevel.NONE);
-        error = BitUtil.setBit(error, 2, pack.getAlarmLevel(Alarm.FAILURE_COMMUNICATION_INTERNAL) != AlarmLevel.NONE);
-        error = BitUtil.setBit(error, 3, pack.getAlarmLevel(Alarm.FAILURE_CHARGE_BREAKER) != AlarmLevel.NONE);
-        error = BitUtil.setBit(error, 7, pack.getAlarmLevel(Alarm.FAILURE_OTHER) != AlarmLevel.NONE);
+        error = BitUtil.setBit(error, 0, pack.getAlarmLevel(Alarm.FAILURE_SENSOR_PACK_VOLTAGE) == AlarmLevel.ALARM);
+        error = BitUtil.setBit(error, 1, pack.getAlarmLevel(Alarm.FAILURE_SENSOR_PACK_TEMPERATURE) == AlarmLevel.ALARM);
+        error = BitUtil.setBit(error, 2, pack.getAlarmLevel(Alarm.FAILURE_COMMUNICATION_INTERNAL) == AlarmLevel.ALARM);
+        error = BitUtil.setBit(error, 3, pack.getAlarmLevel(Alarm.FAILURE_CHARGE_BREAKER) == AlarmLevel.ALARM);
+        error = BitUtil.setBit(error, 7, pack.getAlarmLevel(Alarm.FAILURE_OTHER) == AlarmLevel.ALARM);
 
         frame.put(error);
 
@@ -397,19 +397,28 @@ public class SolisHVInverterCANProcessor extends Inverter {
 
 
     // 0x7320
-    private ByteBuffer sendBatterModuleInfo(final BatteryPack pack) throws IOException {
+    private ByteBuffer sendBatteryModuleInfo(final BatteryPack pack) throws IOException {
         final ByteBuffer frame = prepareSendFrame(0x00007320);
 
         // battery module quantity
-        frame.putShort((short) pack.numberOfCells);
+        frame.putChar((char) pack.numberOfCells);
         // battery modules in series
         frame.put((byte) pack.modulesInSeries);
         // cell quantity in battery module
         frame.put(pack.moduleNumberOfCells);
         // battery cabinet voltage level (1V)
-        frame.putShort((short) pack.moduleVoltage);
+        frame.putChar((char) pack.moduleVoltage);
         // battery cabinet AH (1AH)
-        frame.putShort((short) pack.moduleRatedCapacityAh);
+        int totalCapacityAH = pack.moduleRatedCapacityAh;
+
+        if (totalCapacityAH == 0) {
+            // collect all the rated mAH capacity of each pack
+            totalCapacityAH = getEnergyStorage().getBatteryPacks().stream().map(battery -> battery.ratedCapacitymAh).reduce((result, ratedmAH) -> result += ratedmAH).orElse(0);
+            // convert from mAH to AH
+            totalCapacityAH = totalCapacityAH / 1000;
+        }
+
+        frame.putChar((char) totalCapacityAH);
 
         LOG.debug("Sending battery module info: {}", Port.printBuffer(frame));
         return frame;

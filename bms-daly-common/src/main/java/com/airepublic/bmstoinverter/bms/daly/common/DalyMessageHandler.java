@@ -115,8 +115,8 @@ public class DalyMessageHandler {
     private void getRatedCapacityAndCellVoltage(final DalyMessage msg, final BMS bms) {
         final BatteryPack battery = bms.getBatteryPack(BATTERY_ID);
 
-        battery.ratedCellmV = msg.data.getInt(); // in mV
         battery.ratedCapacitymAh = msg.data.getInt(); // in mAh
+        battery.ratedCellmV = msg.data.getInt(); // in mV
 
         LOG.debug("ratedCellmV={}, ratedCapacitymAh={}", battery.ratedCellmV, battery.ratedCapacitymAh);
     }
