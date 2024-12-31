@@ -23,28 +23,25 @@ import com.airepublic.bmstoinverter.core.AlarmLevel;
  */
 public class BatteryPack {
     public final Map<Alarm, AlarmLevel> alarms = new HashMap<>();
-    // data from 0x53
     /** Battery type: 0=lithium iron, 1=ternary lithium, 2=lithium titanate */
     public int type;
-    // data from 0x50
     /** Capacity of each cell (1mAh) */
     public int ratedCapacitymAh;
     /** Nominal cell voltage (1mV) */
     public int ratedCellmV;
 
-    // data from 0x5A
     /** Maximum total voltage (0.1V) */
     public int maxPackVoltageLimit;
     /** Minimum total voltage (0.1V) */
     public int minPackVoltageLimit;
 
-    // data from 0x5B
     /** Maximum total charge current (0.1A) */
     public int maxPackChargeCurrent;
     /** Maximum total discharge current (-0.1A) */
     public int maxPackDischargeCurrent;
+    /** Maximum total charge voltage (0.1V) */
+    public int maxChargeVoltage;
 
-    // data from 0x90
     /** Total pack voltage (0.1 V) */
     public int packVoltage;
     /** Current in (+) or out (-) of pack (0.1 A) */
@@ -193,6 +190,12 @@ public class BatteryPack {
      * @return the {@link AlarmLevel} or null if not present
      */
     public AlarmLevel getAlarmLevel(final Alarm alarm) {
-        return alarms.get(alarm);
+        final AlarmLevel level = alarms.get(alarm);
+
+        if (level == null) {
+            return AlarmLevel.NONE;
+        }
+
+        return level;
     }
 }

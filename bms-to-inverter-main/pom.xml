@@ -276,6 +276,13 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- ####################  GROWATT HV (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-growatt-hv-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- ####################  GROWATT (MODBUS)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
