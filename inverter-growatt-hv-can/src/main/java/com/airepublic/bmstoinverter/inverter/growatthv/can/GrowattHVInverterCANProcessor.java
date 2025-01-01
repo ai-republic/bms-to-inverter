@@ -68,7 +68,12 @@ public class GrowattHVInverterCANProcessor extends Inverter {
             sendFrames.add(sendFaultAndVoltageNumbers(aggregatedPack));
             // 0x3170
             sendFrames.add(sendMinMaxCellTemperatures(aggregatedPack));
-
+            // 0x3180
+            sendFrames.add(sendBatteryCodeAndQuantity(aggregatedPack));
+            // 0x3190
+            sendFrames.add(sendMinMaxCellVoltages(aggregatedPack));
+            // 0x3200
+            sendFrames.add(sendManufacturerAndMaxCellVoltage(aggregatedPack));
         } catch (final Throwable e) {
             LOG.error("Error creating send frames: ", e);
         }
@@ -344,4 +349,53 @@ public class GrowattHVInverterCANProcessor extends Inverter {
         return frame;
     }
 
+
+    // 0x3180
+    private ByteBuffer sendBatteryCodeAndQuantity(final BatteryPack pack) {
+        final ByteBuffer frame = prepareSendFrame(0x00003180);
+
+        // Manufacturer code
+        frame.putChar(pack.manufacturerCode.charAt(0));
+        // Number of packs in parallel
+        frame.putChar((char) getEnergyStorage().getBatteryPacks().size());
+        // Total number of cells
+        frame.putChar((char) getEnergyStorage().getBatteryPacks().stream().mapToInt(p -> p.numberOfCells).sum());
+
+        short bics = 0x0000;
+        bics = BitUtil.setBit(bics, 0, true); // treat all packs as one aggregated pack
+        frame.putShort(bics);
+
+        LOG.debug("Sending battery code and quantity: {}", Port.printBuffer(frame));
+
+        return frame;
+    }
+
+
+    // 0x3190
+    private ByteBuffer sendMinMaxCellVoltages(final BatteryPack pack) {
+        final ByteBuffer frame = prepareSendFrame(0x00003190);
+
+        // Battery status
+        frame.put((byte) pack.type);
+        // Max cell voltage (1mV)
+        frame.putChar((char) pack.maxCellmV);
+        // Min cell voltage (1mV)
+        frame.putChar((char) pack.minCellmV);
+
+        LOG.debug("Sending cell min/max voltages: {}", Port.printBuffer(frame));
+        return frame;
+    }
+
+
+    // 0x3200
+    private ByteBuffer sendManufacturerAndMaxCellVoltage(final BatteryPack pack) {
+        final ByteBuffer frame = prepareSendFrame(0x00003200);
+
+        frame.putInt(0);
+        frame.putChar((char) 0);
+        frame.putChar((char) pack.maxCellVoltageLimit);
+
+        LOG.debug("Sending cell min/max voltages: {}", Port.printBuffer(frame));
+        return frame;
+    }
 }
