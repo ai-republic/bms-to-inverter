@@ -8,7 +8,7 @@
  *
  * @author Torsten Oltmanns - bms-to-inverter''AT''gmail.com
  */
-package com.airepublic.bmstoinverter.bms.growatthv.can;
+package com.airepublic.bmstoinverter.bms.growatt.can;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -29,35 +29,27 @@ import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.TooManyInvalidFramesException;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
-import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 import com.airepublic.bmstoinverter.core.util.BitUtil;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
 
 /**
- * The class to handle CAN messages for a Growatt HV {@link BMS}.
+ * The class to handle CAN messages for a Growatt {@link BMS}.
  */
 @ApplicationScoped
-public class GrowattHVBmsCANProcessor extends BMS {
-    private final static Logger LOG = LoggerFactory.getLogger(GrowattHVBmsCANProcessor.class);
-    @Inject
-    private EnergyStorage energyStorage;
+public class GrowattBmsCANProcessor extends BMS {
+    private final static Logger LOG = LoggerFactory.getLogger(GrowattBmsCANProcessor.class);
     private final ByteBuffer sendFrame = ByteBuffer.allocateDirect(16).order(ByteOrder.BIG_ENDIAN);
     private final byte[] requestData = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
 
     enum Command {
-        READ_PACK_CHARGE_DISCHARGE_LIMITS(0x3110),
-        READ_ALARMS(0x3120),
-        READ_BATTERY_STATUS(0x3130),
-        READ_BATTERY_CAPACITY(0x3140),
-        READ_WORKING_PARAMS(0x3150),
-        READ_FAULT_AND_VOLTAGE_NUMBERS(0x3160),
-        READ_MIN_MAX_CELL_TEMPERATURES(0x3170),
-        READ_BATTERY_CODE_AND_QUANTITY(0x3180),
-        READ_MIN_MAX_CELL_VOLTAGES(0x3190),
-        READ_MANUFACTURER_AND_MAX_CELL_VOLTAGE(0x3200);
+        READ_PACK_CHARGE_DISCHARGE_LIMITS(0x311),
+        READ_ALARMS(0x312),
+        READ_BATTERY_STATUS(0x313),
+        READ_BATTERY_CAPACITY(0x314),
+        READ_MIN_MAX_CELL_VOLTAGES(0x319),
+        READ_MANUFACTURER_AND_MAX_CELL_VOLTAGE(0x320);
 
         private final int cmd;
         private final static Map<Integer, Command> commandMap = new HashMap<>();
@@ -158,54 +150,34 @@ public class GrowattHVBmsCANProcessor extends BMS {
                     readBuffers.add(receiveFrame);
 
                     switch (command) {
-                        // 0x3110
+                        // 0x311
                         case READ_PACK_CHARGE_DISCHARGE_LIMITS: {
                             readChargeDischargeLimits(pack, receiveFrame);
                         }
                         break;
-                        // 0x3120
+                        // 0x312
                         case READ_ALARMS: {
                             readAlarms(pack, receiveFrame);
                         }
                         break;
-                        // 0x3130
+                        // 0x313
                         case READ_BATTERY_STATUS: {
                             readBatteryStatus(pack, receiveFrame);
                         }
                         break;
-                        // 0x3140
+                        // 0x314
                         case READ_BATTERY_CAPACITY: {
                             readBatteryCapacity(pack, receiveFrame);
                         }
                         break;
-                        // 0x3150
-                        case READ_WORKING_PARAMS: {
-                            readWorkingParams(pack, receiveFrame);
-                        }
-                        break;
-                        // 0x3160
-                        case READ_FAULT_AND_VOLTAGE_NUMBERS: {
-                            readFaultAndVoltageNumbers(pack, receiveFrame);
-                        }
-                        break;
-                        // 0x3170
-                        case READ_MIN_MAX_CELL_TEMPERATURES: {
-                            readMinMaxCellTemperatures(pack, receiveFrame);
-                        }
-                        break;
-                        // 0x3180
-                        case READ_BATTERY_CODE_AND_QUANTITY: {
-                            readBatteryCodeAndQuantity(pack, receiveFrame);
-                        }
-                        break;
-                        // 0x3190
+                        // 0x319
                         case READ_MIN_MAX_CELL_VOLTAGES: {
                             readMinMaxCellVoltages(pack, receiveFrame);
                         }
                         break;
-                        // 0x3200
+                        // 0x320
                         case READ_MANUFACTURER_AND_MAX_CELL_VOLTAGE: {
-                            readManufacturerAndMaxCellVoltage(pack, receiveFrame);
+                            readManufacturerAndVersion(pack, receiveFrame);
                         }
                         break;
                         default: {
@@ -242,7 +214,7 @@ public class GrowattHVBmsCANProcessor extends BMS {
     }
 
 
-    // 0x3110
+    // 0x311
     private void readChargeDischargeLimits(final BatteryPack pack, final ByteBuffer frame) throws IOException {
         pack.minPackVoltageLimit = frame.getChar();
 
@@ -285,7 +257,7 @@ public class GrowattHVBmsCANProcessor extends BMS {
     }
 
 
-    // 0x3120
+    // 0x312
     private void readAlarms(final BatteryPack pack, final ByteBuffer frame) throws IOException {
 
         // Protection
@@ -342,7 +314,7 @@ public class GrowattHVBmsCANProcessor extends BMS {
     }
 
 
-    // 0x3130
+    // 0x313
     private void readBatteryStatus(final BatteryPack pack, final ByteBuffer frame) throws IOException {
         // Battery voltage (0.1V)
         pack.packVoltage = frame.getChar();
@@ -359,7 +331,7 @@ public class GrowattHVBmsCANProcessor extends BMS {
     }
 
 
-    // 0x3140
+    // 0x314
     private void readBatteryCapacity(final BatteryPack pack, final ByteBuffer frame) {
         // Current battery energy (10mAH)
         pack.remainingCapacitymAh = frame.getChar() * 10;
@@ -374,86 +346,11 @@ public class GrowattHVBmsCANProcessor extends BMS {
     }
 
 
-    // 0x3150
-    private void readWorkingParams(final BatteryPack pack, final ByteBuffer frame) {
-        // max discharge voltage (0.1V)
-        pack.maxPackVoltageLimit = frame.getChar();
-        // case temperature (0.1C)
-        pack.tempMax = frame.get();
-        // number of cells
-        final int totalNumberOfCells = frame.getChar();
-        // number of packs
-        final int numberOfPacks = frame.getChar();
-        pack.numberOfCells = totalNumberOfCells / numberOfPacks;
-
-        LOG.debug("Read working params: {}", Port.printBuffer(frame));
-    }
-
-
-    // 0x3160
-    private void readFaultAndVoltageNumbers(final BatteryPack pack, final ByteBuffer frame) {
-        // fault flags
-        final short faultFlags = frame.getShort();
-
-        pack.setAlarm(Alarm.FAILURE_SENSOR_PACK_VOLTAGE, BitUtil.bit(faultFlags, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.FAILURE_SENSOR_CELL_TEMPERATURE, BitUtil.bit(faultFlags, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.FAILURE_COMMUNICATION_INTERNAL, BitUtil.bit(faultFlags, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-
-        // number of module with max cell voltage
-        final int maxVBatteryPackNumber = frame.get();
-        final int maxCellVNum = frame.get();
-
-        if (energyStorage.getBatteryPack(maxVBatteryPackNumber) == pack) {
-            // cell number with max voltage
-            pack.maxCellVNum = maxCellVNum;
-        }
-
-        // number of module with min cell voltage
-        final int minVBatteryPackNumber = frame.get();
-        final int minCellVNum = frame.get();
-
-        if (energyStorage.getBatteryPack(minVBatteryPackNumber) == pack) {
-            // cell number with min voltage
-            pack.minCellVNum = minCellVNum;
-        }
-
-        // min cell temperature
-        pack.tempMin = frame.get();
-
-        LOG.debug("Read fault and voltage numbers: {}", Port.printBuffer(frame));
-    }
-
-
-    // 0x3170
-    private void readMinMaxCellTemperatures(final BatteryPack pack, final ByteBuffer frame) {
-        // max cell temperature
-        energyStorage.getBatteryPack(frame.get()).tempMaxCellNum = frame.get();
-        // min cell temperature
-        energyStorage.getBatteryPack(frame.get()).tempMinCellNum = frame.get();
-
-        LOG.debug("Read min/max cell temperaturs: {}", Port.printBuffer(frame));
-    }
-
-
-    // 0x3180
-    private void readBatteryCodeAndQuantity(final BatteryPack pack, final ByteBuffer frame) {
-        // Manufacturer code
-        pack.manufacturerCode = String.valueOf(frame.getChar());
-
-        // Number of packs in parallel
-        frame.getChar();
-
-        // Total number of cells
-        frame.getChar();
-
-        LOG.debug("Read battery code and quantity: {}", Port.printBuffer(frame));
-    }
-
-
-    // 0x3190
+    // 0x319
     private void readMinMaxCellVoltages(final BatteryPack pack, final ByteBuffer frame) {
         // Battery status
         setChargeStates(pack, frame.get());
+
         // Max cell voltage (1mV)
         pack.maxCellmV = frame.getChar();
         // Min cell voltage (1mV)
@@ -463,27 +360,22 @@ public class GrowattHVBmsCANProcessor extends BMS {
     }
 
 
-    // 0x3200
-    private void readManufacturerAndMaxCellVoltage(final BatteryPack pack, final ByteBuffer frame) {
+    // 0x320
+    private void readManufacturerAndVersion(final BatteryPack pack, final ByteBuffer frame) {
         // manufacturer code
         final char chr1 = (char) frame.get();
         final char chr2 = (char) frame.get();
         pack.manufacturerCode = "" + chr1 + chr2;
-        pack.hardwareVersion = frame.get() == 1 ? "A" : "B";
+        pack.hardwareVersion = "" + (char) frame.get();
+        final char swLow = (char) frame.get();
+        pack.softwareVersion = "" + (char) frame.get() + "." + swLow;
 
-        // reserved
-        frame.get();
-        frame.get();
-        frame.get();
-
-        pack.maxCellVoltageLimit = frame.getChar();
-
-        LOG.debug("Read manufacturer and hardware version: {}", Port.printBuffer(frame));
+        LOG.debug("Read manufacturer and hard-/software version: {}", Port.printBuffer(frame));
     }
 
 
     /**
-     * See documentation Table for 0x3190.
+     * See documentation Table for 0x319.
      *
      * @param pack the {@link BatteryPack}
      * @param value the charge state bits
@@ -494,5 +386,4 @@ public class GrowattHVBmsCANProcessor extends BMS {
 
         pack.type = value & 0x03;
     }
-
 }

@@ -390,12 +390,18 @@ public class GrowattHVInverterCANProcessor extends Inverter {
     // 0x3200
     private ByteBuffer sendManufacturerAndMaxCellVoltage(final BatteryPack pack) {
         final ByteBuffer frame = prepareSendFrame(0x00003200);
+        frame.put((byte) pack.manufacturerCode.charAt(0));
+        frame.put((byte) pack.manufacturerCode.charAt(1));
+        frame.put((byte) (pack.hardwareVersion.equals("A") ? 1 : 2));
 
-        frame.putInt(0);
-        frame.putChar((char) 0);
+        // reserved
+        frame.put((byte) 0);
+        frame.put((byte) 0);
+        frame.put((byte) 0);
+
         frame.putChar((char) pack.maxCellVoltageLimit);
 
-        LOG.debug("Sending cell min/max voltages: {}", Port.printBuffer(frame));
+        LOG.debug("Sending manufacturer and hardware version: {}", Port.printBuffer(frame));
         return frame;
     }
 
