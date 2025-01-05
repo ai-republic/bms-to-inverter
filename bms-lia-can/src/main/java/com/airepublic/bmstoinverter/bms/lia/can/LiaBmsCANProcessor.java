@@ -40,7 +40,7 @@ public class LiaBmsCANProcessor extends BMS {
     private final ByteBuffer sendFrame = ByteBuffer.allocateDirect(16).order(ByteOrder.LITTLE_ENDIAN);
     private final byte[] requestData = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
 
-    enum LiaCommand {
+    enum Command {
         READ_PROTOCOL_VERSION(0x0CF10100),
         READ_SOFTWARE_VERSION(0x0CF10110),
         READ_MAX_MIN_CELL_TEMPERATURE_VOLTAGE(0x0CF10200),
@@ -53,10 +53,10 @@ public class LiaBmsCANProcessor extends BMS {
         READ_PACK_CHARGE_DISCHARGE_REQUESTS(0x0CF10410);
 
         private final int cmd;
-        private final static Map<Integer, LiaCommand> commandMap = new HashMap<>();
+        private final static Map<Integer, Command> commandMap = new HashMap<>();
         private static boolean initializedCommandMapping;
 
-        LiaCommand(final int cmd) {
+        Command(final int cmd) {
             this.cmd = cmd;
         }
 
@@ -77,9 +77,9 @@ public class LiaBmsCANProcessor extends BMS {
          * @param command the command
          * @return the {@link PaceCommand}
          */
-        public static LiaCommand forCommand(final int command) {
+        public static Command forCommand(final int command) {
             if (!initializedCommandMapping) {
-                for (final LiaCommand cmd : values()) {
+                for (final Command cmd : values()) {
                     commandMap.put(cmd.getCommand(), cmd);
                 }
 
@@ -93,13 +93,13 @@ public class LiaBmsCANProcessor extends BMS {
     @Override
     protected void collectData(final Port port) throws IOException, TooManyInvalidFramesException, NoDataAvailableException {
         // read all values
-        for (final LiaCommand cmd : LiaCommand.values()) {
+        for (final Command cmd : Command.values()) {
             sendMessage(port, cmd, requestData);
         }
     }
 
 
-    protected List<ByteBuffer> sendMessage(final Port port, final LiaCommand cmd, final byte[] data) throws IOException, NoDataAvailableException {
+    protected List<ByteBuffer> sendMessage(final Port port, final Command cmd, final byte[] data) throws IOException, NoDataAvailableException {
         final ByteBuffer sendFrame = prepareSendFrame(getBmsId(), cmd, data);
         final List<ByteBuffer> readBuffers = new ArrayList<>();
         int noDataReceived = 0;
@@ -141,7 +141,7 @@ public class LiaBmsCANProcessor extends BMS {
                 } else {
                     frameReceived = true;
                     // request has 4th byte 0x10 and response 0x20
-                    final LiaCommand command = LiaCommand.forCommand(canId - 0x00001000);
+                    final Command command = Command.forCommand(canId - 0x00001000);
                     // move position to the data part
                     receiveFrame.getInt();
 
@@ -309,7 +309,7 @@ public class LiaBmsCANProcessor extends BMS {
     }
 
 
-    protected ByteBuffer prepareSendFrame(final int bmsId, final LiaCommand cmd, final byte[] data) {
+    protected ByteBuffer prepareSendFrame(final int bmsId, final Command cmd, final byte[] data) {
         sendFrame.rewind();
 
         sendFrame.putInt(cmd.cmd + getBmsId());

@@ -24,6 +24,7 @@
 		<module>bms-daly-common</module>
 		<module>bms-daly-can</module>
 		<module>bms-daly-rs485</module>
+		<module>bms-growatt-hv-can</module>
 		<module>bms-jk-can</module>
 		<module>bms-jk-modbus</module>
 		<module>bms-jk-rs485</module>

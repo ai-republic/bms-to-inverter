@@ -133,6 +133,13 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- ####################  GROWATT HV (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-growatt-hv-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		
 		<!-- ####################  HUAWEI (MODBUS)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
