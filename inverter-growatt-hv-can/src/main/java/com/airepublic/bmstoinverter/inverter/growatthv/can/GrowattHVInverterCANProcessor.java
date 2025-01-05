@@ -376,7 +376,7 @@ public class GrowattHVInverterCANProcessor extends Inverter {
         final ByteBuffer frame = prepareSendFrame(0x00003190);
 
         // Battery status
-        frame.put((byte) pack.type);
+        frame.put(getChargeStates(pack));
         // Max cell voltage (1mV)
         frame.putChar((char) pack.maxCellmV);
         // Min cell voltage (1mV)
@@ -398,4 +398,37 @@ public class GrowattHVInverterCANProcessor extends Inverter {
         LOG.debug("Sending cell min/max voltages: {}", Port.printBuffer(frame));
         return frame;
     }
+
+
+    /**
+     * See documentation Table for 0x3190.
+     *
+     * @return the charge state bits
+     */
+    private byte getChargeStates(final BatteryPack pack) {
+        byte value = 0;
+        value = BitUtil.setBit(value, 7, pack.chargeMOSState);
+        value = BitUtil.setBit(value, 6, pack.dischargeMOSState);
+        value = BitUtil.setBit(value, 5, false);
+        value = BitUtil.setBit(value, 4, false);
+        value = BitUtil.setBit(value, 3, false);
+        value = BitUtil.setBit(value, 2, false);
+        switch (pack.type) {
+            case 0: // lithium iron phosphate
+                value = BitUtil.setBit(value, 1, false);
+                value = BitUtil.setBit(value, 0, false);
+            break;
+            case 1: // ternary lithium
+                value = BitUtil.setBit(value, 1, false);
+                value = BitUtil.setBit(value, 0, true);
+            break;
+            case 2: // lithium titanate
+                value = BitUtil.setBit(value, 1, true);
+                value = BitUtil.setBit(value, 0, false);
+            break;
+        }
+
+        return value;
+    }
+
 }

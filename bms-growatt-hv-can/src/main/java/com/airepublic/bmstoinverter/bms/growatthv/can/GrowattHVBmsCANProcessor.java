@@ -453,7 +453,7 @@ public class GrowattHVBmsCANProcessor extends BMS {
     // 0x3190
     private void readMinMaxCellVoltages(final BatteryPack pack, final ByteBuffer frame) {
         // Battery status
-        pack.type = frame.get();
+        setChargeStates(pack, frame.get());
         // Max cell voltage (1mV)
         pack.maxCellmV = frame.getChar();
         // Min cell voltage (1mV)
@@ -471,4 +471,19 @@ public class GrowattHVBmsCANProcessor extends BMS {
 
         LOG.debug("Read cell min/max voltages: {}", Port.printBuffer(frame));
     }
+
+
+    /**
+     * See documentation Table for 0x3190.
+     *
+     * @param pack the {@link BatteryPack}
+     * @param value the charge state bits
+     */
+    private void setChargeStates(final BatteryPack pack, final byte value) {
+        pack.chargeMOSState = BitUtil.bit(value, 7);
+        pack.dischargeMOSState = BitUtil.bit(value, 6);
+
+        pack.type = value & 0x03;
+    }
+
 }

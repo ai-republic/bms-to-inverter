@@ -176,39 +176,6 @@ public class GrowattInverterCANProcessor extends Inverter {
     }
 
 
-    /**
-     * See documentation Table 5.
-     *
-     * @return the charge state bits
-     */
-    private byte getChargeStates(final BatteryPack pack) {
-        byte value = 0;
-        // 0x319 table 5
-        value = BitUtil.setBit(value, 7, pack.chargeMOSState);
-        value = BitUtil.setBit(value, 6, pack.dischargeMOSState);
-        value = BitUtil.setBit(value, 5, false);
-        value = BitUtil.setBit(value, 4, false);
-        value = BitUtil.setBit(value, 3, false);
-        value = BitUtil.setBit(value, 2, false);
-        switch (pack.type) {
-            case 0:
-                value = BitUtil.setBit(value, 1, false);
-                value = BitUtil.setBit(value, 0, false);
-            break;
-            case 1:
-                value = BitUtil.setBit(value, 1, false);
-                value = BitUtil.setBit(value, 0, true);
-            break;
-            case 2:
-                value = BitUtil.setBit(value, 1, true);
-                value = BitUtil.setBit(value, 0, false);
-            break;
-        }
-
-        return value;
-    }
-
-
     // 0x313
     private ByteBuffer createBatteryVoltage(final BatteryPack pack) {
         final ByteBuffer frame = prepareFrame(0x313);
@@ -246,7 +213,7 @@ public class GrowattInverterCANProcessor extends Inverter {
 
     // 0x319
     private ByteBuffer createMinMaxVoltageCell(final BatteryPack pack) {
-        final ByteBuffer frame = prepareFrame(0x314);
+        final ByteBuffer frame = prepareFrame(0x319);
         // charge state and battery status
         frame.put(getChargeStates(pack));
 
@@ -282,6 +249,39 @@ public class GrowattInverterCANProcessor extends Inverter {
     }
 
 
+    /**
+     * See documentation Table 7.
+     *
+     * @return the charge state bits
+     */
+    private byte getChargeStates(final BatteryPack pack) {
+        byte value = 0;
+        // 0x319 table 5
+        value = BitUtil.setBit(value, 7, pack.chargeMOSState);
+        value = BitUtil.setBit(value, 6, pack.dischargeMOSState);
+        value = BitUtil.setBit(value, 5, false);
+        value = BitUtil.setBit(value, 4, false);
+        value = BitUtil.setBit(value, 3, false);
+        value = BitUtil.setBit(value, 2, false);
+        switch (pack.type) {
+            case 0: // lithium iron phosphate
+                value = BitUtil.setBit(value, 1, false);
+                value = BitUtil.setBit(value, 0, false);
+            break;
+            case 1: // ternary lithium
+                value = BitUtil.setBit(value, 1, false);
+                value = BitUtil.setBit(value, 0, true);
+            break;
+            case 2: // lithium titanate
+                value = BitUtil.setBit(value, 1, true);
+                value = BitUtil.setBit(value, 0, false);
+            break;
+        }
+
+        return value;
+    }
+
+
     private ByteBuffer prepareFrame(final int cmd) {
         final ByteBuffer frame = ByteBuffer.allocateDirect(16).order(ByteOrder.LITTLE_ENDIAN);
         frame.putInt(cmd)
@@ -299,60 +299,55 @@ public class GrowattInverterCANProcessor extends Inverter {
 
         // seconds
         int value = time.getSecond();
-        dateTime[0] = BitUtil.setBit(dateTime[0], 0, bitRead(value, 0));
-        dateTime[0] = BitUtil.setBit(dateTime[0], 1, bitRead(value, 1));
-        dateTime[0] = BitUtil.setBit(dateTime[0], 2, bitRead(value, 2));
-        dateTime[0] = BitUtil.setBit(dateTime[0], 3, bitRead(value, 3));
-        dateTime[0] = BitUtil.setBit(dateTime[0], 4, bitRead(value, 4));
-        dateTime[0] = BitUtil.setBit(dateTime[0], 5, bitRead(value, 5));
+        dateTime[0] = BitUtil.setBit(dateTime[0], 0, BitUtil.bit(value, 0));
+        dateTime[0] = BitUtil.setBit(dateTime[0], 1, BitUtil.bit(value, 1));
+        dateTime[0] = BitUtil.setBit(dateTime[0], 2, BitUtil.bit(value, 2));
+        dateTime[0] = BitUtil.setBit(dateTime[0], 3, BitUtil.bit(value, 3));
+        dateTime[0] = BitUtil.setBit(dateTime[0], 4, BitUtil.bit(value, 4));
+        dateTime[0] = BitUtil.setBit(dateTime[0], 5, BitUtil.bit(value, 5));
 
         // minutes
         value = time.getMinute();
-        dateTime[0] = BitUtil.setBit(dateTime[0], 6, bitRead(value, 0));
-        dateTime[0] = BitUtil.setBit(dateTime[0], 7, bitRead(value, 1));
-        dateTime[1] = BitUtil.setBit(dateTime[1], 0, bitRead(value, 2));
-        dateTime[1] = BitUtil.setBit(dateTime[1], 1, bitRead(value, 3));
-        dateTime[1] = BitUtil.setBit(dateTime[1], 2, bitRead(value, 4));
-        dateTime[1] = BitUtil.setBit(dateTime[1], 3, bitRead(value, 5));
+        dateTime[0] = BitUtil.setBit(dateTime[0], 6, BitUtil.bit(value, 0));
+        dateTime[0] = BitUtil.setBit(dateTime[0], 7, BitUtil.bit(value, 1));
+        dateTime[1] = BitUtil.setBit(dateTime[1], 0, BitUtil.bit(value, 2));
+        dateTime[1] = BitUtil.setBit(dateTime[1], 1, BitUtil.bit(value, 3));
+        dateTime[1] = BitUtil.setBit(dateTime[1], 2, BitUtil.bit(value, 4));
+        dateTime[1] = BitUtil.setBit(dateTime[1], 3, BitUtil.bit(value, 5));
 
         // hours
         value = time.getHour();
-        dateTime[1] = BitUtil.setBit(dateTime[1], 4, bitRead(value, 0));
-        dateTime[1] = BitUtil.setBit(dateTime[1], 5, bitRead(value, 1));
-        dateTime[1] = BitUtil.setBit(dateTime[1], 6, bitRead(value, 2));
-        dateTime[1] = BitUtil.setBit(dateTime[1], 7, bitRead(value, 3));
-        dateTime[2] = BitUtil.setBit(dateTime[2], 0, bitRead(value, 4));
+        dateTime[1] = BitUtil.setBit(dateTime[1], 4, BitUtil.bit(value, 0));
+        dateTime[1] = BitUtil.setBit(dateTime[1], 5, BitUtil.bit(value, 1));
+        dateTime[1] = BitUtil.setBit(dateTime[1], 6, BitUtil.bit(value, 2));
+        dateTime[1] = BitUtil.setBit(dateTime[1], 7, BitUtil.bit(value, 3));
+        dateTime[2] = BitUtil.setBit(dateTime[2], 0, BitUtil.bit(value, 4));
 
         // day
         value = time.getDayOfMonth();
-        dateTime[2] = BitUtil.setBit(dateTime[2], 1, bitRead(value, 0));
-        dateTime[2] = BitUtil.setBit(dateTime[2], 2, bitRead(value, 1));
-        dateTime[2] = BitUtil.setBit(dateTime[2], 3, bitRead(value, 2));
-        dateTime[2] = BitUtil.setBit(dateTime[2], 4, bitRead(value, 3));
-        dateTime[2] = BitUtil.setBit(dateTime[2], 5, bitRead(value, 4));
+        dateTime[2] = BitUtil.setBit(dateTime[2], 1, BitUtil.bit(value, 0));
+        dateTime[2] = BitUtil.setBit(dateTime[2], 2, BitUtil.bit(value, 1));
+        dateTime[2] = BitUtil.setBit(dateTime[2], 3, BitUtil.bit(value, 2));
+        dateTime[2] = BitUtil.setBit(dateTime[2], 4, BitUtil.bit(value, 3));
+        dateTime[2] = BitUtil.setBit(dateTime[2], 5, BitUtil.bit(value, 4));
 
         // month
         value = time.getMonthValue();
-        dateTime[2] = BitUtil.setBit(dateTime[2], 6, bitRead(value, 0));
-        dateTime[2] = BitUtil.setBit(dateTime[2], 7, bitRead(value, 1));
-        dateTime[3] = BitUtil.setBit(dateTime[3], 0, bitRead(value, 2));
-        dateTime[3] = BitUtil.setBit(dateTime[3], 1, bitRead(value, 3));
+        dateTime[2] = BitUtil.setBit(dateTime[2], 6, BitUtil.bit(value, 0));
+        dateTime[2] = BitUtil.setBit(dateTime[2], 7, BitUtil.bit(value, 1));
+        dateTime[3] = BitUtil.setBit(dateTime[3], 0, BitUtil.bit(value, 2));
+        dateTime[3] = BitUtil.setBit(dateTime[3], 1, BitUtil.bit(value, 3));
 
         // year
         value = time.getYear();
-        dateTime[3] = BitUtil.setBit(dateTime[3], 2, bitRead(value, 0));
-        dateTime[3] = BitUtil.setBit(dateTime[3], 3, bitRead(value, 1));
-        dateTime[3] = BitUtil.setBit(dateTime[3], 4, bitRead(value, 2));
-        dateTime[3] = BitUtil.setBit(dateTime[3], 5, bitRead(value, 3));
-        dateTime[3] = BitUtil.setBit(dateTime[3], 6, bitRead(value, 4));
-        dateTime[3] = BitUtil.setBit(dateTime[3], 7, bitRead(value, 5));
+        dateTime[3] = BitUtil.setBit(dateTime[3], 2, BitUtil.bit(value, 0));
+        dateTime[3] = BitUtil.setBit(dateTime[3], 3, BitUtil.bit(value, 1));
+        dateTime[3] = BitUtil.setBit(dateTime[3], 4, BitUtil.bit(value, 2));
+        dateTime[3] = BitUtil.setBit(dateTime[3], 5, BitUtil.bit(value, 3));
+        dateTime[3] = BitUtil.setBit(dateTime[3], 6, BitUtil.bit(value, 4));
+        dateTime[3] = BitUtil.setBit(dateTime[3], 7, BitUtil.bit(value, 5));
 
         return dateTime;
-    }
-
-
-    private boolean bitRead(final int value, final int index) {
-        return (value >> index & 1) == 1;
     }
 
 
