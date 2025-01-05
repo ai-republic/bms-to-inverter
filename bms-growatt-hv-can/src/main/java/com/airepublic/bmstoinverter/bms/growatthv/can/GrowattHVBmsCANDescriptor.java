@@ -11,16 +11,15 @@
 package com.airepublic.bmstoinverter.bms.growatthv.can;
 
 import com.airepublic.bmstoinverter.core.BMS;
-import com.airepublic.bmstoinverter.core.Inverter;
-import com.airepublic.bmstoinverter.core.InverterConfig;
-import com.airepublic.bmstoinverter.core.InverterDescriptor;
+import com.airepublic.bmstoinverter.core.BMSConfig;
+import com.airepublic.bmstoinverter.core.BMSDescriptor;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.protocol.can.JavaCANPort;
 
 /**
- * The {@link InverterDescriptor} for the Growatt HV {@link BMS} using the CAN protocol.
+ * The {@link BMSDescriptor} for the Growatt HV {@link BMS} using the CAN protocol.
  */
-public class GrowattHVBmsCANDescriptor implements InverterDescriptor {
+public class GrowattHVBmsCANDescriptor implements BMSDescriptor {
     @Override
     public String getName() {
         return "GROWATT_HV_CAN";
@@ -34,13 +33,13 @@ public class GrowattHVBmsCANDescriptor implements InverterDescriptor {
 
 
     @Override
-    public Class<? extends Inverter> getInverterClass() {
+    public Class<? extends BMS> getBMSClass() {
         return GrowattHVBmsCANProcessor.class;
     }
 
 
     @Override
-    public Port createPort(final InverterConfig config) {
+    public Port createPort(final BMSConfig config) {
         final Port port = new JavaCANPort(config.getPortLocator(), config.getBaudRate());
         return port;
     }
