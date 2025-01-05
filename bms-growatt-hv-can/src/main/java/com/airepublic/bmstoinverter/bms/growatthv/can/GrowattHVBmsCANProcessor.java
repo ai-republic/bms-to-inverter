@@ -165,7 +165,7 @@ public class GrowattHVBmsCANProcessor extends BMS {
                         break;
                         // 0x3120
                         case READ_ALARMS: {
-                            readChargeDischargeLimits(pack, receiveFrame);
+                            readAlarms(pack, receiveFrame);
                         }
                         break;
                         // 0x3130
@@ -312,31 +312,31 @@ public class GrowattHVBmsCANProcessor extends BMS {
 
         // Alarm
         final int alarm = frame.getInt();
-        pack.setAlarm(Alarm.FAILURE_COMMUNICATION_INTERNAL, BitUtil.bit(protection, 0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.FAILURE_COMMUNICATION_INTERNAL, BitUtil.bit(alarm, 0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
-        pack.setAlarm(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, BitUtil.bit(protection, 2) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, BitUtil.bit(alarm, 2) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
-        pack.setAlarm(Alarm.CHARGE_TEMPERATURE_LOW, BitUtil.bit(protection, 4) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.DISCHARGE_TEMPERATURE_LOW, BitUtil.bit(protection, 5) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CHARGE_TEMPERATURE_HIGH, BitUtil.bit(protection, 6) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.DISCHARGE_TEMPERATURE_HIGH, BitUtil.bit(protection, 7) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.DISCHARGE_VOLTAGE_LOW, BitUtil.bit(protection, 8) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, BitUtil.bit(protection, 9) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, BitUtil.bit(protection, 10) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CELL_VOLTAGE_LOW, BitUtil.bit(protection, 11) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CELL_VOLTAGE_HIGH, BitUtil.bit(protection, 12) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CHARGE_VOLTAGE_HIGH, BitUtil.bit(protection, 13) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, BitUtil.bit(protection, 14) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, BitUtil.bit(protection, 15) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_TEMPERATURE_LOW, BitUtil.bit(alarm, 4) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.DISCHARGE_TEMPERATURE_LOW, BitUtil.bit(alarm, 5) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_TEMPERATURE_HIGH, BitUtil.bit(alarm, 6) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.DISCHARGE_TEMPERATURE_HIGH, BitUtil.bit(alarm, 7) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.DISCHARGE_VOLTAGE_LOW, BitUtil.bit(alarm, 8) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, BitUtil.bit(alarm, 9) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, BitUtil.bit(alarm, 10) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CELL_VOLTAGE_LOW, BitUtil.bit(alarm, 11) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CELL_VOLTAGE_HIGH, BitUtil.bit(alarm, 12) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_VOLTAGE_HIGH, BitUtil.bit(alarm, 13) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, BitUtil.bit(alarm, 14) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, BitUtil.bit(alarm, 15) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
-        pack.setAlarm(Alarm.SOC_LOW, BitUtil.bit(protection, 17) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.TEMPERATURE_SENSOR_DIFFERENCE_HIGH, BitUtil.bit(protection, 18) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.CHARGE_MODULE_TEMPERATURE_HIGH, BitUtil.bit(protection, 19) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.ENCASING_TEMPERATURE_HIGH, BitUtil.bit(protection, 20) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.FAILURE_COMMUNICATION_EXTERNAL, BitUtil.bit(protection, 21) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.FAILURE_COMMUNICATION_INTERNAL, BitUtil.bit(protection, 22) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, BitUtil.bit(protection, 23) ? AlarmLevel.WARNING : AlarmLevel.NONE);
-        pack.setAlarm(Alarm.SOC_LOW, BitUtil.bit(protection, 23) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.SOC_LOW, BitUtil.bit(alarm, 17) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.TEMPERATURE_SENSOR_DIFFERENCE_HIGH, BitUtil.bit(alarm, 18) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_MODULE_TEMPERATURE_HIGH, BitUtil.bit(alarm, 19) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.ENCASING_TEMPERATURE_HIGH, BitUtil.bit(alarm, 20) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.FAILURE_COMMUNICATION_EXTERNAL, BitUtil.bit(alarm, 21) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.FAILURE_COMMUNICATION_INTERNAL, BitUtil.bit(alarm, 22) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, BitUtil.bit(alarm, 23) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.SOC_LOW, BitUtil.bit(alarm, 23) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
         LOG.debug("Read alarms: {}", Port.printBuffer(frame));
     }
