@@ -155,7 +155,7 @@ public abstract class BMS {
      * @param callback the function will be called after successfully collecting data from all
      *        {@link BatteryPack}s
      */
-    public final void process(final Runnable callback) {
+    public void process(final Runnable callback) {
         try {
             final Port port = PortAllocator.allocate(getPortLocator());
 
