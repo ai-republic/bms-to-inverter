@@ -236,7 +236,7 @@ public class GrowattHVInverterCANProcessor extends Inverter {
         // Rated battery energy (10mAH)
         frame.putChar((char) (pack.ratedCapacitymAh / 10));
         // manufacturer code
-        frame.putChar(pack.manufacturerCode.charAt(0));
+        frame.putChar(pack.manufacturerCode != null && pack.manufacturerCode.length() > 0 ? pack.manufacturerCode.charAt(0) : 0);
         // cycle count
         frame.putChar((char) pack.bmsCycles);
 
@@ -355,7 +355,7 @@ public class GrowattHVInverterCANProcessor extends Inverter {
         final ByteBuffer frame = prepareSendFrame(0x00003180);
 
         // Manufacturer code
-        frame.putChar(pack.manufacturerCode.charAt(0));
+        frame.putChar(pack.manufacturerCode != null && pack.manufacturerCode.length() > 0 ? pack.manufacturerCode.charAt(0) : 0);
         // Number of packs in parallel
         frame.putChar((char) getEnergyStorage().getBatteryPacks().size());
         // Total number of cells
@@ -390,7 +390,7 @@ public class GrowattHVInverterCANProcessor extends Inverter {
     // 0x3200
     private ByteBuffer sendManufacturerAndMaxCellVoltage(final BatteryPack pack) {
         final ByteBuffer frame = prepareSendFrame(0x00003200);
-        frame.put((byte) pack.manufacturerCode.charAt(0));
+        frame.put((byte) (pack.manufacturerCode != null && pack.manufacturerCode.length() > 0 ? pack.manufacturerCode.charAt(0) : 0));
         frame.put((byte) pack.manufacturerCode.charAt(1));
         frame.put((byte) (pack.hardwareVersion.equals("A") ? 1 : 2));
 
