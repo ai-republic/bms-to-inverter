@@ -64,16 +64,16 @@ public class SamsungBmsCANProcessor extends BMS {
                     readCellVoltages(pack, data, 0);
                 break;
                 case 0x5F1:
-                    readCellVoltages(pack, data, 20);
+                    readCellVoltages(pack, data, 3);
                 break;
                 case 0x5F2:
-                    readCellVoltages(pack, data, 40);
+                    readCellVoltages(pack, data, 6);
                 break;
                 case 0x5F3:
-                    readCellVoltages(pack, data, 60);
+                    readCellVoltages(pack, data, 9);
                 break;
                 case 0x5F4:
-                    readCellVoltages(pack, data, 80);
+                    readCellVoltages(pack, data, 12);
                 break;
             }
         } catch (final IOException e) {
@@ -204,13 +204,13 @@ public class SamsungBmsCANProcessor extends BMS {
         // Tray id
         final int tray = data.getShort() - 1;
         // Cell voltage (1mV)
-        pack.cellVmV[cellNoStart + tray * 3] = data.getChar();
+        pack.cellVmV[cellNoStart + tray * 14] = data.getChar();
         // Cell voltage (1mV)
-        pack.cellVmV[cellNoStart + tray * 3 + 1] = data.getChar();
+        pack.cellVmV[cellNoStart + tray * 14 + 1] = data.getChar();
 
-        if (cellNoStart != 80) {
+        if (cellNoStart != 12) {
             // Cell voltage (1mV)
-            pack.cellVmV[cellNoStart + tray * 3 + 2] = data.getChar();
+            pack.cellVmV[cellNoStart + tray * 14 + 2] = data.getChar();
         }
     }
 

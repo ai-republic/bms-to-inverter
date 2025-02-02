@@ -1,5 +1,6 @@
 package com.airepublic.bmstoinverter.webserver;
 
+import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -169,7 +170,16 @@ public class WebServer implements IWebServerService {
                 // } else if (path.contains("/favicon.ico")) {
                 // return true;
                 // } else
-                if (path.contains("/data")) {
+                if (path.equals("/favicon.ico")) {
+                    final Resource favicon = ResourceFactory.of(server).newClassLoaderResource("static/favicon.ico");
+                    if (favicon.exists()) {
+                        try (InputStream is = favicon.newInputStream()) {
+                            response.getHeaders().put(HttpHeader.CONTENT_TYPE, "image/x-icon");
+                            response.write(true, BufferUtil.toBuffer(is.readAllBytes()), callback);
+                        }
+                        return true;
+                    }
+                } else if (path.contains("/data")) {
                     final String content = energyStorage.toJson();
                     response.getHeaders().put(HttpHeader.CONTENT_TYPE, "text/json; charset=utf-8");
                     response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN, "http://localhost, https://localhost");
@@ -217,6 +227,12 @@ public class WebServer implements IWebServerService {
         securityHandler.put("/login.html", Constraint.ALLOWED_ANY_TRANSPORT);
         securityHandler.put("/styles.css", Constraint.ALLOWED_ANY_TRANSPORT);
         securityHandler.put("/.favicon", Constraint.ALLOWED_ANY_TRANSPORT);
+        securityHandler.put("/favicon-16x16.png", Constraint.ALLOWED_ANY_TRANSPORT);
+        securityHandler.put("/favicon-32x32.png", Constraint.ALLOWED_ANY_TRANSPORT);
+        securityHandler.put("/site.webmanifest", Constraint.ALLOWED_ANY_TRANSPORT);
+        securityHandler.put("/apple-touch-icon.png", Constraint.ALLOWED_ANY_TRANSPORT);
+        securityHandler.put("/android-chrome-192x192.png", Constraint.ALLOWED_ANY_TRANSPORT);
+        securityHandler.put("/android-chrome-512x512.png", Constraint.ALLOWED_ANY_TRANSPORT);
         securityHandler.setAuthenticator(new FormAuthenticator("/login.html", "/login.html", true));
         securityHandler.setLoginService(loginService);
 
