@@ -12,39 +12,44 @@ package com.airepublic.bmstoinverter.service.mqtt;
 
 import java.io.IOException;
 import java.net.URI;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 import com.airepublic.bmstoinverter.core.service.IMQTTProducerService;
 
 /**
- * Wrapper to choose between multiple client types based on the port number.  Artemis (default port=61616) or MQTT (default port=1833, highest default is 16000)
+ * Wrapper to choose between multiple client types based on the port number. Artemis (default
+ * port=61616) or MQTT (default port=1833, highest default is 16000)
+ *
+ * @TODO Implement MQTT client choice for HA in Configurator
  */
 public class MQTTProducerServiceWrapper implements IMQTTProducerService {
     private IMQTTProducerService impl = null;
     private final static Logger LOG = LoggerFactory.getLogger(MQTTProducerServiceWrapper.class);
-public MQTTProducerServiceWrapper() {
+
+    public MQTTProducerServiceWrapper() {
 
     }
+
 
     @Override
     public MQTTProducerServiceWrapper connect(final String locator, final String address, final String username, final String password) throws IOException {
         boolean isMqtt = false;
         try {
-            URI uri = new URI(locator);
-            int port = uri.getPort();
-            isMqtt = (port<20000);
-        } catch (Exception e) {
+            final URI uri = new URI(locator);
+            final int port = uri.getPort();
+            isMqtt = port < 20000;
+        } catch (final Exception e) {
             LOG.error("Failed to parse locator string.  Will use default Artemis client.", e);
         }
 
-        impl = (isMqtt)?new MQTTHAProducerService():new MQTTProducerService() {
-            
+        impl = isMqtt ? new MQTTHAProducerService() : new MQTTProducerService() {
+
         };
         try {
             impl.connect(locator, address, username, password);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new IOException(e);
         }
         return this;
@@ -66,6 +71,7 @@ public MQTTProducerServiceWrapper() {
         }
     }
 
+
     @Override
     public void stop() {
         try {
@@ -75,11 +81,10 @@ public MQTTProducerServiceWrapper() {
         }
     }
 
+
     @Override
     public void close() throws Exception {
         stop();
     }
-
-
 
 }
