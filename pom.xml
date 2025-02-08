@@ -38,6 +38,7 @@
 		<module>bms-sacredsun-rs485</module>
 		<module>bms-samsung-can</module>
 		<module>bms-seplos-can</module>
+		<module>bms-shoto-modbus</module>
 		<module>bms-sma-si-can</module>
 		<module>bms-tian-modbus</module>
 		<module>bms-to-inverter-main</module>
