@@ -224,9 +224,7 @@ public class GrowattHVBmsCANProcessor extends BMS {
             }
         } while (!frameReceived);
 
-        LOG.debug("Command 0x{} to BMS {} successfully sent and received!", HexFormat.of().toHexDigits(cmd.getCommand()),
-
-                getBmsId());
+        LOG.debug("Command 0x{} to BMS {} successfully sent and received!", HexFormat.of().toHexDigits(cmd.getCommand()), getBmsId());
         return readBuffers;
     }
 
