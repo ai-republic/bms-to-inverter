@@ -157,68 +157,76 @@ public class GrowattHVBmsCANProcessor extends BMS {
 
                     readBuffers.add(receiveFrame);
 
-                    switch (command) {
-                        // 0x3110
-                        case READ_PACK_CHARGE_DISCHARGE_LIMITS: {
-                            readChargeDischargeLimits(pack, receiveFrame);
+                    if (command != null) {
+                        switch (command) {
+                            // 0x3110
+                            case READ_PACK_CHARGE_DISCHARGE_LIMITS: {
+                                readChargeDischargeLimits(pack, receiveFrame);
+                            }
+                            break;
+                            // 0x3120
+                            case READ_ALARMS: {
+                                readAlarms(pack, receiveFrame);
+                            }
+                            break;
+                            // 0x3130
+                            case READ_BATTERY_STATUS: {
+                                readBatteryStatus(pack, receiveFrame);
+                            }
+                            break;
+                            // 0x3140
+                            case READ_BATTERY_CAPACITY: {
+                                readBatteryCapacity(pack, receiveFrame);
+                            }
+                            break;
+                            // 0x3150
+                            case READ_WORKING_PARAMS: {
+                                readWorkingParams(pack, receiveFrame);
+                            }
+                            break;
+                            // 0x3160
+                            case READ_FAULT_AND_VOLTAGE_NUMBERS: {
+                                readFaultAndVoltageNumbers(pack, receiveFrame);
+                            }
+                            break;
+                            // 0x3170
+                            case READ_MIN_MAX_CELL_TEMPERATURES: {
+                                readMinMaxCellTemperatures(pack, receiveFrame);
+                            }
+                            break;
+                            // 0x3180
+                            case READ_BATTERY_CODE_AND_QUANTITY: {
+                                readBatteryCodeAndQuantity(pack, receiveFrame);
+                            }
+                            break;
+                            // 0x3190
+                            case READ_MIN_MAX_CELL_VOLTAGES: {
+                                readMinMaxCellVoltages(pack, receiveFrame);
+                            }
+                            break;
+                            // 0x3200
+                            case READ_MANUFACTURER_AND_MAX_CELL_VOLTAGE: {
+                                readManufacturerAndMaxCellVoltage(pack, receiveFrame);
+                            }
+                            break;
+                            default: {
+                                LOG.warn("Message could not be interpreted " + Port.printBuffer(receiveFrame));
+                                port.clearBuffers();
+                                return readBuffers;
+                            }
                         }
-                        break;
-                        // 0x3120
-                        case READ_ALARMS: {
-                            readAlarms(pack, receiveFrame);
-                        }
-                        break;
-                        // 0x3130
-                        case READ_BATTERY_STATUS: {
-                            readBatteryStatus(pack, receiveFrame);
-                        }
-                        break;
-                        // 0x3140
-                        case READ_BATTERY_CAPACITY: {
-                            readBatteryCapacity(pack, receiveFrame);
-                        }
-                        break;
-                        // 0x3150
-                        case READ_WORKING_PARAMS: {
-                            readWorkingParams(pack, receiveFrame);
-                        }
-                        break;
-                        // 0x3160
-                        case READ_FAULT_AND_VOLTAGE_NUMBERS: {
-                            readFaultAndVoltageNumbers(pack, receiveFrame);
-                        }
-                        break;
-                        // 0x3170
-                        case READ_MIN_MAX_CELL_TEMPERATURES: {
-                            readMinMaxCellTemperatures(pack, receiveFrame);
-                        }
-                        break;
-                        // 0x3180
-                        case READ_BATTERY_CODE_AND_QUANTITY: {
-                            readBatteryCodeAndQuantity(pack, receiveFrame);
-                        }
-                        break;
-                        // 0x3190
-                        case READ_MIN_MAX_CELL_VOLTAGES: {
-                            readMinMaxCellVoltages(pack, receiveFrame);
-                        }
-                        break;
-                        // 0x3200
-                        case READ_MANUFACTURER_AND_MAX_CELL_VOLTAGE: {
-                            readManufacturerAndMaxCellVoltage(pack, receiveFrame);
-                        }
-                        break;
-                        default: {
-                            LOG.warn("Message could not be interpreted " + Port.printBuffer(receiveFrame));
-                            port.clearBuffers();
-                            return readBuffers;
-                        }
+                    } else {
+                        LOG.warn("Message could not be interpreted " + Port.printBuffer(receiveFrame));
+                        port.clearBuffers();
+                        return readBuffers;
                     }
                 }
             }
         } while (!frameReceived);
 
-        LOG.debug("Command 0x{} to BMS {} successfully sent and received!", HexFormat.of().toHexDigits(cmd.getCommand()), getBmsId());
+        LOG.debug("Command 0x{} to BMS {} successfully sent and received!", HexFormat.of().toHexDigits(cmd.getCommand()),
+
+                getBmsId());
         return readBuffers;
     }
 
