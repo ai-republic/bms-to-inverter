@@ -148,7 +148,7 @@ public class SamsungBmsCANProcessor extends BMS {
         // Charge current limit (0.1A) - uint_16
         pack.maxPackChargeCurrent = data.getChar();
         // Discharge current limit (0.1A) - uint_16
-        pack.maxPackDischargeCurrent = data.getChar() * -1;
+        pack.maxPackDischargeCurrent = data.getChar();
         // Battery discharge voltage (0.1V) - uint_16
         pack.minPackVoltageLimit = data.getChar();
 
