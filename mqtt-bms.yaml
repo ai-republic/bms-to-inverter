@@ -1,0 +1,91 @@
+#The bms-to-inverter project does not support Home Assistant MQTT discovery.  Configuration must be done manually in config.yaml.
+#Copy this file to Home Assistant config folder
+#Modify configuration.yaml file in that folder, adding this line (remove the #):
+#
+#mqtt: !include mqtt-bms.yaml
+#
+#Note that if you already have MQTT entries in you configuration.yaml, you may need to modify the include approach.
+#
+#You can modify the below configuration as needed, adding or removing entities as required.  If you add, make sure that the device info is identical.  
+#All entities are grouped under the device name, based on these identical entries
+#To add, you can peruse the JSON file which captures the incoming data from bms-to-inverter.  The JSON structure is independent of the BMS you are using.  
+#The example is from a typical #Chinese battery using the Pylon-CAN BMS, and is rather sparse in the data it produces. 
+#Note that here all of the numeric values are in tenths and so must be divided by 10 in the value template.
+  sensor:
+    - name: "State of Charge"
+      unique_id: "bms_packSOC"
+      state_topic: "bms/state"
+      value_template: "{{ value_json.batteryPacks[0].packSOC / 10 }}"
+      device_class: BATTERY
+      unit_of_measurement: "%"
+      device:
+        identifiers: "bms-to-inverter"
+        manufacturer: "ACME Batteries"
+        name: "Battery"
+        model: "LiFePO4 10kWh"
+    - name: "Charge Current"
+      unique_id: "bms_packCurrent"
+      state_topic: "bms/state"
+      value_template: "{{ value_json.batteryPacks[0].packCurrent / 10 }}"
+      device_class: CURRENT
+      unit_of_measurement: "A"
+      device:
+        identifiers: "bms-to-inverter"
+        manufacturer: "ACME Batteries"
+        name: "Battery"
+        model: "LiFePO4 10kWh"
+    - name: "Voltage"
+      unique_id: "bms_packVoltage"
+      state_topic: "bms/state"
+      value_template: "{{ value_json.batteryPacks[0].packVoltage / 10 }}"
+      device_class: VOLTAGE
+      unit_of_measurement: "V"
+      device:
+        identifiers: "bms-to-inverter"
+        manufacturer: "ACME Batteries"
+        name: "Battery"
+        model: "LiFePO4 10kWh"
+    - name: "Temperature"
+      unique_id: "bms_tempAverage"
+      state_topic: "bms/state"
+      value_template: "{{ value_json.batteryPacks[0].tempAverage / 10 }}"
+      device_class: TEMPERATURE
+      unit_of_measurement: "°C"
+      device:
+        identifiers: "bms-to-inverter"
+        manufacturer: "ACME Batteries"
+        name: "Battery"
+        model: "LiFePO4 10kWh"
+    - name: "Max Charge Current"
+      unique_id: "bms_maxPackChargeCurrent"
+      state_topic: "bms/state"
+      value_template: "{{ value_json.batteryPacks[0].maxPackChargeCurrent / 10 }}"
+      device_class: CURRENT
+      unit_of_measurement: "A"
+      device:
+        identifiers: "bms-to-inverter"
+        manufacturer: "ACME Batteries"
+        name: "Battery"
+        model: "LiFePO4 10kWh"
+    - name: "Max Discharge Current"
+      unique_id: "bms_maxPackDischargeCurrent"
+      state_topic: "bms/state"
+      value_template: "{{ value_json.batteryPacks[0].maxPackDischargeCurrent / 10 }}"
+      device_class: CURRENT
+      unit_of_measurement: "A"
+      device:
+        identifiers: "bms-to-inverter"
+        manufacturer: "ACME Batteries"
+        name: "Battery"
+        model: "LiFePO4 10kWh"
+    - name: "State of Health"
+      unique_id: "bms_packSOH"
+      state_topic: "bms/state"
+      value_template: "{{ value_json.batteryPacks[0].packSOH / 10 }}"
+      device_class: BATTERY
+      unit_of_measurement: "%"
+      device:
+        identifiers: "bms-to-inverter"
+        manufacturer: "ACME Batteries"
+        name: "Battery"
+        model: "LiFePO4 10kWh"

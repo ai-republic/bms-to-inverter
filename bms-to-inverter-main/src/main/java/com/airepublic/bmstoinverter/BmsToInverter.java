@@ -339,15 +339,15 @@ public class BmsToInverter implements AutoCloseable {
             if (mqttExternalProducer != null) {
                 // send energystorage data to external MQTT broker
                 try {
-                    mqttProducer.sendMessage(energyStorage.toJson());
+                    mqttExternalProducer.sendMessage(energyStorage.toJson());
                 } catch (final Throwable e) {
                     LOG.error("Failed to send MQTT message!", e);
 
                     // try to reconnect and resent message
                     try {
-                        mqttProducer.close();
+                        mqttExternalProducer.close();
                         initializeExternalMQTTProducer();
-                        mqttProducer.sendMessage(energyStorage.toJson());
+                        mqttExternalProducer.sendMessage(energyStorage.toJson());
                     } catch (final Exception e1) {
                     }
 
