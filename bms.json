@@ -7,7 +7,6 @@
 		"minPackVoltageLimit": 480,
 		"maxPackChargeCurrent": 800,
 		"maxPackDischargeCurrent": 2000,
-		"maxChargeVoltage": 0,
 		"packVoltage": 526,
 		"packCurrent": 0,
 		"packSOC": 410,

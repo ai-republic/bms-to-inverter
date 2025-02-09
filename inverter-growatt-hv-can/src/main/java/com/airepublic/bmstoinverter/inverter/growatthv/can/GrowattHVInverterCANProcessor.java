@@ -100,7 +100,7 @@ public class GrowattHVInverterCANProcessor extends Inverter {
         final ByteBuffer frame = prepareSendFrame(0x00003110);
 
         // Charge cutoff voltage (0.1V)
-        frame.putChar((char) (pack.maxChargeVoltage != 0 ? pack.maxChargeVoltage : pack.maxPackVoltageLimit));
+        frame.putChar((char) (pack.maxPackVoltageLimit));
         // Max charge current (0.1A) offset 0A
         frame.putChar((char) pack.maxPackChargeCurrent);
         // Max discharge current (0.1A) offset -3000A

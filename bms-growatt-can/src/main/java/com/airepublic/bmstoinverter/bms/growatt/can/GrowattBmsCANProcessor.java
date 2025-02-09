@@ -216,10 +216,8 @@ public class GrowattBmsCANProcessor extends BMS {
 
     // 0x311
     private void readChargeDischargeLimits(final BatteryPack pack, final ByteBuffer frame) throws IOException {
-        pack.minPackVoltageLimit = frame.getChar();
-
         // Charge cutoff voltage (0.1V)
-        pack.maxChargeVoltage = frame.getChar();
+        pack.maxPackVoltageLimit = frame.getChar();
         // Max charge current (0.1A) offset 0A
         pack.maxPackChargeCurrent = frame.getChar();
         // Max discharge current (0.1A) offset -3000A
