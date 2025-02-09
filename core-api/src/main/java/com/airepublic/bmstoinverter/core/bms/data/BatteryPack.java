@@ -81,6 +81,8 @@ public class BatteryPack {
     public boolean dischargeMOSState;
     /** force charging */
     public boolean forceCharge;
+    /** force discharging */
+    public boolean forceDischarge;
 
     /** BMS life (0~255 cycles)? */
     public int bmsHeartBeat;

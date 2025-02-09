@@ -44,6 +44,9 @@ public class GrowattHVBmsCANProcessor extends BMS {
     private final byte[] requestData = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
 
     enum Command {
+        HEARTBEAT_COMMAND(0x3010),
+        CONTROL_COMMAND(0x3020),
+        TIMING_COMMAND(0x3030),
         READ_PACK_CHARGE_DISCHARGE_LIMITS(0x3110),
         READ_ALARMS(0x3120),
         READ_BATTERY_STATUS(0x3130),
@@ -97,6 +100,9 @@ public class GrowattHVBmsCANProcessor extends BMS {
     protected void collectData(final Port port) throws IOException, TooManyInvalidFramesException, NoDataAvailableException {
         // read all values
         for (final Command cmd : Command.values()) {
+            if (cmd == Command.TIMING_COMMAND || cmd == Command.CONTROL_COMMAND || cmd == Command.HEARTBEAT_COMMAND) {
+                continue;
+            }
             sendMessage(port, cmd, requestData);
         }
     }
@@ -150,11 +156,24 @@ public class GrowattHVBmsCANProcessor extends BMS {
 
                     // one batterypack per BMS
                     final BatteryPack pack = getBatteryPack(0);
-
                     readBuffers.add(receiveFrame);
 
                     if (command != null) {
                         switch (command) {
+                            // 0x3010
+                            case HEARTBEAT_COMMAND: {
+                                // nothing to do
+                            }
+                            break;
+                            // 0x3020
+                            case CONTROL_COMMAND: {
+                                readControlCommand(pack, receiveFrame);
+                            }
+                            break;
+                            // 0x3030
+                            case TIMING_COMMAND: {
+                                // nothing to do
+                            }
                             // 0x3110
                             case READ_PACK_CHARGE_DISCHARGE_LIMITS: {
                                 readChargeDischargeLimits(pack, receiveFrame);
@@ -241,6 +260,13 @@ public class GrowattHVBmsCANProcessor extends BMS {
         sendFrame.rewind();
 
         return sendFrame;
+    }
+
+
+    // 0x3020
+    private void readControlCommand(final BatteryPack pack, final ByteBuffer receiveFrame) {
+        pack.forceCharge = receiveFrame.get() == 0xAA;
+        pack.forceDischarge = receiveFrame.get() == 0xAA;
     }
 
 
