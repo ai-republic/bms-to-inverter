@@ -25,6 +25,7 @@
 		"chargeMOSState": false,
 		"dischargeMOSState": false,
 		"forceCharge": false,
+		"forceDischarge": false,
 		"bmsHeartBeat": 0,
 		"remainingCapacitymAh": 0,
 		"numberOfCells": 0,

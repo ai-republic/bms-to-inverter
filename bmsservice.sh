@@ -17,10 +17,10 @@
 # sudo systemctl start bms.service
 #
 # Execute command to see the status of the service:
-# sudo systemctl start bms.service
+# sudo systemctl status bms.service
 #
 # Execute command to stop the service manually:
-# sudo systemctl start bms.service
+# sudo systemctl stop bms.service
 #
 # Execute command to disable the service from automatically running:
 # sudo systemctl disable bms.service
