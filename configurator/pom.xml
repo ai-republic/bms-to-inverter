@@ -231,6 +231,13 @@
 
 		<!-- ####################         !!!!!!!!	Inverters 	!!!!!!!!		#################### -->
 
+		<!-- ####################  BYD (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-byd-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- ####################  Dummy Inverter  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>

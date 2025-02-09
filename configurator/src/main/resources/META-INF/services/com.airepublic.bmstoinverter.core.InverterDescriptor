@@ -1,3 +1,4 @@
+com.airepublic.bmstoinverter.inverter.byd.can.BydInverterCANDescriptor
 com.airepublic.bmstoinverter.inverter.dummy.DummyInverterDescriptor
 com.airepublic.bmstoinverter.inverter.deye.can.DeyeInverterCANDescriptor
 com.airepublic.bmstoinverter.inverter.huawei.modbus.HuaweiInverterModbusDescriptor

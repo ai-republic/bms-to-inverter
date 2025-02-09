@@ -42,6 +42,7 @@
 		<module>bms-sma-si-can</module>
 		<module>bms-tian-modbus</module>
 		<module>bms-to-inverter-main</module>
+		<module>inverter-byd-can</module>
 		<module>inverter-deye-can</module>
 		<module>inverter-dummy</module>
 		<module>inverter-goodwe-can</module>
