@@ -28,7 +28,7 @@ public class JKBmsCANDescriptor implements BMSDescriptor {
 
     @Override
     public int getDefaultBaudRate() {
-        return 500000;
+        return 250000;
     }
 
 
