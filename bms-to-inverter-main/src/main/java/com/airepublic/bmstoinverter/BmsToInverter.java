@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.StringTokenizer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,6 +64,7 @@ public class BmsToInverter implements AutoCloseable {
     private Inverter inverter;
     private Thread bmsRunner;
     private Thread inverterRunner;
+    private Thread stopChecker;
     private boolean running = true;
     private IMQTTBrokerService mqttBroker;
     private IMQTTProducerService mqttProducer;
@@ -261,7 +264,26 @@ public class BmsToInverter implements AutoCloseable {
             LOG.info("Starting BMS receiver...");
             final int pollInterval = Integer.parseInt(System.getProperty("bms.pollInterval", "1"));
 
-            final Thread bmsRunner = new Thread(() -> {
+            Files.deleteIfExists(Paths.get("./stop"));
+
+            stopChecker = new Thread(() -> {
+                do {
+                    if (Files.exists(Paths.get("./stop"))) {
+                        running=false;
+                        LOG.warn("Found stop file");
+                        close();
+                        Runtime.getRuntime().halt(0);
+                    }
+
+                    try {
+                        Thread.sleep(pollInterval * 1000);
+                    } catch (final InterruptedException e) {
+                    }
+                } while (running);
+            });
+            stopChecker.start();
+
+            bmsRunner = new Thread(() -> {
                 do {
                     for (final BMS bms : bmsList) {
                         try {
@@ -417,6 +439,7 @@ public class BmsToInverter implements AutoCloseable {
 
     @Override
     public void close() {
+        LOG.warn("Starting shutdown.");
         try {
             running = false;
             bmsRunner.interrupt();
