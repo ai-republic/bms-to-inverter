@@ -42,7 +42,6 @@ public class ShotoBmsModbusProcessor extends BMS {
             sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, 30000 + 0x010F, 1, getBmsId(), this::readNumberOfCells);
             sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, 30000 + 0x1010, 1, getBmsId(), this::readMaxDischargeVoltage);
             sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, 30000 + 0x1031, 18, getBmsId(), this::readBatteryStatus);
-            sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, 30013, 4, getBmsId(), this::readAlarms);
         } catch (final IOException e) {
             LOG.error("Error reading from modbus!", e);
         }
@@ -55,52 +54,191 @@ public class ShotoBmsModbusProcessor extends BMS {
     }
 
 
-    protected void readBatteryStatus(final ByteBuffer frame) {
+    protected void readBatteryVoltage(final ByteBuffer frame) {
+        frame.getInt(); // functionCode
+        frame.getInt(); // numRegisters
+        final int unitId = frame.getInt();
+        final BatteryPack pack = getBatteryPack(unitId);
+
+        pack.packVoltage = frame.getChar() / 10;
+    }
+
+
+    protected void readCellMinMaxTemperature(final ByteBuffer frame) {
+        frame.getInt(); // functionCode
+        frame.getInt(); // numRegisters
+        final int unitId = frame.getInt();
+        final BatteryPack pack = getBatteryPack(unitId);
+
+        pack.tempMax = frame.getShort();
+        pack.tempMin = frame.getShort();
+    }
+
+
+    protected void readCellVoltageAndTemperature(final ByteBuffer frame) {
+        frame.getInt(); // functionCode
+        frame.getInt(); // numRegisters
+        final int unitId = frame.getInt();
+        final BatteryPack pack = getBatteryPack(unitId);
+
+        for (int i = 0; i < 16; i++) {
+            pack.cellTemperature[i] = frame.getShort();
+        }
+
+        for (int i = 0; i < 16; i++) {
+            pack.cellVmV[i] = frame.getChar();
+        }
+    }
+
+
+    // read hardware and software version
+    protected void readHardwareSoftwareVersion(final ByteBuffer frame) {
+        frame.getInt(); // functionCode
+        frame.getInt(); // numRegisters
+        final int unitId = frame.getInt();
+        final BatteryPack pack = getBatteryPack(unitId);
+
+        final char hardwarVersion = frame.getChar(); // hardware version
+        // split the hardware version into major and minor each one byte as value
+        pack.hardwareVersion = String.format("%d.%d", hardwarVersion >> 8 & 0xFF, hardwarVersion & 0xFF);
+
+        final char softwareVersion = frame.getChar(); // software version
+        // split the software version into major and minor each one byte as ascii
+        pack.softwareVersion = String.format("%c.%c", softwareVersion >> 8 & 0xFF, softwareVersion & 0xFF);
+    }
+
+
+    protected void readNumberOfCells(final ByteBuffer frame) {
         frame.getInt(); // functionCode
         frame.getInt(); // numRegisters
         final int unitId = frame.getInt();
         final BatteryPack pack = getBatteryPack(unitId);
 
         pack.numberOfCells = frame.getChar();
-        frame.getShort(); // device status
-        pack.packVoltage = frame.getShort(); // 0.1V
-        pack.packCurrent = frame.getShort(); // 0.1A
-        pack.packSOC = frame.getChar() * 10; // 1%
-        pack.packSOH = frame.getChar() * 10; // 1%
-        frame.getInt(); // dis-/charge power kWh
-        frame.getShort(); // SOE
-        frame.getShort(); // DOD
-        frame.getInt(); // chargeable capacity
-        frame.getInt(); // dischargeable capacity
-        pack.tempMax = frame.getShort() * 10; // 100C
-        pack.tempMaxCellNum = frame.getChar();
-        pack.tempMin = frame.getShort() * 10; // 100C
-        pack.tempMinCellNum = frame.getChar();
-        pack.minCellmV = frame.getChar() / 100; // 0.1V
-        pack.minCellVNum = frame.getChar(); //
-        pack.maxCellmV = frame.getChar() / 100; // 0.1V
-        pack.maxCellVNum = frame.getChar(); //
     }
 
 
-    private void readAlarms(final ByteBuffer frame) {
+    // read max discharge voltage
+    protected void readMaxDischargeVoltage(final ByteBuffer frame) {
         frame.getInt(); // functionCode
         frame.getInt(); // numRegisters
         final int unitId = frame.getInt();
         final BatteryPack pack = getBatteryPack(unitId);
 
-        final short bits39014 = frame.getShort();
-        final short bits39015 = frame.getShort();
-        final short bits39016 = frame.getShort();
-
-        pack.alarms.put(Alarm.FAILURE_COMMUNICATION_INTERNAL, BitUtil.bit(bits39014, 13) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.FAILURE_OTHER, BitUtil.bit(bits39014, 14) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.PACK_VOLTAGE_HIGH, BitUtil.bit(bits39014, 15) || BitUtil.bit(bits39016, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.PACK_VOLTAGE_LOW, BitUtil.bit(bits39015, 0) || BitUtil.bit(bits39016, 15) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.PACK_CURRENT_HIGH, BitUtil.bit(bits39016, 12) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, BitUtil.bit(bits39015, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.PACK_TEMPERATURE_HIGH, BitUtil.bit(bits39015, 6) || BitUtil.bit(bits39015, 7) || BitUtil.bit(bits39015, 8) || BitUtil.bit(bits39016, 13) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.PACK_TEMPERATURE_LOW, BitUtil.bit(bits39016, 14) ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        pack.alarms.put(Alarm.TEMPERATURE_SENSOR_DIFFERENCE_HIGH, BitUtil.bit(bits39015, 15) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.minPackVoltageLimit = frame.getChar() / 100;
     }
+
+
+    // read battery status
+    protected void readBatteryStatus(final ByteBuffer frame) {
+        frame.getInt(); // functionCode
+        frame.getInt(); // numRegisters
+        final int unitId = frame.getInt();
+        final BatteryPack pack = getBatteryPack(unitId);
+        pack.alarms.clear();
+
+        pack.packCurrent = frame.getShort() / 10;
+        pack.ratedCapacitymAh = frame.getChar() * 10;
+        pack.bmsCycles = frame.getChar();
+        pack.packSOC = frame.getChar() / 10;
+        pack.packSOH = frame.getChar() / 10;
+        pack.numOfTempSensors = frame.getChar();
+
+        char alarms = frame.getChar();
+        byte highByte = (byte) (alarms >> 8);
+        pack.alarms.put(Alarm.CELL_VOLTAGE_LOW, BitUtil.bit(highByte, 3) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_OTHER, BitUtil.bit(highByte, 4) || pack.alarms.containsKey(Alarm.FAILURE_OTHER) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_CHARGE_BREAKER, BitUtil.bit(highByte, 5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_DISCHARGE_BREAKER, BitUtil.bit(highByte, 6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_OTHER, BitUtil.bit(highByte, 7) || pack.alarms.containsKey(Alarm.FAILURE_OTHER) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+
+        byte lowByte = (byte) (alarms & 0xFF);
+        pack.alarms.put(Alarm.FAILURE_CLOCK_MODULE, BitUtil.bit(lowByte, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_OTHER, BitUtil.bit(lowByte, 1) || pack.alarms.containsKey(Alarm.FAILURE_OTHER) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_OTHER, BitUtil.bit(lowByte, 2) || pack.alarms.containsKey(Alarm.FAILURE_OTHER) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_OTHER, BitUtil.bit(lowByte, 3) || pack.alarms.containsKey(Alarm.FAILURE_OTHER) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_OTHER, BitUtil.bit(lowByte, 4) || pack.alarms.containsKey(Alarm.FAILURE_OTHER) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+
+        alarms = frame.getChar();
+        highByte = (byte) (alarms >> 8);
+        pack.alarms.put(Alarm.FAILURE_SENSOR_DISCHARGE_MODULE_TEMPERATURE, BitUtil.bit(highByte, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_SENSOR_DISCHARGE_MODULE_TEMPERATURE, BitUtil.bit(highByte, 1) || pack.alarms.containsKey(Alarm.FAILURE_SENSOR_DISCHARGE_MODULE_TEMPERATURE) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_VOLTAGE_HIGH, BitUtil.bit(highByte, 2) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_OTHER, BitUtil.bit(lowByte, 3) || pack.alarms.containsKey(Alarm.FAILURE_OTHER) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_OTHER, BitUtil.bit(lowByte, 4) || pack.alarms.containsKey(Alarm.FAILURE_OTHER) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_OTHER, BitUtil.bit(lowByte, 5) || pack.alarms.containsKey(Alarm.FAILURE_OTHER) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+
+        lowByte = (byte) (alarms & 0xFF);
+        pack.chargeDischargeStatus = BitUtil.bit(lowByte, 0) ? 1 : BitUtil.bit(lowByte, 1) ? 2 : 0;
+        pack.alarms.put(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, BitUtil.bit(lowByte, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_VOLTAGE_HIGH, BitUtil.bit(lowByte, 4) || pack.alarms.containsKey(Alarm.PACK_VOLTAGE_HIGH) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_VOLTAGE_LOW, BitUtil.bit(lowByte, 5) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CHARGE_TEMPERATURE_HIGH, BitUtil.bit(lowByte, 6) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.DISCHARGE_TEMPERATURE_HIGH, BitUtil.bit(lowByte, 7) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+
+        alarms = frame.getChar();
+        highByte = (byte) (alarms >> 8);
+        pack.alarms.put(Alarm.PACK_TEMPERATURE_LOW, BitUtil.bit(highByte, 0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_TEMPERATURE_HIGH, BitUtil.bit(highByte, 1) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+
+        lowByte = (byte) (alarms & 0xFF);
+        if (BitUtil.bit(lowByte, 0)) {
+            pack.forceCharge = true;
+        }
+
+        if (BitUtil.bit(lowByte, 1)) {
+            pack.forceCharge = false;
+        }
+
+        if (BitUtil.bit(lowByte, 2)) {
+            pack.forceDischarge = true;
+        }
+
+        if (BitUtil.bit(lowByte, 3)) {
+            pack.forceDischarge = false;
+        }
+
+        pack.alarms.put(Alarm.CHARGE_TEMPERATURE_HIGH, BitUtil.bit(lowByte, 5) || pack.alarms.containsKey(Alarm.CHARGE_TEMPERATURE_HIGH) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CHARGE_TEMPERATURE_LOW, BitUtil.bit(lowByte, 6) || pack.alarms.containsKey(Alarm.CHARGE_TEMPERATURE_LOW) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CHARGE_TEMPERATURE_LOW, BitUtil.bit(lowByte, 7) || pack.alarms.containsKey(Alarm.CHARGE_TEMPERATURE_LOW) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+
+        alarms = frame.getChar();
+        alarms = frame.getChar();
+        highByte = (byte) (alarms >> 8);
+        pack.alarms.put(Alarm.ENCASING_TEMPERATURE_HIGH, BitUtil.bit(highByte, 0) || pack.alarms.containsKey(Alarm.ENCASING_TEMPERATURE_HIGH) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.ENCASING_TEMPERATURE_LOW, BitUtil.bit(highByte, 1) || pack.alarms.containsKey(Alarm.ENCASING_TEMPERATURE_LOW) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.DISCHARGE_TEMPERATURE_HIGH, BitUtil.bit(highByte, 2) || pack.alarms.containsKey(Alarm.DISCHARGE_TEMPERATURE_HIGH) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.SOC_LOW, BitUtil.bit(highByte, 3) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_VOLTAGE_HIGH, BitUtil.bit(highByte, 4) || pack.alarms.containsKey(Alarm.PACK_VOLTAGE_HIGH) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_TEMPERATURE_HIGH, BitUtil.bit(highByte, 5) || pack.alarms.containsKey(Alarm.PACK_TEMPERATURE_HIGH) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.DISCHARGE_TEMPERATURE_LOW, BitUtil.bit(highByte, 5) || pack.alarms.containsKey(Alarm.DISCHARGE_TEMPERATURE_LOW) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+
+        lowByte = (byte) (alarms & 0xFF);
+        pack.alarms.put(Alarm.CELL_VOLTAGE_HIGH, BitUtil.bit(lowByte, 0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CELL_VOLTAGE_LOW, BitUtil.bit(lowByte, 1) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_VOLTAGE_HIGH, BitUtil.bit(lowByte, 2) || pack.alarms.containsKey(Alarm.PACK_VOLTAGE_HIGH) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_VOLTAGE_LOW, BitUtil.bit(lowByte, 3) || pack.alarms.containsKey(Alarm.PACK_VOLTAGE_LOW) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.SOC_HIGH, BitUtil.bit(lowByte, 4) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+
+        pack.alarms.put(Alarm.CHARGE_TEMPERATURE_HIGH, BitUtil.bit(lowByte, 6) || pack.alarms.containsKey(Alarm.CHARGE_TEMPERATURE_HIGH) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CHARGE_TEMPERATURE_LOW, BitUtil.bit(lowByte, 7) || pack.alarms.containsKey(Alarm.CHARGE_TEMPERATURE_LOW) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+
+        final char protection = frame.getChar();
+        highByte = (byte) (protection >> 8);
+        pack.alarms.put(Alarm.SOC_HIGH, BitUtil.bit(highByte, 0) || pack.alarms.containsKey(Alarm.SOC_HIGH) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+
+        lowByte = (byte) (protection & 0xFF);
+        pack.alarms.put(Alarm.CELL_VOLTAGE_HIGH, BitUtil.bit(lowByte, 0) || pack.alarms.containsKey(Alarm.CELL_VOLTAGE_HIGH) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_VOLTAGE_HIGH, BitUtil.bit(lowByte, 1) || pack.alarms.containsKey(Alarm.PACK_VOLTAGE_HIGH) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CELL_VOLTAGE_LOW, BitUtil.bit(lowByte, 2) || pack.alarms.containsKey(Alarm.CELL_VOLTAGE_LOW) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_VOLTAGE_LOW, BitUtil.bit(lowByte, 3) || pack.alarms.containsKey(Alarm.PACK_VOLTAGE_LOW) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CHARGE_CURRENT_HIGH, BitUtil.bit(lowByte, 4) || pack.alarms.containsKey(Alarm.CHARGE_CURRENT_HIGH) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CHARGE_CURRENT_HIGH, BitUtil.bit(lowByte, 5) || pack.alarms.containsKey(Alarm.CHARGE_CURRENT_HIGH) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.DISCHARGE_CURRENT_HIGH, BitUtil.bit(lowByte, 6) || pack.alarms.containsKey(Alarm.DISCHARGE_CURRENT_HIGH) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.DISCHARGE_CURRENT_HIGH, BitUtil.bit(lowByte, 7) || pack.alarms.containsKey(Alarm.DISCHARGE_CURRENT_HIGH) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+
+        frame.getInt();
+        pack.moduleRatedCapacityAh = frame.getInt();
+    }
+
 }
