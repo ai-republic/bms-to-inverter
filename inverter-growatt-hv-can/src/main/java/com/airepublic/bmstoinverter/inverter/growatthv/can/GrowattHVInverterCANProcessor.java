@@ -100,7 +100,7 @@ public class GrowattHVInverterCANProcessor extends Inverter {
         final ByteBuffer frame = prepareSendFrame(0x00003110);
 
         // Charge cutoff voltage (0.1V)
-        frame.putChar((char) (pack.maxPackVoltageLimit));
+        frame.putChar((char) pack.maxPackVoltageLimit);
         // Max charge current (0.1A) offset 0A
         frame.putChar((char) pack.maxPackChargeCurrent);
         // Max discharge current (0.1A) offset -3000A
@@ -391,7 +391,7 @@ public class GrowattHVInverterCANProcessor extends Inverter {
     private ByteBuffer sendManufacturerAndMaxCellVoltage(final BatteryPack pack) {
         final ByteBuffer frame = prepareSendFrame(0x00003200);
         frame.put((byte) (pack.manufacturerCode != null && pack.manufacturerCode.length() > 0 ? pack.manufacturerCode.charAt(0) : 0));
-        frame.put((byte) pack.manufacturerCode.charAt(1));
+        frame.put((byte) (pack.manufacturerCode != null && pack.manufacturerCode.length() > 0 ? pack.manufacturerCode.charAt(1) : 0));
         frame.put((byte) (pack.hardwareVersion.equals("A") ? 1 : 2));
 
         // reserved
