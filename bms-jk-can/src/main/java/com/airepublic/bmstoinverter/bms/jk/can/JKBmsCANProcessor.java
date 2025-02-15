@@ -109,7 +109,7 @@ public class JKBmsCANProcessor extends BMS {
         // Battery voltage (0.1V)
         pack.packVoltage = data.getChar();
         // Battery current (0.1A) offset 4000
-        pack.packCurrent = data.getChar() + 4000;
+        pack.packCurrent = data.getChar() - 4000;
         // Battery SOC (1%)
         pack.packSOC = data.get() * 10;
         // skip 1 byte
@@ -273,5 +273,17 @@ public class JKBmsCANProcessor extends BMS {
         data.getChar();
         // Charging current (0.1A)
         pack.packCurrent = data.getChar();
+    }
+
+
+    public static void main(final String[] args) {
+        final JKBmsCANProcessor jk = new JKBmsCANProcessor();
+
+        final ByteBuffer data = ByteBuffer.wrap(new byte[] { (byte) 0xEC, 0x01, (byte) 0xA0, 0x0F, 0x33, 0x00, 0x00, 0x00 }).order(ByteOrder.LITTLE_ENDIAN);
+        System.out.println(Port.printBuffer(data));
+        final BatteryPack pack = new BatteryPack();
+        jk.readBatteryStatus(pack, data);
+        System.out.println(pack.packVoltage / 10 + "V, " + pack.packCurrent / 10 + "A, " + pack.packSOC / 10 + "%");
+        ;
     }
 }
