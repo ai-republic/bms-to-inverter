@@ -34,14 +34,16 @@ public class ShotoBmsModbusProcessor extends BMS {
 
     @Override
     protected void collectData(final Port port) {
+        final int startRange = 0;
+        
         try {
-            sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, 30000 + 0x0001, 1, getBmsId(), this::readBatteryVoltage);
-            sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, 30000 + 0x0005, 2, getBmsId(), this::readCellMinMaxTemperature);
-            sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, 30000 + 0x0012, 32, getBmsId(), this::readCellVoltageAndTemperature);
-            sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, 30000 + 0x0101, 2, getBmsId(), this::readHardwareSoftwareVersion);
-            sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, 30000 + 0x010F, 1, getBmsId(), this::readNumberOfCells);
-            sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, 30000 + 0x1010, 1, getBmsId(), this::readMaxDischargeVoltage);
-            sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, 30000 + 0x1031, 18, getBmsId(), this::readBatteryStatus);
+            sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, startRange + 0x0001, 1, getBmsId(), this::readBatteryVoltage);
+            sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, startRange + 0x0005, 2, getBmsId(), this::readCellMinMaxTemperature);
+            sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, startRange + 0x0012, 32, getBmsId(), this::readCellVoltageAndTemperature);
+            sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, startRange + 0x0101, 2, getBmsId(), this::readHardwareSoftwareVersion);
+            sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, startRange + 0x010F, 1, getBmsId(), this::readNumberOfCells);
+            sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, startRange + 0x1010, 1, getBmsId(), this::readMaxDischargeVoltage);
+            sendMessage(port, RegisterCode.READ_HOLDING_REGISTERS, startRange + 0x1031, 18, getBmsId(), this::readBatteryStatus);
         } catch (final IOException e) {
             LOG.error("Error reading from modbus!", e);
         }
