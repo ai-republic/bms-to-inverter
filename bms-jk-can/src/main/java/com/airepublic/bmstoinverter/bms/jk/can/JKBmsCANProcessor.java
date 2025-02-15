@@ -12,6 +12,7 @@ package com.airepublic.bmstoinverter.bms.jk.can;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,7 @@ public class JKBmsCANProcessor extends BMS {
     protected void collectData(final Port port) {
         try {
             final ByteBuffer frame = port.receiveFrame();
+            frame.order(ByteOrder.LITTLE_ENDIAN);
             final int frameId = frame.getInt();
             final byte[] bytes = new byte[8];
             frame.get(bytes);
