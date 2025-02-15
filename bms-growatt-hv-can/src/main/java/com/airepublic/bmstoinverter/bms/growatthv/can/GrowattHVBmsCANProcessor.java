@@ -120,6 +120,7 @@ public class GrowattHVBmsCANProcessor extends BMS {
         // read frames until the requested frame is read
         do {
             final ByteBuffer receiveFrame = port.receiveFrame();
+
             LOG.debug("RECEIVED: {}", Port.printBuffer(receiveFrame));
 
             if (receiveFrame == null) {
@@ -140,6 +141,8 @@ public class GrowattHVBmsCANProcessor extends BMS {
                 } catch (final InterruptedException e) {
                 }
             } else {
+                receiveFrame.order(ByteOrder.BIG_ENDIAN);
+
                 // read the BMS id
                 final int canId = receiveFrame.getInt();
                 final byte bmsId = (byte) (canId & 0x00000001); // last 4 bits represents bms id
@@ -150,7 +153,7 @@ public class GrowattHVBmsCANProcessor extends BMS {
                 } else {
                     frameReceived = true;
                     // request has 4th byte 0x10 and response 0x20
-                    final Command command = Command.forCommand(canId - 0x00001000);
+                    final Command command = Command.forCommand(canId);
                     // move position to the data part
                     receiveFrame.getInt();
 
