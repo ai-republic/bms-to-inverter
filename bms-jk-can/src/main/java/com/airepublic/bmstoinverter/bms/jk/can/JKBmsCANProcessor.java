@@ -35,9 +35,11 @@ public class JKBmsCANProcessor extends BMS {
         try {
             final ByteBuffer frame = port.receiveFrame();
             final int frameId = frame.getInt();
+            frame.getInt(); // skip
             final byte[] bytes = new byte[8];
             frame.get(bytes);
             final ByteBuffer data = ByteBuffer.wrap(bytes).order(ByteOrder.LITTLE_ENDIAN);
+            System.out.println(Port.printBuffer(data));
 
             final int cmd = frameId & 0xFFFFFFF0;
             final int bmsId = (frameId & 0x0000000F) - 4;
@@ -115,6 +117,8 @@ public class JKBmsCANProcessor extends BMS {
         data.get();
         // discharge time, e.g. 100h (not mapped)
         data.getShort();
+
+        LOG.info("Battery status: " + pack.packVoltage / 10f + "V, " + pack.packCurrent / 10f + "A, " + pack.packSOC / 10f + "%");
     }
 
 
@@ -277,12 +281,13 @@ public class JKBmsCANProcessor extends BMS {
 
     public static void main(final String[] args) {
         final JKBmsCANProcessor jk = new JKBmsCANProcessor();
-
-        final ByteBuffer data = ByteBuffer.wrap(new byte[] { (byte) 0xED, 0x01, (byte) 0xA0, 0x0F, 0x33, 0x00, 0x00, 0x00 }).order(ByteOrder.LITTLE_ENDIAN);
+        final ByteBuffer data = ByteBuffer.wrap(new byte[] { (byte) 0xED, 0x01, (byte) 0xA0,
+                0x0F, 0x33, 0x00, 0x00, 0x00 }).order(ByteOrder.LITTLE_ENDIAN);
         System.out.println(Port.printBuffer(data));
         final BatteryPack pack = new BatteryPack();
         jk.readBatteryStatus(pack, data);
-        System.out.println(pack.packVoltage / 10f + "V, " + pack.packCurrent / 10f + "A, " + pack.packSOC / 10f + "%");
+        System.out.println(pack.packVoltage / 10f + "V, " + pack.packCurrent / 10f + "A, " +
+                pack.packSOC / 10f + "%");
         ;
     }
 }

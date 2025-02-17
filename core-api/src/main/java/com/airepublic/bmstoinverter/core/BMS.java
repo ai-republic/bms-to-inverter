@@ -213,4 +213,14 @@ public abstract class BMS {
      */
     protected abstract void collectData(Port port) throws IOException, TooManyInvalidFramesException, NoDataAvailableException;
 
+
+    /**
+     * ONLY FOR TESTING: Set the energy storage.
+     *
+     * @param energyStorage the energy storage
+     */
+    protected void setEnergyStorage(final EnergyStorage energyStorage) {
+        this.energyStorage = energyStorage;
+    }
+
 }
