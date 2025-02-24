@@ -112,6 +112,11 @@ public abstract class BMS {
         if (pack == null) {
             pack = new BatteryPack();
             batteryPacks.put(batteryId, pack);
+
+            if (energyStorage == null) {
+                energyStorage = new EnergyStorage();
+            }
+
             energyStorage.getBatteryPacks().add(pack);
         }
 
@@ -212,15 +217,5 @@ public abstract class BMS {
      * @throws NoDataAvailableException when no data was received too many times
      */
     protected abstract void collectData(Port port) throws IOException, TooManyInvalidFramesException, NoDataAvailableException;
-
-
-    /**
-     * ONLY FOR TESTING: Set the energy storage.
-     *
-     * @param energyStorage the energy storage
-     */
-    protected void setEnergyStorage(final EnergyStorage energyStorage) {
-        this.energyStorage = energyStorage;
-    }
 
 }
