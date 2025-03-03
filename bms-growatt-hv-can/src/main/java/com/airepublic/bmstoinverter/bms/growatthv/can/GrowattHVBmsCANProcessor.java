@@ -141,7 +141,6 @@ public class GrowattHVBmsCANProcessor extends BMS {
                 } catch (final InterruptedException e) {
                 }
             } else {
-                receiveFrame.order(ByteOrder.BIG_ENDIAN);
 
                 // read the BMS id
                 final int canId = receiveFrame.getInt();
@@ -156,6 +155,7 @@ public class GrowattHVBmsCANProcessor extends BMS {
                     final Command command = Command.forCommand(canId);
                     // move position to the data part
                     receiveFrame.getInt();
+                    receiveFrame.order(ByteOrder.BIG_ENDIAN);
 
                     // one batterypack per BMS
                     final BatteryPack pack = getBatteryPack(0);
