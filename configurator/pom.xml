@@ -151,6 +151,13 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- ####################  MPP SOLAR (MODBUS)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-mppsolar-modbus</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- ####################  NARADA (MODBUS)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
