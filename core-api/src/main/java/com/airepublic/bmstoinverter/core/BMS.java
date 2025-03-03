@@ -180,7 +180,7 @@ public abstract class BMS {
                 if (getPlugins() != null) {
                     getPlugins().stream().forEach(p -> {
                         LOG.debug("Calling BMS plugin (afterCollectData): {}", p.getName());
-                        p.beforeCollectData(this);
+                        p.afterCollectData(this);
                     });
                 }
             } catch (final NoDataAvailableException e) {
