@@ -154,7 +154,7 @@
 		<!-- ####################  MPP SOLAR (MODBUS)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
-			<artifactId>inverter-mppsolar-modbus</artifactId>
+			<artifactId>bms-mppsolar-modbus</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
