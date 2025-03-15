@@ -45,6 +45,9 @@ public class PylonBmsCANProcessor extends BMS {
                 case 0x351:
                     readChargeDischargeInfo(pack, data);
                 break;
+                case 0x354:
+                    readCapacity(pack, data);
+                break;
                 case 0x355:
                     readSOC(pack, data);
                 break;
@@ -85,6 +88,17 @@ public class PylonBmsCANProcessor extends BMS {
         pack.minPackVoltageLimit = data.getChar();
 
         LOG.debug("\nMax Voltage \tMax Charge \tMax Discharge \tMin Voltage\n  {}\t\t{}\t\t{}\t\t", pack.maxPackVoltageLimit / 10f, pack.maxPackChargeCurrent / 10f, pack.maxPackDischargeCurrent / 10f, pack.minPackVoltageLimit / 10f);
+    }
+
+
+    // 0x354
+    protected void readCapacity(final BatteryPack pack, final ByteBuffer data) {
+        // Battery capacity (0.1Ah) - uint_16
+        pack.ratedCapacitymAh = data.getChar() * 100;
+        // Remaining capacity (0.1Ah) - uint_16
+        pack.remainingCapacitymAh = data.getChar() * 100;
+
+        LOG.debug("\nCapacity \tRemaining\n \t{}\t\t{}", pack.ratedCapacitymAh / 1000f, pack.remainingCapacitymAh / 1000f);
     }
 
 
