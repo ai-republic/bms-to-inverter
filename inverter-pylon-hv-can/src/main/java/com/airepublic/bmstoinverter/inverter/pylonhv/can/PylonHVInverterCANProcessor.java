@@ -55,7 +55,8 @@ public class PylonHVInverterCANProcessor extends Inverter {
         final int frameId = requestFrame.getInt();
         final int length = requestFrame.get();
         final byte[] data = new byte[length];
-        requestFrame.get(8, data);
+        requestFrame.position(8);
+        requestFrame.get(data);
 
         try {
             switch (frameId) {

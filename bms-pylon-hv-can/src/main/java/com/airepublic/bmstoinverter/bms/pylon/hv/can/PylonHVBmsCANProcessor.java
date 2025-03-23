@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.HexFormat;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -27,6 +26,7 @@ import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 import com.airepublic.bmstoinverter.core.util.BitUtil;
+import com.airepublic.bmstoinverter.core.util.HexUtil;
 
 /**
  * The class to handle CAN messages from a JK {@link BMS}.
@@ -76,7 +76,7 @@ public class PylonHVBmsCANProcessor extends BMS {
             }
         } while (framesToBeReceived > 0 & skip > 0);
 
-        LOG.debug("Command 0x{} successfully sent and received!", HexFormat.of().toHexDigits(frameId));
+        LOG.debug("Command 0x{} successfully sent and received!", HexUtil.toHexDigits(frameId));
         return readBuffers;
     }
 
@@ -87,7 +87,7 @@ public class PylonHVBmsCANProcessor extends BMS {
             final int batteryId = frameId & 0x0000000F;
             final BatteryPack pack = getBatteryPack(batteryId);
             final byte[] dataBytes = new byte[receiveFrame.get(4)];
-            receiveFrame.get(8, dataBytes);
+            receiveFrame.get(dataBytes, 0, dataBytes.length);
 
             final ByteBuffer data = ByteBuffer.wrap(dataBytes).order(ByteOrder.LITTLE_ENDIAN);
 
@@ -430,7 +430,8 @@ public class PylonHVBmsCANProcessor extends BMS {
     public static void main(final String[] args) {
         final PylonHVBmsCANProcessor p = new PylonHVBmsCANProcessor();
         final BatteryPack pack = new BatteryPack();
-        final ByteBuffer data = ByteBuffer.allocate(8).put(new byte[] { 0x1E, (byte) 0xC3, 0x1B, (byte) 0xC3, 0x02, 0x00, 0x00, 0x00 }).order(ByteOrder.LITTLE_ENDIAN).rewind();
+        final ByteBuffer data = ByteBuffer.allocate(8);
+        data.put(new byte[] { 0x1E, (byte) 0xC3, 0x1B, (byte) 0xC3, 0x02, 0x00, 0x00, 0x00 }).order(ByteOrder.LITTLE_ENDIAN).rewind();
         System.out.println(data.getShort());
         data.rewind();
 

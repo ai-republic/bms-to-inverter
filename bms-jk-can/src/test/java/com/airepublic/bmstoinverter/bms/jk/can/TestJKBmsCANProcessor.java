@@ -40,7 +40,8 @@ public class TestJKBmsCANProcessor {
 
     @BeforeEach
     public void cleanByteBuffer() {
-        data.clear().put(CLEAR_BYTES).rewind();
+        data.clear();
+        data.put(CLEAR_BYTES).rewind();
     }
 
 

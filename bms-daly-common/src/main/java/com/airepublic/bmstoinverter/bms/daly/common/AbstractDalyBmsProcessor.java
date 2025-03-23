@@ -13,7 +13,6 @@ package com.airepublic.bmstoinverter.bms.daly.common;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.time.LocalDateTime;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,6 +27,7 @@ import com.airepublic.bmstoinverter.core.NoDataAvailableException;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.TooManyInvalidFramesException;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
+import com.airepublic.bmstoinverter.core.util.HexUtil;
 
 import jakarta.inject.Inject;
 
@@ -111,7 +111,7 @@ public abstract class AbstractDalyBmsProcessor extends BMS {
             try {
                 final Future<List<ByteBuffer>> future = executor.submit(() -> {
 
-                    LOG.info("calibrate request (SOC " + calculatedSOC + "): " + HexFormat.of().withUpperCase().withDelimiter(", 0x").formatHex(data));
+                    LOG.info("calibrate request (SOC " + calculatedSOC + "): " + HexUtil.formatHex(data));
                     final List<ByteBuffer> result = sendMessage(port, DalyCommand.WRITE_RTC_AND_SOC, data);
                     LOG.info("calibrate result: " + Port.printBuffer(result.get(0)));
                     return result;

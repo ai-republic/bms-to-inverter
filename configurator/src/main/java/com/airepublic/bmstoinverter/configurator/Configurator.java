@@ -27,8 +27,10 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.ReadableByteChannel;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -48,6 +50,8 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
+
+import com.airepublic.bmstoinverter.core.util.InputStreamUtil;
 
 public class Configurator extends JFrame {
     private static final long serialVersionUID = 1L;
@@ -195,7 +199,7 @@ public class Configurator extends JFrame {
     private void updateConfiguration() throws IOException, URISyntaxException {
         final String config = generateConfiguration();
         // define paths
-        final Path installDirectory = Path.of(generalPanel.getInstallationPath());
+        final Path installDirectory = Paths.get(generalPanel.getInstallationPath());
         final Path configDirectory = installDirectory.resolve("config");
 
         // generate the configuration files
@@ -203,8 +207,8 @@ public class Configurator extends JFrame {
         Files.write(configDirectory.resolve("config.properties"), config.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         Files.deleteIfExists(configDirectory.resolve("log4j2.xml"));
         try (InputStream is = getClass().getClassLoader().getResourceAsStream("templates/main-log4j2.xml")) {
-            final String logConfig = new String(is.readAllBytes());
-            Files.writeString(configDirectory.resolve("log4j2.xml"), logConfig.replace("<Root level=\"info\">", "<Root level=\"" + generalPanel.getLogLevel() + "\">"), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
+            final String logConfig = new String(InputStreamUtil.readAllBytes(is));
+            Files.write(configDirectory.resolve("log4j2.xml"), logConfig.replace("<Root level=\"info\">", "<Root level=\"" + generalPanel.getLogLevel() + "\">").getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE);
         }
     }
 
@@ -216,7 +220,7 @@ public class Configurator extends JFrame {
         }
 
         // define paths
-        final Path installDirectory = Path.of(generalPanel.getInstallationPath());
+        final Path installDirectory = Paths.get(generalPanel.getInstallationPath());
         out.append("Installing in: " + installDirectory + "\n");
         final Path configDirectory = installDirectory.resolve("config");
         out.append("Configuration in: " + configDirectory + "\n");
@@ -383,20 +387,20 @@ public class Configurator extends JFrame {
         // generate start scripts
         final Path windowsStart = installDirectory.resolve("start.cmd");
         Files.deleteIfExists(windowsStart);
-        Files.writeString(windowsStart, "start java -DconfigFile=config/config.properties -Dlog4j2.configurationFile=file:config/log4j2.xml -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar\n", StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        Files.write(windowsStart, "start java -DconfigFile=config/config.properties -Dlog4j2.configurationFile=file:config/log4j2.xml -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar\n".getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         setFilePermissions(windowsStart, true, true, true);
 
         final Path linuxStart = installDirectory.resolve("start.sh");
         Files.deleteIfExists(linuxStart);
-        Files.writeString(linuxStart, "#!/bin/bash\njava -DconfigFile=config/config.properties -Dlog4j2.configurationFile=file:config/log4j2.xml -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar\n", StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        Files.write(linuxStart, "#!/bin/bash\njava -DconfigFile=config/config.properties -Dlog4j2.configurationFile=file:config/log4j2.xml -jar lib/bms-to-inverter-main-0.0.1-SNAPSHOT.jar\n".getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         setFilePermissions(linuxStart, true, true, true);
 
         final Path windowsConfigStart = installDirectory.resolve("configurator.cmd");
         final Path linuxConfigStart = installDirectory.resolve("configurator.sh");
         Files.deleteIfExists(windowsConfigStart);
         Files.deleteIfExists(linuxConfigStart);
-        Files.writeString(windowsConfigStart, "java -jar lib/configurator.jar", StandardOpenOption.CREATE, StandardOpenOption.WRITE);
-        Files.writeString(linuxConfigStart, "#!/bin/bash\njava -jar lib/configurator.jar", StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        Files.write(windowsConfigStart, "java -jar lib/configurator.jar".getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        Files.write(linuxConfigStart, "#!/bin/bash\njava -jar lib/configurator.jar".getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
         setFilePermissions(windowsConfigStart, true, true, true);
         setFilePermissions(linuxConfigStart, true, true, true);
     }
@@ -404,9 +408,9 @@ public class Configurator extends JFrame {
 
     private void generatePOMs(final Path tempDirectory) throws IOException {
         final Path parentPomTemplate = tempDirectory.resolve("bms-to-inverter-main/configurator/src/main/resources/templates/parent-pom.xml");
-        final String parentPom = Files.readString(parentPomTemplate);
+        final String parentPom = new String(Files.readAllBytes(parentPomTemplate));
         final Path mainPomTempplate = tempDirectory.resolve("bms-to-inverter-main/configurator/src/main/resources/templates/main-pom.xml");
-        final String mainPom = Files.readString(mainPomTempplate);
+        final String mainPom = new String(Files.readAllBytes(mainPomTempplate));
         final StringBuffer bmsDependencies = new StringBuffer();
         final List<String> modules = new ArrayList<>();
         final Set<String> bmses = new HashSet<>();
@@ -545,12 +549,12 @@ public class Configurator extends JFrame {
         Files.deleteIfExists(parentPomFile);
         final StringBuffer moduleDependencies = new StringBuffer();
         modules.forEach(m -> moduleDependencies.append("\t\t" + m + "\r\n"));
-        Files.writeString(parentPomFile, String.format(parentPom, moduleDependencies.toString()), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        Files.write(parentPomFile, String.format(parentPom, moduleDependencies.toString()).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
         // now append all dependencies to the main pom
         final Path mainPomFile = tempDirectory.resolve("bms-to-inverter-main/bms-to-inverter-main/pom.xml");
         Files.deleteIfExists(mainPomFile);
-        Files.writeString(mainPomFile, String.format(mainPom, bmsDependencies.toString(), inverterDependencies.toString(), serviceDependencies.toString()), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
+        Files.write(mainPomFile, String.format(mainPom, bmsDependencies.toString(), inverterDependencies.toString(), serviceDependencies.toString()).getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.WRITE);
     }
 
 
@@ -679,7 +683,7 @@ public class Configurator extends JFrame {
         // load log4j2.xml and determine log level
         if (Files.exists(logFilePath)) {
             try {
-                final String logXml = Files.readString(logFilePath);
+                final String logXml = new String(Files.readAllBytes(logFilePath));
                 final int idx = logXml.indexOf("<Root level=\"") + "<Root level=\"".length();
                 final String logLevel = logXml.substring(idx, logXml.indexOf('\"', idx + 1));
                 generalPanel.setLogLevel(logLevel);

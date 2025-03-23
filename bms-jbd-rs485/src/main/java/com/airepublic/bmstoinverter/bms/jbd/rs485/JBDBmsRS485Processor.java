@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -27,6 +26,7 @@ import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.TooManyInvalidFramesException;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.util.BitUtil;
+import com.airepublic.bmstoinverter.core.util.HexUtil;
 import com.airepublic.bmstoinverter.protocol.rs485.JSerialCommPort;
 
 /**
@@ -135,7 +135,9 @@ public class JBDBmsRS485Processor extends BMS {
                     LOG.debug("RECEIVED: {}", Port.printBuffer(receiveBuffer));
                     receiveBuffer.rewind();
                     final int length = receiveBuffer.get(3);
-                    final ByteBuffer data = receiveBuffer.slice(3, length + 4);
+                    receiveBuffer.position(3);
+                    receiveBuffer.limit(3 + length + 4);
+                    final ByteBuffer data = receiveBuffer.slice();
 
                     switch (receiveBuffer.get(1)) {
                         case 0x03: {
@@ -201,7 +203,7 @@ public class JBDBmsRS485Processor extends BMS {
             }
         } while (!done);
 
-        LOG.warn("Command {} to sent to BMS successfully and received!", HexFormat.of().withPrefix("0x").formatHex(new byte[] { (byte) command }));
+        LOG.warn("Command {} to sent to BMS successfully and received!", HexUtil.formatHex(new byte[] { (byte) command }));
 
         return readBuffers;
     }
@@ -284,10 +286,10 @@ public class JBDBmsRS485Processor extends BMS {
 
             // check if bytes are available
             if (serialPort.readBytes(dataId, 200) != -1) {
-                final var dataIdType = JBDRS485DataId.fromDataId(dataId[0]);
+                final JBDRS485DataId dataIdType = JBDRS485DataId.fromDataId(dataId[0]);
 
                 if (dataIdType != null) {
-                    final var dataEntry = new DataEntry();
+                    final DataEntry dataEntry = new DataEntry();
                     dataEntry.setId(dataIdType);
 
                     // get the length of the data segment
@@ -306,7 +308,7 @@ public class JBDBmsRS485Processor extends BMS {
                     // do not add the endflag as entry
                     if (!endFlagFound) {
                         // copy the relevant data bytes and set them for this entry
-                        final var datacopy = new byte[length];
+                        final byte[] datacopy = new byte[length];
                         serialPort.readBytes(datacopy, 200);
                         dataEntry.setData(ByteBuffer.wrap(datacopy));
                         dataEntries.add(dataEntry);

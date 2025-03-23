@@ -245,24 +245,24 @@ public class MQTTServicePanel extends JPanel {
         boolean fail = false;
 
         if (activateMQTTBrokerCheckBox.isSelected()) {
-            if (mqttBrokerLocatorField.getText().isBlank()) {
+            if (mqttBrokerLocatorField.getText().trim().isEmpty()) {
                 errors.append("Missing MQTT broker locator!\n");
                 fail = true;
             }
 
-            if (mqttBrokerTopicField.getText().isBlank()) {
+            if (mqttBrokerTopicField.getText().trim().isEmpty()) {
                 errors.append("Missing MQTT broker topic!\n");
                 fail = true;
             }
         }
 
         if (activateMQTTProducerCheckBox.isSelected()) {
-            if (mqttProducerLocatorField.getText().isBlank()) {
+            if (mqttProducerLocatorField.getText().trim().isEmpty()) {
                 errors.append("Missing MQTT producer locator!\n");
                 fail = true;
             }
 
-            if (mqttProducerTopicField.getText().isBlank()) {
+            if (mqttProducerTopicField.getText().trim().isEmpty()) {
                 errors.append("Missing MQTT producer topic!\n");
                 fail = true;
             }

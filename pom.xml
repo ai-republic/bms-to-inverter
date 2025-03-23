@@ -11,8 +11,8 @@
 	<properties>
 		<encoding>UTF-8</encoding>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.source>8</maven.compiler.source>
-		<maven.compiler.target>8</maven.compiler.target>
+		<maven.compiler.source>1.8</maven.compiler.source>
+		<maven.compiler.target>1.8</maven.compiler.target>
 	</properties>
 
 	<modules>
@@ -24,6 +24,7 @@
 		<module>bms-daly-common</module>
 		<module>bms-daly-can</module>
 		<module>bms-daly-rs485</module>
+		<module>bms-discover-can</module>
 		<module>bms-growatt-can</module>
 		<module>bms-growatt-hv-can</module>
 		<module>bms-jk-can</module>
@@ -73,9 +74,6 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>3.10.1</version>
-				<configuration>
-					<release>17</release>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>
@@ -111,14 +109,7 @@
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-junit-jupiter</artifactId>
-			<version>5.10.0</version>
-			<scope>test</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-junit-jupiter</artifactId>
-			<version>5.10.0</version>
+			<version>3.9.0</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

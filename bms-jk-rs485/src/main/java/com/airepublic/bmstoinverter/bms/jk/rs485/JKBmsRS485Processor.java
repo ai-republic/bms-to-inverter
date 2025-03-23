@@ -91,8 +91,8 @@ public class JKBmsRS485Processor extends BMS {
                     if (dataEntries != null) {
                         final BatteryPack pack = getBatteryPack(BATTERY_ID);
 
-                        for (final var dataEntry : dataEntries) {
-                            final var dataId = dataEntry.getId();
+                        for (final DataEntry dataEntry : dataEntries) {
+                            final JKRS485DataId dataId = dataEntry.getId();
 
                             switch (dataId) {
                                 case READ_CELL_VOLTAGES:
@@ -224,10 +224,10 @@ public class JKBmsRS485Processor extends BMS {
 
             // check if bytes are available
             if (serialPort.readBytes(dataId, 200) != -1) {
-                final var dataIdType = JKRS485DataId.fromDataId(dataId[0]);
+                final JKRS485DataId dataIdType = JKRS485DataId.fromDataId(dataId[0]);
 
                 if (dataIdType != null) {
-                    final var dataEntry = new DataEntry();
+                    final DataEntry dataEntry = new DataEntry();
                     dataEntry.setId(dataIdType);
 
                     // get the length of the data segment
@@ -246,7 +246,7 @@ public class JKBmsRS485Processor extends BMS {
                     // do not add the endflag as entry
                     if (!endFlagFound) {
                         // copy the relevant data bytes and set them for this entry
-                        final var datacopy = new byte[length];
+                        final byte[] datacopy = new byte[length];
                         serialPort.readBytes(datacopy, 200);
                         dataEntry.setData(ByteBuffer.wrap(datacopy));
                         dataEntries.add(dataEntry);
@@ -538,11 +538,13 @@ public class JKBmsRS485Processor extends BMS {
     public static void main(final String[] args) {
         final JKBmsRS485Processor p = new JKBmsRS485Processor();
         final BatteryPack pack = new BatteryPack();
-        ByteBuffer data = ByteBuffer.allocate(2).order(ByteOrder.LITTLE_ENDIAN).putChar((char) 0x07D0).rewind();
+        ByteBuffer data = ByteBuffer.allocate(2).order(ByteOrder.LITTLE_ENDIAN);
+        data.putChar((char) 0x07D0).rewind();
         p.readTotalCurrent(pack, data);
         System.out.println(pack.packCurrent);
 
-        data = ByteBuffer.allocate(2).order(ByteOrder.LITTLE_ENDIAN).putChar((char) 0x87D0).rewind();
+        data = ByteBuffer.allocate(2).order(ByteOrder.LITTLE_ENDIAN);
+        data.putChar((char) 0x87D0).rewind();
         p.readTotalCurrent(pack, data);
         System.out.println(pack.packCurrent);
     }

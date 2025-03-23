@@ -151,7 +151,7 @@ public class GeneralPanel extends JPanel {
             return false;
         }
 
-        if (installationPathField.getText().isBlank()) {
+        if (installationPathField.getText().trim().isEmpty()) {
             errors.append("Missing installation directory\n");
             return false;
         }

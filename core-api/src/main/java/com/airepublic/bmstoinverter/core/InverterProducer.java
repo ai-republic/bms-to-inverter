@@ -10,7 +10,7 @@
  */
 package com.airepublic.bmstoinverter.core;
 
-import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ServiceLoader;
@@ -58,7 +58,7 @@ public class InverterProducer extends PluginProducer {
 
             // if no inverter is found, probably the config.properties have not been read
             if (type == null) {
-                SystemProperties.updateSystemProperties(Path.of(System.getProperty("configFile", "config.properties")));
+                SystemProperties.updateSystemProperties(Paths.get(System.getProperty("configFile", "config.properties")));
                 type = System.getProperty("inverter.type");
 
                 if (type == null) {

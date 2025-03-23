@@ -10,6 +10,7 @@ com.airepublic.bmstoinverter.bms.jk.can.JKBmsCANDescriptor
 com.airepublic.bmstoinverter.bms.jk.modbus.JKBmsModbusDescriptor
 com.airepublic.bmstoinverter.bms.jk.rs485.JKBmsRS485Descriptor
 com.airepublic.bmstoinverter.bms.lia.can.LiaBmsCANDescriptor
+com.airepublic.bmstoinverter.bms.mppsolar.modbus.MppSolarBmsModbusDescriptor
 com.airepublic.bmstoinverter.bms.narada.modbus.NaradaBmsModbusDescriptor
 com.airepublic.bmstoinverter.bms.pace.can.PaceBmsCANDescriptor
 com.airepublic.bmstoinverter.bms.pylon.can.PylonBmsCANDescriptor
@@ -17,7 +18,7 @@ com.airepublic.bmstoinverter.bms.pylon.hv.can.PylonHVBmsCANDescriptor
 com.airepublic.bmstoinverter.bms.pylon.rs485.PylonBmsRS485Descriptor
 com.airepublic.bmstoinverter.bms.sacredsun.rs485.SacredsunBmsRS485Descriptor
 com.airepublic.bmstoinverter.bms.samsung.can.SamsungBmsCANDescriptor
-com.airepublic.bmstoinverter.bms.shoto.modbus.ShotoBmsModbusDescriptor
 com.airepublic.bmstoinverter.bms.seplos.can.SeplosBmsCANDescriptor
+com.airepublic.bmstoinverter.bms.shoto.modbus.ShotoBmsModbusDescriptor
 com.airepublic.bmstoinverter.bms.sma.can.SMABmsCANDescriptor
 com.airepublic.bmstoinverter.bms.tian.modbus.TianBmsModbusDescriptor

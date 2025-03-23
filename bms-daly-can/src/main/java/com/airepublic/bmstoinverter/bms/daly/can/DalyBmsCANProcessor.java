@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.HexFormat;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -26,6 +25,7 @@ import com.airepublic.bmstoinverter.bms.daly.common.DalyMessage;
 import com.airepublic.bmstoinverter.core.NoDataAvailableException;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
+import com.airepublic.bmstoinverter.core.util.HexUtil;
 
 /**
  * The class to handle CAN messages from a Daly BMS.
@@ -99,7 +99,7 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
             }
         } while (framesToBeReceived > 0 & skip > 0);
 
-        LOG.debug("Command 0x{} to BMS {} successfully sent and received!", HexFormat.of().toHexDigits(cmd.id), getBmsId());
+        LOG.debug("Command 0x{} to BMS {} successfully sent and received!", HexUtil.toHexDigits(cmd.id), getBmsId());
         return readBuffers;
     }
 
@@ -144,14 +144,15 @@ public class DalyBmsCANProcessor extends AbstractDalyBmsProcessor {
         }
 
         final byte[] dataBytes = new byte[buffer.get(4)];
-        buffer.get(8, dataBytes);
+        buffer.position(8);
+        buffer.get(dataBytes);
         msg.data = ByteBuffer.wrap(dataBytes);
 
         if (LOG.isDebugEnabled()) {
             LOG.info("DALY Message: frameId= " + Integer.toHexString(frameId)
-                    + ", address=" + HexFormat.of().toHexDigits(msg.bmsId)
-                    + ", dataId=" + HexFormat.of().toHexDigits(msg.cmd.id)
-                    + ", data=" + HexFormat.of().formatHex(dataBytes));
+                    + ", address=" + HexUtil.toHexDigits(msg.bmsId)
+                    + ", dataId=" + HexUtil.toHexDigits(msg.cmd.id)
+                    + ", data=" + HexUtil.formatHex(dataBytes));
         }
 
         return msg;

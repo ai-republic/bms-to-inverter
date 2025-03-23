@@ -69,27 +69,35 @@ public class SacredsunBmsRS485Processor extends BMS {
             try {
                 receiveBuffer = port.receiveFrame();
 
-                // check start and end flag
-                valid = receiveBuffer.get(0) == 0x7E && receiveBuffer.get(receiveBuffer.capacity() - 1) == 0x0D;
+                if (receiveBuffer != null) {
+                    // check start and end flag
+                    valid = receiveBuffer.get(0) == 0x7E && receiveBuffer.get(receiveBuffer.capacity() - 1) == 0x0D;
 
-                if (valid) {
-                    LOG.debug("RECEIVED: {}", Port.printBuffer(receiveBuffer));
-                    receiveBuffer.rewind();
+                    if (valid) {
+                        LOG.debug("RECEIVED: {}", Port.printBuffer(receiveBuffer));
+                        receiveBuffer.rewind();
 
-                    // extract address
-                    final byte[] addressAscii = new byte[2];
-                    receiveBuffer.get(3, addressAscii);
-                    final byte address = ByteAsciiConverter.convertAsciiBytesToByte(addressAscii[0], addressAscii[1]);
+                        // extract address
+                        final byte[] addressAscii = new byte[2];
+                        receiveBuffer.position(3);
+                        receiveBuffer.get(addressAscii);
+                        final byte address = ByteAsciiConverter.convertAsciiBytesToByte(addressAscii[0], addressAscii[1]);
 
-                    // extract length
-                    final byte[] lengthAscii = new byte[2];
-                    receiveBuffer.get(11, lengthAscii);
-                    final short length = ByteAsciiConverter.convertAsciiBytesToShort(lengthAscii);
+                        // extract length
+                        final byte[] lengthAscii = new byte[2];
+                        receiveBuffer.position(11);
+                        receiveBuffer.get(lengthAscii);
+                        final short length = ByteAsciiConverter.convertAsciiBytesToShort(lengthAscii);
 
-                    final ByteBuffer data = receiveBuffer.slice(15, length);
+                        receiveBuffer.position(15);
+                        receiveBuffer.limit(15 + length);
+                        final ByteBuffer data = receiveBuffer.slice();
 
-                    readBatteryInformation(pack, data);
-                    done = true;
+                        readBatteryInformation(pack, data);
+                        done = true;
+                    } else {
+                        LOG.warn("Frame is not value: " + Port.printBuffer(receiveBuffer));
+                    }
                 } else if (receiveBuffer == null) { // received nothing
                     // keep track of how often no bytes could be read
                     noDataReceived++;

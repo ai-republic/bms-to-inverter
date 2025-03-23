@@ -124,7 +124,7 @@ public class WebserverServicePanel extends JPanel {
 
 
     public boolean verify(final StringBuffer errors) {
-        if (webserverHttpPortField.getText().isBlank()) {
+        if (webserverHttpPortField.getText().trim().isEmpty()) {
             errors.append("Missing webserver port!\n");
             return false;
         } else if (!numberInputVerifier.verify(webserverHttpPortField.getText())) {

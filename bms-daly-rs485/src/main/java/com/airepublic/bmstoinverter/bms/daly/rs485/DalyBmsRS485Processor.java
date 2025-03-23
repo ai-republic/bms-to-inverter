@@ -13,7 +13,6 @@ package com.airepublic.bmstoinverter.bms.daly.rs485;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -26,6 +25,7 @@ import com.airepublic.bmstoinverter.bms.daly.common.DalyMessage;
 import com.airepublic.bmstoinverter.core.NoDataAvailableException;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.TooManyInvalidFramesException;
+import com.airepublic.bmstoinverter.core.util.HexUtil;
 
 /**
  * The class to handle RS485 messages from a Daly BMS.
@@ -147,7 +147,7 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
             }
         } while (framesToBeReceived > 0);
 
-        LOG.warn("Command {} to BMS {} successfully sent and received!", HexFormat.of().withPrefix("0x").formatHex(new byte[] { (byte) cmd.id }), address - 0x3F);
+        LOG.warn("Command {} to BMS {} successfully sent and received!", HexUtil.formatHex(new byte[] { (byte) cmd.id }), address - 0x3F);
 
         return readBuffers;
     }
@@ -192,7 +192,8 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
         }
 
         final byte[] dataBytes = new byte[8];
-        buffer.get(4, dataBytes);
+        buffer.position(4);
+        buffer.get(dataBytes);
         msg.data = ByteBuffer.wrap(dataBytes);
         msg.data.rewind();
 

@@ -158,12 +158,12 @@ public class InverterPanel extends JPanel {
             fail = true;
         }
 
-        if (inverterPortLocatorField.getText().isBlank()) {
+        if (inverterPortLocatorField.getText().trim().isEmpty()) {
             errors.append("Missing inverter port locator!\n");
             fail = true;
         }
 
-        if (inverterBaudRateField.getText().isBlank()) {
+        if (inverterBaudRateField.getText().trim().isEmpty()) {
             errors.append("Missing inverter send interval!\n");
             fail = true;
         } else if (!numberInputVerifier.verify(inverterBaudRateField)) {
@@ -171,7 +171,7 @@ public class InverterPanel extends JPanel {
             fail = true;
         }
 
-        if (inverterSendIntervalField.getText().isBlank()) {
+        if (inverterSendIntervalField.getText().trim().isEmpty()) {
             errors.append("Missing inverter send interval!\n");
             fail = true;
         } else if (!numberInputVerifier.verify(inverterSendIntervalField)) {

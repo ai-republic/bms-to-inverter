@@ -18,7 +18,7 @@ import java.io.IOException;
 
 import org.junit.jupiter.api.Test;
 
-public class TestByteReaderWriter {
+public class ByteReaderWriterTest {
     @SuppressWarnings("resource")
     @Test
     public void testWriteCorrect() throws IOException {
@@ -89,8 +89,8 @@ public class TestByteReaderWriter {
 
         // WHEN an array is read larger than bytes availabe
         // THEN
-        // - it should throw an IOException when reading indicating not enough bytes available
-        assertThrows(IOException.class, () -> test.read(new byte[4]));
+        // - it should return -1 when reading indicating not enough bytes available
+        assertEquals(-1, test.read(new byte[4]));
     }
 
 

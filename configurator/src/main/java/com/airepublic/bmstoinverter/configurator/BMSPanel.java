@@ -225,7 +225,7 @@ public class BMSPanel extends JPanel {
             return false;
         }
 
-        if (pollIntervalField.getText() == null || pollIntervalField.getText().isBlank()) {
+        if (pollIntervalField.getText() == null || pollIntervalField.getText().trim().isEmpty()) {
             errors.append("Missing BMS poll interval!\r\n");
             return false;
         } else if (!numberInputVerifier.verify(pollIntervalField.getText())) {

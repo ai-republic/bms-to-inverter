@@ -38,7 +38,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>3.6.0</version>
+				<version>3.6.1</version>
 				<executions>
 					<execution>
 						<id>copy-dependencies</id>
@@ -119,7 +119,7 @@
 			<version>${project.version}</version>
 		</dependency>
 
-		<!-- ####################  DALY(CAN) ################### -->
+		<!-- ####################  DALY (CAN) ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>bms-daly-can</artifactId>
@@ -130,6 +130,13 @@
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>bms-daly-rs485</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- ####################  DISCOVER (CAN) ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-discover-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

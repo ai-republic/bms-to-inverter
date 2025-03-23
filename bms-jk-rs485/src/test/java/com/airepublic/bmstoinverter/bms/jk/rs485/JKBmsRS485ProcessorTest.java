@@ -39,7 +39,7 @@ import com.fazecast.jSerialComm.SerialPortEvent;
  * Tests for the JK BMS RS485 binding.
  */
 @ExtendWith(MockitoExtension.class)
-public class TestJKBmsRS485Processor {
+public class JKBmsRS485ProcessorTest {
     private JKBmsRS485Processor processor;
     @Mock
     private JSerialCommPort port;

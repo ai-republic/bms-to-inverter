@@ -11,14 +11,13 @@
 package com.airepublic.bmstoinverter;
 
 import java.io.IOException;
-import java.nio.file.Path;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.StringTokenizer;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,7 +82,7 @@ public class BmsToInverter implements AutoCloseable {
      */
     public static void main(final String[] args) throws IOException {
         // update all non-specified system parameters from "config.properties"
-        SystemProperties.updateSystemProperties(Path.of(System.getProperty("configFile", "config.properties")));
+        SystemProperties.updateSystemProperties(Paths.get(System.getProperty("configFile", "config.properties")));
 
         final SeContainerInitializer initializer = SeContainerInitializer.newInstance();
         final SeContainer container = initializer.initialize();
@@ -132,7 +131,10 @@ public class BmsToInverter implements AutoCloseable {
      * Initialize the MQTT broker.
      */
     protected void initializeMQTTBroker() {
-        mqttBroker = ServiceLoader.load(IMQTTBrokerService.class).findFirst().orElse(null);
+        try {
+            mqttBroker = ServiceLoader.load(IMQTTBrokerService.class).iterator().next();
+        } catch (final Exception e) {
+        }
 
         if (mqttBroker == null) {
             LOG.error("Error in project configuration - no MQTT Broker service implementation found!");
@@ -145,7 +147,10 @@ public class BmsToInverter implements AutoCloseable {
             mqttBroker.start(locator);
             mqttBroker.createAddress(address, true);
 
-            mqttProducer = ServiceLoader.load(IMQTTProducerService.class).findFirst().orElse(null);
+            try {
+                mqttProducer = ServiceLoader.load(IMQTTProducerService.class).iterator().next();
+            } catch (final Exception e) {
+            }
 
             if (mqttProducer == null) {
                 LOG.error("Error in project configuration - no MQTT producer service implementation found!");
@@ -167,7 +172,10 @@ public class BmsToInverter implements AutoCloseable {
      * Initialize the external MQTT producer.
      */
     protected void initializeInternalMQTTProducer() {
-        mqttProducer = ServiceLoader.load(IMQTTProducerService.class).findFirst().orElse(null);
+        try {
+            mqttProducer = ServiceLoader.load(IMQTTProducerService.class).iterator().next();
+        } catch (final Exception e) {
+        }
 
         if (mqttProducer == null) {
             LOG.error("Error in project configuration - no MQTT internal producer service implementation found!");
@@ -189,7 +197,10 @@ public class BmsToInverter implements AutoCloseable {
      * Initialize the external MQTT producer.
      */
     protected void initializeExternalMQTTProducer() {
-        mqttExternalProducer = ServiceLoader.load(IMQTTProducerService.class).findFirst().orElse(null);
+        try {
+            mqttExternalProducer = ServiceLoader.load(IMQTTProducerService.class).iterator().next();
+        } catch (final Exception e) {
+        }
 
         if (mqttExternalProducer == null) {
             LOG.error("Error in project configuration - no MQTT external producer service implementation found!");
@@ -213,7 +224,10 @@ public class BmsToInverter implements AutoCloseable {
      * Initialize the email service.
      */
     protected void initializeEmailService() {
-        emailService = ServiceLoader.load(IEmailService.class).findFirst().orElse(null);
+        try {
+            emailService = ServiceLoader.load(IEmailService.class).iterator().next();
+        } catch (final Exception e) {
+        }
 
         if (emailService == null) {
             LOG.error("Error in project configuration - no email provider was found but email service is activated!");
@@ -239,7 +253,10 @@ public class BmsToInverter implements AutoCloseable {
      * Initialize webserver service.
      */
     protected void initializeWebserverService() {
-        webServerService = ServiceLoader.load(IWebServerService.class).findFirst().orElse(null);
+        try {
+            webServerService = ServiceLoader.load(IWebServerService.class).iterator().next();
+        } catch (final Exception e) {
+        }
 
         if (webServerService == null) {
             LOG.error("Error in project configuration - no webserver was found but webserver service is activated!");
@@ -269,7 +286,7 @@ public class BmsToInverter implements AutoCloseable {
             stopChecker = new Thread(() -> {
                 do {
                     if (Files.exists(Paths.get("./stop"))) {
-                        running=false;
+                        running = false;
                         LOG.warn("Found stop file");
                         close();
                         Runtime.getRuntime().halt(0);

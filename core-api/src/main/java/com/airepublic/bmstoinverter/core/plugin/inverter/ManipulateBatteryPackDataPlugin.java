@@ -56,53 +56,53 @@ public class ManipulateBatteryPackDataPlugin extends InverterPlugin {
     public void onBatteryAggregation(final BatteryPack aggregatedPack) {
         String value = getPropertyValue(PROPERTY_PRESET_SOC, "");
 
-        if (value != null && !value.isBlank()) {
+        if (value != null && !value.trim().isEmpty()) {
             aggregatedPack.packSOC = Integer.parseInt(value);
         }
 
         value = getPropertyValue(PROPERTY_PRESET_SOH, "");
 
-        if (value != null && !value.isBlank()) {
+        if (value != null && !value.trim().isEmpty()) {
             aggregatedPack.packSOH = Integer.parseInt(getPropertyValue(PROPERTY_PRESET_SOH, ""));
         }
 
         value = getPropertyValue(PROPERTY_PRESET_CURRENT, "");
 
-        if (value != null && !value.isBlank()) {
+        if (value != null && !value.trim().isEmpty()) {
             aggregatedPack.packCurrent = Integer.parseInt(getPropertyValue(PROPERTY_PRESET_CURRENT, ""));
         }
 
         value = getPropertyValue(PROPERTY_PRESET_VOLTAGE, "");
 
-        if (value != null && !value.isBlank()) {
+        if (value != null && !value.trim().isEmpty()) {
             aggregatedPack.packVoltage = Integer.parseInt(getPropertyValue(PROPERTY_PRESET_VOLTAGE, ""));
         }
 
         value = getPropertyValue(PROPERTY_PRESET_MAX_CHARGE_CURRENT, "");
 
-        if (value != null && !value.isBlank()) {
+        if (value != null && !value.trim().isEmpty()) {
             aggregatedPack.maxPackChargeCurrent = Integer.parseInt(getPropertyValue(PROPERTY_PRESET_MAX_CHARGE_CURRENT, ""));
         }
 
         value = getPropertyValue(PROPERTY_PRESET_MAX_DISCHARGE_CURRENT, "");
 
-        if (value != null && !value.isBlank()) {
+        if (value != null && !value.trim().isEmpty()) {
             aggregatedPack.maxPackDischargeCurrent = Integer.parseInt(getPropertyValue(PROPERTY_PRESET_MAX_DISCHARGE_CURRENT, ""));
         }
         value = getPropertyValue(PROPERTY_PRESET_MAX_VOLTAGE, "");
 
-        if (value != null && !value.isBlank()) {
+        if (value != null && !value.trim().isEmpty()) {
             aggregatedPack.maxPackVoltageLimit = Integer.parseInt(getPropertyValue(PROPERTY_PRESET_MAX_VOLTAGE, ""));
         }
 
         value = getPropertyValue(PROPERTY_PRESET_MIN_VOLTAGE, "");
 
-        if (value != null && !value.isBlank()) {
+        if (value != null && !value.trim().isEmpty()) {
             aggregatedPack.minPackVoltageLimit = Integer.parseInt(getPropertyValue(PROPERTY_PRESET_MIN_VOLTAGE, ""));
         }
 
         value = getPropertyValue(PROPERTY_PRESET_AVG_TEMPERATURE, "");
-        if (value != null && !value.isBlank()) {
+        if (value != null && !value.trim().isEmpty()) {
             aggregatedPack.tempAverage = Integer.parseInt(getPropertyValue(PROPERTY_PRESET_AVG_TEMPERATURE, ""));
         }
     }

@@ -15,7 +15,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 
@@ -31,6 +30,7 @@ import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 import com.airepublic.bmstoinverter.core.util.BitUtil;
+import com.airepublic.bmstoinverter.core.util.HexUtil;
 
 /**
  * The class to handle CAN messages from a LIA {@link BMS}.
@@ -193,7 +193,7 @@ public class LiaBmsCANProcessor extends BMS {
             }
         } while (!frameReceived);
 
-        LOG.debug("Command 0x{} to BMS {} successfully sent and received!", HexFormat.of().toHexDigits(cmd.getCommand()), getBmsId());
+        LOG.debug("Command 0x{} to BMS {} successfully sent and received!", HexUtil.toHexDigits(cmd.getCommand()), getBmsId());
         return readBuffers;
     }
 

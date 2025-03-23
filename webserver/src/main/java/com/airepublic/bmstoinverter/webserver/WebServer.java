@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.service.IWebServerService;
+import com.airepublic.bmstoinverter.core.util.InputStreamUtil;
 import com.google.gson.Gson;
 
 public class WebServer implements IWebServerService {
@@ -107,7 +108,7 @@ public class WebServer implements IWebServerService {
         final String username = System.getProperty("webserver.username", "");
         final String password = System.getProperty("webserver.password", "");
 
-        if (!username.isBlank() && !password.isBlank()) {
+        if (!username.trim().isEmpty() && !password.trim().isEmpty()) {
             // Set up security and wrap all other handlers with security
             final SecurityHandler securityHandler = createSecurityHandler(username, password);
             securityHandler.setHandler(handlers);
@@ -137,7 +138,7 @@ public class WebServer implements IWebServerService {
             public boolean handle(final Request request, final Response response, final Callback callback) throws Exception {
                 final String path = request.getHttpURI().getPath();
 
-                // if (path.isBlank() || path.equals("/") || path.equals("/index.html")) {
+                // if (path.trim().isEmpty() || path.equals("/") || path.equals("/index.html")) {
                 // final Path indexHtml =
                 // ResourceFactory.of(server).newClassLoaderResource("static/index.html").getPath();
                 // final String content = Files.readString(indexHtml, StandardCharsets.UTF_8);
@@ -175,7 +176,7 @@ public class WebServer implements IWebServerService {
                     if (favicon.exists()) {
                         try (InputStream is = favicon.newInputStream()) {
                             response.getHeaders().put(HttpHeader.CONTENT_TYPE, "image/x-icon");
-                            response.write(true, BufferUtil.toBuffer(is.readAllBytes()), callback);
+                            response.write(true, BufferUtil.toBuffer(InputStreamUtil.readAllBytes(is)), callback);
                         }
                         return true;
                     }

@@ -10,7 +10,7 @@
  */
 package com.airepublic.bmstoinverter.core;
 
-import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -62,7 +62,7 @@ public class BMSListProducer extends PluginProducer {
 
             // if no bms is found, probably the config.properties have not been read
             if (type == null) {
-                SystemProperties.updateSystemProperties(Path.of(System.getProperty("configFile", "config.properties")));
+                SystemProperties.updateSystemProperties(Paths.get(System.getProperty("configFile", "config.properties")));
                 type = System.getProperty("bms.1.type");
 
                 if (type == null) {

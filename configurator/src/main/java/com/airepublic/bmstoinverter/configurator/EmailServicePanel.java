@@ -14,7 +14,6 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.Properties;
-import java.util.ServiceLoader;
 import java.util.Vector;
 
 import javax.swing.DefaultComboBoxModel;
@@ -26,10 +25,12 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
-import com.airepublic.email.api.Email;
-import com.airepublic.email.api.EmailAccount;
-import com.airepublic.email.api.EmailException;
-import com.airepublic.email.api.IEmailService;
+import jakarta.mail.Message;
+import jakarta.mail.MessagingException;
+import jakarta.mail.Session;
+import jakarta.mail.Transport;
+import jakarta.mail.internet.InternetAddress;
+import jakarta.mail.internet.MimeMessage;
 
 public class EmailServicePanel extends JPanel {
     private static final long serialVersionUID = 1L;
@@ -193,31 +194,36 @@ public class EmailServicePanel extends JPanel {
     private Object testEmailConfiguration() {
         final StringBuffer errors = new StringBuffer();
         if (!verify(errors)) {
-            JOptionPane.showInternalMessageDialog(this, errors, "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, errors, "Error", JOptionPane.ERROR_MESSAGE);
             System.out.println(errors);
             return false;
         }
 
-        final IEmailService emailService = ServiceLoader.load(IEmailService.class).findFirst().orElse(null);
         final Properties properties = new Properties();
-        properties.put("mail.out.host", getOutgoingServer());
-        properties.put("mail.out.port", "" + getOutgoingServerPort());
-        properties.put("mail.out.type", getSslTls().equals("SSL") ? "smtps" : "smtp");
-        properties.put("mail.out.username", getUsername());
-        properties.put("mail.out.password", getPassword());
-        properties.put("mail.out.sslEnable", "" + getSslTls().equals("SSL"));
-        properties.put("mail.out.tlsEnable", "" + getSslTls().equals("TLS"));
-        properties.put("mail.out.defaultEmail", getSender());
-        properties.put("mail.out.recipients", getRecipients());
-        final EmailAccount account = new EmailAccount(properties);
-        final String recipient = getRecipients().indexOf(',') == -1 ? getRecipients() : getRecipients().substring(0, getRecipients().indexOf(','));
-        final Email email = new Email(account.getOutgoingMailServerEmail(), recipient, "BMS-to-Inverter Configurator", "Test", false);
+        properties.put("mail.smtp.host", getOutgoingServer());
+        properties.put("mail.smtp.port", "" + getOutgoingServerPort());
+        properties.put("mail.smtp.auth", "true");
+        properties.put("mail.smtp.starttls.enable", getSslTls().equals("TLS"));
+        properties.put("mail.smtp.ssl.enable", getSslTls().equals("SSL"));
+
+        final Session session = Session.getInstance(properties, new jakarta.mail.Authenticator() {
+            @Override
+            protected jakarta.mail.PasswordAuthentication getPasswordAuthentication() {
+                return new jakarta.mail.PasswordAuthentication(getUsername(), getPassword());
+            }
+        });
 
         try {
-            emailService.sendEmail(email, account);
+            final Message message = new MimeMessage(session);
+            message.setFrom(new InternetAddress(getSender()));
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(getRecipients()));
+            message.setSubject("BMS-to-Inverter Configurator Test");
+            message.setText("This is a test email from the BMS-to-Inverter Configurator.");
+
+            Transport.send(message);
             JOptionPane.showMessageDialog(this, "Email test successful!", "Information", JOptionPane.INFORMATION_MESSAGE);
-        } catch (final EmailException e) {
-            JOptionPane.showMessageDialog(this, "Email test failed!" + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (final MessagingException e) {
+            JOptionPane.showMessageDialog(this, "Email test failed! " + e.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
             return false;
         }
         return true;
@@ -270,12 +276,12 @@ public class EmailServicePanel extends JPanel {
     public boolean verify(final StringBuffer errors) {
         boolean fail = false;
 
-        if (outgoingServerField.getText().isBlank()) {
+        if (outgoingServerField.getText().trim().isEmpty()) {
             errors.append("Missing outgoing server!\n");
             fail = true;
         }
 
-        if (outgoingServerPortField.getText().isBlank()) {
+        if (outgoingServerPortField.getText().trim().isEmpty()) {
             errors.append("Missing email server port!\n");
         } else if (!numberInputVerifier.verify(outgoingServerPortField.getText())) {
             errors.append("Non-numeric email server port!\n");
@@ -284,16 +290,16 @@ public class EmailServicePanel extends JPanel {
         if (sslTlsField.getSelectedIndex() == -1) {
             errors.append("Missing email server SSL/TLS!\n");
         }
-        if (usernameField.getText().isBlank()) {
+        if (usernameField.getText().trim().isEmpty()) {
             errors.append("Missing email server username!\n");
         }
         if (passwordField.getPassword().length == 0) {
             errors.append("Missing email server password!\n");
         }
-        if (senderField.getText().isBlank()) {
+        if (senderField.getText().trim().isEmpty()) {
             errors.append("Missing email sender address!\n");
         }
-        if (recipientsField.getText().isBlank()) {
+        if (recipientsField.getText().trim().isEmpty()) {
             errors.append("Missing email recipient addresses!\n");
         }
 

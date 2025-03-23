@@ -26,7 +26,7 @@ public class TestPylonBmsCANDescriptor {
 
     @Test
     public void testName() {
-        Assertions.assertEquals("JK_CAN", desc.getName());
+        Assertions.assertEquals("PYLON_CAN", desc.getName());
     }
 
 

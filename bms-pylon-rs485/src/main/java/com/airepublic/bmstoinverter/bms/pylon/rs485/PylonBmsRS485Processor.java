@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.HexFormat;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -29,6 +28,7 @@ import com.airepublic.bmstoinverter.core.TooManyInvalidFramesException;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.util.BitUtil;
+import com.airepublic.bmstoinverter.core.util.HexUtil;
 
 /**
  * The class to handle RS485 messages from a Pylon BMS.
@@ -42,7 +42,8 @@ public class PylonBmsRS485Processor extends BMS {
         }
 
         final byte[] checksumBytes = new byte[4];
-        buffer.get(buffer.capacity() - 5, checksumBytes);
+        buffer.position(buffer.capacity() - 5);
+        buffer.get(checksumBytes);
         System.out.println(Port.printBytes(checksumBytes));
         byte high = convertAsciiBytesToByte(checksumBytes[0], checksumBytes[1]);
         byte low = convertAsciiBytesToByte(checksumBytes[2], checksumBytes[3]);
@@ -102,20 +103,25 @@ public class PylonBmsRS485Processor extends BMS {
 
                     // extract address
                     final byte[] addressAscii = new byte[2];
-                    receiveBuffer.get(3, addressAscii);
+                    receiveBuffer.position(3);
+                    receiveBuffer.get(addressAscii);
                     final byte address = convertAsciiBytesToByte(addressAscii[0], addressAscii[1]);
 
                     // extract command
                     final byte[] cmdAscii = new byte[2];
-                    receiveBuffer.get(3, cmdAscii);
+                    receiveBuffer.position(7);
+                    receiveBuffer.get(cmdAscii);
                     final byte cmd = convertAsciiBytesToByte(cmdAscii[0], cmdAscii[1]);
 
                     // extract length
                     final byte[] lengthAscii = new byte[4];
-                    receiveBuffer.get(10, lengthAscii);
+                    receiveBuffer.position(9);
+                    receiveBuffer.get(lengthAscii);
                     final short length = (short) (convertAsciiBytesToShort(lengthAscii) & 0x0FFF);
 
-                    final ByteBuffer data = receiveBuffer.slice(13, receiveBuffer.capacity() - 18);
+                    receiveBuffer.position(13);
+                    receiveBuffer.limit(13 + receiveBuffer.capacity() - 18);
+                    final ByteBuffer data = receiveBuffer.slice();
 
                     switch (cmd) {
                         case 0x60: {
@@ -183,7 +189,7 @@ public class PylonBmsRS485Processor extends BMS {
             }
         } while (!done);
 
-        LOG.warn("Command {} to sent to BMS successfully and received!", HexFormat.of().withPrefix("0x").formatHex(new byte[] { cid1, cid2 }));
+        LOG.warn("Command {} to sent to BMS successfully and received!", HexUtil.formatHex(new byte[] { cid1, cid2 }));
 
         return readBuffers;
     }
@@ -359,7 +365,7 @@ public class PylonBmsRS485Processor extends BMS {
 
     private byte convertAsciiBytesToByte(final byte high, final byte low) {
         final String ascii = new String(new char[] { (char) high, (char) low });
-        return (byte) HexFormat.fromHexDigits(ascii);
+        return HexUtil.fromHexDigits(ascii);
     }
 
 
@@ -445,8 +451,8 @@ public class PylonBmsRS485Processor extends BMS {
         int i = 0;
 
         while (i < valueStr.length) {
-            final byte high = (byte) HexFormat.fromHexDigits(valueStr[i++]);
-            final byte low = (byte) HexFormat.fromHexDigits(valueStr[i++]);
+            final byte high = HexUtil.fromHexDigits(valueStr[i++]);
+            final byte low = HexUtil.fromHexDigits(valueStr[i++]);
             System.out.print("" + (char) convertAsciiBytesToByte(high, low));
         }
 

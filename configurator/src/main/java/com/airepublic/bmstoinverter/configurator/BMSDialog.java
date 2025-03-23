@@ -295,7 +295,7 @@ public class BMSDialog extends JDialog {
             fail = true;
         }
 
-        if (idField.getText().isBlank()) {
+        if (idField.getText().trim().isEmpty()) {
             errors.append("Missing BMS id!\r\n");
             fail = true;
         } else if (!numberInputVerifier.verify(idField.getText())) {
@@ -303,12 +303,12 @@ public class BMSDialog extends JDialog {
             fail = true;
         }
 
-        if (portLocatorField.getText().isBlank()) {
+        if (portLocatorField.getText().trim().isEmpty()) {
             errors.append("Missing BMS port locator!\r\n");
             fail = true;
         }
 
-        if (baudRateField.getText().isBlank()) {
+        if (baudRateField.getText().trim().isEmpty()) {
             errors.append("Missing BMS delay after no bytes received!\r\n");
             fail = true;
         } else if (!numberInputVerifier.verify(baudRateField.getText())) {
@@ -316,7 +316,7 @@ public class BMSDialog extends JDialog {
             fail = true;
         }
 
-        if (delayAfterNoBytesField.getText().isBlank()) {
+        if (delayAfterNoBytesField.getText().trim().isEmpty()) {
             errors.append("Missing BMS delay after no bytes received!\r\n");
             fail = true;
         } else if (!numberInputVerifier.verify(delayAfterNoBytesField.getText())) {
