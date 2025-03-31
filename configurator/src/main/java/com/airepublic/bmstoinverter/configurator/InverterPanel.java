@@ -164,7 +164,7 @@ public class InverterPanel extends JPanel {
         }
 
         if (inverterBaudRateField.getText().trim().isEmpty()) {
-            errors.append("Missing inverter send interval!\n");
+            errors.append("Missing inverter baud rate!\n");
             fail = true;
         } else if (!numberInputVerifier.verify(inverterBaudRateField)) {
             errors.append("Non-numeric inverter baud rate!\n");

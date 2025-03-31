@@ -124,11 +124,18 @@ public class Configurator extends JFrame {
         buttonPanel.add(installButton, gbc_installButton);
         installButton.addActionListener(e -> {
             try {
+                final StringBuffer errors = new StringBuffer();
+
+                if (!verify(errors)) {
+                    throw new IOException("Please check your configuration:\n" + errors);
+                }
+
                 final InstallationDialog dlg = new InstallationDialog(this);
                 dlg.startInstallation(() -> {
                     try {
                         buildApplication(dlg.getTextArea());
                     } catch (final Throwable e1) {
+                        JOptionPane.showMessageDialog(Configurator.this, "Failed to install the application!\n" + e1.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
                         throw new RuntimeException(e1);
                     }
                 });
