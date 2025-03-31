@@ -16,7 +16,7 @@ import com.airepublic.bmstoinverter.core.BMSDescriptor;
 import com.airepublic.bmstoinverter.protocol.can.JavaCANPort;
 
 /**
- * The {@link BMSDescriptor} for the Pylon LV BMS using the CAN protocol.
+ * The {@link BMSDescriptor} for the Discover BMS using the CAN protocol.
  */
 public class DiscoverBmsCANDescriptor implements BMSDescriptor {
     @Override
