@@ -58,12 +58,6 @@ public class DiscoverBmsCANProcessor extends BMS {
                 case 0x35C:
                     requestChargeDischargeConfigChange(pack, data);
                 break;
-                case 0x370:
-                    readMinMaxTemperatureVoltage(pack, data);
-                break;
-                case 0x371:
-                    readTemperatureIds(pack, data);
-                break;
                 case 0x35E:
                     readManufacturer(pack, data);
                 break;
@@ -95,9 +89,9 @@ public class DiscoverBmsCANProcessor extends BMS {
     // 0x354
     protected void readCapacity(final BatteryPack pack, final ByteBuffer data) {
         // Battery capacity (0.1Ah) - uint_16
-        pack.ratedCapacitymAh = data.getChar() * 100;
+        pack.ratedCapacitymAh = data.getChar() * 10;
         // Remaining capacity (0.1Ah) - uint_16
-        pack.remainingCapacitymAh = data.getChar() * 100;
+        pack.remainingCapacitymAh = data.getChar() * 10;
 
         LOG.debug("\nCapacity \tRemaining\n \t{}\t\t{}", pack.ratedCapacitymAh / 1000f, pack.remainingCapacitymAh / 1000f);
     }
@@ -117,7 +111,7 @@ public class DiscoverBmsCANProcessor extends BMS {
     // 0x356
     protected void readBatteryVoltage(final BatteryPack pack, final ByteBuffer data) {
         // Battery voltage (0.01V) - sint_16
-        pack.packVoltage = data.getShort() / 10;
+        pack.packVoltage = data.getShort();
         // Battery current (0.1A) - sint_16
         pack.packCurrent = data.getShort();
         // Battery current (0.1C) - sint_16
@@ -146,36 +140,6 @@ public class DiscoverBmsCANProcessor extends BMS {
         if (BitUtil.bit(bits, 7)) {
             // request charge enable
         }
-    }
-
-
-    // 0x370
-    protected void readMinMaxTemperatureVoltage(final BatteryPack pack, final ByteBuffer data) {
-        // Maximum cell temperature (0.1C) - uint_16
-        pack.tempMax = data.getShort();
-        // Minimum cell temperature (0.1C) - uint_16
-        pack.tempMin = data.getShort();
-        // Maximum cell voltage (0.1V) - uint_16
-        pack.maxCellmV = data.getShort();
-        // Minimum cell voltage (0.1V) - uint_16
-        pack.minCellmV = data.getShort();
-
-        LOG.debug("\nMax Temp \tMin Temp \tMax Cell mV \tMin Cell mV\n{} \t {}\t\t{}\t\t{}", pack.tempMax / 10f, pack.tempMin / 10f, pack.maxCellmV, pack.minCellmV);
-    }
-
-
-    // 0x371
-    protected void readTemperatureIds(final BatteryPack pack, final ByteBuffer data) {
-        // Maximum cell temperature (0.1C) - uint_16
-        // pack.tempMax = data.getShort();
-        // Minimum cell temperature (0.1C) - uint_16
-        // pack.tempMin = data.getShort();
-        // Maximum cell voltage id - uint_16
-        pack.maxCellVNum = data.getShort();
-        // Minimum cell voltage id - uint_16
-        pack.minCellVNum = data.getShort();
-
-        LOG.debug("\nMax V Cell \t Min V Cell\n\t{}\t\t{}", pack.maxCellVNum, pack.minCellVNum);
     }
 
 
