@@ -20,6 +20,7 @@ com.airepublic.bmstoinverter.bms.pylon.rs485.PylonBmsRS485Descriptor
 com.airepublic.bmstoinverter.bms.sacredsun.rs485.SacredsunBmsRS485Descriptor
 com.airepublic.bmstoinverter.bms.samsung.can.SamsungBmsCANDescriptor
 com.airepublic.bmstoinverter.bms.seplos.can.SeplosBmsCANDescriptor
+com.airepublic.bmstoinverter.bms.seplos.rs485.SeplosBmsRS485Descriptor
 com.airepublic.bmstoinverter.bms.shoto.modbus.ShotoBmsModbusDescriptor
 com.airepublic.bmstoinverter.bms.sma.can.SMABmsCANDescriptor
 com.airepublic.bmstoinverter.bms.tian.modbus.TianBmsModbusDescriptor

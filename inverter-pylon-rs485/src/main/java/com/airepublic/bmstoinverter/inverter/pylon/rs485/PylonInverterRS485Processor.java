@@ -27,7 +27,7 @@ import com.airepublic.bmstoinverter.core.util.ByteAsciiConverter;
 import jakarta.enterprise.context.ApplicationScoped;
 
 /**
- * The class to handle CAN messages for Pylontech {@link Inverter}.
+ * The class to handle RS485 messages for Pylontech {@link Inverter}.
  */
 @ApplicationScoped
 public class PylonInverterRS485Processor extends Inverter {
@@ -72,10 +72,13 @@ public class PylonInverterRS485Processor extends Inverter {
         buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (aggregatedPack.packVoltage * 100)));
         buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (aggregatedPack.packCurrent * 10)));
         buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) (aggregatedPack.packSOC / 10)));
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) aggregatedPack.bmsCycles)); // average cycles
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) aggregatedPack.bmsCycles)); // average
+                                                                                                   // cycles
         buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) 10000)); // maximum cycles
-        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) (aggregatedPack.packSOH / 10))); // average SOH
-        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) (aggregatedPack.packSOH / 10))); // lowest SOH
+        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) (aggregatedPack.packSOH / 10))); // average
+                                                                                                      // SOH
+        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) (aggregatedPack.packSOH / 10))); // lowest
+                                                                                                      // SOH
 
         // find the pack with the highest/lowest cell voltage
         int maxPack = 0;
@@ -94,14 +97,20 @@ public class PylonInverterRS485Processor extends Inverter {
         }
 
         buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) aggregatedPack.maxCellmV));
-        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) maxPack)); // battery pack with highest voltage
-        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) aggregatedPack.maxCellVNum)); // cell with highest
-                                                                                // voltage
+        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) maxPack)); // battery pack with
+                                                                                // highest voltage
+        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) aggregatedPack.maxCellVNum)); // cell
+                                                                                                   // with
+                                                                                                   // highest
+        // voltage
 
         buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) aggregatedPack.minCellmV));
-        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) minPack)); // battery pack with lowest voltage
-        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) aggregatedPack.minCellVNum)); // cell with lowest
-                                                                                // voltage
+        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) minPack)); // battery pack with
+                                                                                // lowest voltage
+        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) aggregatedPack.minCellVNum)); // cell
+                                                                                                   // with
+                                                                                                   // lowest
+        // voltage
 
         buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (aggregatedPack.tempAverage + 2731)));
 
