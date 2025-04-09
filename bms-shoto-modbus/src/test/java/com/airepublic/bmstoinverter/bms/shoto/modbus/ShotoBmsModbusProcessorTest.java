@@ -34,7 +34,7 @@ import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
  * The unit-test for a Shoto {@link BMS}.
  */
 public class ShotoBmsModbusProcessorTest {
-    private final static int UNIT_ID = 0;
+    private final static int UNIT_ID = 2;
     private ShotoBmsModbusProcessor processor;
     private BatteryPack batteryPack;
     private final Port port = mock(Port.class);
@@ -42,7 +42,7 @@ public class ShotoBmsModbusProcessorTest {
     @BeforeEach
     public void setUp() {
         processor = new ShotoBmsModbusProcessor();
-        processor.initialize(new BMSConfig(2, "com3", 9600, 1, new ShotoBmsModbusDescriptor()));
+        processor.initialize(new BMSConfig(UNIT_ID, "com3", 9600, 1, new ShotoBmsModbusDescriptor()));
         batteryPack = processor.getBatteryPack(UNIT_ID);
     }
 
