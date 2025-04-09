@@ -15,15 +15,19 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiConsumer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.airepublic.bmstoinverter.core.AlarmLevel;
 import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.NoDataAvailableException;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.TooManyInvalidFramesException;
+import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
+import com.airepublic.bmstoinverter.core.util.BitUtil;
 import com.airepublic.bmstoinverter.core.util.ByteAsciiConverter;
 
 /**
@@ -34,15 +38,16 @@ public class SeplosBmsRS485Processor extends BMS {
 
     @Override
     protected void collectData(final Port port) throws TooManyInvalidFramesException, NoDataAvailableException, IOException {
-        sendMessage(port); // battery information
+        sendMessage(port, "42", this::readBatteryInformation); // battery information
+        sendMessage(port, "44", this::readAlarms); // battery alarms
     }
 
 
-    private List<ByteBuffer> sendMessage(final Port port) throws TooManyInvalidFramesException, NoDataAvailableException, IOException {
+    private List<ByteBuffer> sendMessage(final Port port, final String cid2, final BiConsumer<BatteryPack, ByteBuffer> handler) throws TooManyInvalidFramesException, NoDataAvailableException, IOException {
         // first convert the bmsId to ascii bytes
         final String bmsId = new String(ByteAsciiConverter.convertByteToAsciiBytes((byte) getBmsId()));
         // insert the ascii byte bmsId into the request bytes
-        final String command = "20" + bmsId + "464200021";
+        final String command = "20" + bmsId + "46" + cid2 + "00021";
 
         final String frame = "~" + command + createChecksum(command) + "\r";
         final ByteBuffer sendBuffer = ByteBuffer.wrap(frame.getBytes()).order(ByteOrder.LITTLE_ENDIAN);
@@ -95,7 +100,7 @@ public class SeplosBmsRS485Processor extends BMS {
                         receiveBuffer.limit(13 + length);
                         final ByteBuffer data = receiveBuffer.slice();
 
-                        readBatteryInformation(pack, data);
+                        handler.accept(pack, data);
                         done = true;
                     } else {
                         LOG.warn("Frame is not valid: " + Port.printBuffer(receiveBuffer));
@@ -166,7 +171,7 @@ public class SeplosBmsRS485Processor extends BMS {
     }
 
 
-    // 0x61
+    // 0x42
     private void readBatteryInformation(final BatteryPack pack, final ByteBuffer data) {
         final byte[] shortAsciiBuffer = new byte[4];
 
@@ -182,10 +187,21 @@ public class SeplosBmsRS485Processor extends BMS {
         for (; cellNo < pack.numberOfCells; cellNo++) {
             data.get(shortAsciiBuffer);
             pack.cellVmV[cellNo] = ByteAsciiConverter.convertAsciiBytesToShort(shortAsciiBuffer);
+
+            if (pack.cellVmV[cellNo] < pack.minCellmV) {
+                pack.minCellmV = pack.cellVmV[cellNo];
+                pack.minCellVNum = cellNo;
+            }
+
+            if (pack.cellVmV[cellNo] > pack.maxCellmV) {
+                pack.maxCellmV = pack.cellVmV[cellNo];
+                pack.maxCellVNum = cellNo;
+            }
         }
 
         while (cellNo < 16) {
             data.get(shortAsciiBuffer);
+            cellNo++;
         }
 
         // temp sensor quantity
@@ -239,6 +255,178 @@ public class SeplosBmsRS485Processor extends BMS {
         // SOH 0.1%
         data.get(shortAsciiBuffer);
         pack.packSOH = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get()) / 10;
+    }
+
+
+    // 0x42
+    private void readAlarms(final BatteryPack pack, final ByteBuffer data) {
+        byte warning = 0x00;
+        // read the first 4 bytes (data flag and command group)
+        data.getInt();
+
+        // cell quantity
+        pack.numberOfCells = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
+
+        // cell voltages 1mV
+        int cellNo = 0;
+
+        for (; cellNo < pack.numberOfCells; cellNo++) {
+            warning = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
+            setAlarm(pack, warning, Alarm.CELL_VOLTAGE_LOW, Alarm.CELL_VOLTAGE_HIGH, AlarmLevel.WARNING);
+        }
+
+        while (cellNo < 16) {
+            data.getShort();
+            cellNo++;
+        }
+
+        // temp sensor quantity
+        pack.numOfTempSensors = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
+
+        // temperature sensors 0.1K
+        for (int tempSensorNo = 0; tempSensorNo < 4; tempSensorNo++) {
+            warning = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
+            setAlarm(pack, warning, Alarm.CELL_TEMPERATURE_LOW, Alarm.CELL_TEMPERATURE_HIGH, AlarmLevel.WARNING);
+        }
+
+        // ambient temperature 0.1C
+        warning = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
+        setAlarm(pack, warning, Alarm.ENCASING_TEMPERATURE_LOW, Alarm.ENCASING_TEMPERATURE_HIGH, AlarmLevel.WARNING);
+
+        // component temperature 0.1C
+        warning = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
+        setAlarm(pack, warning, Alarm.PACK_TEMPERATURE_LOW, Alarm.PACK_TEMPERATURE_HIGH, AlarmLevel.WARNING);
+
+        // charge and discharge current
+        warning = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
+        setAlarm(pack, warning, Alarm.DISCHARGE_CURRENT_HIGH, Alarm.CHARGE_CURRENT_HIGH, AlarmLevel.WARNING);
+
+        // pack voltage 0.01V
+        warning = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
+        setAlarm(pack, warning, Alarm.PACK_VOLTAGE_LOW, Alarm.PACK_VOLTAGE_HIGH, AlarmLevel.WARNING);
+
+        // custom warning
+        warning = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
+
+        // warning 1
+        warning = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
+        pack.alarms.put(Alarm.FAILURE_SENSOR_PACK_VOLTAGE, BitUtil.bit(warning, 0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_SENSOR_PACK_TEMPERATURE, BitUtil.bit(warning, 1) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_SENSOR_PACK_CURRENT, BitUtil.bit(warning, 2) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_OTHER, BitUtil.bit(warning, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH, BitUtil.bit(warning, 4) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_CHARGE_BREAKER, BitUtil.bit(warning, 5) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_DISCHARGE_BREAKER, BitUtil.bit(warning, 6) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CHARGE_CURRENT_HIGH, BitUtil.bit(warning, 7) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+
+        // warning 2
+        warning = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
+        pack.alarms.put(Alarm.CELL_VOLTAGE_HIGH, BitUtil.bit(warning, 0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CELL_VOLTAGE_HIGH, BitUtil.bit(warning, 1) ? AlarmLevel.ALARM : pack.alarms.get(Alarm.CELL_VOLTAGE_HIGH));
+        pack.alarms.put(Alarm.CELL_VOLTAGE_LOW, BitUtil.bit(warning, 2) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CELL_VOLTAGE_LOW, BitUtil.bit(warning, 3) ? AlarmLevel.ALARM : pack.alarms.get(Alarm.CELL_VOLTAGE_LOW));
+        pack.alarms.put(Alarm.PACK_VOLTAGE_HIGH, BitUtil.bit(warning, 4) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_VOLTAGE_HIGH, BitUtil.bit(warning, 5) ? AlarmLevel.ALARM : pack.alarms.get(Alarm.PACK_VOLTAGE_HIGH));
+        pack.alarms.put(Alarm.PACK_VOLTAGE_LOW, BitUtil.bit(warning, 6) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_VOLTAGE_LOW, BitUtil.bit(warning, 7) ? AlarmLevel.ALARM : pack.alarms.get(Alarm.PACK_VOLTAGE_LOW));
+
+        // warning 3
+        warning = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
+        pack.alarms.put(Alarm.CHARGE_TEMPERATURE_HIGH, BitUtil.bit(warning, 0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CHARGE_TEMPERATURE_HIGH, BitUtil.bit(warning, 1) ? AlarmLevel.ALARM : pack.alarms.get(Alarm.CHARGE_TEMPERATURE_HIGH));
+        pack.alarms.put(Alarm.CHARGE_TEMPERATURE_LOW, BitUtil.bit(warning, 2) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CHARGE_TEMPERATURE_LOW, BitUtil.bit(warning, 3) ? AlarmLevel.ALARM : pack.alarms.get(Alarm.CHARGE_TEMPERATURE_LOW));
+        pack.alarms.put(Alarm.DISCHARGE_TEMPERATURE_HIGH, BitUtil.bit(warning, 4) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.DISCHARGE_TEMPERATURE_HIGH, BitUtil.bit(warning, 5) ? AlarmLevel.ALARM : pack.alarms.get(Alarm.DISCHARGE_TEMPERATURE_HIGH));
+        pack.alarms.put(Alarm.DISCHARGE_TEMPERATURE_LOW, BitUtil.bit(warning, 6) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.DISCHARGE_TEMPERATURE_LOW, BitUtil.bit(warning, 7) ? AlarmLevel.ALARM : pack.alarms.get(Alarm.DISCHARGE_TEMPERATURE_LOW));
+
+        // warning 4
+        warning = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
+        pack.alarms.put(Alarm.ENCASING_TEMPERATURE_HIGH, BitUtil.bit(warning, 0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.ENCASING_TEMPERATURE_HIGH, BitUtil.bit(warning, 1) ? AlarmLevel.ALARM : pack.alarms.get(Alarm.ENCASING_TEMPERATURE_HIGH));
+        pack.alarms.put(Alarm.ENCASING_TEMPERATURE_LOW, BitUtil.bit(warning, 2) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.ENCASING_TEMPERATURE_LOW, BitUtil.bit(warning, 3) ? AlarmLevel.ALARM : pack.alarms.get(Alarm.ENCASING_TEMPERATURE_LOW));
+        pack.alarms.put(Alarm.PACK_TEMPERATURE_HIGH, BitUtil.bit(warning, 4) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.PACK_TEMPERATURE_HIGH, BitUtil.bit(warning, 5) ? AlarmLevel.ALARM : pack.alarms.get(Alarm.PACK_TEMPERATURE_HIGH));
+
+        // warning 5
+        warning = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
+        pack.alarms.put(Alarm.CHARGE_CURRENT_HIGH, BitUtil.bit(warning, 0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.CHARGE_CURRENT_HIGH, BitUtil.bit(warning, 1) ? AlarmLevel.ALARM : pack.alarms.get(Alarm.CHARGE_CURRENT_HIGH));
+        pack.alarms.put(Alarm.DISCHARGE_CURRENT_HIGH, BitUtil.bit(warning, 2) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.DISCHARGE_CURRENT_HIGH, BitUtil.bit(warning, 3) ? AlarmLevel.ALARM : pack.alarms.get(Alarm.DISCHARGE_CURRENT_HIGH));
+        pack.alarms.put(Alarm.FAILURE_OTHER, BitUtil.bit(warning, 1) ? AlarmLevel.ALARM : pack.alarms.get(Alarm.FAILURE_OTHER));
+        pack.alarms.put(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, BitUtil.bit(warning, 5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.FAILURE_OTHER, BitUtil.bit(warning, 6) ? AlarmLevel.ALARM : pack.alarms.get(Alarm.FAILURE_OTHER));
+        pack.alarms.put(Alarm.FAILURE_OTHER, BitUtil.bit(warning, 7) ? AlarmLevel.ALARM : pack.alarms.get(Alarm.FAILURE_OTHER));
+
+        // warning 6
+        warning = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
+        pack.alarms.put(Alarm.CHARGE_VOLTAGE_HIGH, BitUtil.bit(warning, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.SOC_LOW, BitUtil.bit(warning, 2) ? AlarmLevel.WARNING : AlarmLevel.NONE);
+        pack.alarms.put(Alarm.SOC_LOW, BitUtil.bit(warning, 3) ? AlarmLevel.ALARM : pack.alarms.get(Alarm.SOC_LOW));
+        pack.alarms.put(Alarm.FAILURE_OTHER, BitUtil.bit(warning, 4) ? AlarmLevel.ALARM : pack.alarms.get(Alarm.FAILURE_OTHER));
+        pack.alarms.put(Alarm.FAILURE_OTHER, BitUtil.bit(warning, 5) ? AlarmLevel.ALARM : pack.alarms.get(Alarm.FAILURE_OTHER));
+        pack.alarms.put(Alarm.FAILURE_OTHER, BitUtil.bit(warning, 6) ? AlarmLevel.ALARM : pack.alarms.get(Alarm.FAILURE_OTHER));
+        pack.alarms.put(Alarm.FAILURE_OTHER, BitUtil.bit(warning, 7) ? AlarmLevel.ALARM : pack.alarms.get(Alarm.FAILURE_OTHER));
+
+        // power status
+        warning = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
+
+        // equalization status
+        final byte balance1 = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
+
+        for (cellNo = 0; cellNo < 8; cellNo++) {
+            pack.cellBalanceState[cellNo] = BitUtil.bit(warning, cellNo);
+        }
+
+        final byte balance2 = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
+        for (cellNo = 8; cellNo < 16; cellNo++) {
+            pack.cellBalanceState[cellNo] = BitUtil.bit(warning, cellNo - 8);
+        }
+
+        pack.cellBalanceActive = balance1 + balance2 > 0;
+
+        // system status
+        warning = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
+        pack.dischargeMOSState = BitUtil.bit(warning, 0);
+        pack.chargeMOSState = BitUtil.bit(warning, 1);
+        final boolean sleep = BitUtil.bit(warning, 4);
+        pack.chargeDischargeStatus = pack.chargeMOSState ? 1 : pack.dischargeMOSState ? 2 : sleep ? 3 : 0;
+
+        // warning 7
+        warning = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
+
+        if (warning != 0x00 && pack.alarms.get(Alarm.FAILURE_OTHER) != AlarmLevel.ALARM) {
+            pack.alarms.put(Alarm.FAILURE_OTHER, AlarmLevel.WARNING);
+        }
+
+        // warning 8
+        warning = ByteAsciiConverter.convertAsciiBytesToByte(data.get(), data.get());
+
+        if (warning != 0x00 && pack.alarms.get(Alarm.FAILURE_OTHER) != AlarmLevel.ALARM) {
+            pack.alarms.put(Alarm.FAILURE_OTHER, AlarmLevel.WARNING);
+        }
+
+    }
+
+
+    private void setAlarm(final BatteryPack pack, final byte warning, final Alarm alarmLow, final Alarm alarmHigh, final AlarmLevel level) {
+        switch (warning) {
+            case 0x00:
+                pack.alarms.put(alarmLow, AlarmLevel.NONE);
+                pack.alarms.put(alarmLow, AlarmLevel.NONE);
+            break;
+            case 0x01:
+                pack.alarms.put(alarmLow, level);
+            break;
+            case 0x02:
+                pack.alarms.put(alarmLow, level);
+            break;
+            default:
+            break;
+        }
     }
 
 
