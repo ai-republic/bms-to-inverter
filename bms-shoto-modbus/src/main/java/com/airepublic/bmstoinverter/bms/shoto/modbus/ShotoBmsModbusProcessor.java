@@ -62,7 +62,7 @@ public class ShotoBmsModbusProcessor extends BMS {
         frame.getInt(); // numRegisters
         final BatteryPack pack = getBatteryPack(bmsId);
 
-        pack.packVoltage = frame.getChar() / 10;
+        pack.packVoltage = (char) frame.getInt() / 10;
     }
 
 
@@ -72,8 +72,8 @@ public class ShotoBmsModbusProcessor extends BMS {
         frame.getInt(); // numRegisters
         final BatteryPack pack = getBatteryPack(bmsId);
 
-        pack.tempMax = frame.getShort();
-        pack.tempMin = frame.getShort();
+        pack.tempMax = (short) frame.getInt();
+        pack.tempMin = (short) frame.getInt();
     }
 
 
@@ -84,11 +84,11 @@ public class ShotoBmsModbusProcessor extends BMS {
         final BatteryPack pack = getBatteryPack(bmsId);
 
         for (int i = 0; i < 16; i++) {
-            pack.cellTemperature[i] = frame.getShort();
+            pack.cellTemperature[i] = (short) frame.getInt();
         }
 
         for (int i = 0; i < 16; i++) {
-            pack.cellVmV[i] = frame.getChar();
+            pack.cellVmV[i] = (char) frame.getInt();
         }
     }
 
@@ -100,11 +100,11 @@ public class ShotoBmsModbusProcessor extends BMS {
         frame.getInt(); // numRegisters
         final BatteryPack pack = getBatteryPack(bmsId);
 
-        final char hardwarVersion = frame.getChar(); // hardware version
+        final char hardwarVersion = (char) frame.getInt(); // hardware version
         // split the hardware version into major and minor each one byte as value
         pack.hardwareVersion = String.format("%d.%d", hardwarVersion >> 8 & 0xFF, hardwarVersion & 0xFF);
 
-        final char softwareVersion = frame.getChar(); // software version
+        final char softwareVersion = (char) frame.getInt(); // software version
         // split the software version into major and minor each one byte as ascii
         pack.softwareVersion = String.format("%c.%c", softwareVersion >> 8 & 0xFF, softwareVersion & 0xFF);
     }
@@ -116,7 +116,7 @@ public class ShotoBmsModbusProcessor extends BMS {
         frame.getInt(); // numRegisters
         final BatteryPack pack = getBatteryPack(bmsId);
 
-        pack.numberOfCells = frame.getChar();
+        pack.numberOfCells = (char) frame.getInt();
     }
 
 
@@ -127,7 +127,7 @@ public class ShotoBmsModbusProcessor extends BMS {
         frame.getInt(); // numRegisters
         final BatteryPack pack = getBatteryPack(bmsId);
 
-        pack.minPackVoltageLimit = frame.getChar() / 100;
+        pack.minPackVoltageLimit = (char) frame.getInt() / 100;
     }
 
 
@@ -139,14 +139,14 @@ public class ShotoBmsModbusProcessor extends BMS {
         final BatteryPack pack = getBatteryPack(bmsId);
         pack.alarms.clear();
 
-        pack.packCurrent = frame.getShort() / 10;
-        pack.ratedCapacitymAh = frame.getChar() * 10;
-        pack.bmsCycles = frame.getChar();
-        pack.packSOC = frame.getChar() / 10;
-        pack.packSOH = frame.getChar() / 10;
-        pack.numOfTempSensors = frame.getChar();
+        pack.packCurrent = (short) frame.getInt() / 10;
+        pack.ratedCapacitymAh = (char) frame.getInt() * 10;
+        pack.bmsCycles = (char) frame.getInt();
+        pack.packSOC = (char) frame.getInt() / 10;
+        pack.packSOH = (char) frame.getInt() / 10;
+        pack.numOfTempSensors = (char) frame.getInt();
 
-        char alarms = frame.getChar();
+        char alarms = (char) frame.getInt();
         byte highByte = (byte) (alarms >> 8);
         pack.alarms.put(Alarm.CELL_VOLTAGE_LOW, BitUtil.bit(highByte, 3) ? AlarmLevel.WARNING : AlarmLevel.NONE);
         pack.alarms.put(Alarm.FAILURE_OTHER, BitUtil.bit(highByte, 4) || pack.alarms.containsKey(Alarm.FAILURE_OTHER) ? AlarmLevel.ALARM : AlarmLevel.NONE);
@@ -161,7 +161,7 @@ public class ShotoBmsModbusProcessor extends BMS {
         pack.alarms.put(Alarm.FAILURE_OTHER, BitUtil.bit(lowByte, 3) || pack.alarms.containsKey(Alarm.FAILURE_OTHER) ? AlarmLevel.ALARM : AlarmLevel.NONE);
         pack.alarms.put(Alarm.FAILURE_OTHER, BitUtil.bit(lowByte, 4) || pack.alarms.containsKey(Alarm.FAILURE_OTHER) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
-        alarms = frame.getChar();
+        alarms = (char) frame.getInt();
         highByte = (byte) (alarms >> 8);
         pack.alarms.put(Alarm.FAILURE_SENSOR_DISCHARGE_MODULE_TEMPERATURE, BitUtil.bit(highByte, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
         pack.alarms.put(Alarm.FAILURE_SENSOR_DISCHARGE_MODULE_TEMPERATURE, BitUtil.bit(highByte, 1) || pack.alarms.containsKey(Alarm.FAILURE_SENSOR_DISCHARGE_MODULE_TEMPERATURE) ? AlarmLevel.ALARM : AlarmLevel.NONE);
@@ -178,7 +178,7 @@ public class ShotoBmsModbusProcessor extends BMS {
         pack.alarms.put(Alarm.CHARGE_TEMPERATURE_HIGH, BitUtil.bit(lowByte, 6) ? AlarmLevel.WARNING : AlarmLevel.NONE);
         pack.alarms.put(Alarm.DISCHARGE_TEMPERATURE_HIGH, BitUtil.bit(lowByte, 7) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
-        alarms = frame.getChar();
+        alarms = (char) frame.getInt();
         highByte = (byte) (alarms >> 8);
         pack.alarms.put(Alarm.PACK_TEMPERATURE_LOW, BitUtil.bit(highByte, 0) ? AlarmLevel.WARNING : AlarmLevel.NONE);
         pack.alarms.put(Alarm.PACK_TEMPERATURE_HIGH, BitUtil.bit(highByte, 1) ? AlarmLevel.WARNING : AlarmLevel.NONE);
@@ -204,8 +204,8 @@ public class ShotoBmsModbusProcessor extends BMS {
         pack.alarms.put(Alarm.CHARGE_TEMPERATURE_LOW, BitUtil.bit(lowByte, 6) || pack.alarms.containsKey(Alarm.CHARGE_TEMPERATURE_LOW) ? AlarmLevel.WARNING : AlarmLevel.NONE);
         pack.alarms.put(Alarm.CHARGE_TEMPERATURE_LOW, BitUtil.bit(lowByte, 7) || pack.alarms.containsKey(Alarm.CHARGE_TEMPERATURE_LOW) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
-        alarms = frame.getChar();
-        alarms = frame.getChar();
+        alarms = (char) frame.getInt();
+        alarms = (char) frame.getInt();
         highByte = (byte) (alarms >> 8);
         pack.alarms.put(Alarm.ENCASING_TEMPERATURE_HIGH, BitUtil.bit(highByte, 0) || pack.alarms.containsKey(Alarm.ENCASING_TEMPERATURE_HIGH) ? AlarmLevel.WARNING : AlarmLevel.NONE);
         pack.alarms.put(Alarm.ENCASING_TEMPERATURE_LOW, BitUtil.bit(highByte, 1) || pack.alarms.containsKey(Alarm.ENCASING_TEMPERATURE_LOW) ? AlarmLevel.WARNING : AlarmLevel.NONE);
@@ -225,7 +225,7 @@ public class ShotoBmsModbusProcessor extends BMS {
         pack.alarms.put(Alarm.CHARGE_TEMPERATURE_HIGH, BitUtil.bit(lowByte, 6) || pack.alarms.containsKey(Alarm.CHARGE_TEMPERATURE_HIGH) ? AlarmLevel.WARNING : AlarmLevel.NONE);
         pack.alarms.put(Alarm.CHARGE_TEMPERATURE_LOW, BitUtil.bit(lowByte, 7) || pack.alarms.containsKey(Alarm.CHARGE_TEMPERATURE_LOW) ? AlarmLevel.WARNING : AlarmLevel.NONE);
 
-        final char protection = frame.getChar();
+        final char protection = (char) frame.getInt();
         highByte = (byte) (protection >> 8);
         pack.alarms.put(Alarm.SOC_HIGH, BitUtil.bit(highByte, 0) || pack.alarms.containsKey(Alarm.SOC_HIGH) ? AlarmLevel.ALARM : AlarmLevel.NONE);
 
