@@ -49,14 +49,14 @@ public class ShotoBmsModbusProcessorTest {
 
     private ByteBuffer createFromString(final String str) {
         final String[] byteValues = str.split(" ");
-        final ByteBuffer buffer = ByteBuffer.allocate(3 * Integer.BYTES + byteValues.length - 3);
+        final ByteBuffer buffer = ByteBuffer.allocate(byteValues.length);
 
         // Convert the first three byte values to integers
         for (int i = 0; i < 3; i++) {
-            buffer.putInt(Integer.parseInt(byteValues[i], 16));
+            buffer.put((byte) Integer.parseInt(byteValues[i], 16));
         }
 
-        // Convert the remaining byte values to bytes
+        // Convert the remaining s values to bytes
         for (int i = 3; i < byteValues.length; i++) {
             buffer.put((byte) Integer.parseInt(byteValues[i], 16));
         }
@@ -69,9 +69,10 @@ public class ShotoBmsModbusProcessorTest {
     @Test
     public void testCollectData() throws IOException {
         // Mock the response frames for consecutive calls
-        final ByteBuffer packVoltageResponse = createFromString("02 03 02 14 AB B2 FB");
-        final ByteBuffer minMaxTempResponse = createFromString("02 03 04 00 0F 00 0E 78 F4");
-        final ByteBuffer cellVoltageAndTemperatureResponse = createFromString("02 03 40 00 0F 00 0F 00 0E 00 0E 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0C E5 0C E8 0C E7 0C E6 0C E9 0C E6 0C E8 0C E8 0C E4 0C E8 0C E7 0C E9 0C EA 0C E9 0C E9 0C E9 2C 2B");
+        final ByteBuffer packVoltageResponse = convert(createFromString("02 03 02 14 AB B2 FB"));
+        System.out.println("packVoltageResponse: " + Port.printBuffer(packVoltageResponse));
+        final ByteBuffer minMaxTempResponse = convert(createFromString("02 03 04 00 0F 00 0E 78 F4"));
+        final ByteBuffer cellVoltageAndTemperatureResponse = convert(createFromString("02 03 40 00 0F 00 0F 00 0E 00 0E 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 0C E5 0C E8 0C E7 0C E6 0C E9 0C E6 0C E8 0C E8 0C E4 0C E8 0C E7 0C E9 0C EA 0C E9 0C E9 0C E9 2C 2B"));
 
         // Define the return values for consecutive calls
         when(port.receiveFrame()).thenReturn(packVoltageResponse).thenReturn(minMaxTempResponse).thenReturn(cellVoltageAndTemperatureResponse);
@@ -98,4 +99,19 @@ public class ShotoBmsModbusProcessorTest {
         assertEquals(15, batteryPack.cellTemperature[0]);
     }
 
+
+    private ByteBuffer convert(final ByteBuffer frame) {
+        final ByteBuffer buffer = ByteBuffer.allocate(frame.get(2) * 4 + 12);
+        buffer.putInt(frame.get());
+        buffer.putInt(frame.get());
+        buffer.putInt(frame.get());
+
+        while (frame.position() < frame.limit()) {
+            buffer.putInt(frame.getChar());
+        }
+
+        buffer.rewind();
+
+        return buffer;
+    }
 }
