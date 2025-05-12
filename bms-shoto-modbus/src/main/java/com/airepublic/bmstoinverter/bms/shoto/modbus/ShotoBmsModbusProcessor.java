@@ -62,7 +62,7 @@ public class ShotoBmsModbusProcessor extends BMS {
         frame.getInt(); // numRegisters
         final BatteryPack pack = getBatteryPack(bmsId);
 
-        System.out.println("readBatteryVoltage: " + Port.printBuffer(frame));
+        LOG.info("readBatteryVoltage: " + Port.printBuffer(frame));
 
         pack.packVoltage = (char) frame.getInt() / 10;
     }
@@ -74,7 +74,7 @@ public class ShotoBmsModbusProcessor extends BMS {
         frame.getInt(); // numRegisters
         final BatteryPack pack = getBatteryPack(bmsId);
 
-        System.out.println("readCellMinMaxTemperature: " + Port.printBuffer(frame));
+        LOG.info("readCellMinMaxTemperature: " + Port.printBuffer(frame));
 
         pack.tempMax = (short) frame.getInt();
         pack.tempMin = (short) frame.getInt();
@@ -87,7 +87,7 @@ public class ShotoBmsModbusProcessor extends BMS {
         frame.getInt(); // numRegisters
         final BatteryPack pack = getBatteryPack(bmsId);
 
-        System.out.println("readCellVoltageAndTemperature: " + Port.printBuffer(frame));
+        LOG.info("readCellVoltageAndTemperature: " + Port.printBuffer(frame));
 
         for (int i = 0; i < 16; i++) {
             pack.cellTemperature[i] = (short) frame.getInt();
@@ -106,7 +106,7 @@ public class ShotoBmsModbusProcessor extends BMS {
         frame.getInt(); // numRegisters
         final BatteryPack pack = getBatteryPack(bmsId);
 
-        System.out.println("readHardwareSoftwareVersion: " + Port.printBuffer(frame));
+        LOG.info("readHardwareSoftwareVersion: " + Port.printBuffer(frame));
 
         final char hardwarVersion = (char) frame.getInt(); // hardware version
         // split the hardware version into major and minor each one byte as value
@@ -124,7 +124,7 @@ public class ShotoBmsModbusProcessor extends BMS {
         frame.getInt(); // numRegisters
         final BatteryPack pack = getBatteryPack(bmsId);
 
-        System.out.println("readNumberOfCells: " + Port.printBuffer(frame));
+        LOG.info("readNumberOfCells: " + Port.printBuffer(frame));
 
         pack.numberOfCells = (char) frame.getInt();
     }
@@ -137,7 +137,7 @@ public class ShotoBmsModbusProcessor extends BMS {
         frame.getInt(); // numRegisters
         final BatteryPack pack = getBatteryPack(bmsId);
 
-        System.out.println("readMaxDischargeVoltage: " + Port.printBuffer(frame));
+        LOG.info("readMaxDischargeVoltage: " + Port.printBuffer(frame));
 
         pack.minPackVoltageLimit = (char) frame.getInt() / 100;
     }
@@ -150,7 +150,7 @@ public class ShotoBmsModbusProcessor extends BMS {
         frame.getInt(); // numRegisters
         final BatteryPack pack = getBatteryPack(bmsId);
 
-        System.out.println("readBatteryStatus: " + Port.printBuffer(frame));
+        LOG.info("readBatteryStatus: " + Port.printBuffer(frame));
 
         pack.alarms.clear();
 
