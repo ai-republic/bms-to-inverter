@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -43,7 +44,7 @@ public class PylonHVBmsCANProcessor extends BMS {
             // broadcast system equipment information
             sendMessage(port, 0x00004200, (byte) 2);
         } catch (final Throwable t) {
-
+            LOG.error("Error during send message", t);
         }
     }
 
@@ -63,7 +64,15 @@ public class PylonHVBmsCANProcessor extends BMS {
             skip--;
 
             for (int i = 0; i < frameCount; i++) {
-                final ByteBuffer receiveFrame = port.receiveFrame();
+                ByteBuffer receiveFrame = null;
+                try {
+                    receiveFrame = port.receiveFrame();
+                } catch (final IOException e) {
+                    LOG.debug("Error during receive frame", e);
+
+                    continue;
+                }
+
 
                 if (receiveFrame != null) {
                     LOG.debug("BMS RECEIVED: {}", Port.printBuffer(receiveFrame));
@@ -76,7 +85,7 @@ public class PylonHVBmsCANProcessor extends BMS {
             }
         } while (framesToBeReceived > 0 & skip > 0);
 
-        LOG.debug("Command 0x{} successfully sent and received!", HexUtil.toHexDigits(frameId));
+        LOG.info("Command {} successfully sent and received! 0x{}", HexUtil.toHexDigits(frameId), HexUtil.toHexDigits(cmd));
         return readBuffers;
     }
 
@@ -86,9 +95,9 @@ public class PylonHVBmsCANProcessor extends BMS {
             final int frameId = receiveFrame.getInt();
             final int batteryId = frameId & 0x0000000F;
             final BatteryPack pack = getBatteryPack(batteryId);
-            final byte[] dataBytes = new byte[receiveFrame.get(4)];
-            receiveFrame.get(dataBytes, 0, dataBytes.length);
-
+            final byte[] dataBytes = new byte[8];
+            receiveFrame.position(8);
+            receiveFrame.get(dataBytes);
             final ByteBuffer data = ByteBuffer.wrap(dataBytes).order(ByteOrder.LITTLE_ENDIAN);
 
             switch (frameId & 0xFFFFFFF0) {
