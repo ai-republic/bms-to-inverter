@@ -235,7 +235,7 @@ public class Configurator extends JFrame {
         out.append("Temp directory is: " + tempDirectory + "\n");
         final Path srcDirectory = tempDirectory.resolve("bms-to-inverter-main");
         final Path srcZip = tempDirectory.resolve("bms-to-inverter.zip");
-        final Path mavenDirectory = tempDirectory.resolve("apache-maven-3.9.6");
+        final Path mavenDirectory = tempDirectory.resolve("apache-maven-3.9.9");
         final Path mavenZip = tempDirectory.resolve("maven.zip");
 
         // clean up previous directories
@@ -254,7 +254,7 @@ public class Configurator extends JFrame {
         // check if previous maven is present
         if (!Files.exists(mavenDirectory)) {
             out.append("Downloading maven...");
-            downloadFile(new URL("https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.zip"), mavenZip.toFile());
+            downloadFile(new URL("https://archive.apache.org/dist/maven/maven-3/3.9.9/binaries/apache-maven-3.9.9-bin.zip"), mavenZip.toFile());
             out.append("done\n");
             unzip(mavenZip, tempDirectory);
             Files.delete(mavenZip);

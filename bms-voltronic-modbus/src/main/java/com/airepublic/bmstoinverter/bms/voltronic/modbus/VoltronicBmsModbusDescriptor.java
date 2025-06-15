@@ -8,23 +8,21 @@
  *
  * @author Torsten Oltmanns - bms-to-inverter''AT''gmail.com
  */
-package com.airepublic.bmstoinverter.bms.pylon.rs485;
+package com.airepublic.bmstoinverter.bms.voltronic.modbus;
 
 import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.BMSConfig;
 import com.airepublic.bmstoinverter.core.BMSDescriptor;
 import com.airepublic.bmstoinverter.core.Port;
-import com.airepublic.bmstoinverter.core.protocol.rs485.FrameDefinition;
-import com.airepublic.bmstoinverter.protocol.rs485.JSerialCommPort;
-import com.fazecast.jSerialComm.SerialPort;
+import com.airepublic.bmstoinverter.protocol.modbus.J2ModMasterPort;
 
 /**
- * The {@link BMSDescriptor} for the Pylon BMS using the RS485 protocol.
+ * The {@link BMSDescriptor} for the Voltronic BMS using the Modbus protocol.
  */
-public class PylonBmsRS485Descriptor implements BMSDescriptor {
+public class VoltronicBmsModbusDescriptor implements BMSDescriptor {
     @Override
     public String getName() {
-        return "PYLON_RS485";
+        return "VOLTRONIC_MODBUS";
     }
 
 
@@ -36,13 +34,13 @@ public class PylonBmsRS485Descriptor implements BMSDescriptor {
 
     @Override
     public Class<? extends BMS> getBMSClass() {
-        return PylonBmsRS485Processor.class;
+        return VoltronicBmsModbusProcessor.class;
     }
 
 
     @Override
     public Port createPort(final BMSConfig config) {
-        final Port port = new JSerialCommPort(config.getPortLocator(), config.getBaudRate(), 8, 1, SerialPort.NO_PARITY, new byte[] { (byte) 165 }, FrameDefinition.create("SOACCLDVO"));
+        final Port port = new J2ModMasterPort(config.getPortLocator(), config.getBaudRate());
         return port;
     }
 
