@@ -119,7 +119,7 @@ public class PylonInverterCANProcessor extends Inverter {
 
     // 0x35C
     private ByteBuffer createChargeDischargeFlags(final BatteryPack pack) {
-        final ByteBuffer frame = prepareSendFrame(0x035E);
+        final ByteBuffer frame = prepareSendFrame(0x035C);
         byte flags = 0x00;
 
         // request full charge
