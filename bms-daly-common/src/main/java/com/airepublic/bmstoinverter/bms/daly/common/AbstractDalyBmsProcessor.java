@@ -29,7 +29,7 @@ import com.airepublic.bmstoinverter.core.TooManyInvalidFramesException;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.util.HexUtil;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 /**
  * An abstraction for the Daly {@link BMS} since the RS485 and CAN communication is very similar.

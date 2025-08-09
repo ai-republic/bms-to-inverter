@@ -26,7 +26,7 @@ import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.util.BitUtil;
 
-import jakarta.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.ApplicationScoped;
 
 /**
  * The class to handle CAN messages for a Goodwe HV {@link Inverter}.

@@ -24,7 +24,7 @@ import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.util.BitUtil;
 import com.airepublic.bmstoinverter.core.util.ByteAsciiConverter;
 
-import jakarta.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.ApplicationScoped;
 
 /**
  * The class to handle RS485 messages for Pylontech {@link Inverter}.

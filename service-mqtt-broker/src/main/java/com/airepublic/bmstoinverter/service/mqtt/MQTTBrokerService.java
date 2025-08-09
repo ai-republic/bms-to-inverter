@@ -29,7 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.service.IMQTTBrokerService;
 
-import jakarta.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.ApplicationScoped;
 
 /**
  * The implementation of the {@link IMQTTBrokerService} using the ActiveMQ Artemis implementation.

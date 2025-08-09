@@ -25,7 +25,7 @@ import com.airepublic.bmstoinverter.protocol.modbus.J2ModSlavePort;
 import com.ghgande.j2mod.modbus.procimg.SimpleInputRegister;
 import com.ghgande.j2mod.modbus.procimg.SimpleProcessImage;
 
-import jakarta.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.ApplicationScoped;
 
 /**
  * The class to handle Modbus messages for a Huawei {@link Inverter}.

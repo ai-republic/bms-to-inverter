@@ -20,8 +20,8 @@ import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.inject.Inject;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 /**
  * The class to handle RS485 messages for a Growatt low voltage (12V/24V/48V) {@link Inverter}.

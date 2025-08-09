@@ -19,8 +19,8 @@ import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Default;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Default;
 
 /**
  * The processor class for a Dummy {@link Inverter}.

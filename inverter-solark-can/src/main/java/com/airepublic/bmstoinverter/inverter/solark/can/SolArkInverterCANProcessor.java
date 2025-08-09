@@ -24,7 +24,7 @@ import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 import com.airepublic.bmstoinverter.core.util.BitUtil;
 
-import jakarta.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.ApplicationScoped;
 
 /**
  * The class to handle CAN messages for SolArk {@link Inverter}.

@@ -1,13 +1,11 @@
 package com.airepublic.bmstoinverter.webserver;
 
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
 
-import org.eclipse.jetty.http.HttpHeader;
-import org.eclipse.jetty.security.Constraint;
+import org.eclipse.jetty.security.ConstraintMapping;
+import org.eclipse.jetty.security.ConstraintSecurityHandler;
 import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.security.UserStore;
@@ -15,20 +13,16 @@ import org.eclipse.jetty.security.authentication.FormAuthenticator;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.Request;
-import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
-import org.eclipse.jetty.server.handler.SecuredRedirectHandler;
-import org.eclipse.jetty.session.SessionHandler;
-import org.eclipse.jetty.util.BufferUtil;
-import org.eclipse.jetty.util.Callback;
+import org.eclipse.jetty.server.session.SessionHandler;
 import org.eclipse.jetty.util.resource.Resource;
-import org.eclipse.jetty.util.resource.ResourceFactory;
-import org.eclipse.jetty.util.resource.Resources;
+import org.eclipse.jetty.util.security.Constraint;
 import org.eclipse.jetty.util.security.Credential;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.slf4j.Logger;
@@ -37,7 +31,6 @@ import org.slf4j.LoggerFactory;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.service.IWebServerService;
-import com.airepublic.bmstoinverter.core.util.InputStreamUtil;
 import com.google.gson.Gson;
 
 public class WebServer implements IWebServerService {
@@ -62,143 +55,104 @@ public class WebServer implements IWebServerService {
     public void start(final int httpPort, final int httpsPort, final EnergyStorage energyStorage) {
         server = new Server();
 
+        // Setup HTTP Configuration with security settings
+        final HttpConfiguration httpConfig = new HttpConfiguration();
+        httpConfig.setSecurePort(httpsPort);
+        httpConfig.setSecureScheme("https");
+        httpConfig.setSendServerVersion(false);
+        httpConfig.setSendDateHeader(false);
+
         // Setup HTTP Connector
-        final HttpConfiguration httpConf = new HttpConfiguration();
-        httpConf.setSecurePort(httpsPort);
-        httpConf.setSecureScheme("https");
+        final ServerConnector httpConnector = new ServerConnector(server, new HttpConnectionFactory(httpConfig));
+        httpConnector.setPort(httpPort);
+        server.addConnector(httpConnector);
 
-        final ServerConnector connector = new ServerConnector(server, new HttpConnectionFactory(httpConf));
-        connector.setPort(httpPort);
-
-        server.addConnector(connector);
-
-        // Setup SSL
+        // Setup SSL Configuration
         final SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
-        sslContextFactory.setKeyStoreResource(findKeyStore(ResourceFactory.of(server)));
+        sslContextFactory.setKeyStorePath(findKeyStore());
         sslContextFactory.setKeyStorePassword("changeit");
         sslContextFactory.setKeyManagerPassword("changeit");
-        sslContextFactory.setSniRequired(false);
-        sslContextFactory.setWantClientAuth(true); // Turn on
-        // javax.net.ssl.SSLEngine.wantClientAuth
-        sslContextFactory.setNeedClientAuth(false); // Turn on
-        // javax.net.ssl.SSLEngine.needClientAuth
+        sslContextFactory.setWantClientAuth(true);
+        sslContextFactory.setNeedClientAuth(false);
 
         // Setup HTTPS Configuration
-        final HttpConfiguration httpsConf = new HttpConfiguration();
-        httpsConf.setSecureScheme("https");
-        httpsConf.setSecurePort(httpsPort);
-        final SecureRequestCustomizer customizer = new SecureRequestCustomizer();
-        customizer.setSniHostCheck(false);
-        httpsConf.addCustomizer(customizer);
+        final HttpConfiguration httpsConfig = new HttpConfiguration(httpConfig);
+        httpsConfig.addCustomizer(new SecureRequestCustomizer());
 
-        // Establish the HTTPS ServerConnector
+        // Setup HTTPS Connector
         final ServerConnector httpsConnector = new ServerConnector(server,
                 new SslConnectionFactory(sslContextFactory, "http/1.1"),
-                new HttpConnectionFactory(httpsConf));
+                new HttpConnectionFactory(httpsConfig));
         httpsConnector.setPort(httpsPort);
-
         server.addConnector(httpsConnector);
 
-        // Add a Handlers for requests
-        final Handler.Sequence handlers = new Handler.Sequence();
-        Handler finalHandler = handlers;
-
+        // Create a proper session handler first
         final SessionHandler sessionHandler = new SessionHandler();
+        sessionHandler.setSessionCookie("JSESSIONID");
+        sessionHandler.setSessionIdPathParameterName("none"); // Don't use URL rewriting
+        sessionHandler.setHttpOnly(true); // Better security
+        sessionHandler.setSecureRequestOnly(true); // For HTTPS
+        
+        // Create the main handlers
+        HandlerList handlers = new HandlerList();
+
+        // Add SecuredRedirectHandler first
+        handlers.addHandler(new org.eclipse.jetty.server.handler.SecuredRedirectHandler());
+
+        // ResourceHandler for static files
+        final ResourceHandler resourceHandler = new ResourceHandler();
+        resourceHandler.setBaseResource(Resource.newClassPathResource("/static/"));
+        resourceHandler.setDirectoriesListed(false);
+        resourceHandler.setWelcomeFiles(new String[] { "index.html" });
+
+        // API Handler
+        AbstractHandler apiHandler = new AbstractHandler() {
+            @Override
+            public void handle(String target, org.eclipse.jetty.server.Request baseRequest, 
+                    javax.servlet.http.HttpServletRequest request,
+                    javax.servlet.http.HttpServletResponse response) throws java.io.IOException, javax.servlet.ServletException {
+                final String path = request.getRequestURI();
+                if (path.equals("/favicon.ico")) {
+                    Resource favicon = Resource.newClassPathResource("static/favicon.ico");
+                    if (favicon != null && favicon.exists()) {
+                        response.setContentType("image/x-icon");
+                        org.eclipse.jetty.util.IO.copy(favicon.getInputStream(), response.getOutputStream());
+                        baseRequest.setHandled(true);
+                    }
+                } else if (path.contains("/data")) {
+                    String content = energyStorage.toJson();
+                    response.setContentType("application/json; charset=utf-8");
+                    response.setHeader("Access-Control-Allow-Origin", "http://localhost, https://localhost");
+                    response.getWriter().write(content);
+                    baseRequest.setHandled(true);
+                } else if (path.contains("/alarmMessages")) {
+                    response.setContentType("application/json; charset=utf-8");
+                    response.setHeader("Access-Control-Allow-Origin", "http://localhost, https://localhost");
+                    response.getWriter().write(alarmMessages);
+                    baseRequest.setHandled(true);
+                }
+            }
+        };
+
+        // Create content handlers
+        HandlerList contentHandlers = new HandlerList();
+        contentHandlers.addHandler(resourceHandler);
+        contentHandlers.addHandler(apiHandler);
 
         final String username = System.getProperty("webserver.username", "");
         final String password = System.getProperty("webserver.password", "");
 
         if (!username.trim().isEmpty() && !password.trim().isEmpty()) {
-            // Set up security and wrap all other handlers with security
+            // Set up security
             final SecurityHandler securityHandler = createSecurityHandler(username, password);
-            securityHandler.setHandler(handlers);
-            finalHandler = securityHandler;
+            securityHandler.setHandler(contentHandlers);
+            handlers.addHandler(securityHandler);
+        } else {
+            handlers.addHandler(contentHandlers);
         }
 
-        handlers.addHandler(new SecuredRedirectHandler());
-
-        final ResourceFactory resourceFactory = ResourceFactory.of(server);
-        final Resource rootResourceDir = resourceFactory.newClassLoaderResource("/static/");
-
-        if (!Resources.isReadableDirectory(rootResourceDir)) {
-            LOG.error("Unable to find /static/ classloader directory!");
-            stop();
-            return;
-        }
-
-        final ResourceHandler rootResourceHandler = new ResourceHandler();
-        rootResourceHandler.setBaseResource(rootResourceDir);
-        rootResourceHandler.setDirAllowed(false);
-        rootResourceHandler.setWelcomeFiles("index.html");
-
-        handlers.addHandler(rootResourceHandler);
-
-        handlers.addHandler(new Handler.Abstract() {
-            @Override
-            public boolean handle(final Request request, final Response response, final Callback callback) throws Exception {
-                final String path = request.getHttpURI().getPath();
-
-                // if (path.trim().isEmpty() || path.equals("/") || path.equals("/index.html")) {
-                // final Path indexHtml =
-                // ResourceFactory.of(server).newClassLoaderResource("static/index.html").getPath();
-                // final String content = Files.readString(indexHtml, StandardCharsets.UTF_8);
-                // response.getHeaders().put(HttpHeader.CONTENT_TYPE, "text/html; charset=utf-8");
-                // response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN,
-                // "http://localhost, https://localhost");
-                // response.write(true, BufferUtil.toBuffer(content, StandardCharsets.UTF_8),
-                // callback);
-                // return true;
-                // } else if (path.contains("/login.html")) {
-                // final Path indexHtml =
-                // ResourceFactory.of(server).newClassLoaderResource("static/login.html").getPath();
-                // final String content = Files.readString(indexHtml, StandardCharsets.UTF_8);
-                // response.getHeaders().put(HttpHeader.CONTENT_TYPE, "text/html; charset=utf-8");
-                // response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN,
-                // "http://localhost, https://localhost");
-                // response.write(true, BufferUtil.toBuffer(content, StandardCharsets.UTF_8),
-                // callback);
-                // return true;
-                // } else if (path.contains("/styles.css")) {
-                // final Path indexHtml =
-                // ResourceFactory.of(server).newClassLoaderResource("static/styles.css").getPath();
-                // final String content = Files.readString(indexHtml, StandardCharsets.UTF_8);
-                // response.getHeaders().put(HttpHeader.CONTENT_TYPE, "text/css; charset=utf-8");
-                // response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN,
-                // "http://localhost, https://localhost");
-                // response.write(true, BufferUtil.toBuffer(content, StandardCharsets.UTF_8),
-                // callback);
-                // return true;
-                // } else if (path.contains("/favicon.ico")) {
-                // return true;
-                // } else
-                if (path.equals("/favicon.ico")) {
-                    final Resource favicon = ResourceFactory.of(server).newClassLoaderResource("static/favicon.ico");
-                    if (favicon.exists()) {
-                        try (InputStream is = favicon.newInputStream()) {
-                            response.getHeaders().put(HttpHeader.CONTENT_TYPE, "image/x-icon");
-                            response.write(true, BufferUtil.toBuffer(InputStreamUtil.readAllBytes(is)), callback);
-                        }
-                        return true;
-                    }
-                } else if (path.contains("/data")) {
-                    final String content = energyStorage.toJson();
-                    response.getHeaders().put(HttpHeader.CONTENT_TYPE, "text/json; charset=utf-8");
-                    response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN, "http://localhost, https://localhost");
-                    response.write(true, BufferUtil.toBuffer(content, StandardCharsets.UTF_8), callback);
-                    return true;
-                } else if (path.contains("/alarmMessages")) {
-                    response.getHeaders().put(HttpHeader.CONTENT_TYPE, "text/json; charset=utf-8");
-                    response.getHeaders().put(HttpHeader.ACCESS_CONTROL_ALLOW_ORIGIN, "http://localhost, https://localhost");
-                    response.write(true, BufferUtil.toBuffer(alarmMessages, StandardCharsets.UTF_8),
-                            callback);
-                    return true;
-                }
-
-                return false;
-            }
-        });
-
-        sessionHandler.setHandler(finalHandler);
+        // Set the session handler as the top-level handler
+        sessionHandler.setHandler(handlers);
         server.setHandler(sessionHandler);
 
         LOG.info("Starting webserver on ports " + httpPort + ":" + httpsPort);
@@ -210,46 +164,79 @@ public class WebServer implements IWebServerService {
         }
     }
 
-
     private static SecurityHandler createSecurityHandler(final String username, final String password) {
-        // Create a UserStore
+        // Create a UserStore and add the user
         final UserStore userStore = new UserStore();
         userStore.addUser(username, Credential.getCredential(password), new String[] { "user" });
 
-        // Create a LoginService and associate it with the UserStore
+        // Create a LoginService
         final HashLoginService loginService = new HashLoginService();
         loginService.setName("MyRealm");
         loginService.setUserStore(userStore);
 
-        // Create a ConstraintSecurityHandler and set authenticator
-        final SecurityHandler.PathMapped securityHandler = new SecurityHandler.PathMapped();
-        // Set up constraint mapping for all paths
-        securityHandler.put("/*", Constraint.from("user"));
-        securityHandler.put("/login.html", Constraint.ALLOWED_ANY_TRANSPORT);
-        securityHandler.put("/styles.css", Constraint.ALLOWED_ANY_TRANSPORT);
-        securityHandler.put("/.favicon", Constraint.ALLOWED_ANY_TRANSPORT);
-        securityHandler.put("/favicon-16x16.png", Constraint.ALLOWED_ANY_TRANSPORT);
-        securityHandler.put("/favicon-32x32.png", Constraint.ALLOWED_ANY_TRANSPORT);
-        securityHandler.put("/site.webmanifest", Constraint.ALLOWED_ANY_TRANSPORT);
-        securityHandler.put("/apple-touch-icon.png", Constraint.ALLOWED_ANY_TRANSPORT);
-        securityHandler.put("/android-chrome-192x192.png", Constraint.ALLOWED_ANY_TRANSPORT);
-        securityHandler.put("/android-chrome-512x512.png", Constraint.ALLOWED_ANY_TRANSPORT);
-        securityHandler.setAuthenticator(new FormAuthenticator("/login.html", "/login.html", true));
-        securityHandler.setLoginService(loginService);
+        // Create security handler
+        final ConstraintSecurityHandler security = new ConstraintSecurityHandler();
+        security.setLoginService(loginService);
 
-        return securityHandler;
+        // Setup form authentication
+        FormAuthenticator formAuthenticator = new FormAuthenticator("/login.html", "/login.html?error=true", false);
+        security.setAuthenticator(formAuthenticator);
+        
+        // Configure the security constraint
+        Constraint constraint = new Constraint();
+        constraint.setName("auth");
+        constraint.setAuthenticate(true);
+        constraint.setRoles(new String[] { "user" });
+
+        // Create mappings for different URL patterns
+        ConstraintMapping cmLogin = new ConstraintMapping();
+        cmLogin.setPathSpec("/login.html");
+        cmLogin.setConstraint(constraint);
+        constraint.setAuthenticate(false);
+
+        ConstraintMapping cmStatic = new ConstraintMapping();
+        cmStatic.setPathSpec("/styles.css");
+        cmStatic.setConstraint(constraint);
+        constraint.setAuthenticate(false);
+
+        constraint = new Constraint();
+        constraint.setName("auth");
+        constraint.setAuthenticate(true);
+        constraint.setRoles(new String[] { "user" });
+
+        ConstraintMapping cmDefault = new ConstraintMapping();
+        cmDefault.setPathSpec("/*");
+        cmDefault.setConstraint(constraint);
+
+        security.setConstraintMappings(java.util.Arrays.asList(cmLogin, cmStatic, cmDefault));
+        
+        return security;
     }
 
 
-    private Resource findKeyStore(final ResourceFactory resourceFactory) {
-        final String resourceName = "ssl/keystore.jks";
-        final Resource resource = resourceFactory.newClassLoaderResource(resourceName);
+    private String findKeyStore() {
+        try {
+            // Create a temporary file from the keystore resource
+            java.io.InputStream keystoreStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("ssl/keystore.jks");
+            if (keystoreStream == null) {
+                throw new RuntimeException("Unable to read keystore.jks from resources");
+            }
 
-        if (!Resources.isReadableFile(resource)) {
-            throw new RuntimeException("Unable to read " + resourceName);
+            java.io.File tempFile = java.io.File.createTempFile("keystore", ".jks");
+            tempFile.deleteOnExit();
+
+            try (java.io.FileOutputStream fos = new java.io.FileOutputStream(tempFile)) {
+                byte[] buffer = new byte[1024];
+                int bytesRead;
+                while ((bytesRead = keystoreStream.read(buffer)) != -1) {
+                    fos.write(buffer, 0, bytesRead);
+                }
+            }
+
+            return tempFile.getAbsolutePath();
+        } catch (java.io.IOException e) {
+            throw new RuntimeException("Failed to create temporary keystore file", e);
         }
-
-        return resource;
     }
 
 

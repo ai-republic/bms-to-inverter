@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+
+	<Properties>
+		<Property name="name">BMS-to-Inverter</Property>
+		<Property name="pattern">%d{yyyy-MM-dd HH:mm:ss.SSS} | %-5.5p | %-10.10t | %-20.20C:%-5.5L | %msg%n</Property>
+	</Properties>
+	
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="${pattern}"/>
+		</Console>
+		<RollingFile name="RollingFile" fileName="logs/${name}.log"
+				 filePattern="logs/$${date:yyyy-MM}/${name}-%d{yyyy-MM-dd}-%i.log.gz">
+			<PatternLayout>
+				<pattern>${pattern}</pattern>
+			</PatternLayout>
+			<Policies>
+				<TimeBasedTriggeringPolicy /><!-- Rotated everyday -->
+				<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
+			</Policies>
+		</RollingFile>
+	</Appenders>
+	
+	<Loggers>
+		<Logger name="org.jboss.weld" level="error" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingFile"/>
+        </Logger>
+		<Logger name="io.netty" level="error" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingFile"/>
+        </Logger>
+		<Logger name="org.apache.activemq" level="info" additivity="false">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingFile"/>
+        </Logger>
+        
+		<Root level="info"> <!-- We log everything -->
+			<AppenderRef ref="Console"/> <!-- To console -->
+			<AppenderRef ref="RollingFile"/> <!-- And to a rotated file -->
+		</Root>
+	</Loggers>
+	
+</Configuration>
+	

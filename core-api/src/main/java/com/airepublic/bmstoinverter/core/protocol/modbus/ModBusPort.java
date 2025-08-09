@@ -12,7 +12,7 @@ package com.airepublic.bmstoinverter.core.protocol.modbus;
 
 import com.airepublic.bmstoinverter.core.Port;
 
-import jakarta.annotation.PostConstruct;
+import javax.annotation.PostConstruct;
 
 /**
  * A {@link Port} that is used for ModBus messages. Expecting <code>config.properties</code> or

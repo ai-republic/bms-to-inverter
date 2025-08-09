@@ -23,7 +23,7 @@ import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 /**
  * The class to identify an {@link Inverter}.

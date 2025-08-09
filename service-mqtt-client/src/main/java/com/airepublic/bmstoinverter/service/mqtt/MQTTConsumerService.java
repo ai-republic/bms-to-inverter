@@ -47,7 +47,7 @@ public class MQTTConsumerService implements IMQTTConsumerService {
             session.start();
 
             final String name = UUID.randomUUID().toString();
-            final QueueConfiguration config = new QueueConfiguration()
+            final QueueConfiguration config = new QueueConfiguration(name)
                     .setAddress(address)
                     .setName(name)
                     .setRingSize(1L)

@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.enterprise.context.ApplicationScoped;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,8 +33,6 @@ import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 import com.airepublic.bmstoinverter.core.util.BitUtil;
 import com.airepublic.bmstoinverter.core.util.HexUtil;
-
-import jakarta.enterprise.context.ApplicationScoped;
 
 /**
  * The class to handle CAN messages for a Growatt HV {@link BMS}.

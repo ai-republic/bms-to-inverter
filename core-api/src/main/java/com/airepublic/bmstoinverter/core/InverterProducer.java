@@ -21,9 +21,9 @@ import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.util.SystemProperties;
 
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.Produces;
-import jakarta.enterprise.inject.spi.CDI;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.Produces;
+import javax.enterprise.inject.spi.CDI;
 
 @ApplicationScoped
 public class InverterProducer extends PluginProducer {

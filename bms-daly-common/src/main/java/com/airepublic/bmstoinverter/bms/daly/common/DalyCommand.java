@@ -10,8 +10,6 @@
  */
 package com.airepublic.bmstoinverter.bms.daly.common;
 
-import jakarta.annotation.Nullable;
-
 /**
  * The CAN/RS-485 commands for the Daly BMS.
  */
@@ -48,7 +46,6 @@ public enum DalyCommand {
      * @param id the id of the {@link DalyCommand} to find
      * @return the {@link DalyCommand} for the id or <code>null</null>
      */
-    @Nullable
     public final static DalyCommand valueOf(final int id) {
         for (final DalyCommand cmd : DalyCommand.values()) {
             if (cmd.id == id) {

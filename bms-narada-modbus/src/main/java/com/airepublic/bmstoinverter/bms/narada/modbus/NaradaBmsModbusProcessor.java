@@ -27,7 +27,7 @@ import com.airepublic.bmstoinverter.core.util.BitUtil;
 import com.airepublic.bmstoinverter.protocol.modbus.ModbusUtil;
 import com.airepublic.bmstoinverter.protocol.modbus.ModbusUtil.RegisterCode;
 
-import jakarta.inject.Inject;
+import javax.inject.Inject;
 
 /**
  * The class to handle Modbus messages from a Narada {@link BMS}.

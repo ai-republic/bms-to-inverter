@@ -26,7 +26,7 @@ import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.protocol.can.CANPort;
 import com.airepublic.bmstoinverter.core.util.BitUtil;
 
-import jakarta.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.ApplicationScoped;
 
 /**
  * The class to handle CAN messages for a Growatt low voltage (12V/24V/48V) {@link Inverter}.

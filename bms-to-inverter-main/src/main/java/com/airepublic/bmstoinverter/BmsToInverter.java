@@ -39,11 +39,11 @@ import com.airepublic.email.api.EmailAccount;
 import com.airepublic.email.api.EmailException;
 import com.airepublic.email.api.IEmailService;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.inject.se.SeContainer;
-import jakarta.enterprise.inject.se.SeContainerInitializer;
-import jakarta.inject.Inject;
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.se.SeContainer;
+import javax.enterprise.inject.se.SeContainerInitializer;
+import javax.inject.Inject;
 
 /**
  * The main class to initiate communication between the configured BMS and the inverter. The
