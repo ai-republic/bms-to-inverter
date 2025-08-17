@@ -86,8 +86,8 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.jboss.weld.se</groupId>
-			<artifactId>weld-se</artifactId>
-			<version>2.4.8.Final</version>
+			<artifactId>weld-se-shaded</artifactId>
+			<version>3.1.9.Final</version>
 		</dependency>
 
 		<dependency>
