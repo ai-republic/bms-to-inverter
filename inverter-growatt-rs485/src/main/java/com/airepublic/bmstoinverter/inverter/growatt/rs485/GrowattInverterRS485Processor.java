@@ -15,13 +15,14 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.airepublic.bmstoinverter.core.Inverter;
-import com.airepublic.bmstoinverter.core.Port;
-import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
-import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
-
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+
+import com.airepublic.bmstoinverter.core.Inverter;
+import com.airepublic.bmstoinverter.core.Port;
+import com.airepublic.bmstoinverter.core.bms.data.EnergyStorageQualifier;
+import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
+import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 
 /**
  * The class to handle RS485 messages for a Growatt low voltage (12V/24V/48V) {@link Inverter}.
@@ -29,6 +30,7 @@ import javax.inject.Inject;
 @ApplicationScoped
 public class GrowattInverterRS485Processor extends Inverter {
     @Inject
+    @EnergyStorageQualifier
     private EnergyStorage energyStorage;
 
     @Override

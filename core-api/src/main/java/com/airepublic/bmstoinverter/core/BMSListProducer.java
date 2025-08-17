@@ -25,7 +25,7 @@ import javax.enterprise.inject.spi.CDI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.airepublic.bmstoinverter.core.bms.data.BMSProduced;
+import com.airepublic.bmstoinverter.core.bms.data.EnergyStorageQualifier;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.util.SystemProperties;
 
@@ -50,7 +50,7 @@ public class BMSListProducer extends PluginProducer {
      * @return the application wide {@link EnergyStorage} object
      */
     @Produces
-    @BMSProduced
+    @EnergyStorageQualifier
     public EnergyStorage getEnergyStorage() {
         return energyStorage;
     }

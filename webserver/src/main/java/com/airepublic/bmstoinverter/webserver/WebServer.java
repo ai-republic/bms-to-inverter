@@ -10,7 +10,6 @@ import org.eclipse.jetty.security.HashLoginService;
 import org.eclipse.jetty.security.SecurityHandler;
 import org.eclipse.jetty.security.UserStore;
 import org.eclipse.jetty.security.authentication.FormAuthenticator;
-import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
 import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.SecureRequestCustomizer;
@@ -92,9 +91,9 @@ public class WebServer implements IWebServerService {
         sessionHandler.setSessionIdPathParameterName("none"); // Don't use URL rewriting
         sessionHandler.setHttpOnly(true); // Better security
         sessionHandler.setSecureRequestOnly(true); // For HTTPS
-        
+
         // Create the main handlers
-        HandlerList handlers = new HandlerList();
+        final HandlerList handlers = new HandlerList();
 
         // Add SecuredRedirectHandler first
         handlers.addHandler(new org.eclipse.jetty.server.handler.SecuredRedirectHandler());
@@ -106,21 +105,21 @@ public class WebServer implements IWebServerService {
         resourceHandler.setWelcomeFiles(new String[] { "index.html" });
 
         // API Handler
-        AbstractHandler apiHandler = new AbstractHandler() {
+        final AbstractHandler apiHandler = new AbstractHandler() {
             @Override
-            public void handle(String target, org.eclipse.jetty.server.Request baseRequest, 
-                    javax.servlet.http.HttpServletRequest request,
-                    javax.servlet.http.HttpServletResponse response) throws java.io.IOException, javax.servlet.ServletException {
+            public void handle(final String target, final org.eclipse.jetty.server.Request baseRequest,
+                    final javax.servlet.http.HttpServletRequest request,
+                    final javax.servlet.http.HttpServletResponse response) throws java.io.IOException, javax.servlet.ServletException {
                 final String path = request.getRequestURI();
                 if (path.equals("/favicon.ico")) {
-                    Resource favicon = Resource.newClassPathResource("static/favicon.ico");
+                    final Resource favicon = Resource.newClassPathResource("static/favicon.ico");
                     if (favicon != null && favicon.exists()) {
                         response.setContentType("image/x-icon");
                         org.eclipse.jetty.util.IO.copy(favicon.getInputStream(), response.getOutputStream());
                         baseRequest.setHandled(true);
                     }
                 } else if (path.contains("/data")) {
-                    String content = energyStorage.toJson();
+                    final String content = energyStorage.toJson();
                     response.setContentType("application/json; charset=utf-8");
                     response.setHeader("Access-Control-Allow-Origin", "http://localhost, https://localhost");
                     response.getWriter().write(content);
@@ -135,7 +134,7 @@ public class WebServer implements IWebServerService {
         };
 
         // Create content handlers
-        HandlerList contentHandlers = new HandlerList();
+        final HandlerList contentHandlers = new HandlerList();
         contentHandlers.addHandler(resourceHandler);
         contentHandlers.addHandler(apiHandler);
 
@@ -164,6 +163,7 @@ public class WebServer implements IWebServerService {
         }
     }
 
+
     private static SecurityHandler createSecurityHandler(final String username, final String password) {
         // Create a UserStore and add the user
         final UserStore userStore = new UserStore();
@@ -179,9 +179,9 @@ public class WebServer implements IWebServerService {
         security.setLoginService(loginService);
 
         // Setup form authentication
-        FormAuthenticator formAuthenticator = new FormAuthenticator("/login.html", "/login.html?error=true", false);
+        final FormAuthenticator formAuthenticator = new FormAuthenticator("/login.html", "/login.html?error=true", false);
         security.setAuthenticator(formAuthenticator);
-        
+
         // Configure the security constraint
         Constraint constraint = new Constraint();
         constraint.setName("auth");
@@ -189,12 +189,12 @@ public class WebServer implements IWebServerService {
         constraint.setRoles(new String[] { "user" });
 
         // Create mappings for different URL patterns
-        ConstraintMapping cmLogin = new ConstraintMapping();
+        final ConstraintMapping cmLogin = new ConstraintMapping();
         cmLogin.setPathSpec("/login.html");
         cmLogin.setConstraint(constraint);
         constraint.setAuthenticate(false);
 
-        ConstraintMapping cmStatic = new ConstraintMapping();
+        final ConstraintMapping cmStatic = new ConstraintMapping();
         cmStatic.setPathSpec("/styles.css");
         cmStatic.setConstraint(constraint);
         constraint.setAuthenticate(false);
@@ -204,12 +204,12 @@ public class WebServer implements IWebServerService {
         constraint.setAuthenticate(true);
         constraint.setRoles(new String[] { "user" });
 
-        ConstraintMapping cmDefault = new ConstraintMapping();
+        final ConstraintMapping cmDefault = new ConstraintMapping();
         cmDefault.setPathSpec("/*");
         cmDefault.setConstraint(constraint);
 
         security.setConstraintMappings(java.util.Arrays.asList(cmLogin, cmStatic, cmDefault));
-        
+
         return security;
     }
 
@@ -217,16 +217,16 @@ public class WebServer implements IWebServerService {
     private String findKeyStore() {
         try {
             // Create a temporary file from the keystore resource
-            java.io.InputStream keystoreStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("ssl/keystore.jks");
+            final java.io.InputStream keystoreStream = Thread.currentThread().getContextClassLoader().getResourceAsStream("ssl/keystore.jks");
             if (keystoreStream == null) {
                 throw new RuntimeException("Unable to read keystore.jks from resources");
             }
 
-            java.io.File tempFile = java.io.File.createTempFile("keystore", ".jks");
+            final java.io.File tempFile = java.io.File.createTempFile("keystore", ".jks");
             tempFile.deleteOnExit();
 
             try (java.io.FileOutputStream fos = new java.io.FileOutputStream(tempFile)) {
-                byte[] buffer = new byte[1024];
+                final byte[] buffer = new byte[1024];
                 int bytesRead;
                 while ((bytesRead = keystoreStream.read(buffer)) != -1) {
                     fos.write(buffer, 0, bytesRead);
@@ -234,7 +234,7 @@ public class WebServer implements IWebServerService {
             }
 
             return tempFile.getAbsolutePath();
-        } catch (java.io.IOException e) {
+        } catch (final java.io.IOException e) {
             throw new RuntimeException("Failed to create temporary keystore file", e);
         }
     }

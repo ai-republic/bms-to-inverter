@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.function.Consumer;
 
+import javax.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,13 +23,12 @@ import com.airepublic.bmstoinverter.core.AlarmLevel;
 import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
+import com.airepublic.bmstoinverter.core.bms.data.EnergyStorageQualifier;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.util.BitUtil;
 import com.airepublic.bmstoinverter.protocol.modbus.ModbusUtil;
 import com.airepublic.bmstoinverter.protocol.modbus.ModbusUtil.RegisterCode;
-
-import javax.inject.Inject;
 
 /**
  * The class to handle Modbus messages from a Narada {@link BMS}.
@@ -35,6 +36,7 @@ import javax.inject.Inject;
 public class NaradaBmsModbusProcessor extends BMS {
     private final static Logger LOG = LoggerFactory.getLogger(NaradaBmsModbusProcessor.class);
     @Inject
+    @EnergyStorageQualifier
     private EnergyStorage energyStorage;
 
     @Override

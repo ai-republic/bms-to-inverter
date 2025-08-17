@@ -19,12 +19,11 @@ import com.airepublic.bmstoinverter.core.AlarmLevel;
 import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
-import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.util.BitUtil;
 
 /**
- * The handler to interpret the {@link DalyMessage} and update the application wide
- * {@link EnergyStorage} object.
+ * The handler to interpret the {@link DalyMessage} and update the application wide {@link BMS}
+ * object.
  */
 public class DalyMessageHandler {
     private final static Logger LOG = LoggerFactory.getLogger(DalyMessageHandler.class);
@@ -42,8 +41,9 @@ public class DalyMessageHandler {
 
 
     /**
-     * Handles the {@link DalyMessage} and updates the {@link EnergyStorage} object.
+     * Handles the {@link DalyMessage} for the {@link BMS}.
      *
+     * @param bms the {@link BMS} to update
      * @param msg the {@link DalyMessage}
      */
     public void handleMessage(final BMS bms, final DalyMessage msg) {

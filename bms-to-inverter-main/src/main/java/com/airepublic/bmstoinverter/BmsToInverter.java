@@ -19,6 +19,12 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.StringTokenizer;
 
+import javax.annotation.PostConstruct;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.inject.se.SeContainer;
+import javax.enterprise.inject.se.SeContainerInitializer;
+import javax.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,6 +34,7 @@ import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.InverterQualifier;
 import com.airepublic.bmstoinverter.core.PortAllocator;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
+import com.airepublic.bmstoinverter.core.bms.data.EnergyStorageQualifier;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.service.IMQTTBrokerService;
@@ -39,12 +46,6 @@ import com.airepublic.email.api.EmailAccount;
 import com.airepublic.email.api.EmailException;
 import com.airepublic.email.api.IEmailService;
 
-import javax.annotation.PostConstruct;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.inject.se.SeContainer;
-import javax.enterprise.inject.se.SeContainerInitializer;
-import javax.inject.Inject;
-
 /**
  * The main class to initiate communication between the configured BMS and the inverter. The
  * {@link BMS} values are read and stored in the {@link EnergyStorage}. Once read these values are
@@ -55,6 +56,7 @@ import javax.inject.Inject;
 public class BmsToInverter implements AutoCloseable {
     private final static Logger LOG = LoggerFactory.getLogger(BmsToInverter.class);
     @Inject
+    @EnergyStorageQualifier
     private EnergyStorage energyStorage;
     @Inject
     private List<BMS> bmsList;

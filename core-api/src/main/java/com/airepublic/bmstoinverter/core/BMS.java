@@ -16,13 +16,14 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
+import javax.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.airepublic.bmstoinverter.core.bms.data.EnergyStorageQualifier;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
-
-import javax.inject.Inject;
 
 /**
  * The abstract class to identify a BMS.
@@ -33,6 +34,7 @@ public abstract class BMS {
     private BMSConfig config;
     private Set<BmsPlugin> plugins;
     @Inject
+    @EnergyStorageQualifier
     private transient EnergyStorage energyStorage;
 
     /**
