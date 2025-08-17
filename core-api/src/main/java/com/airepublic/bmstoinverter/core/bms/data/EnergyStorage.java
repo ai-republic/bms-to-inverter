@@ -13,8 +13,11 @@ package com.airepublic.bmstoinverter.core.bms.data;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.enterprise.inject.Vetoed;
+
 import com.google.gson.Gson;
 
+@Vetoed
 /**
  * This class holds the data of the all battery storage modules ({@link BatteryPack} of the system.
  */
