@@ -76,13 +76,13 @@ public class BatteryPack {
     /** charge/discharge status (0 idle/stationary, 1 charge, 2 discharge; 3 sleep) */
     public int chargeDischargeStatus = 0;
     /** charging MOSFET status */
-    public boolean chargeMOSState;
+    public boolean chargeMOSState = true;
     /** discharge MOSFET state */
-    public boolean dischargeMOSState;
+    public boolean dischargeMOSState = true;
     /** force charging */
-    public boolean forceCharge;
+    public boolean forceCharge = false;
     /** force discharging */
-    public boolean forceDischarge;
+    public boolean forceDischarge = false;
 
     /** BMS life (0~255 cycles)? */
     public int bmsHeartBeat;
@@ -154,6 +154,8 @@ public class BatteryPack {
     public int moduleVoltage;
     /** The rated capacity of the module (1Ah) */
     public int moduleRatedCapacityAh;
+    /** The serial number of the BMS / battery pack */
+    public String serialnumber;
 
     /**
      * Gets all {@link Alarm}s for the given levels.

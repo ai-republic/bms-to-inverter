@@ -16,6 +16,8 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.enterprise.context.ApplicationScoped;
+
 import com.airepublic.bmstoinverter.core.AlarmLevel;
 import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.Port;
@@ -23,8 +25,6 @@ import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.util.BitUtil;
 import com.airepublic.bmstoinverter.core.util.ByteAsciiConverter;
-
-import javax.enterprise.context.ApplicationScoped;
 
 /**
  * The class to handle RS485 messages for Pylontech {@link Inverter}.
@@ -36,12 +36,119 @@ public class PylonInverterRS485Processor extends Inverter {
     @Override
     protected List<ByteBuffer> createSendFrames(final ByteBuffer requestFrame, final BatteryPack aggregatedPack) {
         final List<ByteBuffer> frames = new ArrayList<>();
-
+        frames.add(createProtocolVersion(aggregatedPack)); // 0x4F
+        frames.add(createManufacturerCode(aggregatedPack)); // 0x51
+        frames.add(createChargeDischargeManagementInfo(aggregatedPack)); // 0x92
+        frames.add(createCellInformation(aggregatedPack)); // 0x42
+        frames.add(createVoltageCurrentLimits(aggregatedPack)); // 0x47
         frames.add(createSystemInfo(aggregatedPack)); // 0x60
         frames.add(createBatteryInformation(aggregatedPack)); // 0x61
         frames.add(createAlarms(aggregatedPack)); // 0x62
+        frames.add(createChargeDischargeIfno(aggregatedPack)); // 0x63
 
         return frames;
+    }
+
+
+    // 0x4F
+    private ByteBuffer createProtocolVersion(final BatteryPack pack) {
+        final ByteBuffer buffer = ByteBuffer.allocate(4096);
+        buffer.put(ByteAsciiConverter.convertStringToAsciiBytes(pack.softwareVersion, 1));
+
+        final byte[] data = new byte[buffer.position()];
+        buffer.get(data, 0, buffer.position());
+
+        return prepareSendFrame(ADDRESS, (byte) 0x46, (byte) 0x63, data);
+    }
+
+
+    // 0x51
+    private ByteBuffer createManufacturerCode(final BatteryPack pack) {
+        final ByteBuffer buffer = ByteBuffer.allocate(4096);
+        buffer.put(ByteAsciiConverter.convertStringToAsciiBytes("PYLON", 10));
+        buffer.put(ByteAsciiConverter.convertStringToAsciiBytes(pack.softwareVersion, 1));
+        buffer.put(ByteAsciiConverter.convertStringToAsciiBytes(pack.manufacturerCode, 20));
+
+        final byte[] data = new byte[buffer.position()];
+        buffer.get(data, 0, buffer.position());
+
+        return prepareSendFrame(ADDRESS, (byte) 0x46, (byte) 0x63, data);
+    }
+
+
+    // 0x92
+    private ByteBuffer createChargeDischargeManagementInfo(final BatteryPack pack) {
+        final ByteBuffer buffer = ByteBuffer.allocate(4096);
+        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes(ADDRESS)); // BMS ID
+
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (pack.maxPackVoltageLimit * 100)));
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (pack.minPackVoltageLimit * 100)));
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (pack.maxPackChargeCurrent * 10)));
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (pack.maxPackDischargeCurrent * 10)));
+        byte chargeDischargeMOSStates = 0x00;
+        chargeDischargeMOSStates = BitUtil.setBit(chargeDischargeMOSStates, 7, pack.chargeMOSState);
+        chargeDischargeMOSStates = BitUtil.setBit(chargeDischargeMOSStates, 6, pack.dischargeMOSState);
+        chargeDischargeMOSStates = BitUtil.setBit(chargeDischargeMOSStates, 5, pack.forceCharge);
+        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes(chargeDischargeMOSStates));
+
+        final byte[] data = new byte[buffer.position()];
+        buffer.get(data, 0, buffer.position());
+
+        return prepareSendFrame(ADDRESS, (byte) 0x46, (byte) 0x63, data);
+    }
+
+
+    // 0x42
+    private ByteBuffer createCellInformation(final BatteryPack pack) {
+        final ByteBuffer buffer = ByteBuffer.allocate(4096);
+        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes(ADDRESS)); // BMS ID
+        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) pack.numberOfCells));
+
+        for (int cellNo = 0; cellNo < pack.numberOfCells; cellNo++) {
+            buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) pack.cellVmV[cellNo]));
+        }
+
+        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) pack.numOfTempSensors));
+
+        for (int tempNo = 0; tempNo < pack.numOfTempSensors; tempNo++) {
+            buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (pack.cellTemperature[tempNo] + 2731)));
+        }
+
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) pack.packCurrent));
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) pack.packVoltage));
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (pack.remainingCapacitymAh / 100)));
+        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) (pack.ratedCapacitymAh * 1000 > 65 ? 4 : 2)));
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (pack.ratedCapacitymAh / 100)));
+        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) pack.bmsCycles));
+        buffer.put(new byte[] { 0, 0, 0, 0, 0, 0 }); // old compatibility
+
+        final byte[] data = new byte[buffer.position()];
+        buffer.get(data, 0, buffer.position());
+
+        return prepareSendFrame(ADDRESS, (byte) 0x46, (byte) 0x63, data);
+    }
+
+
+    // 0x47
+    private ByteBuffer createVoltageCurrentLimits(final BatteryPack pack) {
+        final ByteBuffer buffer = ByteBuffer.allocate(4096);
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) pack.maxCellVoltageLimit));
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) pack.minCellVoltageLimit)); // warning
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) pack.minCellVoltageLimit)); // protect
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (50 * 10 + 2731))); // max charge temp
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (-40 * 10 + 2731))); // min charge temp
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (pack.maxPackChargeCurrent * 10)));
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (pack.maxPackVoltageLimit * 100)));
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (pack.minPackVoltageLimit * 100))); // warning
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (pack.minPackVoltageLimit * 100))); // protect
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (50 * 10 + 2731))); // max discharge temp
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (-40 * 10 + 2731))); // min discharge temp
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (pack.maxPackDischargeCurrent * 10)));
+
+        final byte[] data = new byte[buffer.position()];
+        buffer.get(data, 0, buffer.position());
+
+        return prepareSendFrame(ADDRESS, (byte) 0x46, (byte) 0x60, data);
     }
 
 
@@ -228,6 +335,27 @@ public class PylonInverterRS485Processor extends Inverter {
         alarms[7] = bytes[1];
 
         return prepareSendFrame(ADDRESS, (byte) 0x46, (byte) 0x62, alarms);
+    }
+
+
+    // 0x63
+    private ByteBuffer createChargeDischargeIfno(final BatteryPack aggregatedPack) {
+        final ByteBuffer buffer = ByteBuffer.allocate(4096);
+
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (aggregatedPack.maxPackVoltageLimit * 100)));
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (aggregatedPack.minPackVoltageLimit * 100)));
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (aggregatedPack.maxPackChargeCurrent * 10)));
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (aggregatedPack.maxPackDischargeCurrent * 10)));
+        byte chargeDischargeMOSStates = 0x00;
+        chargeDischargeMOSStates = BitUtil.setBit(chargeDischargeMOSStates, 7, aggregatedPack.chargeMOSState);
+        chargeDischargeMOSStates = BitUtil.setBit(chargeDischargeMOSStates, 6, aggregatedPack.dischargeMOSState);
+        chargeDischargeMOSStates = BitUtil.setBit(chargeDischargeMOSStates, 5, aggregatedPack.forceCharge);
+        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes(chargeDischargeMOSStates));
+
+        final byte[] data = new byte[buffer.position()];
+        buffer.get(data, 0, buffer.position());
+
+        return prepareSendFrame(ADDRESS, (byte) 0x46, (byte) 0x63, data);
     }
 
 

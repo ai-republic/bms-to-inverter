@@ -62,19 +62,32 @@ public class PylonBmsRS485Processor extends BMS {
 
     @Override
     protected void collectData(final Port port) throws TooManyInvalidFramesException, NoDataAvailableException, IOException {
-        sendMessage(port, (byte) 0x46, (byte) 0x60); // system information
-        sendMessage(port, (byte) 0x46, (byte) 0x61); // battery information
-        sendMessage(port, (byte) 0x46, (byte) 0x62); // alarm information
+        for (int bmsId = 1; bmsId <= getBatteryPacks().size(); bmsId++) {
+            sendMessage(port, bmsId, (byte) 0x46, (byte) 0x4F); // protocol version
+            sendMessage(port, bmsId, (byte) 0x46, (byte) 0x51); // manufacturer code
+            sendMessage(port, bmsId, (byte) 0x46, (byte) 0x92); // charge/discharge management
+            sendMessage(port, bmsId, (byte) 0x46, (byte) 0x42); // cell information
+            sendMessage(port, bmsId, (byte) 0x46, (byte) 0x44, convertByteToAsciiBytes((byte) bmsId)); // warnings
+            sendMessage(port, bmsId, (byte) 0x46, (byte) 0x47); // max/min voltage/current limits
+            sendMessage(port, bmsId, (byte) 0x46, (byte) 0x60); // system information
+            sendMessage(port, bmsId, (byte) 0x46, (byte) 0x61); // battery information
+            sendMessage(port, bmsId, (byte) 0x46, (byte) 0x62); // alarm information
+            sendMessage(port, bmsId, (byte) 0x46, (byte) 0x63); // charge/discharge information
+        }
     }
 
 
-    private List<ByteBuffer> sendMessage(final Port port, final byte cid1, final byte cid2) throws TooManyInvalidFramesException, NoDataAvailableException, IOException {
-        final ByteBuffer sendBuffer = prepareSendFrame((byte) getBmsId(), cid1, cid2, new byte[] {});
+    private List<ByteBuffer> sendMessage(final Port port, final int bmsId, final byte cid1, final byte cid2) throws TooManyInvalidFramesException, NoDataAvailableException, IOException {
+        return sendMessage(port, bmsId, cid1, cid2, new byte[] {});
+    }
+
+
+    private List<ByteBuffer> sendMessage(final Port port, final int bmsId, final byte cid1, final byte cid2, final byte[] msg) throws TooManyInvalidFramesException, NoDataAvailableException, IOException {
+        final ByteBuffer sendBuffer = prepareSendFrame((byte) bmsId, cid1, cid2, msg);
         final List<ByteBuffer> readBuffers = new ArrayList<>();
         int failureCount = 0;
         int noDataReceived = 0;
         boolean done = false;
-        final BatteryPack pack = getBatteryPack(0);
 
         // read frames until the requested frame is read
         do {
@@ -105,13 +118,14 @@ public class PylonBmsRS485Processor extends BMS {
                     final byte[] addressAscii = new byte[2];
                     receiveBuffer.position(3);
                     receiveBuffer.get(addressAscii);
-                    final byte address = convertAsciiBytesToByte(addressAscii[0], addressAscii[1]);
+                    final int address = convertAsciiBytesToByte(addressAscii[0], addressAscii[1]);
+                    final BatteryPack pack = getBatteryPack(address);
 
                     // extract command
                     final byte[] cmdAscii = new byte[2];
                     receiveBuffer.position(7);
                     receiveBuffer.get(cmdAscii);
-                    final byte cmd = convertAsciiBytesToByte(cmdAscii[0], cmdAscii[1]);
+                    final short cmd = convertAsciiBytesToByte(cmdAscii[0], cmdAscii[1]);
 
                     // extract length
                     final byte[] lengthAscii = new byte[4];
@@ -124,6 +138,35 @@ public class PylonBmsRS485Processor extends BMS {
                     final ByteBuffer data = receiveBuffer.slice();
 
                     switch (cmd) {
+                        case 0x4F: {
+                            readProtocolVersion(pack, receiveBuffer.get(1));
+                            done = true;
+                        }
+                        break;
+                        case 0x51: {
+                            readManufacturerCode(pack, data);
+                            done = true;
+                        }
+                        break;
+                        case 0x92: {
+                            readChargeDischargeManagementInfo(pack, data);
+                            done = true;
+                        }
+                        break;
+                        case 0x42: {
+                            readCellInformation(pack, data);
+                            done = true;
+                        }
+                        break;
+                        case 0x44: {
+                            readWarnings(pack, data);
+                            done = true;
+                        }
+                        break;
+                        case 0x47: {
+                            readVoltageCurrentLimits(pack, data);
+                            done = true;
+                        }
                         case 0x60: {
                             readSystemInfo(pack, data);
                             done = true;
@@ -136,6 +179,11 @@ public class PylonBmsRS485Processor extends BMS {
                         break;
                         case 0x62: {
                             readAlarms(pack, data);
+                            done = true;
+                        }
+                        break;
+                        case 0x63: {
+                            readChargeDischargeInfo(pack, data);
                             done = true;
                         }
                         break;
@@ -192,6 +240,194 @@ public class PylonBmsRS485Processor extends BMS {
         LOG.warn("Command {} to sent to BMS successfully and received!", HexUtil.formatHex(new byte[] { cid1, cid2 }));
 
         return readBuffers;
+    }
+
+
+    // 0x4F
+    private void readProtocolVersion(final BatteryPack pack, final byte version) {
+        pack.softwareVersion = convertByteToAsciiBytes(version).toString();
+    }
+
+
+    // 0x51
+    private void readManufacturerCode(final BatteryPack pack, final ByteBuffer data) {
+        data.position(24); // skip battery name and software version
+        pack.manufacturerCode = convertAsciiBytesToString(data, 20);
+    }
+
+
+    // 0x92
+    private void readChargeDischargeManagementInfo(final BatteryPack pack, final ByteBuffer data) {
+        data.getChar(); // command value
+
+        pack.maxPackVoltageLimit = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) / 100;
+        pack.minPackVoltageLimit = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) / 100;
+        pack.maxPackChargeCurrent = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) / 10;
+        pack.maxPackDischargeCurrent = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) / 10;
+        pack.chargeMOSState = BitUtil.bit(data.get(), 7);
+        pack.dischargeMOSState = BitUtil.bit(data.get(), 6);
+        pack.forceCharge = BitUtil.bit(data.get(), 5);
+    }
+
+
+    // 0x42
+    private void readCellInformation(final BatteryPack pack, final ByteBuffer data) {
+        final int bmsId = convertAsciiBytesToByte(data.get(), data.get());
+
+        if (bmsId < 1) {
+            LOG.warn("Received invalid BMS ID {} in cell information!", bmsId);
+            return;
+        }
+
+        if (pack != getBatteryPack(bmsId - 1)) {
+            LOG.warn("Received cell information for BMS ID {} but not matching ADR!", bmsId);
+        }
+
+        final BatteryPack packToUse = getBatteryPack(bmsId - 1);
+        packToUse.numberOfCells = convertAsciiBytesToByte(data.get(), data.get());
+
+        for (int cellNo = 0; cellNo < packToUse.numberOfCells; cellNo++) {
+            packToUse.cellVmV[cellNo] = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() });
+        }
+
+        packToUse.numOfTempSensors = convertAsciiBytesToByte(data.get(), data.get());
+
+        for (int tempNo = 0; tempNo < packToUse.numOfTempSensors; tempNo++) {
+            packToUse.cellTemperature[tempNo] = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) - 2731;
+        }
+
+        packToUse.packCurrent = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() });
+        packToUse.packVoltage = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() });
+        packToUse.remainingCapacitymAh = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) * 100;
+        data.getShort(); // user defined items
+        packToUse.ratedCapacitymAh = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) * 100;
+    }
+
+
+    // 0x44
+    private void readWarnings(final BatteryPack pack, final ByteBuffer data) {
+        final int bmsId = convertAsciiBytesToByte(data.get(), data.get());
+
+        if (bmsId < 1) {
+            LOG.warn("Received invalid BMS ID {} in cell information!", bmsId);
+            return;
+        }
+
+        if (pack != getBatteryPack(bmsId - 1)) {
+            LOG.warn("Received cell information for BMS ID {} but not matching ADR!", bmsId);
+        }
+
+        final BatteryPack packToUse = getBatteryPack(bmsId - 1);
+
+        // find highest and lowest cell voltage and error status
+        packToUse.numberOfCells = convertAsciiBytesToByte(data.get(), data.get());
+
+        byte status = 0;
+        boolean cellLowStatus = false;
+        boolean cellHighStatus = false;
+
+        // reset min/max values
+        packToUse.maxCellmV = Integer.MIN_VALUE;
+        packToUse.minCellmV = Integer.MAX_VALUE;
+        packToUse.setAlarm(Alarm.CELL_VOLTAGE_LOW, AlarmLevel.NONE);
+        packToUse.setAlarm(Alarm.CELL_VOLTAGE_HIGH, AlarmLevel.NONE);
+
+        for (int cellNo = 0; cellNo < packToUse.numberOfCells; cellNo++) {
+            status = convertAsciiBytesToByte(data.get(), data.get());
+
+            switch (status) {
+                case 1:
+                    if (packToUse.cellVmV[cellNo] < packToUse.minCellmV) {
+                        packToUse.minCellmV = packToUse.cellVmV[cellNo];
+                        packToUse.minCellVNum = cellNo + 1;
+                    }
+                    cellLowStatus = true;
+                break;
+                case 2:
+                    if (packToUse.cellVmV[cellNo] > packToUse.maxCellmV) {
+                        packToUse.maxCellmV = packToUse.cellVmV[cellNo];
+                        packToUse.maxCellVNum = cellNo + 1;
+                    }
+                    cellHighStatus = true;
+                break;
+            }
+        }
+
+        if (cellLowStatus) {
+            packToUse.setAlarm(Alarm.CELL_VOLTAGE_LOW, AlarmLevel.ALARM);
+        }
+
+        if (cellHighStatus) {
+            packToUse.setAlarm(Alarm.CELL_VOLTAGE_HIGH, AlarmLevel.ALARM);
+        }
+
+        // find highest and lowest temperature and error status
+        packToUse.numOfTempSensors = convertAsciiBytesToByte(data.get(), data.get());
+
+        // read status of the BMS temperature
+        status = convertAsciiBytesToByte(data.get(), data.get());
+        packToUse.setAlarm(Alarm.PACK_TEMPERATURE_LOW, status == 1 ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        packToUse.setAlarm(Alarm.PACK_TEMPERATURE_HIGH, status == 2 ? AlarmLevel.ALARM : AlarmLevel.NONE);
+
+        boolean tempLowStatus = false;
+        boolean tempHighStatus = false;
+
+        // reset min/max values
+        packToUse.tempMax = Integer.MIN_VALUE;
+        packToUse.tempMin = Integer.MAX_VALUE;
+        packToUse.setAlarm(Alarm.CELL_TEMPERATURE_LOW, AlarmLevel.NONE);
+        packToUse.setAlarm(Alarm.CELL_TEMPERATURE_HIGH, AlarmLevel.NONE);
+
+        for (int tempNo = 0; tempNo < packToUse.numOfTempSensors; tempNo++) {
+            status = convertAsciiBytesToByte(data.get(), data.get());
+
+            switch (status) {
+                case 1:
+                    if (packToUse.cellTemperature[tempNo] < packToUse.tempMin) {
+                        packToUse.tempMin = packToUse.cellTemperature[tempNo];
+                        packToUse.tempMinCellNum = tempNo * 4 + 1;
+                        tempLowStatus = true;
+                    }
+                break;
+                case 2:
+                    if (packToUse.cellTemperature[tempNo] > packToUse.tempMax) {
+                        packToUse.tempMax = packToUse.cellTemperature[tempNo];
+                        packToUse.tempMaxCellNum = tempNo * 4 + 1;
+                        tempHighStatus = true;
+                    }
+                break;
+            }
+        }
+
+        if (tempLowStatus) {
+            packToUse.setAlarm(Alarm.CELL_TEMPERATURE_LOW, AlarmLevel.ALARM);
+        }
+
+        if (tempHighStatus) {
+            packToUse.setAlarm(Alarm.CELL_TEMPERATURE_HIGH, AlarmLevel.ALARM);
+        }
+
+        // read mosfet temperature status
+        status = convertAsciiBytesToByte(data.get(), data.get());
+        packToUse.setAlarm(Alarm.CHARGE_TEMPERATURE_LOW, status == 1 ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        packToUse.setAlarm(Alarm.CHARGE_TEMPERATURE_HIGH, status == 2 ? AlarmLevel.ALARM : AlarmLevel.NONE);
+    }
+
+
+    // 0x47
+    private void readVoltageCurrentLimits(final BatteryPack pack, final ByteBuffer data) {
+        pack.maxCellVoltageLimit = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() });
+        data.getInt(); // reserved minCellVoltateLimit for warning
+        pack.minCellVoltageLimit = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() });
+        data.getInt(); // reserved max charge temp
+        data.getInt(); // reserved min charge temp
+        pack.maxPackChargeCurrent = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) / 10;
+        pack.maxPackVoltageLimit = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) / 100;
+        data.getInt(); // reserved min pack voltage warning
+        pack.minPackVoltageLimit = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) / 100;
+        data.getInt(); // reserved max discharge temp
+        data.getInt(); // reserved min discharge temp
+        pack.maxPackDischargeCurrent = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) / 10;
     }
 
 
@@ -274,6 +510,18 @@ public class PylonBmsRS485Processor extends BMS {
         pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, BitUtil.bit(bits, 6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
         pack.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, BitUtil.bit(bits, 5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
         pack.setAlarm(Alarm.FAILURE_OTHER, BitUtil.bit(bits, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+    }
+
+
+    // 0x63
+    private void readChargeDischargeInfo(final BatteryPack pack, final ByteBuffer data) {
+        pack.maxPackVoltageLimit = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) / 100;
+        pack.minPackVoltageLimit = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) / 100;
+        pack.maxPackChargeCurrent = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) / 10;
+        pack.maxPackDischargeCurrent = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) / 10;
+        pack.chargeMOSState = BitUtil.bit(data.get(), 7);
+        pack.dischargeMOSState = BitUtil.bit(data.get(), 6);
+        pack.forceCharge = BitUtil.bit(data.get(), 5);
     }
 
 
