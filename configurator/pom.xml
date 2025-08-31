@@ -159,6 +159,13 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- ####################  MEGAREVO (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-megarevo-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- ####################  MPP SOLAR (MODBUS)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
