@@ -12,7 +12,12 @@ public class HexUtil {
 
 
     public static String toHexDigits(final int value) {
-        return toHexDigits((byte) value);
+        return String.format("%04x", value);
+    }
+
+
+    public static String toHexDigits(final long value) {
+        return String.format("%08x", value);
     }
 
 

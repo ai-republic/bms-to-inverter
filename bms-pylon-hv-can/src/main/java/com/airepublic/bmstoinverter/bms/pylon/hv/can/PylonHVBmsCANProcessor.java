@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -72,7 +71,6 @@ public class PylonHVBmsCANProcessor extends BMS {
 
                     continue;
                 }
-
 
                 if (receiveFrame != null) {
                     LOG.debug("BMS RECEIVED: {}", Port.printBuffer(receiveFrame));
