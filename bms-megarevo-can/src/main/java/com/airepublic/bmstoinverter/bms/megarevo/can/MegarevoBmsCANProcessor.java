@@ -37,6 +37,7 @@ public class MegarevoBmsCANProcessor extends BMS {
             final JavaCANPort canPort = (JavaCANPort) port;
             // send request frame to request battery data
             canPort.sendExtendedFrame(prepareSendFrame(0x1F000100, new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }));
+            canPort.sendExtendedFrame(prepareSendFrame(0x0001001F, new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 }));
 
             final BatteryPack pack = getBatteryPack(BATTERY_ID);
             final ByteBuffer frame = canPort.receiveFrame();
