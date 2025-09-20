@@ -264,6 +264,13 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- ####################  ZTE (MODBUS)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-zte-modbus</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 
 		<!-- ####################         !!!!!!!!	Inverters 	!!!!!!!!		#################### -->
 

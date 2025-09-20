@@ -29,6 +29,7 @@ public class ModbusUtil {
      * The register types definition;
      */
     public enum RegisterCode {
+        READ_DESCRETE_INPUTS(0x02),
         READ_HOLDING_REGISTERS(0x03),
         READ_INPUT_REGISTERS(0x04),
         WRITE_SINGLE_REGISTER(0x06),
@@ -74,8 +75,7 @@ public class ModbusUtil {
 
 
     /**
-     * Transforms the response into a {@link ByteBuffer} that stores the register values as
-     * integers.
+     * Transforms the response into a {@link ByteBuffer} that stores the register values as integers.
      *
      * @param response the ModBus register response
      * @return the ByteBuffer of int value registers
@@ -93,8 +93,7 @@ public class ModbusUtil {
 
 
     /**
-     * Transforms the response into a {@link ByteBuffer} that stores the register values as
-     * integers.
+     * Transforms the response into a {@link ByteBuffer} that stores the register values as integers.
      *
      * @param response the ModBus register response
      * @return the ByteBuffer of int value registers
@@ -112,8 +111,7 @@ public class ModbusUtil {
 
 
     /**
-     * Transforms the response into a {@link ByteBuffer} that stores the register reference as an
-     * int.
+     * Transforms the response into a {@link ByteBuffer} that stores the register reference as an int.
      *
      * @param response the ModBus register response
      * @return the ByteBuffer of int value registers

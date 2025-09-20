@@ -26,3 +26,4 @@ com.airepublic.bmstoinverter.bms.shoto.modbus.ShotoBmsModbusDescriptor
 com.airepublic.bmstoinverter.bms.sma.can.SMABmsCANDescriptor
 com.airepublic.bmstoinverter.bms.tian.modbus.TianBmsModbusDescriptor
 com.airepublic.bmstoinverter.bms.voltronic.modbus.VoltronicBmsModbusDescriptor
+com.airepublic.bmstoinverter.bms.zte.modbus.ZTEBmsModbusDescriptor

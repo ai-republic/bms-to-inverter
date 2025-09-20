@@ -44,8 +44,9 @@
 		<module>bms-seplos-rs485</module>
 		<module>bms-shoto-modbus</module>
 		<module>bms-sma-si-can</module>
-		<module>bms-voltronic-modbus</module>
 		<module>bms-tian-modbus</module>
+		<module>bms-voltronic-modbus</module>
+		<module>bms-zte-modbus</module>
 		<module>bms-to-inverter-main</module>
 		<module>inverter-byd-can</module>
 		<module>inverter-deye-can</module>
