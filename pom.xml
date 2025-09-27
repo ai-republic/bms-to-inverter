@@ -31,6 +31,7 @@
 		<module>bms-jk-modbus</module>
 		<module>bms-jk-rs485</module>
 		<module>bms-lia-can</module>
+		<module>bms-luxpower-can</module>
 		<module>bms-megarevo-can</module>
 		<module>bms-mppsolar-modbus</module>
 		<module>bms-narada-modbus</module>
@@ -56,6 +57,7 @@
 		<module>inverter-growatt-hv-can</module>
 		<module>inverter-growatt-modbus</module>
 		<module>inverter-growatt-rs485</module>
+		<module>inverter-luxpower-can</module>
 		<module>inverter-pylon-can</module>
 		<module>inverter-pylon-hv-can</module>
 		<module>inverter-pylon-rs485</module>

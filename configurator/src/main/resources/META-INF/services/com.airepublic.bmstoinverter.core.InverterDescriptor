@@ -6,6 +6,7 @@ com.airepublic.bmstoinverter.inverter.goodwe.can.GoodweInverterCANDescriptor
 com.airepublic.bmstoinverter.inverter.growatt.can.GrowattInverterCANDescriptor
 com.airepublic.bmstoinverter.inverter.growatthv.can.GrowattHVInverterCANDescriptor
 com.airepublic.bmstoinverter.inverter.growatt.modbus.GrowattInverterModbusDescriptor
+com.airepublic.bmstoinverter.inverter.luxpower.can.LuxpowerInverterCANDescriptor
 com.airepublic.bmstoinverter.inverter.pylon.can.PylonInverterCANDescriptor
 com.airepublic.bmstoinverter.inverter.pylonhv.can.PylonHVInverterCANDescriptor
 com.airepublic.bmstoinverter.inverter.pylon.rs485.PylonInverterRS485Descriptor

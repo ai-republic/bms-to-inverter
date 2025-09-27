@@ -209,6 +209,9 @@ public class PylonBmsCANProcessor extends BMS {
         final int alarm1 = data.get();
         final int alarm2 = data.get();
 
+        // clear all alarms
+        pack.alarms.clear();
+
         // protection and alarms
         pack.setAlarm(Alarm.CELL_VOLTAGE_HIGH, getAlarmLevel(BitUtil.bit(protection1, 1), BitUtil.bit(alarm1, 1)));
         pack.setAlarm(Alarm.CELL_VOLTAGE_LOW, getAlarmLevel(BitUtil.bit(protection1, 2), BitUtil.bit(alarm1, 2)));

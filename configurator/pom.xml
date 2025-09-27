@@ -159,6 +159,13 @@
 			<version>${project.version}</version>
 		</dependency>
 
+		<!-- ####################  LUXPOWER (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-luxpower-can</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- ####################  MEGAREVO (CAN)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
@@ -327,6 +334,13 @@
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>
 			<artifactId>inverter-growatt-modbus</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<!-- ####################  LUXPOWER (CAN)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>inverter-luxpower-can</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
