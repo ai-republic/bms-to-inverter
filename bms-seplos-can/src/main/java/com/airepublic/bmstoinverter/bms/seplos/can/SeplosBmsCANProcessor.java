@@ -164,7 +164,7 @@ public class SeplosBmsCANProcessor extends BMS {
 
 
     private AlarmLevel getAlarmLevel(final boolean warning, final boolean alarm) {
-        return alarm ? AlarmLevel.ALARM : warning ? AlarmLevel.WARNING : AlarmLevel.ALARM;
+        return alarm ? AlarmLevel.ALARM : warning ? AlarmLevel.WARNING : AlarmLevel.NONE;
     }
 
 
