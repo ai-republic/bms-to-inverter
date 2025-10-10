@@ -197,13 +197,13 @@ public class PylonBmsCANProcessor extends BMS {
 
 
     private AlarmLevel getAlarmLevel(final boolean warning, final boolean alarm) {
-        return alarm ? AlarmLevel.ALARM : warning ? AlarmLevel.WARNING : AlarmLevel.ALARM;
+        return alarm ? AlarmLevel.ALARM : warning ? AlarmLevel.WARNING : AlarmLevel.NONE;
     }
 
 
     // 0x359
     protected void readAlarms(final BatteryPack pack, final ByteBuffer data) {
-        // read first 8 bytes
+        // read first 4 bytes
         final int protection1 = data.get();
         final int protection2 = data.get();
         final int alarm1 = data.get();
@@ -230,6 +230,24 @@ public class PylonBmsCANProcessor extends BMS {
         // dip switch
         data.get();
 
+    }
+
+
+    public static void main(final String[] args) {
+        // Create a dummy BatteryPack
+        final BatteryPack pack = new BatteryPack();
+        // Prepare the test data: 00 00 00 00 01 50 4E
+        final byte[] testData = new byte[] { 0x00, 0x00, 0x00, 0x00, 0x01, 0x50, 0x4E };
+        // Pad to 8 bytes as expected by the method (CAN frame is 8 bytes)
+        final byte[] paddedData = new byte[8];
+        System.arraycopy(testData, 0, paddedData, 0, testData.length);
+        final ByteBuffer data = ByteBuffer.wrap(paddedData);
+        // Create processor and call readAlarms
+        final PylonBmsCANProcessor processor = new PylonBmsCANProcessor();
+        processor.readAlarms(pack, data);
+        // Print the alarms and number of cells for verification
+        System.out.println("Alarms: " + pack.alarms);
+        System.out.println("Number of cells: " + pack.numberOfCells);
     }
 
 }
