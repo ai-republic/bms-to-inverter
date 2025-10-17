@@ -27,7 +27,6 @@ import com.airepublic.bmstoinverter.core.TooManyInvalidFramesException;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.util.BitUtil;
 import com.airepublic.bmstoinverter.core.util.HexUtil;
-import com.airepublic.bmstoinverter.protocol.rs485.JSerialCommPort;
 
 /**
  * The class to handle RS485 messages from a Daly BMS.
@@ -114,8 +113,9 @@ public class JBDBmsRS485Processor extends BMS {
         do {
 
             // send the request command frame
+            LOG.debug("SENDING: {}", Port.printBuffer(sendBuffer));
             port.sendFrame(sendBuffer);
-            LOG.debug("SEND: {}", Port.printBuffer(sendBuffer));
+            LOG.debug("SENT: {}", Port.printBuffer(sendBuffer));
 
             try {
                 Thread.sleep(92);
@@ -128,16 +128,16 @@ public class JBDBmsRS485Processor extends BMS {
 
             try {
                 receiveBuffer = port.receiveFrame();
+                LOG.debug("RECEIVED: {}", Port.printBuffer(receiveBuffer));
 
                 valid = validator.test(receiveBuffer);
 
                 if (valid) {
-                    LOG.debug("RECEIVED: {}", Port.printBuffer(receiveBuffer));
                     receiveBuffer.rewind();
                     final int length = receiveBuffer.get(3);
                     receiveBuffer.position(3);
-                    receiveBuffer.limit(3 + length + 4);
-                    final ByteBuffer data = receiveBuffer.slice();
+                    final byte[] dataBytes = new byte[length];
+                    final ByteBuffer data = ByteBuffer.wrap(dataBytes).order(ByteOrder.BIG_ENDIAN);
 
                     switch (receiveBuffer.get(1)) {
                         case 0x03: {
@@ -146,6 +146,7 @@ public class JBDBmsRS485Processor extends BMS {
                         }
                         break;
                         case 0x04: {
+                            readCellVoltages(pack, data);
                             done = true;
                         }
                         break;
@@ -257,69 +258,16 @@ public class JBDBmsRS485Processor extends BMS {
     }
 
 
-    private void readAlarms(final BatteryPack pack, final short short1) {
-        // TODO Auto-generated method stub
-
+    private void readCellVoltages(final BatteryPack pack, final ByteBuffer data) {
+        for (int cellNo = 0; cellNo < data.capacity(); cellNo++) {
+            pack.cellVmV[cellNo] = data.getShort();
+        }
     }
 
 
-    List<DataEntry> readFrame(final Port port) throws IOException {
-        final JSerialCommPort serialPort = (JSerialCommPort) port;
-        byte[] buffer = new byte[1];
+    private void readAlarms(final BatteryPack pack, final short short1) {
+        // TODO Auto-generated method stub
 
-        // try to read the start flag
-        if (serialPort.readBytes(buffer, 200) == -1) {
-            // no bytes available
-            return null;
-        }
-
-        // check for correct start flag for response
-        if (buffer[0] != (byte) 0x01) {
-            throw new IOException("Error reading data - got wrong start flag!");
-        }
-
-        boolean endFlagFound = false;
-        final List<DataEntry> dataEntries = new ArrayList<>();
-
-        do {
-            final byte[] dataId = new byte[1];
-
-            // check if bytes are available
-            if (serialPort.readBytes(dataId, 200) != -1) {
-                final JBDRS485DataId dataIdType = JBDRS485DataId.fromDataId(dataId[0]);
-
-                if (dataIdType != null) {
-                    final DataEntry dataEntry = new DataEntry();
-                    dataEntry.setId(dataIdType);
-
-                    // get the length of the data segment
-                    int length = dataIdType.getLength();
-
-                    // special handling for cell voltages and end flag
-                    if (dataIdType.equals(JBDRS485DataId.READ_CELL_VOLTAGES)) {
-                        // the first data byte declares the number bytes for all cells
-                        buffer = new byte[1];
-                        serialPort.readBytes(buffer, 200);
-                        length = buffer[0];
-                    } else if (dataIdType.equals(JBDRS485DataId.END_FLAG)) {
-                        endFlagFound = true;
-                    }
-
-                    // do not add the endflag as entry
-                    if (!endFlagFound) {
-                        // copy the relevant data bytes and set them for this entry
-                        final byte[] datacopy = new byte[length];
-                        serialPort.readBytes(datacopy, 200);
-                        dataEntry.setData(ByteBuffer.wrap(datacopy));
-                        dataEntries.add(dataEntry);
-                    }
-                }
-            } else {
-                return null;
-            }
-        } while (!endFlagFound);
-
-        return dataEntries;
     }
 
 
