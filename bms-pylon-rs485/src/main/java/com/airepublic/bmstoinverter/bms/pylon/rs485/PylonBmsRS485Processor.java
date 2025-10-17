@@ -62,18 +62,20 @@ public class PylonBmsRS485Processor extends BMS {
 
     @Override
     protected void collectData(final Port port) throws TooManyInvalidFramesException, NoDataAvailableException, IOException {
-        for (int bmsId = 1; bmsId <= getBatteryPacks().size(); bmsId++) {
-            sendMessage(port, bmsId, (byte) 0x46, (byte) 0x4F); // protocol version
-            sendMessage(port, bmsId, (byte) 0x46, (byte) 0x51); // manufacturer code
-            sendMessage(port, bmsId, (byte) 0x46, (byte) 0x92); // charge/discharge management
-            sendMessage(port, bmsId, (byte) 0x46, (byte) 0x42); // cell information
-            sendMessage(port, bmsId, (byte) 0x46, (byte) 0x44, convertByteToAsciiBytes((byte) bmsId)); // warnings
-            sendMessage(port, bmsId, (byte) 0x46, (byte) 0x47); // max/min voltage/current limits
-            sendMessage(port, bmsId, (byte) 0x46, (byte) 0x60); // system information
-            sendMessage(port, bmsId, (byte) 0x46, (byte) 0x61); // battery information
-            sendMessage(port, bmsId, (byte) 0x46, (byte) 0x62); // alarm information
-            sendMessage(port, bmsId, (byte) 0x46, (byte) 0x63); // charge/discharge information
+        final int address = 0x10 + getBmsId();
+        for (int packId = 0; packId < getBatteryPacks().size(); packId++) {
+            sendMessage(port, address, (byte) 0x46, (byte) 0x44, convertByteToAsciiBytes((byte) (packId + 1))); // warnings
         }
+
+        sendMessage(port, address, (byte) 0x46, (byte) 0x4F); // protocol version
+        sendMessage(port, address, (byte) 0x46, (byte) 0x51); // manufacturer code
+        sendMessage(port, address, (byte) 0x46, (byte) 0x92); // charge/discharge management
+        sendMessage(port, address, (byte) 0x46, (byte) 0x42); // cell information
+        sendMessage(port, address, (byte) 0x46, (byte) 0x47); // max/min voltage/current limits
+        sendMessage(port, address, (byte) 0x46, (byte) 0x60); // system information
+        sendMessage(port, address, (byte) 0x46, (byte) 0x61); // battery information
+        sendMessage(port, address, (byte) 0x46, (byte) 0x62); // alarm information
+        sendMessage(port, address, (byte) 0x46, (byte) 0x63); // charge/discharge information
     }
 
 
@@ -93,8 +95,9 @@ public class PylonBmsRS485Processor extends BMS {
         do {
 
             // send the request command frame
+            LOG.debug("SENDING: {}", Port.printBuffer(sendBuffer));
             port.sendFrame(sendBuffer);
-            LOG.debug("SEND: {}", Port.printBuffer(sendBuffer));
+            LOG.debug("SENT: {}", Port.printBuffer(sendBuffer));
 
             try {
                 Thread.sleep(92);
@@ -107,11 +110,11 @@ public class PylonBmsRS485Processor extends BMS {
 
             try {
                 receiveBuffer = port.receiveFrame();
+                LOG.debug("RECEIVED: {}", Port.printBuffer(receiveBuffer));
 
                 valid = validator.test(receiveBuffer);
 
                 if (valid) {
-                    LOG.debug("RECEIVED: {}", Port.printBuffer(receiveBuffer));
                     receiveBuffer.rewind();
 
                     // extract address
