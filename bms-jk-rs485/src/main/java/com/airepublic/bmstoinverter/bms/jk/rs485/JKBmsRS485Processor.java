@@ -203,57 +203,73 @@ public class JKBmsRS485Processor extends BMS {
 
     List<DataEntry> readFrame(final Port port) throws IOException {
         final JSerialCommPort serialPort = (JSerialCommPort) port;
-        byte[] buffer = new byte[1];
+        final byte[] header = new byte[11];
 
         // try to read the start flag
-        if (serialPort.readBytes(buffer, 200) == -1) {
+        if (serialPort.readBytes(header, 200) == -1) {
             // no bytes available
             return null;
         }
 
         // check for correct start flag for response
-        if (buffer[0] != (byte) 0x01) {
+        if (header[0] != (byte) 0x4E && header[1] != (byte) 0x57) {
             throw new IOException("Error reading data - got wrong start flag!");
         }
+
+        final ByteBuffer headerBuffer = ByteBuffer.wrap(header).order(ByteOrder.BIG_ENDIAN);
+        headerBuffer.position(2);
+        final int length = headerBuffer.getShort(); // frame length
+
+        headerBuffer.position(8);
+
+        final byte commandId = headerBuffer.get(); // command id
+
+        if (commandId != 0x06) {
+            throw new IOException("Error reading data - got wrong command id!");
+        }
+
+        // read the rest of the frame
+        final byte[] bufferBytes = new byte[length - 11 + 4]; // length - header + checksum
+
+        if (serialPort.readBytes(bufferBytes, 200) == -1) {
+            // no bytes available
+            return null;
+        }
+
+        final ByteBuffer buffer = ByteBuffer.wrap(bufferBytes).order(ByteOrder.BIG_ENDIAN);
 
         boolean endFlagFound = false;
         final List<DataEntry> dataEntries = new ArrayList<>();
 
         do {
-            final byte[] dataId = new byte[1];
+            final byte dataId = buffer.get();
 
             // check if bytes are available
-            if (serialPort.readBytes(dataId, 200) != -1) {
-                final JKRS485DataId dataIdType = JKRS485DataId.fromDataId(dataId[0]);
+            final JKRS485DataId dataIdType = JKRS485DataId.fromDataId(dataId);
 
-                if (dataIdType != null) {
-                    final DataEntry dataEntry = new DataEntry();
-                    dataEntry.setId(dataIdType);
+            if (dataIdType != null) {
+                final DataEntry dataEntry = new DataEntry();
+                dataEntry.setId(dataIdType);
 
-                    // get the length of the data segment
-                    int length = dataIdType.getLength();
+                // get the length of the data segment
+                int dataLength = dataIdType.getLength();
 
-                    // special handling for cell voltages and end flag
-                    if (dataIdType.equals(JKRS485DataId.READ_CELL_VOLTAGES)) {
-                        // the first data byte declares the number bytes for all cells
-                        buffer = new byte[1];
-                        serialPort.readBytes(buffer, 200);
-                        length = buffer[0];
-                    } else if (dataIdType.equals(JKRS485DataId.END_FLAG)) {
-                        endFlagFound = true;
-                    }
-
-                    // do not add the endflag as entry
-                    if (!endFlagFound) {
-                        // copy the relevant data bytes and set them for this entry
-                        final byte[] datacopy = new byte[length];
-                        serialPort.readBytes(datacopy, 200);
-                        dataEntry.setData(ByteBuffer.wrap(datacopy));
-                        dataEntries.add(dataEntry);
-                    }
+                // special handling for cell voltages and end flag
+                if (dataIdType.equals(JKRS485DataId.READ_CELL_VOLTAGES)) {
+                    // the first data byte declares the number bytes for all cells
+                    dataLength = buffer.get();
+                } else if (dataIdType.equals(JKRS485DataId.END_FLAG)) {
+                    endFlagFound = true;
                 }
-            } else {
-                return null;
+
+                // do not add the endflag as entry
+                if (!endFlagFound) {
+                    // copy the relevant data bytes and set them for this entry
+                    final byte[] datacopy = new byte[dataLength];
+                    buffer.get(datacopy);
+                    dataEntry.setData(ByteBuffer.wrap(datacopy).order(ByteOrder.BIG_ENDIAN));
+                    dataEntries.add(dataEntry);
+                }
             }
         } while (!endFlagFound);
 
