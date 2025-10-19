@@ -196,13 +196,14 @@ public class JKBmsRS485Processor extends BMS {
                 LOG.error("Error receiving frame!", e);
             }
         } catch (final Exception e) {
-            LOG.error("Error sending frame: " + Port.printBuffer(sendFrame));
+            LOG.error("Error sending frame: " + Port.printBuffer(sendFrame), e);
         }
     }
 
 
     List<DataEntry> readFrame(final Port port) throws IOException {
         final JSerialCommPort serialPort = (JSerialCommPort) port;
+
         final byte[] header = new byte[11];
 
         // try to read the start flag
@@ -212,7 +213,7 @@ public class JKBmsRS485Processor extends BMS {
         }
 
         // check for correct start flag for response
-        if (header[0] != (byte) 0x4E && header[1] != (byte) 0x57) {
+        if (header[0] != (byte) 0x4E || header[1] != (byte) 0x57) {
             throw new IOException("Error reading data - got wrong start flag!");
         }
 
@@ -229,7 +230,7 @@ public class JKBmsRS485Processor extends BMS {
         }
 
         // read the rest of the frame
-        final byte[] bufferBytes = new byte[length - 11 + 4]; // length - header + checksum
+        final byte[] bufferBytes = new byte[length - 11 + 2]; // length - header + length field itself
 
         if (serialPort.readBytes(bufferBytes, 200) == -1) {
             // no bytes available
