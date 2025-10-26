@@ -40,13 +40,6 @@ public class JKBMSRS485ProcessorTest {
 
     @BeforeAll
     public static void setupOnce() {
-        // final JKBmsRS485Descriptor descriptor = new JKBmsRS485Descriptor() {
-        // @Override
-        // public Port createPort(final BMSConfig config) {
-        // return port;
-        // }
-        // };
-        // final BMSConfig bmsConfig = new BMSConfig(1, "port0", 9600, 200, descriptor);
         processor.initialize(bmsConfig);
     }
 
@@ -67,6 +60,8 @@ public class JKBMSRS485ProcessorTest {
         port.serialEvent(event);
 
         processor.collectData(port);
+
+        System.out.println(processor.getEnergyStorage().toJson());
     }
 
 }

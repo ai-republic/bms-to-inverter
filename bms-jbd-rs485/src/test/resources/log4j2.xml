@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration>
+
+	<Properties>
+		<Property name="pattern">%d{yyyy-MM-dd HH:mm:ss.SSS} | %-5.5p | %-10.10t | %-20.20C:%-5.5L | %msg%n</Property>
+	</Properties>
+	
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="${pattern}"/>
+		</Console>
+		
+		<RollingFile name="bmstoinverter" fileName="logs/bmstoinverter.log"
+				 filePattern="logs/$${date:yyyy-MM}/bmstoinverter-%d{yyyy-MM-dd}-%i.log.gz">
+			<PatternLayout>
+				<pattern>${pattern}</pattern>
+			</PatternLayout>
+			<Policies>
+				<TimeBasedTriggeringPolicy /><!-- Rotated everyday -->
+				<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
+			</Policies>
+		</RollingFile>
+		
+		<RollingFile name="webserver" fileName="logs/webserver.log"
+				 filePattern="logs/$${date:yyyy-MM}/webserver-%d{yyyy-MM-dd}-%i.log.gz">
+			<PatternLayout>
+				<pattern>${pattern}</pattern>
+			</PatternLayout>
+			<Policies>
+				<TimeBasedTriggeringPolicy /><!-- Rotated everyday -->
+				<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
+			</Policies>
+		</RollingFile>
+		
+		<RollingFile name="mqtt" fileName="logs/mqtt.log"
+				 filePattern="logs/$${date:yyyy-MM}/mqtt-%d{yyyy-MM-dd}-%i.log.gz">
+			<PatternLayout>
+				<pattern>${pattern}</pattern>
+			</PatternLayout>
+			<Policies>
+				<TimeBasedTriggeringPolicy /><!-- Rotated everyday -->
+				<SizeBasedTriggeringPolicy size="100 MB"/> <!-- Or every 100 MB -->
+			</Policies>
+		</RollingFile>
+		
+	</Appenders>
+	
+	<Loggers>
+		<Logger name="org.jboss.weld" level="error" additivity="true">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="bmstoinverter"/>
+        </Logger>
+		<Logger name="io.netty" level="error" additivity="false">
+            <AppenderRef ref="webserver"/>
+        </Logger>
+		<Logger name="com.airepublic.webserver" level="warn" additivity="false">
+            <AppenderRef ref="webserver"/>
+        </Logger>
+		<Logger name="org.apache.activemq" level="info" additivity="false">
+            <AppenderRef ref="mqtt"/>
+        </Logger>
+        
+		<Root level="debug"> <!-- We log everything -->
+			<AppenderRef ref="Console"/> <!-- To console -->
+			<AppenderRef ref="bmstoinverter"/>
+		</Root>
+	</Loggers>
+	
+</Configuration>
+	

@@ -23,6 +23,7 @@ import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
+import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
 import com.airepublic.bmstoinverter.core.util.BitUtil;
 import com.airepublic.bmstoinverter.core.util.ByteAsciiConverter;
 
@@ -33,37 +34,91 @@ import com.airepublic.bmstoinverter.core.util.ByteAsciiConverter;
 public class PylonInverterRS485Processor extends Inverter {
     private final static byte ADDRESS = 0x12;
 
+    public PylonInverterRS485Processor() {
+        super();
+    }
+
+
+    protected PylonInverterRS485Processor(final EnergyStorage energyStorage) {
+        super(energyStorage);
+    }
+
+
     @Override
     protected List<ByteBuffer> createSendFrames(final ByteBuffer requestFrame, final BatteryPack aggregatedPack) {
         final List<ByteBuffer> frames = new ArrayList<>();
-        frames.add(createProtocolVersion(aggregatedPack)); // 0x4F
-        frames.add(createManufacturerCode(aggregatedPack)); // 0x51
-        frames.add(createChargeDischargeManagementInfo(aggregatedPack)); // 0x92
-        frames.add(createCellInformation(aggregatedPack)); // 0x42
-        frames.add(createVoltageCurrentLimits(aggregatedPack)); // 0x47
-        frames.add(createSystemInfo(aggregatedPack)); // 0x60
-        frames.add(createBatteryInformation(aggregatedPack)); // 0x61
-        frames.add(createAlarms(aggregatedPack)); // 0x62
-        frames.add(createChargeDischargeIfno(aggregatedPack)); // 0x63
+        requestFrame.position(3);
+        final byte adr = ByteAsciiConverter.convertAsciiBytesToByte(requestFrame.get(), requestFrame.get());
+        final byte cid1 = ByteAsciiConverter.convertAsciiBytesToByte(requestFrame.get(), requestFrame.get());
+        final byte cid2 = ByteAsciiConverter.convertAsciiBytesToByte(requestFrame.get(), requestFrame.get());
+        final byte[] lengthBytes = new byte[4];
+        requestFrame.get(lengthBytes);
+        final int length = ByteAsciiConverter.convertAsciiBytesToShort(lengthBytes) & 0x0FFF;
+        final byte[] data = new byte[length];
+        requestFrame.get(data);
 
+        if (cid1 != 0x46) {
+            // not supported
+            return frames;
+        }
+
+        byte[] responseData = null;
+
+        switch (cid2) {
+            case 0x4F:
+                responseData = createProtocolVersion(aggregatedPack);
+            break; // 0x4F Protocol Version
+            case 0x51:
+                responseData = createManufacturerCode(aggregatedPack);
+            break; // 0x51 Manufacturer Code
+            case (byte) 0x92:
+                responseData = createChargeDischargeManagementInfo(aggregatedPack);
+            break; // 0x92 Charge/Discharge Management Info
+            case 0x42:
+                responseData = createCellInformation(aggregatedPack);
+            break; // 0x42 Cell Information
+            case 0x47:
+                responseData = createVoltageCurrentLimits(aggregatedPack);
+            break; // 0x47 Voltage/Current Limits
+            case 0x60:
+                responseData = createSystemInfo(aggregatedPack);
+            break; // 0x60 System Info
+            case 0x61:
+                responseData = createBatteryInformation(aggregatedPack);
+            break; // 0x61 Battery Information
+            case 0x62:
+                responseData = createAlarms(aggregatedPack);
+            break; // 0x62 Alarms
+            case 0x63:
+                responseData = createChargeDischargeIfno(aggregatedPack);
+            break; // 0x63
+
+            default:
+                // not supported
+                return frames;
+        }
+
+        frames.add(prepareSendFrame(adr, cid1, (byte) 0x00, responseData));
+
+        frames.stream().forEach(f -> System.out.println(Port.printBuffer(f)));
         return frames;
     }
 
 
     // 0x4F
-    private ByteBuffer createProtocolVersion(final BatteryPack pack) {
+    private byte[] createProtocolVersion(final BatteryPack pack) {
         final ByteBuffer buffer = ByteBuffer.allocate(4096);
         buffer.put(ByteAsciiConverter.convertStringToAsciiBytes(pack.softwareVersion, 1));
 
         final byte[] data = new byte[buffer.position()];
         buffer.get(data, 0, buffer.position());
 
-        return prepareSendFrame(ADDRESS, (byte) 0x46, (byte) 0x63, data);
+        return data;
     }
 
 
     // 0x51
-    private ByteBuffer createManufacturerCode(final BatteryPack pack) {
+    private byte[] createManufacturerCode(final BatteryPack pack) {
         final ByteBuffer buffer = ByteBuffer.allocate(4096);
         buffer.put(ByteAsciiConverter.convertStringToAsciiBytes("PYLON", 10));
         buffer.put(ByteAsciiConverter.convertStringToAsciiBytes(pack.softwareVersion, 1));
@@ -72,12 +127,12 @@ public class PylonInverterRS485Processor extends Inverter {
         final byte[] data = new byte[buffer.position()];
         buffer.get(data, 0, buffer.position());
 
-        return prepareSendFrame(ADDRESS, (byte) 0x46, (byte) 0x63, data);
+        return data;
     }
 
 
     // 0x92
-    private ByteBuffer createChargeDischargeManagementInfo(final BatteryPack pack) {
+    private byte[] createChargeDischargeManagementInfo(final BatteryPack pack) {
         final ByteBuffer buffer = ByteBuffer.allocate(4096);
         buffer.put(ByteAsciiConverter.convertByteToAsciiBytes(ADDRESS)); // BMS ID
 
@@ -94,12 +149,12 @@ public class PylonInverterRS485Processor extends Inverter {
         final byte[] data = new byte[buffer.position()];
         buffer.get(data, 0, buffer.position());
 
-        return prepareSendFrame(ADDRESS, (byte) 0x46, (byte) 0x63, data);
+        return data;
     }
 
 
     // 0x42
-    private ByteBuffer createCellInformation(final BatteryPack pack) {
+    private byte[] createCellInformation(final BatteryPack pack) {
         final ByteBuffer buffer = ByteBuffer.allocate(4096);
         buffer.put(ByteAsciiConverter.convertByteToAsciiBytes(ADDRESS)); // BMS ID
         buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) pack.numberOfCells));
@@ -125,12 +180,12 @@ public class PylonInverterRS485Processor extends Inverter {
         final byte[] data = new byte[buffer.position()];
         buffer.get(data, 0, buffer.position());
 
-        return prepareSendFrame(ADDRESS, (byte) 0x46, (byte) 0x63, data);
+        return data;
     }
 
 
     // 0x47
-    private ByteBuffer createVoltageCurrentLimits(final BatteryPack pack) {
+    private byte[] createVoltageCurrentLimits(final BatteryPack pack) {
         final ByteBuffer buffer = ByteBuffer.allocate(4096);
         buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) pack.maxCellVoltageLimit));
         buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) pack.minCellVoltageLimit)); // warning
@@ -148,12 +203,12 @@ public class PylonInverterRS485Processor extends Inverter {
         final byte[] data = new byte[buffer.position()];
         buffer.get(data, 0, buffer.position());
 
-        return prepareSendFrame(ADDRESS, (byte) 0x46, (byte) 0x60, data);
+        return data;
     }
 
 
     // 0x60
-    private ByteBuffer createSystemInfo(final BatteryPack aggregatedPack) {
+    private byte[] createSystemInfo(final BatteryPack aggregatedPack) {
         final ByteBuffer buffer = ByteBuffer.allocate(4096);
 
         buffer.put(ByteAsciiConverter.convertStringToAsciiBytes("Battery", 10));
@@ -168,12 +223,12 @@ public class PylonInverterRS485Processor extends Inverter {
         final byte[] data = new byte[buffer.position()];
         buffer.get(data, 0, buffer.position());
 
-        return prepareSendFrame(ADDRESS, (byte) 0x46, (byte) 0x60, data);
+        return data;
     }
 
 
     // 0x61
-    private ByteBuffer createBatteryInformation(final BatteryPack aggregatedPack) {
+    private byte[] createBatteryInformation(final BatteryPack aggregatedPack) {
         final ByteBuffer buffer = ByteBuffer.allocate(4096);
 
         buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (aggregatedPack.packVoltage * 100)));
@@ -270,12 +325,12 @@ public class PylonInverterRS485Processor extends Inverter {
         final byte[] data = new byte[buffer.position()];
         buffer.get(data, 0, buffer.position());
 
-        return prepareSendFrame(ADDRESS, (byte) 0x46, (byte) 0x61, data);
+        return data;
     }
 
 
     // 0x62
-    private ByteBuffer createAlarms(final BatteryPack pack) {
+    private byte[] createAlarms(final BatteryPack pack) {
         final byte[] alarms = new byte[8];
 
         // warning alarms 1
@@ -334,12 +389,12 @@ public class PylonInverterRS485Processor extends Inverter {
         alarms[6] = bytes[0];
         alarms[7] = bytes[1];
 
-        return prepareSendFrame(ADDRESS, (byte) 0x46, (byte) 0x62, alarms);
+        return alarms;
     }
 
 
     // 0x63
-    private ByteBuffer createChargeDischargeIfno(final BatteryPack aggregatedPack) {
+    private byte[] createChargeDischargeIfno(final BatteryPack aggregatedPack) {
         final ByteBuffer buffer = ByteBuffer.allocate(4096);
 
         buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (aggregatedPack.maxPackVoltageLimit * 100)));
@@ -355,13 +410,13 @@ public class PylonInverterRS485Processor extends Inverter {
         final byte[] data = new byte[buffer.position()];
         buffer.get(data, 0, buffer.position());
 
-        return prepareSendFrame(ADDRESS, (byte) 0x46, (byte) 0x63, data);
+        return data;
     }
 
 
     @Override
     protected ByteBuffer readRequest(final Port port) throws IOException {
-        return null;
+        return port.receiveFrame();
     }
 
 
@@ -372,7 +427,7 @@ public class PylonInverterRS485Processor extends Inverter {
 
 
     ByteBuffer prepareSendFrame(final byte address, final byte cid1, final byte cid2, final byte[] data) {
-        final ByteBuffer sendFrame = ByteBuffer.allocate(18 + data.length * 2).order(ByteOrder.BIG_ENDIAN);
+        final ByteBuffer sendFrame = ByteBuffer.allocate(18 + data.length).order(ByteOrder.BIG_ENDIAN);
         sendFrame.put((byte) 0x7E); // Start flag
         sendFrame.put((byte) 0x32); // version
         sendFrame.put((byte) 0x30); // version
@@ -392,27 +447,24 @@ public class PylonInverterRS485Processor extends Inverter {
 
 
     private byte[] createChecksum(final ByteBuffer sendFrame) {
-        long checksum = 0;
+        int sum = 0;
 
-        // add all values except SOI, checksum and EOI
-        for (int i = 1; i < sendFrame.capacity() - 5; i++) {
-            checksum += sendFrame.get(i);
+        // We assume the first byte is the SOI (0x7E) and is NOT included in checksum
+        for (int i = 1; i < sendFrame.capacity(); i++) {
+            sum += sendFrame.get(i);
         }
 
-        // modulo remainder of 65535
-        checksum %= 65535;
+        // Two’s complement
+        final int checksum = ~sum + 1 & 0xFFFF;
 
-        // invert
-        checksum = ~checksum;
-        // add 1
-        checksum++;
+        // Return as two bytes (big-endian)
+        final byte[] result = new byte[2];
+        result[0] = (byte) (checksum >> 8 & 0xFF);
+        result[1] = (byte) (checksum & 0xFF);
 
-        // extract the high and low bytes
-        final byte high = (byte) (checksum >> 8);
-        final byte low = (byte) (checksum & 0x000000FF);
         // convert them to ascii
-        final byte[] highBytes = ByteAsciiConverter.convertByteToAsciiBytes(high);
-        final byte[] lowBytes = ByteAsciiConverter.convertByteToAsciiBytes(low);
+        final byte[] highBytes = ByteAsciiConverter.convertByteToAsciiBytes(result[0]);
+        final byte[] lowBytes = ByteAsciiConverter.convertByteToAsciiBytes(result[1]);
         final byte[] data = new byte[4];
         data[0] = highBytes[0];
         data[1] = highBytes[1];
@@ -425,28 +477,28 @@ public class PylonInverterRS485Processor extends Inverter {
 
 
     private byte[] createLengthCheckSum(final int length) {
+        // Ensure LENID fits 12 bits
+        final int lenId = length & 0x0FFF;
 
-        // spit the first 12 bits into groups of 4 bits and accumulate
-        int chksum = (byte) BitUtil.bits(length, 0, 4) + (byte) BitUtil.bits(length, 4, 4) + (byte) BitUtil.bits(length, 8, 4);
-        // modulo 16 remainder
-        chksum %= 16;
-        // invert
-        chksum = ~chksum & 0xff;
-        chksum &= 0x0000000f;
-        // and finally +1
-        chksum++;
+        // Split LENID into high/low bytes
+        final int high = lenId >> 8 & 0xFF;
+        final int low = lenId & 0xFF;
 
-        // combine the checksum and length
-        int dataValue = chksum;
-        dataValue = dataValue << 12;
-        dataValue += length;
+        // Compute 4-bit LCHKSUM so that (LCHKSUM + high + low) == 0 mod 16
+        final int sum = high + low & 0x0F;
+        final int lchk = ~sum + 1 & 0x0F;
 
-        // extract the high and low bytes
-        final byte high = (byte) (dataValue >> 8);
-        final byte low = (byte) (dataValue & 0x000000FF);
+        // Combine into 16-bit LENGTH value
+        final int lengthField = (lchk << 12 | lenId) & 0xFFFF;
+
+        // Convert to 2 bytes (big-endian)
+        final byte[] result = new byte[2];
+        result[0] = (byte) (lengthField >> 8 & 0xFF); // high byte
+        result[1] = (byte) (lengthField & 0xFF); // low byte
+
         // convert them to ascii
-        final byte[] highBytes = ByteAsciiConverter.convertByteToAsciiBytes(high);
-        final byte[] lowBytes = ByteAsciiConverter.convertByteToAsciiBytes(low);
+        final byte[] highBytes = ByteAsciiConverter.convertByteToAsciiBytes(result[0]);
+        final byte[] lowBytes = ByteAsciiConverter.convertByteToAsciiBytes(result[1]);
         final byte[] data = new byte[4];
         data[0] = highBytes[0];
         data[1] = highBytes[1];
@@ -458,32 +510,14 @@ public class PylonInverterRS485Processor extends Inverter {
 
 
     public static void main(final String[] args) {
-        byte value;
-        value = 0;
+        final PylonInverterRS485Processor processor = new PylonInverterRS485Processor();
+        final EnergyStorage energyStorage = new EnergyStorage();
+        energyStorage.fromJson(
+                "{\"batteryPacks\":[{\"alarms\":{\"DISCHARGE_MODULE_TEMPERATURE_HIGH\":\"NONE\",\"FAILURE_OTHER\":\"NONE\",\"DISCHARGE_VOLTAGE_LOW\":\"NONE\",\"PACK_TEMPERATURE_HIGH\":\"NONE\",\"PACK_VOLTAGE_HIGH\":\"NONE\",\"DISCHARGE_CURRENT_HIGH\":\"NONE\",\"CHARGE_MODULE_TEMPERATURE_HIGH\":\"NONE\",\"CHARGE_VOLTAGE_HIGH\":\"NONE\",\"PACK_VOLTAGE_LOW\":\"NONE\",\"SOC_LOW\":\"NONE\",\"PACK_TEMPERATURE_LOW\":\"NONE\",\"ENCASING_TEMPERATURE_HIGH\":\"NONE\",\"CELL_VOLTAGE_DIFFERENCE_HIGH\":\"NONE\",\"CHARGE_CURRENT_HIGH\":\"NONE\"},\"type\":0,\"ratedCapacitymAh\":280000,\"ratedCellmV\":0,\"maxPackVoltageLimit\":288,\"minPackVoltageLimit\":208,\"maxPackChargeCurrent\":1000,\"maxPackDischargeCurrent\":2000,\"packVoltage\":266,\"packCurrent\":0,\"packSOC\":1000,\"packSOH\":0,\"maxCellVoltageLimit\":3600,\"minCellVoltageLimit\":2600,\"maxCellmV\":3333,\"maxCellVNum\":1,\"minCellmV\":3332,\"minCellVNum\":0,\"cellDiffmV\":1,\"tempMax\":0,\"tempMin\":0,\"tempAverage\":180,\"chargeDischargeStatus\":0,\"chargeMOSState\":true,\"dischargeMOSState\":true,\"forceCharge\":false,\"forceDischarge\":false,\"bmsHeartBeat\":0,\"remainingCapacitymAh\":0,\"numberOfCells\":8,\"numOfTempSensors\":2,\"chargerState\":false,\"loadState\":false,\"dIO\":[false,false,false,false,false,false,false,false],\"bmsCycles\":0,\"cellVmV\":[3332,3333,3332,3332,3332,3332,3333,3332,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"cellTemperature\":[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],\"cellBalanceState\":[false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false],\"cellBalanceActive\":false,\"manufacturerCode\":\"Input Userda407272C2727\\u0000\",\"hardwareVersion\":\"\",\"softwareVersion\":\"NW\\u0000\\u0013\\u0000\\u0000\\u0000\\u0000\\u0006\\u0003\\u0000\\u0000\\u0000\\u0000\\u0000\\u0000h\\u0000\\u0000\\u0001)\",\"tempMaxCellNum\":0,\"tempMinCellNum\":0,\"maxModulemV\":0,\"minModulemV\":0,\"maxModulemVNum\":0,\"minModulemVNum\":0,\"maxModuleTemp\":0,\"minModuleTemp\":0,\"maxModuleTempNum\":0,\"minModuleTempNum\":0,\"modulesInSeries\":8,\"moduleNumberOfCells\":0,\"moduleVoltage\":0,\"moduleRatedCapacityAh\":0}]}");
 
-        // System.out.println(value &= ~(1 << 7));
-        value = BitUtil.setBit(value, 0, false);
-        value = BitUtil.setBit(value, 1, false);
-        value = BitUtil.setBit(value, 2, false);
-        value = BitUtil.setBit(value, 3, false);
-        value = BitUtil.setBit(value, 4, false);
-        value = BitUtil.setBit(value, 5, false);
-        value = BitUtil.setBit(value, 6, false);
-        value = BitUtil.setBit(value, 7, true);
+        final ByteBuffer request = ByteBuffer.wrap(new byte[] { (byte) 0x7E, (byte) 0x32, (byte) 0x30, (byte) 0x30, (byte) 0x32, (byte) 0x34, (byte) 0x36, (byte) 0x36, (byte) 0x31, (byte) 0x45, (byte) 0x30, (byte) 0x30, (byte) 0x32, (byte) 0x30, (byte) 0x31, (byte) 0x46, (byte) 0x44, (byte) 0x33, (byte) 0x33, (byte) 0x0D });
+        final BatteryPack pack = energyStorage.getBatteryPack(0);
 
-        System.out.println(value);
-
-        final BatteryPack pack = new BatteryPack();
-        value = 0;
-        BitUtil.setBit(value, 7, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_HIGH) == AlarmLevel.WARNING);
-        BitUtil.setBit(value, 6, pack.getAlarmLevel(Alarm.PACK_VOLTAGE_LOW) == AlarmLevel.WARNING);
-        BitUtil.setBit(value, 5, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_HIGH) == AlarmLevel.WARNING);
-        BitUtil.setBit(value, 4, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_LOW) == AlarmLevel.WARNING);
-        BitUtil.setBit(value, 3, pack.getAlarmLevel(Alarm.CELL_TEMPERATURE_HIGH) == AlarmLevel.WARNING);
-        BitUtil.setBit(value, 2, pack.getAlarmLevel(Alarm.CELL_TEMPERATURE_LOW) == AlarmLevel.WARNING);
-        BitUtil.setBit(value, 1, false);
-        BitUtil.setBit(value, 0, pack.getAlarmLevel(Alarm.CELL_VOLTAGE_DIFFERENCE_HIGH) == AlarmLevel.WARNING);
-        System.out.println(value);
-
+        processor.createSendFrames(request, pack);
     }
 }

@@ -22,9 +22,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
-import com.airepublic.bmstoinverter.core.bms.data.EnergyStorageQualifier;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
+import com.airepublic.bmstoinverter.core.bms.data.EnergyStorageQualifier;
 
 /**
  * The class to identify an {@link Inverter}.
@@ -46,8 +46,18 @@ public abstract class Inverter {
 
 
     /**
-     * Initializes the {@link Inverter} with the specified {@link InverterConfig}, initializing the
-     * port parameters from the system properties.
+     * Constructor with injected {@link EnergyStorage}.
+     *
+     * @param energyStorage the {@link EnergyStorage}
+     */
+    protected Inverter(final EnergyStorage energyStorage) {
+        this.energyStorage = energyStorage;
+    }
+
+
+    /**
+     * Initializes the {@link Inverter} with the specified {@link InverterConfig}, initializing the port
+     * parameters from the system properties.
      */
     public void initialize(final InverterConfig config) {
         this.config = config;

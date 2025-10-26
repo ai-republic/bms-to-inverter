@@ -21,9 +21,9 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.airepublic.bmstoinverter.core.bms.data.EnergyStorageQualifier;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
+import com.airepublic.bmstoinverter.core.bms.data.EnergyStorageQualifier;
 
 /**
  * The abstract class to identify a BMS.
@@ -38,8 +38,8 @@ public abstract class BMS {
     private transient EnergyStorage energyStorage;
 
     /**
-     * Initializes the BMS with the specified {@link BMSConfig}, initializing the port parameters
-     * from the system properties.
+     * Initializes the BMS with the specified {@link BMSConfig}, initializing the port parameters from
+     * the system properties.
      * 
      * @param config the {@link BMSConfig}
      */
@@ -102,8 +102,8 @@ public abstract class BMS {
 
     /**
      * Gets the {@link BatteryPack} at the specified index associated with this {@link BMS}. If the
-     * number is greater than already known, then the pack size will increase until it has the
-     * number specified.
+     * number is greater than already known, then the pack size will increase until it has the number
+     * specified.
      *
      * @param batteryId the id of the {@link BatteryPack}
      * @return the {@link BatteryPack} with the specified id associated with this {@link BMS}
@@ -219,5 +219,15 @@ public abstract class BMS {
      * @throws NoDataAvailableException when no data was received too many times
      */
     protected abstract void collectData(Port port) throws IOException, TooManyInvalidFramesException, NoDataAvailableException;
+
+
+    /**
+     * Gets the {@link EnergyStorage} data.
+     * 
+     * @return the {@link EnergyStorage}
+     */
+    public EnergyStorage getEnergyStorage() {
+        return energyStorage;
+    }
 
 }

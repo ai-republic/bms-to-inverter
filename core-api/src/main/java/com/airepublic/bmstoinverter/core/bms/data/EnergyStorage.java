@@ -64,13 +64,14 @@ public class EnergyStorage {
 
 
     /**
-     * Creates a {@link BatteryPack} object from the specified a JSON string.
+     * Fills this {@link EnergyStorage} object from the specified a JSON string.
      *
-     * @param json a string representing a {@link BatteryPack}
-     * @return the {@link BatteryPack}
+     * @param json a string representing a {@link EnergyStorage} object
      */
-    public BatteryPack fromJson(final String json) {
-        return gson.fromJson(json, BatteryPack.class);
+    public void fromJson(final String json) {
+        final EnergyStorage temp = gson.fromJson(json, EnergyStorage.class);
+        batteryPacks.clear();
+        batteryPacks.addAll(temp.getBatteryPacks());
     }
 
 }

@@ -72,8 +72,7 @@ public class ByteAsciiConverter {
     public static short convertAsciiBytesToShort(final byte[] value) {
         final byte first = convertAsciiBytesToByte(value[0], value[1]);
         final byte second = convertAsciiBytesToByte(value[2], value[3]);
-        short result = first;
-        result = (short) (result << 8 & second);
+        final short result = (short) ((first << 8) | (second & 0xFF));
 
         return result;
     }
