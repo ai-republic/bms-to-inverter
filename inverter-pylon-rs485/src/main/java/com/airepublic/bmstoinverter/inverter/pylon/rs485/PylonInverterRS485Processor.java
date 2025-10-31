@@ -32,7 +32,6 @@ import com.airepublic.bmstoinverter.core.util.ByteAsciiConverter;
  */
 @ApplicationScoped
 public class PylonInverterRS485Processor extends Inverter {
-    private final static byte ADDRESS = 0x12;
 
     public PylonInverterRS485Processor() {
         super();
@@ -47,60 +46,64 @@ public class PylonInverterRS485Processor extends Inverter {
     @Override
     protected List<ByteBuffer> createSendFrames(final ByteBuffer requestFrame, final BatteryPack aggregatedPack) {
         final List<ByteBuffer> frames = new ArrayList<>();
-        requestFrame.position(3);
-        final byte adr = ByteAsciiConverter.convertAsciiBytesToByte(requestFrame.get(), requestFrame.get());
-        final byte cid1 = ByteAsciiConverter.convertAsciiBytesToByte(requestFrame.get(), requestFrame.get());
-        final byte cid2 = ByteAsciiConverter.convertAsciiBytesToByte(requestFrame.get(), requestFrame.get());
-        final byte[] lengthBytes = new byte[4];
-        requestFrame.get(lengthBytes);
-        final int length = ByteAsciiConverter.convertAsciiBytesToShort(lengthBytes) & 0x0FFF;
-        final byte[] data = new byte[length];
-        requestFrame.get(data);
 
-        if (cid1 != 0x46) {
-            // not supported
-            return frames;
-        }
+        if (requestFrame != null) {
+            requestFrame.position(3);
+            final byte adr = ByteAsciiConverter.convertAsciiBytesToByte(requestFrame.get(), requestFrame.get());
+            final byte cid1 = ByteAsciiConverter.convertAsciiBytesToByte(requestFrame.get(), requestFrame.get());
+            final byte cid2 = ByteAsciiConverter.convertAsciiBytesToByte(requestFrame.get(), requestFrame.get());
+            final byte[] lengthBytes = new byte[4];
+            requestFrame.get(lengthBytes);
+            final int length = ByteAsciiConverter.convertAsciiBytesToShort(lengthBytes) & 0x0FFF;
+            final byte[] data = new byte[length];
+            requestFrame.get(data);
 
-        byte[] responseData = null;
-
-        switch (cid2) {
-            case 0x4F:
-                responseData = createProtocolVersion(aggregatedPack);
-            break; // 0x4F Protocol Version
-            case 0x51:
-                responseData = createManufacturerCode(aggregatedPack);
-            break; // 0x51 Manufacturer Code
-            case (byte) 0x92:
-                responseData = createChargeDischargeManagementInfo(aggregatedPack);
-            break; // 0x92 Charge/Discharge Management Info
-            case 0x42:
-                responseData = createCellInformation(aggregatedPack);
-            break; // 0x42 Cell Information
-            case 0x47:
-                responseData = createVoltageCurrentLimits(aggregatedPack);
-            break; // 0x47 Voltage/Current Limits
-            case 0x60:
-                responseData = createSystemInfo(aggregatedPack);
-            break; // 0x60 System Info
-            case 0x61:
-                responseData = createBatteryInformation(aggregatedPack);
-            break; // 0x61 Battery Information
-            case 0x62:
-                responseData = createAlarms(aggregatedPack);
-            break; // 0x62 Alarms
-            case 0x63:
-                responseData = createChargeDischargeIfno(aggregatedPack);
-            break; // 0x63
-
-            default:
+            if (cid1 != 0x46) {
                 // not supported
                 return frames;
+            }
+
+            byte[] responseData = null;
+
+            switch (cid2) {
+                case 0x4F:
+                    responseData = createProtocolVersion(aggregatedPack);
+                break; // 0x4F Protocol Version
+                case 0x51:
+                    responseData = createManufacturerCode(aggregatedPack);
+                break; // 0x51 Manufacturer Code
+                case (byte) 0x92:
+                    responseData = createChargeDischargeManagementInfo(aggregatedPack);
+                break; // 0x92 Charge/Discharge Management Info
+                case 0x42:
+                    responseData = createCellInformation(aggregatedPack);
+                break; // 0x42 Cell Information
+                case 0x47:
+                    responseData = createVoltageCurrentLimits(aggregatedPack);
+                break; // 0x47 Voltage/Current Limits
+                case 0x60:
+                    responseData = createSystemInfo(aggregatedPack);
+                break; // 0x60 System Info
+                case 0x61:
+                    responseData = createBatteryInformation(aggregatedPack);
+                break; // 0x61 Battery Information
+                case 0x62:
+                    responseData = createAlarms(aggregatedPack);
+                break; // 0x62 Alarms
+                case 0x63:
+                    responseData = createChargeDischargeIfno(aggregatedPack);
+                break; // 0x63
+
+                default:
+                    // not supported
+                    return frames;
+            }
+
+            frames.add(prepareSendFrame(adr, cid1, (byte) 0x00, responseData));
+
+            frames.stream().forEach(f -> System.out.println(Port.printBuffer(f)));
         }
 
-        frames.add(prepareSendFrame(adr, cid1, (byte) 0x00, responseData));
-
-        frames.stream().forEach(f -> System.out.println(Port.printBuffer(f)));
         return frames;
     }
 
@@ -134,8 +137,6 @@ public class PylonInverterRS485Processor extends Inverter {
     // 0x92
     private byte[] createChargeDischargeManagementInfo(final BatteryPack pack) {
         final ByteBuffer buffer = ByteBuffer.allocate(4096);
-        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes(ADDRESS)); // BMS ID
-
         buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (pack.maxPackVoltageLimit * 100)));
         buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (pack.minPackVoltageLimit * 100)));
         buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (pack.maxPackChargeCurrent * 10)));
@@ -156,7 +157,6 @@ public class PylonInverterRS485Processor extends Inverter {
     // 0x42
     private byte[] createCellInformation(final BatteryPack pack) {
         final ByteBuffer buffer = ByteBuffer.allocate(4096);
-        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes(ADDRESS)); // BMS ID
         buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) pack.numberOfCells));
 
         for (int cellNo = 0; cellNo < pack.numberOfCells; cellNo++) {
