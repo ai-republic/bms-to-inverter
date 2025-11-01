@@ -14,7 +14,7 @@ import com.airepublic.bmstoinverter.protocol.rs485.JSerialCommPort;
 import com.fazecast.jSerialComm.SerialPort;
 import com.fazecast.jSerialComm.SerialPortEvent;
 
-public class JKBMSRS485ProcessorTest {
+public class JKBmsRS485ProcessorTest {
     private final static JKBmsRS485Processor processor = new JKBmsRS485Processor();
     private final static JKBmsRS485Descriptor descriptor = new JKBmsRS485Descriptor() {
         @Override
