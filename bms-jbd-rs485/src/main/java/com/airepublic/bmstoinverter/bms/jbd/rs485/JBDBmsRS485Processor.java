@@ -39,21 +39,12 @@ public class JBDBmsRS485Processor extends BMS {
             return false;
         }
 
-        final int command = buffer.get(1);
-        final int length = buffer.get(3);
-        final byte[] data = new byte[length];
-        buffer.get(data, 4, length);
-
-        // calculate checksum
-        int sum = 0x0000;
-        sum -= (byte) command;
-
-        for (final byte element : data) {
-            sum -= element;
-        }
+        buffer.rewind();
+        final byte[] data = buffer.array();
+        final short checksum = compute(data);
 
         // compare the checksum
-        return buffer.get(length + 4) == (byte) (sum >> 8 & 0xFF) && buffer.get(length + 5) == (byte) (sum & 0xFF);
+        return data[data.length - 3] == (byte) (checksum >> 8 & 0x00FF) && data[data.length - 2] == (byte) (checksum & 0x00FF);
     };
 
     public static class DataEntry {
@@ -94,7 +85,7 @@ public class JBDBmsRS485Processor extends BMS {
     }
 
     @Override
-    protected void collectData(final Port port) throws TooManyInvalidFramesException, NoDataAvailableException, IOException {
+    public void collectData(final Port port) throws TooManyInvalidFramesException, NoDataAvailableException, IOException {
         sendMessage(port, 0x03);
         sendMessage(port, 0x04);
         sendMessage(port, 0x05);
@@ -135,8 +126,9 @@ public class JBDBmsRS485Processor extends BMS {
                 if (valid) {
                     receiveBuffer.rewind();
                     final int length = receiveBuffer.get(3);
-                    receiveBuffer.position(3);
+                    receiveBuffer.position(4);
                     final byte[] dataBytes = new byte[length];
+                    receiveBuffer.get(dataBytes);
                     final ByteBuffer data = ByteBuffer.wrap(dataBytes).order(ByteOrder.BIG_ENDIAN);
 
                     switch (receiveBuffer.get(1)) {
@@ -151,6 +143,7 @@ public class JBDBmsRS485Processor extends BMS {
                         }
                         break;
                         case 0x05: {
+                            readHardwareVersion(pack, data);
                             done = true;
                         }
                         break;
@@ -213,14 +206,19 @@ public class JBDBmsRS485Processor extends BMS {
     private void readStatus(final BatteryPack pack, final ByteBuffer data) {
         // total voltage (10mV)
         pack.packVoltage = data.getShort() / 10;
+        LOG.debug("Pack voltage: {} V", pack.packVoltage / 10.0);
         // current (10mAh)
         pack.packCurrent = data.getShort() / 10;
+        LOG.debug("Pack current: {} A", pack.packCurrent / 10.0);
         // remaining capacity (10mAh)
         pack.remainingCapacitymAh = data.getShort() * 10;
+        LOG.debug("Remaining capacity: {} Ah", pack.remainingCapacitymAh / 1000.0);
         // nominal capacity (10mAh)
         pack.ratedCapacitymAh = data.getShort() * 10;
+        LOG.debug("Rated capacity: {} Ah", pack.ratedCapacitymAh / 1000.0);
         // bms cycles
         pack.bmsCycles = data.getShort();
+        LOG.debug("BMS Cycles: {}", pack.bmsCycles);
         // production date (not mapped)
         data.getShort();
         // balancing states
@@ -228,6 +226,7 @@ public class JBDBmsRS485Processor extends BMS {
 
         for (int idx = 0; idx < 32; idx++) {
             pack.cellBalanceState[idx] = BitUtil.bit(balanceStates, idx);
+            LOG.debug("Cell {} balance state: {}", idx + 1, pack.cellBalanceState[idx]);
         }
 
         // protection status
@@ -235,32 +234,45 @@ public class JBDBmsRS485Processor extends BMS {
         // software version
         final byte sw = data.get();
         pack.softwareVersion = String.format("%02X", sw >> 4) + "." + String.format("%02X", sw & 0x0F);
+        LOG.debug("Software version: {}", pack.softwareVersion);
 
         // remaining SOC (1%)
         pack.packSOC = data.get() * 10;
+        LOG.debug("Pack SOC: {} %", pack.packSOC / 10.0);
 
         final byte mosState = data.get();
         pack.chargeMOSState = BitUtil.bit(mosState, 0);
+        LOG.debug("Charge MOS State: {}", pack.chargeMOSState);
         pack.dischargeMOSState = BitUtil.bit(mosState, 1);
+        LOG.debug("Discharge MOS State: {}", pack.dischargeMOSState);
 
         // number of battery strings
         data.get();
 
         // number of temperature sensors
         pack.numOfTempSensors = data.get();
+        LOG.debug("Number of temperature sensors: {}", pack.numOfTempSensors);
 
-        // temperature
-        pack.tempAverage = 0;
-        for (int i = 0; i < pack.numOfTempSensors; i++) {
-            pack.tempAverage += data.getShort() - 2731;
+        if (pack.numOfTempSensors != 0) {
+            // temperature
+            pack.tempAverage = 0;
+
+            for (int i = 0; i < pack.numOfTempSensors; i++) {
+                pack.tempAverage += data.getShort() - 2731;
+            }
+
+            pack.tempAverage = pack.tempAverage / pack.numOfTempSensors;
+            LOG.debug("Average temperature: {} °C", pack.tempAverage / 10.0);
         }
-        pack.tempAverage = pack.tempAverage / pack.numOfTempSensors;
     }
 
 
     private void readCellVoltages(final BatteryPack pack, final ByteBuffer data) {
-        for (int cellNo = 0; cellNo < data.capacity(); cellNo++) {
+        pack.numberOfCells = data.capacity() / 2;
+
+        for (int cellNo = 0; cellNo < pack.numberOfCells; cellNo++) {
             pack.cellVmV[cellNo] = data.getShort();
+            LOG.debug("Cell {} voltage: {} V", cellNo + 1, pack.cellVmV[cellNo] / 1000.0);
         }
     }
 
@@ -268,6 +280,18 @@ public class JBDBmsRS485Processor extends BMS {
     private void readAlarms(final BatteryPack pack, final short short1) {
         // TODO Auto-generated method stub
 
+    }
+
+
+    private void readHardwareVersion(final BatteryPack pack, final ByteBuffer data) {
+        String hardwareVersion = "";
+
+        for (int i = 0; i < data.capacity(); i++) {
+            hardwareVersion += (char) data.get(); // ascii chars
+        }
+
+        pack.hardwareVersion = hardwareVersion;
+        LOG.debug("Hardware version: {}", pack.hardwareVersion);
     }
 
 
@@ -295,9 +319,35 @@ public class JBDBmsRS485Processor extends BMS {
     }
 
 
-    public static void main(final String[] args) {
-        final JBDBmsRS485Processor p = new JBDBmsRS485Processor();
-        final ByteBuffer sendFrame = p.prepareSendFrame(0x03, 0, new byte[] {});
-        System.out.println(Port.printBuffer(sendFrame));
+    public static short compute(final byte[] frame) {
+        if (frame == null || frame.length < 5) {
+            throw new IllegalArgumentException("Invalid frame or index range");
+        }
+
+        short sum = 0;
+        for (int i = 2; i < frame.length - 3; i++) {
+            sum += frame[i] & 0xFF;
+        }
+
+        sum &= 0xFFFF;
+        final int checksum = ~sum + 1 & 0xFFFF;
+
+        return (short) checksum;
     }
+
+
+    public static void main(final String[] args) {
+        final byte[] frame = new byte[] {
+                (byte) 0xDD, (byte) 0x03, (byte) 0x00, (byte) 0x28, (byte) 0x15, (byte) 0x84, (byte) 0x03, (byte) 0xA4,
+                (byte) 0xC8, (byte) 0xE3, (byte) 0x80, (byte) 0xE8, (byte) 0x00, (byte) 0x10, (byte) 0x31, (byte) 0x3D,
+                (byte) 0xBA, (byte) 0xAA, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x54, (byte) 0x64,
+                (byte) 0xCB, (byte) 0x10, (byte) 0x04, (byte) 0x0B, (byte) 0x49, (byte) 0x0B, (byte) 0x62, (byte) 0x0B,
+                (byte) 0xFD, (byte) 0x0B, (byte) 0x57, (byte) 0x00, (byte) 0x00, (byte) 0x00, (byte) 0x80, (byte) 0xE8,
+                (byte) 0xC8, (byte) 0xE3, (byte) 0x00, (byte) 0x00, (byte) 0xF4, (byte) 0xCE, (byte) 0x77
+        };
+
+        final short checksum = compute(frame);
+        System.out.printf("Calculated checksum: 0x%02X%n", checksum & 0xFFFF);
+    }
+
 }
