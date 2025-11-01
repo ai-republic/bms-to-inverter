@@ -144,6 +144,7 @@ public class JSerialCommPort extends RS485Port implements SerialPortDataListener
         try {
             frame = getNextFrame();
         } catch (final IOException e) {
+            LOG.debug("Port " + getPortname() + ": Could not read next frame!", e);
         }
 
         LOG.debug("Next frame: {}", Port.printBuffer(frame));

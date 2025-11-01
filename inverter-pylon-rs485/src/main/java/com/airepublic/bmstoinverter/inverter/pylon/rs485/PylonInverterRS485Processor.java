@@ -18,6 +18,9 @@ import java.util.List;
 
 import javax.enterprise.context.ApplicationScoped;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.airepublic.bmstoinverter.core.AlarmLevel;
 import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.Port;
@@ -32,6 +35,7 @@ import com.airepublic.bmstoinverter.core.util.ByteAsciiConverter;
  */
 @ApplicationScoped
 public class PylonInverterRS485Processor extends Inverter {
+    private final static Logger LOG = LoggerFactory.getLogger(PylonInverterRS485Processor.class);
 
     public PylonInverterRS485Processor() {
         super();
@@ -47,7 +51,9 @@ public class PylonInverterRS485Processor extends Inverter {
     protected List<ByteBuffer> createSendFrames(final ByteBuffer requestFrame, final BatteryPack aggregatedPack) {
         final List<ByteBuffer> frames = new ArrayList<>();
 
+        // check if the inverter is actively requesting data
         if (requestFrame != null) {
+            LOG.debug("Inverter actively requesting frames from BMS");
             requestFrame.position(3);
             final byte adr = ByteAsciiConverter.convertAsciiBytesToByte(requestFrame.get(), requestFrame.get());
             final byte cid1 = ByteAsciiConverter.convertAsciiBytesToByte(requestFrame.get(), requestFrame.get());
@@ -101,6 +107,21 @@ public class PylonInverterRS485Processor extends Inverter {
 
             frames.add(prepareSendFrame(adr, cid1, (byte) 0x00, responseData));
 
+            frames.stream().forEach(f -> System.out.println(Port.printBuffer(f)));
+        } else {
+            // try to send data actively
+            final byte adr = 0x12;
+            frames.add(prepareSendFrame(adr, (byte) 0x4F, (byte) 0x00, createProtocolVersion(aggregatedPack)));
+            frames.add(prepareSendFrame(adr, (byte) 0x51, (byte) 0x00, createManufacturerCode(aggregatedPack)));
+            frames.add(prepareSendFrame(adr, (byte) 0x92, (byte) 0x00, createChargeDischargeManagementInfo(aggregatedPack)));
+            frames.add(prepareSendFrame(adr, (byte) 0x42, (byte) 0x00, createCellInformation(aggregatedPack)));
+            frames.add(prepareSendFrame(adr, (byte) 0x47, (byte) 0x00, createVoltageCurrentLimits(aggregatedPack)));
+            frames.add(prepareSendFrame(adr, (byte) 0x60, (byte) 0x00, createSystemInfo(aggregatedPack)));
+            frames.add(prepareSendFrame(adr, (byte) 0x61, (byte) 0x00, createBatteryInformation(aggregatedPack)));
+            frames.add(prepareSendFrame(adr, (byte) 0x62, (byte) 0x00, createAlarms(aggregatedPack)));
+            frames.add(prepareSendFrame(adr, (byte) 0x63, (byte) 0x00, createChargeDischargeIfno(aggregatedPack)));
+
+            LOG.debug("Actively sending {} frames to inverter", frames.size());
             frames.stream().forEach(f -> System.out.println(Port.printBuffer(f)));
         }
 
