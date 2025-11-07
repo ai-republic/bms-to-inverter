@@ -20,10 +20,12 @@ import java.util.function.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.airepublic.bmstoinverter.core.AlarmLevel;
 import com.airepublic.bmstoinverter.core.BMS;
 import com.airepublic.bmstoinverter.core.NoDataAvailableException;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.TooManyInvalidFramesException;
+import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.util.BitUtil;
 import com.airepublic.bmstoinverter.core.util.HexUtil;
@@ -270,16 +272,52 @@ public class JBDBmsRS485Processor extends BMS {
     private void readCellVoltages(final BatteryPack pack, final ByteBuffer data) {
         pack.numberOfCells = data.capacity() / 2;
 
+        int cellMinVoltage = Integer.MAX_VALUE;
+        int cellMaxVoltage = Integer.MIN_VALUE;
+        int cellNoMinVoltage = -1;
+        int cellNoMaxVoltage = -1;
+
         for (int cellNo = 0; cellNo < pack.numberOfCells; cellNo++) {
             pack.cellVmV[cellNo] = data.getShort();
             LOG.debug("Cell {} voltage: {} V", cellNo + 1, pack.cellVmV[cellNo] / 1000.0);
+
+            if (pack.cellVmV[cellNo] < cellMinVoltage) {
+                cellMinVoltage = pack.cellVmV[cellNo];
+                cellNoMinVoltage = cellNo + 1;
+            }
+            if (pack.cellVmV[cellNo] > cellMaxVoltage) {
+                cellMaxVoltage = pack.cellVmV[cellNo];
+                cellNoMaxVoltage = cellNo + 1;
+            }
         }
+
+        pack.minCellmV = cellMinVoltage;
+        pack.maxCellmV = cellMaxVoltage;
+        pack.minCellVNum = cellNoMinVoltage;
+        pack.maxCellVNum = cellNoMaxVoltage;
+        pack.cellDiffmV = pack.maxCellmV - pack.minCellmV;
+
+        LOG.debug("Min cell voltage: {} V (Cell {})", pack.minCellmV / 1000.0, pack.minCellVNum);
+        LOG.debug("Max cell voltage: {} V (Cell {})", pack.maxCellmV / 1000.0, pack.maxCellVNum);
+        LOG.debug("Cell voltage difference: {} V", pack.cellDiffmV / 1000.0);
     }
 
 
-    private void readAlarms(final BatteryPack pack, final short short1) {
-        // TODO Auto-generated method stub
-
+    private void readAlarms(final BatteryPack pack, final short alarms) {
+        pack.alarms.clear();
+        pack.setAlarm(Alarm.CELL_VOLTAGE_HIGH, BitUtil.bit(alarms, 0) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CELL_VOLTAGE_LOW, BitUtil.bit(alarms, 1) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_VOLTAGE_HIGH, BitUtil.bit(alarms, 2) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.PACK_VOLTAGE_LOW, BitUtil.bit(alarms, 3) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_TEMPERATURE_HIGH, BitUtil.bit(alarms, 4) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_TEMPERATURE_LOW, BitUtil.bit(alarms, 5) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.DISCHARGE_TEMPERATURE_HIGH, BitUtil.bit(alarms, 6) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.DISCHARGE_TEMPERATURE_LOW, BitUtil.bit(alarms, 7) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.CHARGE_CURRENT_HIGH, BitUtil.bit(alarms, 8) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.DISCHARGE_CURRENT_HIGH, BitUtil.bit(alarms, 9) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.FAILURE_SHORT_CIRCUIT_PROTECTION, BitUtil.bit(alarms, 10) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.FAILURE_COMMUNICATION_INTERNAL, BitUtil.bit(alarms, 11) ? AlarmLevel.ALARM : AlarmLevel.NONE);
+        pack.setAlarm(Alarm.FAILURE_CHARGE_BREAKER, BitUtil.bit(alarms, 12) ? AlarmLevel.ALARM : AlarmLevel.NONE);
     }
 
 
