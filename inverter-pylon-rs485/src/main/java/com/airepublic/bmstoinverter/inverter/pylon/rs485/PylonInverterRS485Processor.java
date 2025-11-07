@@ -191,10 +191,10 @@ public class PylonInverterRS485Processor extends Inverter {
         }
 
         buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) pack.packCurrent));
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) pack.packVoltage));
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (pack.remainingCapacitymAh / 100)));
+        buffer.put(ByteAsciiConverter.convertCharToAsciiBytes((char) pack.packVoltage));
+        buffer.put(ByteAsciiConverter.convertCharToAsciiBytes((char) (pack.remainingCapacitymAh / 100)));
         buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) (pack.ratedCapacitymAh * 1000 > 65 ? 4 : 2)));
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (pack.ratedCapacitymAh / 100)));
+        buffer.put(ByteAsciiConverter.convertCharToAsciiBytes((char) (pack.ratedCapacitymAh / 100)));
         buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) pack.bmsCycles));
         buffer.put(new byte[] { 0, 0, 0, 0, 0, 0 }); // old compatibility
 
@@ -252,7 +252,7 @@ public class PylonInverterRS485Processor extends Inverter {
     private byte[] createBatteryInformation(final BatteryPack aggregatedPack) {
         final ByteBuffer buffer = ByteBuffer.allocate(4096);
 
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (aggregatedPack.packVoltage * 100)));
+        buffer.put(ByteAsciiConverter.convertCharToAsciiBytes((char) (aggregatedPack.packVoltage * 100)));
         buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (aggregatedPack.packCurrent * 10)));
         buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) (aggregatedPack.packSOC / 10)));
         buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) aggregatedPack.bmsCycles)); // average
@@ -304,11 +304,11 @@ public class PylonInverterRS485Processor extends Inverter {
         for (int i = 0; i < getEnergyStorage().getBatteryPacks().size(); i++) {
             final BatteryPack pack = getEnergyStorage().getBatteryPack(i);
 
-            if (pack.maxCellmV == aggregatedPack.tempMaxCellNum) {
+            if (pack.tempMax == aggregatedPack.tempMax) {
                 maxPack = i;
             }
 
-            if (pack.minCellmV == aggregatedPack.tempMinCellNum) {
+            if (pack.tempMin == aggregatedPack.tempMin) {
                 minPack = i;
             }
         }

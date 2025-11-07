@@ -55,6 +55,17 @@ public class ByteAsciiConverter {
     }
 
 
+    public static byte[] convertCharToAsciiBytes(final char value) {
+        final byte first = (byte) ((value & 0xFF00) >> 8);
+        final byte second = (byte) (value & 0x00FF);
+        final byte[] data = new byte[4];
+        System.arraycopy(convertByteToAsciiBytes(first), 0, data, 0, 2);
+        System.arraycopy(convertByteToAsciiBytes(second), 0, data, 2, 2);
+
+        return data;
+    }
+
+
     public static void printAscii(final String str) {
         final String[] valueStr = str.split(" ");
         int i = 0;
@@ -72,7 +83,7 @@ public class ByteAsciiConverter {
     public static short convertAsciiBytesToShort(final byte[] value) {
         final byte first = convertAsciiBytesToByte(value[0], value[1]);
         final byte second = convertAsciiBytesToByte(value[2], value[3]);
-        final short result = (short) ((first << 8) | (second & 0xFF));
+        final short result = (short) (first << 8 | second & 0xFF);
 
         return result;
     }
