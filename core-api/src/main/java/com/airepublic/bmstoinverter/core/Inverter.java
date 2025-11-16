@@ -259,6 +259,7 @@ public abstract class Inverter {
      * {@link BatteryPack} which data will be sent to the {@link Inverter}.
      */
     protected BatteryPack aggregatedBatteryInfo() {
+        int validPacks = 0;
         final BatteryPack result = new BatteryPack();
         result.packSOC = 0;
         result.maxPackChargeCurrent = Integer.MAX_VALUE;
@@ -276,6 +277,12 @@ public abstract class Inverter {
 
         // sum all values
         for (final BatteryPack pack : energyStorage.getBatteryPacks()) {
+            if (!validateBatteryPack(pack)) {
+                continue;
+            }
+
+            validPacks++;
+
             result.ratedCapacitymAh += pack.ratedCapacitymAh;
 
             result.ratedCellmV += pack.ratedCellmV;
@@ -359,10 +366,10 @@ public abstract class Inverter {
             result.maxPackDischargeCurrent = 0;
         }
         if (result.maxPackVoltageLimit == Integer.MAX_VALUE) {
-            result.maxPackVoltageLimit = 500;
+            result.maxPackVoltageLimit = 0;
         }
         if (result.minPackVoltageLimit == Integer.MIN_VALUE) {
-            result.minPackVoltageLimit = 500;
+            result.minPackVoltageLimit = 0;
         }
         if (result.maxCellmV == Integer.MIN_VALUE) {
             result.maxCellmV = 3000;
@@ -390,6 +397,14 @@ public abstract class Inverter {
         }
 
         return result;
+    }
+
+
+    private boolean validateBatteryPack(final BatteryPack pack) {
+        if (pack != null && pack.numberOfCells > 0 && pack.ratedCapacitymAh > 0 && pack.maxPackChargeCurrent != 0 && pack.maxPackDischargeCurrent != 0 && pack.maxPackVoltageLimit != 0) {
+            return true;
+        }
+        return false;
     }
 
 
