@@ -72,27 +72,27 @@ public class PylonInverterRS485Processor extends Inverter {
             byte[] responseData = null;
 
             switch (cid2) {
-                case 0x4F:
+                case 0x4F: // 0x4F Protocol Version
                     responseData = createProtocolVersion(aggregatedPack);
-                break; // 0x4F Protocol Version
-                case 0x51:
+                break;
+                case 0x51: // 0x51 Manufacturer Code
                     responseData = createManufacturerCode(aggregatedPack);
-                break; // 0x51 Manufacturer Code
-                case (byte) 0x92:
+                break;
+                case (byte) 0x92: // 0x92 Charge/Discharge Management Info
                     responseData = createChargeDischargeManagementInfo(aggregatedPack);
-                break; // 0x92 Charge/Discharge Management Info
-                case 0x42:
+                break;
+                case 0x42: // 0x42 Cell Information
                     responseData = createCellInformation(aggregatedPack);
-                break; // 0x42 Cell Information
-                case 0x47:
+                break;
+                case 0x47: // 0x47 Voltage/Current Limits
                     responseData = createVoltageCurrentLimits(aggregatedPack);
-                break; // 0x47 Voltage/Current Limits
-                case 0x60:
+                break;
+                case 0x60: // 0x60 System Info
                     responseData = createSystemInfo(aggregatedPack);
-                break; // 0x60 System Info
-                case 0x61:
+                break;
+                case 0x61: // 0x61 Battery Information
                     responseData = createBatteryInformation(aggregatedPack);
-                break; // 0x61 Battery Information
+                break;
                 case 0x62:
                     responseData = createAlarms(aggregatedPack);
                 break; // 0x62 Alarms
@@ -109,20 +109,25 @@ public class PylonInverterRS485Processor extends Inverter {
 
             frames.stream().forEach(f -> System.out.println(Port.printBuffer(f)));
         } else {
+            LOG.debug("Inverter is not requesting data, no frames to send");
             // try to send data actively
-            final byte adr = 0x12;
-            frames.add(prepareSendFrame(adr, (byte) 0x4F, (byte) 0x00, createProtocolVersion(aggregatedPack)));
-            frames.add(prepareSendFrame(adr, (byte) 0x51, (byte) 0x00, createManufacturerCode(aggregatedPack)));
-            frames.add(prepareSendFrame(adr, (byte) 0x92, (byte) 0x00, createChargeDischargeManagementInfo(aggregatedPack)));
-            frames.add(prepareSendFrame(adr, (byte) 0x42, (byte) 0x00, createCellInformation(aggregatedPack)));
-            frames.add(prepareSendFrame(adr, (byte) 0x47, (byte) 0x00, createVoltageCurrentLimits(aggregatedPack)));
-            frames.add(prepareSendFrame(adr, (byte) 0x60, (byte) 0x00, createSystemInfo(aggregatedPack)));
-            frames.add(prepareSendFrame(adr, (byte) 0x61, (byte) 0x00, createBatteryInformation(aggregatedPack)));
-            frames.add(prepareSendFrame(adr, (byte) 0x62, (byte) 0x00, createAlarms(aggregatedPack)));
-            frames.add(prepareSendFrame(adr, (byte) 0x63, (byte) 0x00, createChargeDischargeIfno(aggregatedPack)));
-
-            LOG.debug("Actively sending {} frames to inverter", frames.size());
-            frames.stream().forEach(f -> System.out.println(Port.printBuffer(f)));
+            /**
+             * final byte adr = 0x12; // this is wrong anyway as the CID1 should be 0x46 for responses
+             * frames.add(prepareSendFrame(adr, (byte) 0x4F, (byte) 0x00,
+             * createProtocolVersion(aggregatedPack))); frames.add(prepareSendFrame(adr, (byte) 0x51, (byte)
+             * 0x00, createManufacturerCode(aggregatedPack))); frames.add(prepareSendFrame(adr, (byte) 0x92,
+             * (byte) 0x00, createChargeDischargeManagementInfo(aggregatedPack)));
+             * frames.add(prepareSendFrame(adr, (byte) 0x42, (byte) 0x00,
+             * createCellInformation(aggregatedPack))); frames.add(prepareSendFrame(adr, (byte) 0x47, (byte)
+             * 0x00, createVoltageCurrentLimits(aggregatedPack))); frames.add(prepareSendFrame(adr, (byte) 0x60,
+             * (byte) 0x00, createSystemInfo(aggregatedPack))); frames.add(prepareSendFrame(adr, (byte) 0x61,
+             * (byte) 0x00, createBatteryInformation(aggregatedPack))); frames.add(prepareSendFrame(adr, (byte)
+             * 0x62, (byte) 0x00, createAlarms(aggregatedPack))); frames.add(prepareSendFrame(adr, (byte) 0x63,
+             * (byte) 0x00, createChargeDischargeIfno(aggregatedPack)));
+             * 
+             * LOG.debug("Actively sending {} frames to inverter", frames.size()); frames.stream().forEach(f ->
+             * System.out.println(Port.printBuffer(f)));
+             */
         }
 
         return frames;

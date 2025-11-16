@@ -15,6 +15,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.airepublic.bmstoinverter.core.AlarmLevel;
+import com.google.gson.Gson;
 
 /**
  * Holds all the data of a set of battery cells - a battery pack - collected from the BMS.
@@ -22,6 +23,8 @@ import com.airepublic.bmstoinverter.core.AlarmLevel;
  * Comments specify the precision and units of the value.
  */
 public class BatteryPack {
+    private transient final static Gson gson = new Gson();
+
     public final Map<Alarm, AlarmLevel> alarms = new HashMap<>();
     /** Battery type: 0=lithium iron, 1=ternary lithium, 2=lithium titanate */
     public int type;
@@ -199,5 +202,15 @@ public class BatteryPack {
         }
 
         return level;
+    }
+
+
+    /**
+     * Creates a JSON string representation of this {@link EnergyStorage} object.
+     *
+     * @return a JSON string representation of this {@link EnergyStorage} object
+     */
+    public String toJson() {
+        return gson.toJson(this);
     }
 }

@@ -186,6 +186,7 @@ public abstract class Inverter {
                 }
 
                 // create send frames based on the aggregated data
+                LOG.debug("Collecting frames for aggregated battery data: {}", aggregatedPack.toJson());
                 final List<ByteBuffer> sendFrames = createSendFrames(requestFrame, aggregatedPack);
 
                 if (sendFrames != null && !sendFrames.isEmpty()) {
