@@ -32,6 +32,8 @@ import com.airepublic.bmstoinverter.core.util.HexUtil;
  */
 public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
     private final static Logger LOG = LoggerFactory.getLogger(AbstractDalyBmsProcessor.class);
+    private static final int MAX_RETRIES = 10;
+    private static final long RETRY_SLEEP_MS = 100;
     private final ByteBuffer sendFrame = ByteBuffer.allocate(13);
     private final Predicate<ByteBuffer> validator = buffer -> {
         // check if null
@@ -53,14 +55,14 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
     protected List<ByteBuffer> sendMessage(final Port port, final DalyCommand cmd, final byte[] data) throws IOException, TooManyInvalidFramesException, NoDataAvailableException {
         final int address = getBmsId() + 0x3F;
         final ByteBuffer sendBuffer = prepareSendFrame(address, cmd, data);
-        int framesToBeReceived = getResponseFrameCount(cmd);
-        final int frameCount = framesToBeReceived;
         final List<ByteBuffer> readBuffers = new ArrayList<>();
-        int failureCount = 0;
-        int noDataReceived = 0;
+        final int frameCount = getResponseFrameCount(cmd);
 
-        // read frames until the requested frame is read
-        do {
+        for (int attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+            int framesToBeReceived = frameCount;
+            int failureCount = 0;
+            int noDataReceived = 0;
+            readBuffers.clear();
 
             // send the request command frame
             port.sendFrame(sendBuffer);
@@ -71,8 +73,10 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
             } catch (final InterruptedException e) {
             }
 
+            boolean attemptFailed = false;
+
             // read the expected response frame(s)
-            for (int i = 0; i < frameCount; i++) {
+            for (int i = 0; i < frameCount && !attemptFailed; i++) {
                 boolean valid = false;
                 ByteBuffer receiveBuffer = null;
 
@@ -88,6 +92,8 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
                         if (receiveBuffer.get(1) == getBmsId() && receiveBuffer.get(2) == (byte) cmd.id) {
                             framesToBeReceived--;
                             readBuffers.add(receiveBuffer);
+                        } else {
+                            valid = false;
                         }
 
                         final DalyMessage dalyMsg = convertReceiveFrameToDalyMessage(receiveBuffer);
@@ -103,23 +109,14 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
                         noDataReceived++;
                         LOG.debug("No bytes received: " + noDataReceived + " times!");
 
-                        // if we received no bytes more than 10 times we stop and notify the handler
-                        // to re-open the port
-                        if (noDataReceived >= 10) {
-                            throw new NoDataAvailableException();
-                        }
-
                         // try and wait for the next message to arrive
                         try {
                             LOG.debug("Waiting for messages to arrive....");
                             Thread.sleep(getDelayAfterNoBytes());
                         } catch (final InterruptedException e) {
                         }
-
-                        // try to receive the response again
-                        valid = false;
                     }
-                } catch (IllegalArgumentException | IndexOutOfBoundsException e) {
+                } catch (IllegalArgumentException | IndexOutOfBoundsException | IOException e) {
                     valid = false;
                 }
 
@@ -128,28 +125,28 @@ public class DalyBmsRS485Processor extends AbstractDalyBmsProcessor {
                     failureCount++;
                     LOG.debug("Invalid frame received! {}", Port.printBuffer(receiveBuffer));
 
-                    if (failureCount >= 10) {
-                        // try and wait for the bus to get quiet
-                        try {
-                            LOG.debug("Waiting for bus to idle....");
-                            Thread.sleep(1000);
-                        } catch (final InterruptedException e) {
-                        }
-
-                        port.clearBuffers();
-
-                        throw new TooManyInvalidFramesException();
-                    }
-
-                    // try to receive the response again
-                    i--;
+                    // retry whole command on invalid data
+                    attemptFailed = true;
                 }
             }
-        } while (framesToBeReceived > 0);
 
-        LOG.warn("Command {} to BMS {} successfully sent and received!", HexUtil.formatHex(new byte[] { (byte) cmd.id }), address - 0x3F);
+            if (!attemptFailed && framesToBeReceived == 0) {
+                LOG.warn("Command {} to BMS {} successfully sent and received!", HexUtil.formatHex(new byte[] { (byte) cmd.id }), address - 0x3F);
+                return new ArrayList<>(readBuffers);
+            }
 
-        return readBuffers;
+            if (attempt < MAX_RETRIES) {
+                try {
+                    Thread.sleep(RETRY_SLEEP_MS);
+                } catch (final InterruptedException e) {
+                }
+                LOG.debug("Retrying Daly command {} for BMS {} (attempt {}/{})", HexUtil.formatHex(new byte[] { (byte) cmd.id }), address - 0x3F, attempt + 1, MAX_RETRIES);
+            }
+        }
+
+        LOG.warn("Giving up on Daly command {} for BMS {} after {} attempts; skipping this command this cycle but keeping port open.", HexUtil.formatHex(new byte[] { (byte) cmd.id }), address - 0x3F, MAX_RETRIES);
+
+        return new ArrayList<>();
     }
 
 
