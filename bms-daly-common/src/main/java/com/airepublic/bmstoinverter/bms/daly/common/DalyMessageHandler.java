@@ -32,6 +32,7 @@ public class DalyMessageHandler {
     private final static int MIN_NUMBER_TEMP_SENSORS = 1;
     private final static int MAX_NUMBER_TEMP_SENSORS = 16;
     private final static int BATTERY_ID = 0;
+    private final static int DEFAULT_CURRENT_LIMIT_A10 = 200;
 
     /**
      * Constructor.
@@ -106,9 +107,45 @@ public class DalyMessageHandler {
     private void getBatteryTypeInfo(final DalyMessage msg, final BMS bms) {
         final BatteryPack battery = bms.getBatteryPack(BATTERY_ID);
 
-        battery.type = msg.data.get();
+        final int rawMaxChargeA10 = Short.toUnsignedInt(msg.data.getShort());
+        final int rawMaxDischargeA10 = Short.toUnsignedInt(msg.data.getShort());
+        final int rawHighVoltageLimit = Short.toUnsignedInt(msg.data.getShort());
+        final int rawLowVoltageLimit = Short.toUnsignedInt(msg.data.getShort());
 
-        LOG.debug("battery type={}", battery.type);
+        if (rawMaxChargeA10 > 0 && rawMaxChargeA10 != 0xFFFF) {
+            battery.maxPackChargeCurrent = rawMaxChargeA10;
+        } else {
+            LOG.info("Daly BMS {}: CMD 0x53 charge current limit is {} – treating as not provided and keeping existing pack limits.",
+                    msg.bmsId, rawMaxChargeA10 == 0xFFFF ? "0xFFFF" : "0");
+        }
+
+        if (rawMaxDischargeA10 > 0 && rawMaxDischargeA10 != 0xFFFF) {
+            battery.maxPackDischargeCurrent = rawMaxDischargeA10;
+        } else {
+            LOG.info(
+                    "Daly BMS {}: CMD 0x53 discharge current limit is {} – treating as not provided and keeping existing pack limits.",
+                    msg.bmsId, rawMaxDischargeA10 == 0xFFFF ? "0xFFFF" : "0");
+        }
+
+        if (rawHighVoltageLimit > 0 && rawHighVoltageLimit != 0xFFFF) {
+            battery.maxPackVoltageLimit = rawHighVoltageLimit;
+        }
+
+        if (rawLowVoltageLimit > 0 && rawLowVoltageLimit != 0xFFFF) {
+            battery.minPackVoltageLimit = rawLowVoltageLimit;
+        }
+
+        if (battery.maxPackChargeCurrent == 0) {
+            battery.maxPackChargeCurrent = DEFAULT_CURRENT_LIMIT_A10;
+        }
+
+        if (battery.maxPackDischargeCurrent == 0) {
+            battery.maxPackDischargeCurrent = DEFAULT_CURRENT_LIMIT_A10;
+        }
+
+        LOG.debug("CMD 0x53 -> maxCharge={} (0.1A), maxDischarge={} (0.1A), maxVoltage={} (0.1V), minVoltage={} (0.1V)",
+                battery.maxPackChargeCurrent, battery.maxPackDischargeCurrent, battery.maxPackVoltageLimit,
+                battery.minPackVoltageLimit);
     }
 
 
