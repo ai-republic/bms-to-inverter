@@ -271,54 +271,107 @@ public class PylonInverterRS485Processor extends Inverter {
     }
 
 
-    // 0x61
-    private byte[] createBatteryInformation(final BatteryPack aggregatedPack) {
-        final ByteBuffer buffer = ByteBuffer.allocate(4096);
-        int safeSystemVoltageMv = Math.max(0, aggregatedPack.packVoltage) * 100;
-        safeSystemVoltageMv = Math.min(0xFFFF, safeSystemVoltageMv);
-        int safeSystemCurrent001A = aggregatedPack.packCurrent * 10;
-        safeSystemCurrent001A = Math.max(Short.MIN_VALUE, Math.min(Short.MAX_VALUE, safeSystemCurrent001A));
-        final int safeSocPercent = Math.max(0, Math.min(100, sanitizeSoc(aggregatedPack) / 10));
-        final int safeSohPercent = Math.max(0, Math.min(100, aggregatedPack.packSOH > 0 ? aggregatedPack.packSOH / 10 : 100));
-        final short cycleCount = (short) Math.max(0, Math.min(Short.MAX_VALUE, aggregatedPack.bmsCycles));
-
-        buffer.put(ByteAsciiConverter.convertCharToAsciiBytes((char) safeSystemVoltageMv));
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) safeSystemCurrent001A));
-        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) safeSocPercent));
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes(cycleCount));
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes(cycleCount));
-        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) safeSohPercent));
-        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) safeSohPercent));
-
-        int maxPack = 0;
-        int minPack = 0;
-
-        for (int i = 0; i < getEnergyStorage().getBatteryPacks().size(); i++) {
-            final BatteryPack pack = getEnergyStorage().getBatteryPack(i);
-
-            if (pack.maxCellmV == aggregatedPack.maxCellmV) {
-                maxPack = i;
-            }
-
-            if (pack.minCellmV == aggregatedPack.minCellmV) {
-                minPack = i;
-            }
-        }
-
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) Math.max(0, aggregatedPack.maxCellmV)));
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) maxPack));
-
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) Math.max(0, aggregatedPack.minCellmV)));
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) minPack));
-
-        final int safeTempAverage = sanitizeTemperature(aggregatedPack.tempAverage);
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (safeTempAverage + 2731)));
-
-        final byte[] data = new byte[buffer.position()];
-        buffer.get(data, 0, buffer.position());
-
-        return data;
+// 0x61 – Battery information for Pylon 3.5
+private ByteBuffer createBatteryInformation(final BatteryPack aggregatedPack) {
+    // Safety: if aggregation failed, just return an empty buffer and let the caller handle it.
+    if (aggregatedPack == null) {
+        LOG.warn("Pylon P3.5: aggregatedPack is null in createBatteryInformation()");
+        return ByteBuffer.wrap(new byte[0]);
     }
+
+    // According to Pylon 3.5, most numeric fields are ASCII-encoded hex of tenths or whole units.
+    // We mirror the Python emulator here.
+
+    final StringBuilder payload = new StringBuilder();
+
+    // 1) Pack voltage (0.01 V units) – 4 hex chars
+    //    Example: 52.30 V → 5230 (0x1476)
+    int packVoltage_mV100 = (int) Math.round(aggregatedPack.getVoltage() * 100.0);
+    if (packVoltage_mV100 < 0) {
+        packVoltage_mV100 = 0;
+    }
+    payload.append(String.format("%04X", packVoltage_mV100));
+
+    // 2) Pack current (0.1 A units, sign-aware) – 4 hex chars
+    //    Charge = positive, Discharge = negative
+    double currentA = aggregatedPack.getCurrent();
+    int packCurrent_A10 = (int) Math.round(currentA * 10.0);
+    payload.append(String.format("%04X", packCurrent_A10 & 0xFFFF));
+
+    // 3) SOC (%) – 2 hex chars
+    int soc = aggregatedPack.getSoc();
+    if (soc < 0) soc = 0;
+    if (soc > 100) soc = 100;
+    payload.append(String.format("%02X", soc));
+
+    // 4) SOH (%) – 2 hex chars
+    int soh = aggregatedPack.getSoh();
+    if (soh <= 0 || soh > 100) {
+        // If we don’t know SOH, assume 100
+        soh = 100;
+    }
+    payload.append(String.format("%02X", soh));
+
+    // 5) Nominal capacity (Ah, 0.1Ah units) – 4 hex chars
+    //    ratedCapacitymAh / 100 → 0.1Ah units
+    int ratedCapacity01Ah = aggregatedPack.getCapacity() / 100; // mAh → 0.1Ah
+    if (ratedCapacity01Ah < 0) {
+        ratedCapacity01Ah = 0;
+    }
+    payload.append(String.format("%04X", ratedCapacity01Ah & 0xFFFF));
+
+    // 6) Remaining capacity (Ah, 0.1Ah units) – 4 hex chars
+    int remainingCapacity01Ah = aggregatedPack.getRemainingCapacitymAh() / 100;
+    if (remainingCapacity01Ah < 0) {
+        remainingCapacity01Ah = 0;
+    }
+    payload.append(String.format("%04X", remainingCapacity01Ah & 0xFFFF));
+
+    // 7) Pack temperature – 4 hex chars (Kelvin*10 = (°C + 273.1)*10)
+    double tempC = aggregatedPack.getTemperatureCelsius();
+    // If Daly gives something crazy or 0xFFFF, guard it
+    if (Double.isNaN(tempC) || tempC < -40.0 || tempC > 80.0) {
+        // If we have no valid temperature, assume 25°C
+        tempC = 25.0;
+    }
+    int tempK10 = (int) Math.round((tempC + 273.1) * 10.0);
+    payload.append(String.format("%04X", tempK10 & 0xFFFF));
+
+    // 8) Total cycles – 4 hex chars
+    int cycles = aggregatedPack.getCycles();
+    if (cycles < 0) cycles = 0;
+    payload.append(String.format("%04X", cycles & 0xFFFF));
+
+    // 9) Cell count – 2 hex chars
+    int cellCount = aggregatedPack.getCellCount();
+    if (cellCount < 0 || cellCount > 0xFF) {
+        cellCount = 0;
+    }
+    payload.append(String.format("%02X", cellCount));
+
+    // 10) Reserved bytes / padding for 3.5 frame length
+    //     Pylon 3.5 battery info frame is a fixed length. Pad out the rest with '0'
+    //     so the total frame (header + payload + CRC) matches the official length.
+    //     The bms-to-inverter code expects the ASCII line length (without '~' and '\r')
+    //     to be 100 characters for Pylon frames, so we keep that convention:
+    //
+    //     Header '20024600' is 8 chars, so payload should be 92 chars to total 100.
+    //
+    int headerLen = 8;
+    int desiredTotalAsciiLen = 100;
+    int desiredPayloadLen = desiredTotalAsciiLen - headerLen; // 92
+    if (payload.length() < desiredPayloadLen) {
+        payload.append(padRight("", desiredPayloadLen - payload.length(), '0'));
+    } else if (payload.length() > desiredPayloadLen) {
+        // Truncate if we ever overshoot (defensive)
+        payload.setLength(desiredPayloadLen);
+    }
+
+    // Wrap in ByteBuffer as ASCII bytes; the upper layer will prepend "~20024600"
+    // and append CRC + '\r' using prepareSendFrame().
+    return ByteBuffer.wrap(payload.toString().getBytes(StandardCharsets.US_ASCII));
+}
+
 
 
     // 0x62
@@ -384,40 +437,96 @@ public class PylonInverterRS485Processor extends Inverter {
         return alarms;
     }
 
-
-    // 0x63
-    private byte[] createChargeDischargeIfno(final BatteryPack aggregatedPack) {
-        final ByteBuffer buffer = ByteBuffer.allocate(4096);
-        int chargeVoltageLimitMv = Math.max(0, aggregatedPack.maxPackVoltageLimit) * 100;
-        int dischargeVoltageLimitMv = Math.max(0, aggregatedPack.minPackVoltageLimit) * 100;
-        chargeVoltageLimitMv = Math.min(0xFFFF, chargeVoltageLimitMv);
-        dischargeVoltageLimitMv = Math.min(0xFFFF, dischargeVoltageLimitMv);
-
-        final int maxChargeA10 = encodeCurrentLimitA10(Math.abs(aggregatedPack.maxPackChargeCurrent) / 10.0);
-        final int maxDischargeA10 = encodeCurrentLimitA10(Math.abs(aggregatedPack.maxPackDischargeCurrent) / 10.0);
-
-        buffer.put(ByteAsciiConverter.convertCharToAsciiBytes((char) chargeVoltageLimitMv));
-        buffer.put(ByteAsciiConverter.convertCharToAsciiBytes((char) dischargeVoltageLimitMv));
-        buffer.put(ByteAsciiConverter.convertCharToAsciiBytes((char) maxChargeA10));
-        buffer.put(ByteAsciiConverter.convertCharToAsciiBytes((char) maxDischargeA10));
-        byte chargeDischargeMOSStates = 0x00;
-        chargeDischargeMOSStates = BitUtil.setBit(chargeDischargeMOSStates, 7, aggregatedPack.chargeMOSState);
-        chargeDischargeMOSStates = BitUtil.setBit(chargeDischargeMOSStates, 6, aggregatedPack.dischargeMOSState);
-        chargeDischargeMOSStates = BitUtil.setBit(chargeDischargeMOSStates, 5, aggregatedPack.forceCharge);
-        chargeDischargeMOSStates = BitUtil.setBit(chargeDischargeMOSStates, 4, false);
-        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes(chargeDischargeMOSStates));
-
-        final byte[] data = new byte[buffer.position()];
-        buffer.get(data, 0, buffer.position());
-
-        return data;
+// 0x63 – Charge / Discharge information for Pylon 3.5
+private ByteBuffer createChargeDischargeIfno(final BatteryPack aggregatedPack) {
+    if (aggregatedPack == null) {
+        LOG.warn("Pylon P3.5: aggregatedPack is null in createChargeDischargeIfno()");
+        return ByteBuffer.wrap(new byte[0]);
     }
 
+    final StringBuilder payload = new StringBuilder();
 
-    @Override
-    protected ByteBuffer readRequest(final Port port) throws IOException {
+    // Helper to normalize a Daly current limit (0.1A units) with 100Balance quirks.
+    java.util.function.BiFunction<Integer, String, Integer> normalizeLimit01A = (raw01A, label) -> {
+        int limit01A = raw01A != null ? raw01A : 0;
+
+        // Daly 100Balance sometimes uses 0 or 0xFFFF to mean "no limit / unknown".
+        if (limit01A <= 0 || limit01A == 0xFFFF) {
+            // Fall back to default (e.g. 20A) so the inverter doesn't see 0.
+            double defaultAmps = DEFAULT_CURRENT_LIMIT_A; // e.g. 20.0
+            limit01A = (int) Math.round(defaultAmps * 10.0);
+
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Pylon P3.5 frame: {} limit invalid (raw=0x{}), using default {}A ({} A×10)",
+                          label,
+                          Integer.toHexString(raw01A != null ? raw01A : 0),
+                          defaultAmps,
+                          limit01A);
+            }
+        }
+
+        // Some BMS firmwares can report absurdly large values; clamp to something sane,
+        // e.g. 200A max:
+        double amps = limit01A / 10.0;
+        if (amps > 200.0) {
+            limit01A = 2000;
+        }
+
+        return limit01A;
+    };
+
+    // 1) Max charge current (0.1A units) – 4 hex chars
+    int maxChargeCurrent01A = normalizeLimit01A.apply(aggregatedPack.getMaxPackChargeCurrent(), "maxCharge");
+    payload.append(String.format("%04X", maxChargeCurrent01A & 0xFFFF));
+
+    // 2) Max discharge current (0.1A units) – 4 hex chars
+    int maxDischargeCurrent01A = normalizeLimit01A.apply(aggregatedPack.getMaxPackDischargeCurrent(), "maxDischarge");
+    payload.append(String.format("%04X", maxDischargeCurrent01A & 0xFFFF));
+
+    // 3) Max charge voltage (0.01V units) – 4 hex chars
+    double chargeLimitV = aggregatedPack.getMaxPackChargeVoltage();
+    if (Double.isNaN(chargeLimitV) || chargeLimitV <= 0.0) {
+        // Fall back to something reasonable per 14s Li-ion, e.g. 57.4V
+        chargeLimitV = 57.4;
+    }
+    int maxChargeVoltage01V = (int) Math.round(chargeLimitV * 100.0);
+    payload.append(String.format("%04X", maxChargeVoltage01V & 0xFFFF));
+
+    // 4) Min discharge voltage (0.01V units) – 4 hex chars
+    double dischargeLimitV = aggregatedPack.getMinPackDischargeVoltage();
+    if (Double.isNaN(dischargeLimitV) || dischargeLimitV <= 0.0) {
+        // Reasonable "empty" voltage for 14s, e.g. ~44V
+        dischargeLimitV = 44.0;
+    }
+    int minDischargeVoltage01V = (int) Math.round(dischargeLimitV * 100.0);
+    payload.append(String.format("%04X", minDischargeVoltage01V & 0xFFFF));
+
+    // 5) Reserved / flags / future fields – pad to the same payload length
+    int headerLen = 8;
+    int desiredTotalAsciiLen = 100;
+    int desiredPayloadLen = desiredTotalAsciiLen - headerLen; // 92 chars
+    if (payload.length() < desiredPayloadLen) {
+        payload.append(padRight("", desiredPayloadLen - payload.length(), '0'));
+    } else if (payload.length() > desiredPayloadLen) {
+        payload.setLength(desiredPayloadLen);
+    }
+
+    return ByteBuffer.wrap(payload.toString().getBytes(StandardCharsets.US_ASCII));
+}
+
+
+@Override
+protected ByteBuffer readRequest(final Port port) throws IOException {
+    try {
         return port.receiveFrame();
+    } catch (IOException e) {
+        // Inverter didn't send a full frame in time; log and treat as "no request".
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Pylon P3.5 readRequest: no complete frame available yet: {}", e.getMessage());
+        }
+        return null;
     }
+}
 
 
     @Override
