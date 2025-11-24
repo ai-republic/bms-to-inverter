@@ -13,6 +13,7 @@ package com.airepublic.bmstoinverter.inverter.pylon.rs485;
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,6 +58,7 @@ public class PylonInverterRS485Processor extends Inverter {
         // check if the inverter is actively requesting data
         if (requestFrame != null) {
             LOG.debug("Inverter actively requesting frames from BMS");
+            LOG.info("RX ASCII: {}", toAsciiString(requestFrame));
             requestFrame.position(3);
             final byte adr = ByteAsciiConverter.convertAsciiBytesToByte(requestFrame.get(), requestFrame.get());
             final byte cid1 = ByteAsciiConverter.convertAsciiBytesToByte(requestFrame.get(), requestFrame.get());
@@ -110,6 +112,7 @@ public class PylonInverterRS485Processor extends Inverter {
 
             final ByteBuffer responseFrame = prepareSendFrame(adr, cid1, (byte) 0x00, responseData);
             frames.add(responseFrame);
+            LOG.info("TX ASCII: {}", toAsciiString(responseFrame));
             LOG.debug("Responding to inverter with: {}", Port.printBuffer(responseFrame));
         } else {
             LOG.debug("Inverter is not requesting data, no frames to send");
@@ -137,6 +140,15 @@ public class PylonInverterRS485Processor extends Inverter {
         }
 
         return frames;
+    }
+
+
+    private String toAsciiString(final ByteBuffer buffer) {
+        final ByteBuffer copy = buffer.asReadOnlyBuffer();
+        copy.rewind();
+        final byte[] data = new byte[copy.remaining()];
+        copy.get(data);
+        return new String(data, StandardCharsets.US_ASCII);
     }
 
 
@@ -262,22 +274,22 @@ public class PylonInverterRS485Processor extends Inverter {
     // 0x61
     private byte[] createBatteryInformation(final BatteryPack aggregatedPack) {
         final ByteBuffer buffer = ByteBuffer.allocate(4096);
+        int safeSystemVoltageMv = Math.max(0, aggregatedPack.packVoltage) * 100;
+        safeSystemVoltageMv = Math.min(0xFFFF, safeSystemVoltageMv);
+        int safeSystemCurrent001A = aggregatedPack.packCurrent * 10;
+        safeSystemCurrent001A = Math.max(Short.MIN_VALUE, Math.min(Short.MAX_VALUE, safeSystemCurrent001A));
+        final int safeSocPercent = Math.max(0, Math.min(100, sanitizeSoc(aggregatedPack) / 10));
+        final int safeSohPercent = Math.max(0, Math.min(100, aggregatedPack.packSOH > 0 ? aggregatedPack.packSOH / 10 : 100));
+        final short cycleCount = (short) Math.max(0, Math.min(Short.MAX_VALUE, aggregatedPack.bmsCycles));
 
-        final int safePackVoltage = Math.max(0, aggregatedPack.packVoltage);
-        final int safePackCurrent = aggregatedPack.packCurrent;
-        final int safeSoc = sanitizeSoc(aggregatedPack);
-        buffer.put(ByteAsciiConverter.convertCharToAsciiBytes((char) (safePackVoltage * 100)));
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (safePackCurrent * 10)));
-        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) (safeSoc / 10)));
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) aggregatedPack.bmsCycles)); // average
-                                                                                                   // cycles
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) 10000)); // maximum cycles
-        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) (aggregatedPack.packSOH / 10))); // average
-                                                                                                      // SOH
-        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) (aggregatedPack.packSOH / 10))); // lowest
-                                                                                                      // SOH
+        buffer.put(ByteAsciiConverter.convertCharToAsciiBytes((char) safeSystemVoltageMv));
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) safeSystemCurrent001A));
+        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) safeSocPercent));
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes(cycleCount));
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes(cycleCount));
+        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) safeSohPercent));
+        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) safeSohPercent));
 
-        // find the pack with the highest/lowest cell voltage
         int maxPack = 0;
         int minPack = 0;
 
@@ -293,72 +305,14 @@ public class PylonInverterRS485Processor extends Inverter {
             }
         }
 
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) aggregatedPack.maxCellmV));
-        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) maxPack)); // battery pack with
-                                                                                // highest voltage
-        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) aggregatedPack.maxCellVNum)); // cell
-                                                                                                   // with
-                                                                                                   // highest
-        // voltage
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) Math.max(0, aggregatedPack.maxCellmV)));
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) maxPack));
 
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) aggregatedPack.minCellmV));
-        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) minPack)); // battery pack with
-                                                                                // lowest voltage
-        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) aggregatedPack.minCellVNum)); // cell
-                                                                                                   // with
-                                                                                                   // lowest
-        // voltage
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) Math.max(0, aggregatedPack.minCellmV)));
+        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) minPack));
 
         final int safeTempAverage = sanitizeTemperature(aggregatedPack.tempAverage);
         buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (safeTempAverage + 2731)));
-
-        // find the pack with the highest/lowest cell temperature
-        maxPack = 0;
-        minPack = 0;
-
-        for (int i = 0; i < getEnergyStorage().getBatteryPacks().size(); i++) {
-            final BatteryPack pack = getEnergyStorage().getBatteryPack(i);
-
-            if (pack.tempMax == aggregatedPack.tempMax) {
-                maxPack = i;
-            }
-
-            if (pack.tempMin == aggregatedPack.tempMin) {
-                minPack = i;
-            }
-        }
-
-        final int safeTempMax = sanitizeTemperature(aggregatedPack.tempMax);
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (safeTempMax + 2731)));
-        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) maxPack));
-        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) aggregatedPack.tempMaxCellNum));
-
-        final int safeTempMin = sanitizeTemperature(aggregatedPack.tempMin);
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (safeTempMin + 2731)));
-        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) minPack));
-        buffer.put(ByteAsciiConverter.convertByteToAsciiBytes((byte) aggregatedPack.tempMinCellNum));
-
-        // MOSFET average temperature
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (safeTempAverage + 2731)));
-        // MOSFET max temperature
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (safeTempAverage + 2731)));
-        // MOSFET max temperature pack
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) 0));
-        // MOSFET min temperature
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (safeTempAverage + 2731)));
-        // MOSFET min temperature pack
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) 0));
-
-        // BMS average temperature
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (safeTempAverage + 2731)));
-        // BMS max temperature
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (safeTempAverage + 2731)));
-        // BMS max temperature pack
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) 0));
-        // BMS min temperature
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (safeTempAverage + 2731)));
-        // BMS min temperature pack
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) 0));
 
         final byte[] data = new byte[buffer.position()];
         buffer.get(data, 0, buffer.position());
@@ -434,15 +388,23 @@ public class PylonInverterRS485Processor extends Inverter {
     // 0x63
     private byte[] createChargeDischargeIfno(final BatteryPack aggregatedPack) {
         final ByteBuffer buffer = ByteBuffer.allocate(4096);
+        int chargeVoltageLimitMv = Math.max(0, aggregatedPack.maxPackVoltageLimit) * 100;
+        int dischargeVoltageLimitMv = Math.max(0, aggregatedPack.minPackVoltageLimit) * 100;
+        chargeVoltageLimitMv = Math.min(0xFFFF, chargeVoltageLimitMv);
+        dischargeVoltageLimitMv = Math.min(0xFFFF, dischargeVoltageLimitMv);
 
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (aggregatedPack.maxPackVoltageLimit * 100)));
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) (aggregatedPack.minPackVoltageLimit * 100)));
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) resolveCurrentLimitA10(aggregatedPack.maxPackChargeCurrent, "maxCharge", aggregatedPack)));
-        buffer.put(ByteAsciiConverter.convertShortToAsciiBytes((short) resolveCurrentLimitA10(aggregatedPack.maxPackDischargeCurrent, "maxDischarge", aggregatedPack)));
+        final int maxChargeA10 = encodeCurrentLimitA10(Math.abs(aggregatedPack.maxPackChargeCurrent) / 10.0);
+        final int maxDischargeA10 = encodeCurrentLimitA10(Math.abs(aggregatedPack.maxPackDischargeCurrent) / 10.0);
+
+        buffer.put(ByteAsciiConverter.convertCharToAsciiBytes((char) chargeVoltageLimitMv));
+        buffer.put(ByteAsciiConverter.convertCharToAsciiBytes((char) dischargeVoltageLimitMv));
+        buffer.put(ByteAsciiConverter.convertCharToAsciiBytes((char) maxChargeA10));
+        buffer.put(ByteAsciiConverter.convertCharToAsciiBytes((char) maxDischargeA10));
         byte chargeDischargeMOSStates = 0x00;
         chargeDischargeMOSStates = BitUtil.setBit(chargeDischargeMOSStates, 7, aggregatedPack.chargeMOSState);
         chargeDischargeMOSStates = BitUtil.setBit(chargeDischargeMOSStates, 6, aggregatedPack.dischargeMOSState);
         chargeDischargeMOSStates = BitUtil.setBit(chargeDischargeMOSStates, 5, aggregatedPack.forceCharge);
+        chargeDischargeMOSStates = BitUtil.setBit(chargeDischargeMOSStates, 4, false);
         buffer.put(ByteAsciiConverter.convertByteToAsciiBytes(chargeDischargeMOSStates));
 
         final byte[] data = new byte[buffer.position()];
