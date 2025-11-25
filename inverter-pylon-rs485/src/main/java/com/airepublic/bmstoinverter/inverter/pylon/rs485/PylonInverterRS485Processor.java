@@ -112,7 +112,7 @@ public class PylonInverterRS485Processor extends Inverter {
             LOG.debug("Inverter is not requesting data, trying to send data actively");
             // try to send data actively
             final byte adr = 0x12;
-            frames.add(prepareSendFrame(adr, (byte) 0x46, (byte) 0x4F, createProtocolVersion(aggregatedPack)));
+            frames.add(prepareSendFrame(adr, (byte) 0x46, (byte) 0x4F, new byte[0]));
             // this is wrong anyway as the CID1 should be 0x46 for responses
             // frames.add(prepareSendFrame(adr, (byte) 0x51, (byte) 0x00,
             // createManufacturerCode(aggregatedPack)));
