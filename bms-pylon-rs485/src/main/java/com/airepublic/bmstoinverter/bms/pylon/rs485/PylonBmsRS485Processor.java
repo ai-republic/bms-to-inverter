@@ -338,6 +338,7 @@ public class PylonBmsRS485Processor extends BMS {
             remainingCapacitymAh += convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) * 100;
             data.getShort(); // user defined items
             ratedCapacitymAh += convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) * 100;
+            data.getShort(); // bms cycles
         }
 
         pack.numberOfCells = totalNumberOfCells;
