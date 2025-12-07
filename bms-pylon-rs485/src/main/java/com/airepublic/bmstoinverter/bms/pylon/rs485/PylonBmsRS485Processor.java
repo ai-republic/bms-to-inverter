@@ -35,6 +35,7 @@ import com.airepublic.bmstoinverter.core.util.HexUtil;
  */
 public class PylonBmsRS485Processor extends BMS {
     private final static Logger LOG = LoggerFactory.getLogger(PylonBmsRS485Processor.class);
+    private static final int BATTERY_PACK_ID = 0;
     private final Predicate<ByteBuffer> validator = buffer -> {
         // check if null
         if (buffer == null) {
@@ -62,7 +63,7 @@ public class PylonBmsRS485Processor extends BMS {
 
     @Override
     protected void collectData(final Port port) throws TooManyInvalidFramesException, NoDataAvailableException, IOException {
-        final int address = 0x10 + getBmsId();
+        final int address = 0x12;
         for (int packId = 0; packId < getBatteryPacks().size(); packId++) {
             sendMessage(port, address, (byte) 0x46, (byte) 0x44, convertByteToAsciiBytes((byte) (packId + 1))); // warnings
         }
@@ -70,7 +71,7 @@ public class PylonBmsRS485Processor extends BMS {
         sendMessage(port, address, (byte) 0x46, (byte) 0x4F); // protocol version
         sendMessage(port, address, (byte) 0x46, (byte) 0x51); // manufacturer code
         sendMessage(port, address, (byte) 0x46, (byte) 0x92); // charge/discharge management
-        sendMessage(port, address, (byte) 0x46, (byte) 0x42); // cell information
+        sendMessage(port, address, (byte) 0x46, (byte) 0x42, convertByteToAsciiBytes((byte) 0xFF)); // cell information
         sendMessage(port, address, (byte) 0x46, (byte) 0x47); // max/min voltage/current limits
         sendMessage(port, address, (byte) 0x46, (byte) 0x60); // system information
         sendMessage(port, address, (byte) 0x46, (byte) 0x61); // battery information
@@ -79,13 +80,13 @@ public class PylonBmsRS485Processor extends BMS {
     }
 
 
-    private List<ByteBuffer> sendMessage(final Port port, final int bmsId, final byte cid1, final byte cid2) throws TooManyInvalidFramesException, NoDataAvailableException, IOException {
-        return sendMessage(port, bmsId, cid1, cid2, new byte[] {});
+    private List<ByteBuffer> sendMessage(final Port port, final int address, final byte cid1, final byte cid2) throws TooManyInvalidFramesException, NoDataAvailableException, IOException {
+        return sendMessage(port, address, cid1, cid2, new byte[] {});
     }
 
 
-    private List<ByteBuffer> sendMessage(final Port port, final int bmsId, final byte cid1, final byte cid2, final byte[] msg) throws TooManyInvalidFramesException, NoDataAvailableException, IOException {
-        final ByteBuffer sendBuffer = prepareSendFrame((byte) bmsId, cid1, cid2, msg);
+    private List<ByteBuffer> sendMessage(final Port port, final int address, final byte cid1, final byte cid2, final byte[] msg) throws TooManyInvalidFramesException, NoDataAvailableException, IOException {
+        final ByteBuffer sendBuffer = prepareSendFrame((byte) address, cid1, cid2, msg);
         final List<ByteBuffer> readBuffers = new ArrayList<>();
         int failureCount = 0;
         int noDataReceived = 0;
@@ -121,8 +122,8 @@ public class PylonBmsRS485Processor extends BMS {
                     final byte[] addressAscii = new byte[2];
                     receiveBuffer.position(3);
                     receiveBuffer.get(addressAscii);
-                    final int address = convertAsciiBytesToByte(addressAscii[0], addressAscii[1]);
-                    final BatteryPack pack = getBatteryPack(address);
+                    final int responseAddress = convertAsciiBytesToByte(addressAscii[0], addressAscii[1]);
+                    final BatteryPack pack = getBatteryPack(BATTERY_PACK_ID);
 
                     // extract command
                     final byte[] cmdAscii = new byte[2];
@@ -275,145 +276,177 @@ public class PylonBmsRS485Processor extends BMS {
 
     // 0x42
     private void readCellInformation(final BatteryPack pack, final ByteBuffer data) {
-        final int bmsId = convertAsciiBytesToByte(data.get(), data.get());
+        // if there are multiple packs, read them all and aggregate the data
+        final int packCount = convertAsciiBytesToByte(data.get(), data.get());
 
-        if (bmsId < 1) {
-            LOG.warn("Received invalid BMS ID {} in cell information!", bmsId);
+        if (packCount < 1) {
+            LOG.warn("Received invalid amount of packs {} in cell information!", packCount);
             return;
         }
 
-        if (pack != getBatteryPack(bmsId - 1)) {
-            LOG.warn("Received cell information for BMS ID {} but not matching ADR!", bmsId);
+        int totalNumberOfCells = 0;
+        int maxCellmV = Integer.MIN_VALUE;
+        int minCellmV = Integer.MAX_VALUE;
+        int maxCellVNum = -1;
+        int minCellVNum = -1;
+        final int totalNumberOfTempSensors = 0;
+        int tempAvg = 0;
+        int tempMin = Integer.MAX_VALUE;
+        int tempMax = Integer.MIN_VALUE;
+        int packVoltage = 0;
+        int packCurrent = 0;
+        int remainingCapacitymAh = 0;
+        int ratedCapacitymAh = 0;
+
+        for (int packId = 0; packId < packCount; packId++) {
+
+            final int packNumberOfCells = convertAsciiBytesToByte(data.get(), data.get());
+
+            for (int cellNo = 0; cellNo < packNumberOfCells; cellNo++) {
+                pack.cellVmV[totalNumberOfCells++] = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() });
+
+                if (pack.cellVmV[totalNumberOfCells - 1] > maxCellmV) {
+                    maxCellmV = pack.cellVmV[totalNumberOfCells - 1];
+                    maxCellVNum = totalNumberOfCells;
+                }
+
+                if (pack.cellVmV[totalNumberOfCells - 1] < minCellmV) {
+                    minCellmV = pack.cellVmV[totalNumberOfCells - 1];
+                    minCellVNum = totalNumberOfCells;
+                }
+            }
+
+            final int numOfTempSensors = convertAsciiBytesToByte(data.get(), data.get());
+
+            if (numOfTempSensors > 0) {
+                for (int tempNo = 0; tempNo < numOfTempSensors; tempNo++) {
+                    pack.cellTemperature[tempNo] = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) - 2731;
+                    tempAvg += pack.cellTemperature[tempNo];
+
+                    if (pack.cellTemperature[tempNo] < tempMin) {
+                        tempMin = pack.cellTemperature[tempNo];
+                    }
+                    if (pack.cellTemperature[tempNo] > tempMax) {
+                        tempMax = pack.cellTemperature[tempNo];
+                    }
+                }
+
+            }
+
+            packCurrent += convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() });
+            packVoltage += convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() });
+            remainingCapacitymAh += convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) * 100;
+            data.getShort(); // user defined items
+            ratedCapacitymAh += convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) * 100;
         }
 
-        final BatteryPack packToUse = getBatteryPack(bmsId - 1);
-        packToUse.numberOfCells = convertAsciiBytesToByte(data.get(), data.get());
-
-        for (int cellNo = 0; cellNo < packToUse.numberOfCells; cellNo++) {
-            packToUse.cellVmV[cellNo] = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() });
-        }
-
-        packToUse.numOfTempSensors = convertAsciiBytesToByte(data.get(), data.get());
-
-        for (int tempNo = 0; tempNo < packToUse.numOfTempSensors; tempNo++) {
-            packToUse.cellTemperature[tempNo] = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) - 2731;
-        }
-
-        packToUse.packCurrent = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() });
-        packToUse.packVoltage = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() });
-        packToUse.remainingCapacitymAh = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) * 100;
-        data.getShort(); // user defined items
-        packToUse.ratedCapacitymAh = convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) * 100;
+        pack.numberOfCells = totalNumberOfCells;
+        pack.maxCellmV = maxCellmV;
+        pack.maxCellVNum = maxCellVNum;
+        pack.minCellmV = minCellmV;
+        pack.minCellVNum = minCellVNum;
+        pack.numOfTempSensors = totalNumberOfTempSensors;
+        pack.tempAverage = tempAvg / totalNumberOfTempSensors;
+        pack.tempMin = tempMin;
+        pack.tempMax = tempMax;
+        pack.packCurrent = packCurrent; // sum of pack currents
+        pack.packVoltage = packVoltage / packCount; // average pack voltage
+        pack.remainingCapacitymAh = remainingCapacitymAh / packCount; // average remaining capacity
+        pack.ratedCapacitymAh = ratedCapacitymAh / packCount; // average rated capacity
     }
 
 
     // 0x44
     private void readWarnings(final BatteryPack pack, final ByteBuffer data) {
-        final int bmsId = convertAsciiBytesToByte(data.get(), data.get());
+        final int packCount = convertAsciiBytesToByte(data.get(), data.get());
 
-        if (bmsId < 1) {
-            LOG.warn("Received invalid BMS ID {} in cell information!", bmsId);
+        if (packCount < 1) {
+            LOG.warn("Received invalid pack count {} in cell information!", packCount);
             return;
         }
 
-        if (pack != getBatteryPack(bmsId - 1)) {
-            LOG.warn("Received cell information for BMS ID {} but not matching ADR!", bmsId);
-        }
-
-        final BatteryPack packToUse = getBatteryPack(bmsId - 1);
-
-        // find highest and lowest cell voltage and error status
-        packToUse.numberOfCells = convertAsciiBytesToByte(data.get(), data.get());
-
-        byte status = 0;
-        boolean cellLowStatus = false;
-        boolean cellHighStatus = false;
-
         // reset min/max values
-        packToUse.maxCellmV = Integer.MIN_VALUE;
-        packToUse.minCellmV = Integer.MAX_VALUE;
-        packToUse.setAlarm(Alarm.CELL_VOLTAGE_LOW, AlarmLevel.NONE);
-        packToUse.setAlarm(Alarm.CELL_VOLTAGE_HIGH, AlarmLevel.NONE);
+        pack.alarms.clear();
 
-        for (int cellNo = 0; cellNo < packToUse.numberOfCells; cellNo++) {
+        for (int packId = 0; packId < packCount; packId++) {
+            // find highest and lowest cell voltage and error status
+            final int numberOfCells = convertAsciiBytesToByte(data.get(), data.get());
+
+            byte status = 0;
+            boolean cellLowStatus = false;
+            boolean cellHighStatus = false;
+
+            for (int cellNo = 0; cellNo < numberOfCells; cellNo++) {
+                status = convertAsciiBytesToByte(data.get(), data.get());
+
+                switch (status) {
+                    case 1:
+                        cellLowStatus = true;
+                    break;
+                    case 2:
+                        cellHighStatus = true;
+                    break;
+                }
+            }
+
+            if (cellLowStatus) {
+                pack.setAlarm(Alarm.CELL_VOLTAGE_LOW, AlarmLevel.ALARM);
+            }
+
+            if (cellHighStatus) {
+                pack.setAlarm(Alarm.CELL_VOLTAGE_HIGH, AlarmLevel.ALARM);
+            }
+
+            // find highest and lowest temperature and error status
+            final int numOfTempSensors = convertAsciiBytesToByte(data.get(), data.get());
+
+            // read status of the BMS temperature
             status = convertAsciiBytesToByte(data.get(), data.get());
-
             switch (status) {
                 case 1:
-                    if (packToUse.cellVmV[cellNo] < packToUse.minCellmV) {
-                        packToUse.minCellmV = packToUse.cellVmV[cellNo];
-                        packToUse.minCellVNum = cellNo + 1;
-                    }
-                    cellLowStatus = true;
+                    pack.setAlarm(Alarm.PACK_TEMPERATURE_LOW, AlarmLevel.ALARM);
                 break;
                 case 2:
-                    if (packToUse.cellVmV[cellNo] > packToUse.maxCellmV) {
-                        packToUse.maxCellmV = packToUse.cellVmV[cellNo];
-                        packToUse.maxCellVNum = cellNo + 1;
-                    }
-                    cellHighStatus = true;
+                    pack.setAlarm(Alarm.PACK_TEMPERATURE_HIGH, AlarmLevel.ALARM);
                 break;
             }
-        }
 
-        if (cellLowStatus) {
-            packToUse.setAlarm(Alarm.CELL_VOLTAGE_LOW, AlarmLevel.ALARM);
-        }
+            boolean tempLowStatus = false;
+            boolean tempHighStatus = false;
 
-        if (cellHighStatus) {
-            packToUse.setAlarm(Alarm.CELL_VOLTAGE_HIGH, AlarmLevel.ALARM);
-        }
+            for (int tempNo = 0; tempNo < numOfTempSensors; tempNo++) {
+                status = convertAsciiBytesToByte(data.get(), data.get());
 
-        // find highest and lowest temperature and error status
-        packToUse.numOfTempSensors = convertAsciiBytesToByte(data.get(), data.get());
-
-        // read status of the BMS temperature
-        status = convertAsciiBytesToByte(data.get(), data.get());
-        packToUse.setAlarm(Alarm.PACK_TEMPERATURE_LOW, status == 1 ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        packToUse.setAlarm(Alarm.PACK_TEMPERATURE_HIGH, status == 2 ? AlarmLevel.ALARM : AlarmLevel.NONE);
-
-        boolean tempLowStatus = false;
-        boolean tempHighStatus = false;
-
-        // reset min/max values
-        packToUse.tempMax = Integer.MIN_VALUE;
-        packToUse.tempMin = Integer.MAX_VALUE;
-        packToUse.setAlarm(Alarm.CELL_TEMPERATURE_LOW, AlarmLevel.NONE);
-        packToUse.setAlarm(Alarm.CELL_TEMPERATURE_HIGH, AlarmLevel.NONE);
-
-        for (int tempNo = 0; tempNo < packToUse.numOfTempSensors; tempNo++) {
-            status = convertAsciiBytesToByte(data.get(), data.get());
-
-            switch (status) {
-                case 1:
-                    if (packToUse.cellTemperature[tempNo] < packToUse.tempMin) {
-                        packToUse.tempMin = packToUse.cellTemperature[tempNo];
-                        packToUse.tempMinCellNum = tempNo * 4 + 1;
+                switch (status) {
+                    case 1:
                         tempLowStatus = true;
-                    }
+                    break;
+                    case 2:
+                        tempHighStatus = true;
+                    break;
+                }
+            }
+
+            if (tempLowStatus) {
+                pack.setAlarm(Alarm.CELL_TEMPERATURE_LOW, AlarmLevel.ALARM);
+            }
+
+            if (tempHighStatus) {
+                pack.setAlarm(Alarm.CELL_TEMPERATURE_HIGH, AlarmLevel.ALARM);
+            }
+
+            // read mosfet temperature status
+            status = convertAsciiBytesToByte(data.get(), data.get());
+
+            switch (status) {
+                case 1:
+                    pack.setAlarm(Alarm.CHARGE_TEMPERATURE_LOW, AlarmLevel.ALARM);
                 break;
                 case 2:
-                    if (packToUse.cellTemperature[tempNo] > packToUse.tempMax) {
-                        packToUse.tempMax = packToUse.cellTemperature[tempNo];
-                        packToUse.tempMaxCellNum = tempNo * 4 + 1;
-                        tempHighStatus = true;
-                    }
+                    pack.setAlarm(Alarm.CHARGE_TEMPERATURE_HIGH, AlarmLevel.ALARM);
                 break;
             }
         }
-
-        if (tempLowStatus) {
-            packToUse.setAlarm(Alarm.CELL_TEMPERATURE_LOW, AlarmLevel.ALARM);
-        }
-
-        if (tempHighStatus) {
-            packToUse.setAlarm(Alarm.CELL_TEMPERATURE_HIGH, AlarmLevel.ALARM);
-        }
-
-        // read mosfet temperature status
-        status = convertAsciiBytesToByte(data.get(), data.get());
-        packToUse.setAlarm(Alarm.CHARGE_TEMPERATURE_LOW, status == 1 ? AlarmLevel.ALARM : AlarmLevel.NONE);
-        packToUse.setAlarm(Alarm.CHARGE_TEMPERATURE_HIGH, status == 2 ? AlarmLevel.ALARM : AlarmLevel.NONE);
     }
 
 
