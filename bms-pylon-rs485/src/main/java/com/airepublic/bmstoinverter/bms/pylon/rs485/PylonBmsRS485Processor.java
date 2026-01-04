@@ -63,7 +63,7 @@ public class PylonBmsRS485Processor extends BMS {
 
     @Override
     protected void collectData(final Port port) throws TooManyInvalidFramesException, NoDataAvailableException, IOException {
-        final int address = 0x12;
+        final int address = 0x12 + getBmsId();
         for (int packId = 0; packId < getBatteryPacks().size(); packId++) {
             sendMessage(port, address, (byte) 0x46, (byte) 0x44, convertByteToAsciiBytes((byte) (packId + 1))); // warnings
         }
@@ -338,7 +338,7 @@ public class PylonBmsRS485Processor extends BMS {
             remainingCapacitymAh += convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) * 100;
             data.getShort(); // user defined items
             ratedCapacitymAh += convertAsciiBytesToShort(new byte[] { data.get(), data.get(), data.get(), data.get() }) * 100;
-            data.getShort(); // bms cycles
+            pack.bmsCycles = Math.max(pack.bmsCycles, data.getShort()); // bms cycles
         }
 
         pack.numberOfCells = totalNumberOfCells;
