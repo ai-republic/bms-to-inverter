@@ -154,6 +154,13 @@
 			<version>${project.version}</version>
 		</dependency>
 		
+		<!-- ####################  HNGCE (MODBUS)  ################### -->
+		<dependency>
+			<groupId>com.ai-republic.bms-to-inverter</groupId>
+			<artifactId>bms-hngce-modbus</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- ####################  HUAWEI (MODBUS)  ################### -->
 		<dependency>
 			<groupId>com.ai-republic.bms-to-inverter</groupId>

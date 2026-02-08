@@ -10,6 +10,8 @@
  */
 package com.airepublic.bmstoinverter.service.mqtt;
 
+import javax.enterprise.context.ApplicationScoped;
+
 import org.apache.activemq.artemis.api.core.ActiveMQException;
 import org.apache.activemq.artemis.api.core.QueueConfiguration;
 import org.apache.activemq.artemis.api.core.RoutingType;
@@ -28,8 +30,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.airepublic.bmstoinverter.core.service.IMQTTBrokerService;
-
-import javax.enterprise.context.ApplicationScoped;
 
 /**
  * The implementation of the {@link IMQTTBrokerService} using the ActiveMQ Artemis implementation.
@@ -187,7 +187,7 @@ public class MQTTBrokerService implements IMQTTBrokerService {
             e.printStackTrace();
         } finally {
             try {
-                // mqtt.close();
+                mqtt.close();
             } catch (final Exception e) {
             }
         }
