@@ -54,7 +54,7 @@ public class PluginDialog extends JDialog {
         super(configurator, "Plugin configuration...", true);
 
         setLocation(configurator.getBounds().width / 2 - 250, configurator.getBounds().height / 2 - 60);
-        setSize(new Dimension(500, 450));
+        setPreferredSize(new Dimension(500, 450));
         setResizable(false);
         getContentPane().setLayout(new BorderLayout(5, 5));
 
@@ -120,6 +120,7 @@ public class PluginDialog extends JDialog {
             propertiesScrollPane.validate();
         });
 
+        pack();
         setLocationRelativeTo(null);
     }
 

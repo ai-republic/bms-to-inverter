@@ -46,7 +46,7 @@ public class InstallationDialog extends JDialog {
     public InstallationDialog(final JFrame frame) {
         super(frame, "Installing...", true);
         setLocation(frame.getX() + frame.getBounds().width / 2 - 320, frame.getY() + frame.getBounds().height / 2 - 240);
-        setSize(new Dimension(640, 480));
+        setPreferredSize(new Dimension(640, 480));
         getContentPane().setLayout(new BorderLayout(0, 0));
 
         final JPanel panel = new JPanel();
@@ -83,6 +83,9 @@ public class InstallationDialog extends JDialog {
         gbc_closeButton.gridy = 1;
         panel.add(closeButton, gbc_closeButton);
         closeButton.addActionListener(e -> dispose());
+        
+        pack();
+        setLocationRelativeTo(null);
     }
 
 

@@ -59,7 +59,7 @@ public class BMSDialog extends JDialog {
         descriptors = createBMSDescriptors();
 
         setLocation(configurator.getBounds().width / 2 - 175, configurator.getBounds().height / 2 - 60);
-        setSize(new Dimension(350, 359));
+        setPreferredSize(new Dimension(350, 359));
         setResizable(false);
         getContentPane().setLayout(new BorderLayout(0, 0));
 
@@ -220,6 +220,7 @@ public class BMSDialog extends JDialog {
         gbc_cancelButton.gridy = 0;
         buttonPanel.add(cancelButton, gbc_cancelButton);
 
+        pack();
         setLocationRelativeTo(null);
     }
 
