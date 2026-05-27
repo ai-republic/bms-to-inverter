@@ -113,7 +113,7 @@ public abstract class Inverter {
      */
     public EnergyStorage getEnergyStorage() {
         if (energyStorage == null) {
-            energyStorage = new EnergyStorage();
+            throw new IllegalStateException("EnergyStorage is not initialized for the inverter binding: " + getName());
         }
 
         return energyStorage;

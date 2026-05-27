@@ -66,6 +66,7 @@
 		<module>inverter-solark-can</module>
 		<module>inverter-solis-hv-can</module>
 		<module>inverter-sma-si-can</module>
+		<module>service-email</module>
 		<module>service-mqtt-broker</module>
 		<module>service-mqtt-client</module>
 		<module>webserver</module>

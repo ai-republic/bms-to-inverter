@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.ServiceLoader;
-import java.util.StringTokenizer;
 
 import javax.annotation.PostConstruct;
 import javax.enterprise.context.ApplicationScoped;
@@ -34,17 +33,14 @@ import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.InverterQualifier;
 import com.airepublic.bmstoinverter.core.PortAllocator;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
-import com.airepublic.bmstoinverter.core.bms.data.EnergyStorageQualifier;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.bms.data.EnergyStorage;
+import com.airepublic.bmstoinverter.core.bms.data.EnergyStorageQualifier;
+import com.airepublic.bmstoinverter.core.service.IEmailService;
 import com.airepublic.bmstoinverter.core.service.IMQTTBrokerService;
 import com.airepublic.bmstoinverter.core.service.IMQTTProducerService;
 import com.airepublic.bmstoinverter.core.service.IWebServerService;
 import com.airepublic.bmstoinverter.core.util.SystemProperties;
-import com.airepublic.email.api.Email;
-import com.airepublic.email.api.EmailAccount;
-import com.airepublic.email.api.EmailException;
-import com.airepublic.email.api.IEmailService;
 
 /**
  * The main class to initiate communication between the configured BMS and the inverter. The
@@ -72,8 +68,6 @@ public class BmsToInverter implements AutoCloseable {
     private IMQTTProducerService mqttExternalProducer;
     private IEmailService emailService;
     private IWebServerService webServerService;
-    private EmailAccount account;
-    private final List<String> emailRecipients = new ArrayList<>();
     private List<String> lastAlarms = new ArrayList<>();
 
     /**
@@ -88,8 +82,8 @@ public class BmsToInverter implements AutoCloseable {
 
         final SeContainerInitializer initializer = SeContainerInitializer.newInstance();
         final SeContainer container = initializer.initialize();
-        final BmsToInverter app = container.select(BmsToInverter.class).get();
-        app.start();
+        // final BmsToInverter app = container.select(BmsToInverter.class).get();
+        // app.start();
     }
 
 
@@ -234,19 +228,6 @@ public class BmsToInverter implements AutoCloseable {
         if (emailService == null) {
             LOG.error("Error in project configuration - no email provider was found but email service is activated!");
             return;
-        }
-
-        account = new EmailAccount(System.getProperties());
-        final String commaSeparatedList = System.getProperty("mail.out.recipients");
-
-        if (commaSeparatedList == null) {
-            throw new IllegalArgumentException("EmailService is activated but the property 'mail.out.recipients' could not be found!");
-        }
-
-        final StringTokenizer tokenizer = new StringTokenizer(commaSeparatedList, ",");
-
-        while (tokenizer.hasMoreTokens()) {
-            emailRecipients.add(tokenizer.nextToken());
         }
     }
 
@@ -410,13 +391,13 @@ public class BmsToInverter implements AutoCloseable {
 
 
     /**
-     * Analyzes and aggregates the warnings and alarms and sends them to the configured mail
-     * account(s).
+     * Analyzes and aggregates the warnings and alarms and sends them to the configured mail account(s).
      */
     private void analyseBMSFaults() {
         final List<String> currentAlarms = new ArrayList<>();
         final StringBuffer alarmContent = new StringBuffer();
-        Email email = null;
+        String subject = null;
+        String emailContent = null;
 
         for (int index = 0; index < energyStorage.getBatteryPacks().size(); index++) {
             for (final Map.Entry<Alarm, AlarmLevel> entry : energyStorage.getBatteryPack(index).getAlarms(AlarmLevel.WARNING, AlarmLevel.ALARM).entrySet()) {
@@ -437,18 +418,19 @@ public class BmsToInverter implements AutoCloseable {
                 final StringBuffer content = new StringBuffer("This is a generated email - do not reply!\n\n Your BMS has reported the following alarms:\n");
                 content.append(alarmContent);
 
-                email = new Email(account.getOutgoingMailServerEmail(), emailRecipients, "BMS Alarms occured", content.toString(), false);
+                subject = "BMS Alarms occured";
+                emailContent = content.toString();
                 // otherwise check if alarms have resolved
             } else if (currentAlarms.isEmpty() && !lastAlarms.isEmpty()) {
-                final String content = "This is a generated email - do not reply!\n\n Your BMS is back to working normally.";
-                email = new Email(account.getOutgoingMailServerEmail(), emailRecipients, "BMS Alarms resolved", content, false);
+                subject = "BMS Alarms resolved";
+                emailContent = "This is a generated email - do not reply!\n\n Your BMS is back to working normally.";
             }
 
-            if (email != null) {
+            if (subject != null && emailContent != null) {
                 try {
-                    emailService.sendEmail(email, account);
+                    emailService.sendEmail(subject, emailContent);
                     lastAlarms = currentAlarms;
-                } catch (final EmailException e) {
+                } catch (final Exception e) {
                     LOG.error("Email could not be sent!", e);
                 }
             }
