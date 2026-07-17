@@ -1,3 +1,4 @@
 com.airepublic.bmstoinverter.core.plugin.inverter.ManipulateBatteryPackDataPlugin
 com.airepublic.bmstoinverter.core.plugin.inverter.PresetBatteryPackDataPlugin
 com.airepublic.bmstoinverter.core.plugin.inverter.SimulatedBatteryPackPlugin
+com.airepublic.bmstoinverter.core.plugin.inverter.AlarmThresholdPlugin

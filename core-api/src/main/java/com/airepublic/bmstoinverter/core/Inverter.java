@@ -414,8 +414,20 @@ public abstract class Inverter {
             for (final Map.Entry<Alarm, AlarmLevel> entry : alarms.entrySet()) {
                 final AlarmLevel level = result.getAlarmLevel(entry.getKey());
 
-                if (level == null || level == AlarmLevel.WARNING && entry.getValue() == AlarmLevel.ALARM) {
-                    result.setAlarm(entry.getKey(), entry.getValue());
+                switch (level) {
+                    case ALARM:
+                    // if the alarm is already set to ALARM, we don't need to do anything
+                    break;
+                    case WARNING:
+                        // if the alarm is already set to WARNING, we only need to set it to ALARM if the new level is ALARM
+                        if (entry.getValue() == AlarmLevel.ALARM) {
+                            result.setAlarm(entry.getKey(), entry.getValue());
+                        }
+                    break;
+                    case NONE:
+                        // if the alarm is not set, we can set it to the new level
+                        result.setAlarm(entry.getKey(), entry.getValue());
+                    break;
                 }
             }
         } catch (final Exception e) {

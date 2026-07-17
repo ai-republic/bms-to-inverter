@@ -82,8 +82,8 @@ public class BmsToInverter implements AutoCloseable {
 
         final SeContainerInitializer initializer = SeContainerInitializer.newInstance();
         final SeContainer container = initializer.initialize();
-        // final BmsToInverter app = container.select(BmsToInverter.class).get();
-        // app.start();
+        final BmsToInverter app = container.select(BmsToInverter.class).get();
+        app.start();
     }
 
 
