@@ -16,14 +16,14 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.enterprise.context.ApplicationScoped;
+
 import com.airepublic.bmstoinverter.core.AlarmLevel;
 import com.airepublic.bmstoinverter.core.Inverter;
 import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.util.BitUtil;
-
-import javax.enterprise.context.ApplicationScoped;
 
 /**
  * The class to handle CAN messages for Pylontech {@link Inverter}.
@@ -63,9 +63,8 @@ public class PylonInverterCANProcessor extends Inverter {
         sendFrame.putInt(frameId);
 
         // header
-        sendFrame.put((byte) 0x08) // data length
-                .put((byte) 0) // flags
-                .putShort((short) 0); // skip 2 bytes
+        sendFrame.put((byte) 0x08); // data length
+        sendFrame.put(new byte[3]); // flags & skip 2 bytes
 
         return sendFrame;
     }
@@ -76,13 +75,13 @@ public class PylonInverterCANProcessor extends Inverter {
         final ByteBuffer frame = prepareSendFrame(0x0351);
 
         // Battery charge voltage (0.1V) - uint_16
-        frame.putChar((char) pack.maxPackVoltageLimit);
+        frame.putShort((short) pack.maxPackVoltageLimit);
         // Charge current limit (0.1A) - sint_16
         frame.putShort((short) pack.maxPackChargeCurrent);
         // Discharge current limit (0.1A) - sint_16
         frame.putShort((short) pack.maxPackDischargeCurrent);
         // Battery discharge voltage (0.1V) - uint_16
-        frame.putChar((char) pack.minPackVoltageLimit);
+        frame.putShort((short) pack.minPackVoltageLimit);
 
         return frame;
 
@@ -94,9 +93,13 @@ public class PylonInverterCANProcessor extends Inverter {
         final ByteBuffer frame = prepareSendFrame(0x0355);
 
         // SOC (1%) - uint_16
-        frame.putChar((char) (pack.packSOC / 10));
+        frame.putShort((short) (pack.packSOC / 10));
         // SOH (1%) - uint_16
-        frame.putChar((char) (pack.packSOH / 10));
+        frame.putShort((short) (pack.packSOH / 10));
+        // SOH (0.01%) - uint_16
+        frame.putShort((short) (pack.packSOC * 10));
+        // reserved / unused
+        frame.putShort((short) 0);
 
         return frame;
     }

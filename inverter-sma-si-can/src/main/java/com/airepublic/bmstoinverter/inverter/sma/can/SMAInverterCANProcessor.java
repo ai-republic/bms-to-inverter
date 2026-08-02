@@ -16,6 +16,8 @@ import java.nio.ByteOrder;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.enterprise.context.ApplicationScoped;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,8 +27,6 @@ import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.bms.data.Alarm;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.util.BitUtil;
-
-import javax.enterprise.context.ApplicationScoped;
 
 /**
  * The class to handle CAN messages for a SMA {@link Inverter}.
@@ -66,16 +66,16 @@ public class SMAInverterCANProcessor extends Inverter {
 
     // 0x351
     private ByteBuffer createChargeDischargeInfo(final BatteryPack pack) {
-        final ByteBuffer frame = prepareFrame(0x351);
+        final ByteBuffer frame = prepareFrame(0x0351);
 
-        // Battery charge voltage (0.1V) - u_int_16
-        frame.putChar((char) pack.maxPackVoltageLimit);
-        // Charge current limit (0.1A) - s_int_16
+        // Battery charge voltage (0.1V) - uint_16
+        frame.putShort((short) pack.maxPackVoltageLimit);
+        // Charge current limit (0.1A) - sint_16
         frame.putShort((short) pack.maxPackChargeCurrent);
-        // Discharge current limit (0.1A) - s_int_16
-        frame.putShort((short) (pack.maxPackDischargeCurrent * -1)); // needs positive value
-        // Battery discharge voltage (0.1V) - u_int_16
-        frame.putChar((char) pack.minPackVoltageLimit);
+        // Discharge current limit (0.1A) - sint_16
+        frame.putShort((short) pack.maxPackDischargeCurrent);
+        // Battery discharge voltage (0.1V) - uint_16
+        frame.putShort((short) pack.minPackVoltageLimit);
 
         return frame;
 
@@ -84,12 +84,16 @@ public class SMAInverterCANProcessor extends Inverter {
 
     // 0x355
     private ByteBuffer createSOC(final BatteryPack pack) {
-        final ByteBuffer frame = prepareFrame(0x355);
+        final ByteBuffer frame = prepareFrame(0x0355);
 
-        // SOC (1%) - u_int_16
-        frame.putChar((char) (pack.packSOC / 10));
-        // SOH (1%) - u_int_16
-        frame.putChar((char) (pack.packSOH / 10));
+        // SOC (1%) - uint_16
+        frame.putShort((short) (pack.packSOC / 10));
+        // SOH (1%) - uint_16
+        frame.putShort((short) (pack.packSOH / 10));
+        // SOH (0.01%) - uint_16
+        frame.putShort((short) (pack.packSOC * 10));
+        // reserved / unused
+        frame.putShort((short) 0);
 
         return frame;
     }
@@ -275,14 +279,15 @@ public class SMAInverterCANProcessor extends Inverter {
     }
 
 
-    private ByteBuffer prepareFrame(final int cmd) {
-        final ByteBuffer frame = ByteBuffer.allocateDirect(16).order(ByteOrder.LITTLE_ENDIAN);
-        frame.putInt(cmd)
-                .put((byte) 8)
-                .put((byte) 0) // flags
-                .putShort((short) 0); // skip 2 bytes
+    private ByteBuffer prepareFrame(final int frameId) {
+        final ByteBuffer sendFrame = ByteBuffer.allocateDirect(16).order(ByteOrder.LITTLE_ENDIAN);
+        sendFrame.putInt(frameId);
 
-        return frame;
+        // header
+        sendFrame.put((byte) 0x08); // data length
+        sendFrame.put(new byte[3]); // flags & skip 2 bytes
+
+        return sendFrame;
     }
 
 }

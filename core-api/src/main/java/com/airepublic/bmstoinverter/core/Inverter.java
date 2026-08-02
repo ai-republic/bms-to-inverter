@@ -334,7 +334,7 @@ public abstract class Inverter {
         }
 
         // calculate averages
-        final int count = energyStorage.getBatteryPacks().size();
+        final int count = validPacks;
 
         if (count > 0) {
             result.ratedCapacitymAh = result.ratedCapacitymAh / count;
@@ -394,6 +394,10 @@ public abstract class Inverter {
         }
         if (result.minModuleTemp == Integer.MAX_VALUE) {
             result.minModuleTemp = 250;
+        }
+
+        if (result.packSOH <= 0) {
+            result.packSOH = 1000;
         }
 
         return result;
