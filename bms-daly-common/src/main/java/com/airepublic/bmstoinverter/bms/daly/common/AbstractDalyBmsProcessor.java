@@ -19,6 +19,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import javax.inject.Inject;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,8 +30,6 @@ import com.airepublic.bmstoinverter.core.Port;
 import com.airepublic.bmstoinverter.core.TooManyInvalidFramesException;
 import com.airepublic.bmstoinverter.core.bms.data.BatteryPack;
 import com.airepublic.bmstoinverter.core.util.HexUtil;
-
-import javax.inject.Inject;
 
 /**
  * An abstraction for the Daly {@link BMS} since the RS485 and CAN communication is very similar.
@@ -42,7 +42,6 @@ public abstract class AbstractDalyBmsProcessor extends BMS {
     private final byte[] requestData = new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 };
     private final int calibrationCounter = 1;
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
-    private boolean initialRound = true;
 
     /**
      * Gets the {@link DalyMessageHandler} to process the {@link DalyMessage} converted by the
@@ -58,18 +57,16 @@ public abstract class AbstractDalyBmsProcessor extends BMS {
     @Override
     protected void collectData(final Port port) throws IOException, TooManyInvalidFramesException, NoDataAvailableException {
 
-        if (initialRound) {
-            try {
-                sendMessage(port, DalyCommand.READ_RATED_CAPACITY_CELL_VOLTAGE, requestData); // 0x50
-                sendMessage(port, DalyCommand.READ_BATTERY_TYPE_INFO, requestData); // 0x53
-                sendMessage(port, DalyCommand.READ_MIN_MAX_PACK_VOLTAGE, requestData); // 0x5A
-                sendMessage(port, DalyCommand.READ_MAX_PACK_DISCHARGE_CHARGE_CURRENT, requestData); // 0x5B
-
-                initialRound = false;
-            } catch (final Throwable t) {
-                LOG.error("Failed to initialize BMS!", t);
-            }
+        // if (getBatteryPack(BATTERY_ID) == null || getBatteryPack(BATTERY_ID).ratedCapacitymAh == 0) {
+        try {
+            sendMessage(port, DalyCommand.READ_RATED_CAPACITY_CELL_VOLTAGE, requestData); // 0x50
+            sendMessage(port, DalyCommand.READ_BATTERY_TYPE_INFO, requestData); // 0x53
+            // sendMessage(port, DalyCommand.READ_MIN_MAX_PACK_VOLTAGE, requestData); // 0x5A
+            sendMessage(port, DalyCommand.READ_MAX_PACK_DISCHARGE_CHARGE_CURRENT, requestData); // 0x5B
+        } catch (final Throwable t) {
+            LOG.error("Failed to initialize BMS!", t);
         }
+        // }
 
         sendMessage(port, DalyCommand.READ_VOUT_IOUT_SOC, requestData); // 0x90
         sendMessage(port, DalyCommand.READ_MIN_MAX_CELL_VOLTAGE, requestData); // 0x91

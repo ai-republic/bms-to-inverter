@@ -339,8 +339,6 @@ public abstract class Inverter {
         if (count > 0) {
             result.ratedCapacitymAh = result.ratedCapacitymAh / count;
             result.ratedCellmV = result.ratedCellmV / count;
-            result.maxPackVoltageLimit = result.maxPackVoltageLimit / count;
-            result.minPackVoltageLimit = result.minPackVoltageLimit / count;
             result.packVoltage = result.packVoltage / count;
             result.packSOC = result.packSOC / count;
             result.packSOH = result.packSOH / count;

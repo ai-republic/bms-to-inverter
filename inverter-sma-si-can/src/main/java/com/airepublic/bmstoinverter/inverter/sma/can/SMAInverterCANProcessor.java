@@ -54,6 +54,7 @@ public class SMAInverterCANProcessor extends Inverter {
 
     @Override
     protected ByteBuffer readRequest(final Port port) throws IOException {
+        port.clearBuffers();
         return null;
     }
 
@@ -69,13 +70,13 @@ public class SMAInverterCANProcessor extends Inverter {
         final ByteBuffer frame = prepareFrame(0x0351);
 
         // Battery charge voltage (0.1V) - uint_16
-        frame.putShort((short) pack.maxPackVoltageLimit);
+        frame.putChar((char) pack.maxPackVoltageLimit);
         // Charge current limit (0.1A) - sint_16
         frame.putShort((short) pack.maxPackChargeCurrent);
         // Discharge current limit (0.1A) - sint_16
-        frame.putShort((short) pack.maxPackDischargeCurrent);
+        frame.putShort((short) (pack.maxPackDischargeCurrent * -1));
         // Battery discharge voltage (0.1V) - uint_16
-        frame.putShort((short) pack.minPackVoltageLimit);
+        frame.putChar((char) pack.minPackVoltageLimit);
 
         return frame;
 
@@ -87,11 +88,11 @@ public class SMAInverterCANProcessor extends Inverter {
         final ByteBuffer frame = prepareFrame(0x0355);
 
         // SOC (1%) - uint_16
-        frame.putShort((short) (pack.packSOC / 10));
+        frame.putChar((char) (pack.packSOC / 10));
         // SOH (1%) - uint_16
-        frame.putShort((short) (pack.packSOH / 10));
+        frame.putChar((char) (pack.packSOH / 10));
         // SOH (0.01%) - uint_16
-        frame.putShort((short) (pack.packSOC * 10));
+        frame.putChar((char) (pack.packSOC * 10));
         // reserved / unused
         frame.putShort((short) 0);
 
@@ -104,11 +105,13 @@ public class SMAInverterCANProcessor extends Inverter {
         final ByteBuffer frame = prepareFrame(0x356);
 
         // Battery voltage (0.01V) - u_int_16
-        frame.putShort((short) (pack.packVoltage * 10));
+        frame.putChar((char) (pack.packVoltage * 10));
         // Battery current (0.1A) - u_int_16
-        frame.putShort((short) pack.packCurrent);
+        frame.putChar((char) pack.packCurrent);
         // Battery temperature (0.1C) - u_int_16
-        frame.putShort((short) pack.tempAverage);
+        frame.putChar((char) pack.tempAverage);
+        // reserved / unused
+        frame.putShort((short) 0);
 
         return frame;
     }

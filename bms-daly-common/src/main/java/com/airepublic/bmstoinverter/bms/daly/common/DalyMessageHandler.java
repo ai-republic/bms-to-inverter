@@ -60,9 +60,9 @@ public class DalyMessageHandler {
                 case 0x53:
                     getBatteryTypeInfo(msg, bms);
                 break;
-                case 0x5A:
-                    getPackVoltageLimits(msg, bms);
-                break;
+                // case 0x5A:
+                // getPackVoltageLimits(msg, bms);
+                // break;
                 case 0x5B:
                     getPackDischargeChargeLimits(msg, bms);
                 break;
@@ -117,8 +117,12 @@ public class DalyMessageHandler {
 
         battery.ratedCapacitymAh = msg.data.getInt(); // in mAh
         battery.ratedCellmV = msg.data.getInt(); // in mV
+        battery.maxCellVoltageLimit = battery.ratedCellmV; // in mV
+        battery.minCellVoltageLimit = (int) (battery.maxCellVoltageLimit / 1.5f); // in mV
+        battery.maxPackVoltageLimit = battery.maxCellVoltageLimit * battery.numberOfCells / 100; // in 0.1V
+        battery.minPackVoltageLimit = battery.minCellVoltageLimit * battery.numberOfCells / 100; // in 0.1V
 
-        LOG.debug("ratedCellmV={}, ratedCapacitymAh={}", battery.ratedCellmV, battery.ratedCapacitymAh);
+        LOG.debug("ratedCellmV={}, ratedCapacitymAh={}, maxCellVoltageLimit={}, minCellVoltageLimit={}, maxPackVoltageLimit={}, minPackVoltageLimit={}", battery.ratedCellmV, battery.ratedCapacitymAh, battery.maxCellVoltageLimit, battery.minCellVoltageLimit, battery.maxPackVoltageLimit, battery.minPackVoltageLimit);
     }
 
 
@@ -135,15 +139,14 @@ public class DalyMessageHandler {
     }
 
 
-    private void getPackVoltageLimits(final DalyMessage msg, final BMS bms) {
-        final BatteryPack battery = bms.getBatteryPack(BATTERY_ID);
-
-        battery.maxPackVoltageLimit = msg.data.getShort();
-        // skip the next 2 bytes because only reading level 1
-        msg.data.getShort();
-        battery.minPackVoltageLimit = msg.data.getShort();
-    }
-
+    /**
+     * Values are 50V - 70V and too high for the Daly BMS, so we will not use this method for now.
+     * private void getPackVoltageLimits(final DalyMessage msg, final BMS bms) { final BatteryPack
+     * battery = bms.getBatteryPack(BATTERY_ID);
+     * 
+     * battery.maxPackVoltageLimit = msg.data.getShort(); // skip the next 2 bytes because only reading
+     * level 1 msg.data.getShort(); battery.minPackVoltageLimit = msg.data.getShort(); }
+     */
 
     private void getPackMeasurements(final DalyMessage msg, final BMS bms) throws IOException { // 0x90
         final BatteryPack battery = bms.getBatteryPack(BATTERY_ID);
