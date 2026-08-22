@@ -139,6 +139,8 @@ public class SamsungBmsCANProcessor extends BMS {
         pack.modulesInSeries = data.get();
         // Each tray has 14 cells
         pack.numberOfCells = pack.modulesInSeries * 14;
+	// Each tray is rated 94Ah per the ELPM482-00005 datasheet
+	pack.ratedCapacitymAh = pack.modulesInSeries * 94000;
     }
 
 
