@@ -300,6 +300,7 @@ public abstract class Inverter {
             result.minCellVNum = pack.minCellmV == result.minCellmV ? pack.minCellVNum : result.minCellVNum;
             result.tempMax = Math.max(result.tempMax, pack.tempMax);
             result.tempMin = Math.min(result.tempMin, pack.tempMin);
+	    result.tempAverage += pack.tempAverage;
 
             // result.chargeDischargeStatus = pack.chargeDischargeStatus;
             result.chargeMOSState |= pack.chargeMOSState;
